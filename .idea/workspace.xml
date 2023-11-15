@@ -4,11 +4,52 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="" />
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /user/new rest service">
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/App.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/UserGestor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/exceptions/UserCreationException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/exceptions/UserPasswordNotEqualsException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/HelloWorld.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/UserRest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/controller/ExceptionController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/controller/WebConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/Error.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/HttpException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/org/laga/PasswordEncryptDecryptTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/App.java" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
@@ -16,6 +57,9 @@
         <option name="workspaceImportEnabled" value="true" />
       </MavenImportingSettings>
     </option>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectId" id="2Y8BUkSA4AiJRlAyuDFIqnJMpaW" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -25,10 +69,87 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "last_opened_file_path": "C:/Users/Davide/Documents/Progetti/BIG - MoneyGestor/Rest/ApiRest/src/main/resources",
+    "project.structure.last.edited": "Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.41724136",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "editing.templates"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Davide\Documents\Progetti\BIG - MoneyGestor\Rest\ApiRest\src\main\resources" />
+      <recent name="C:\Users\Davide\Documents\Progetti\BIG - MoneyGestor\Rest\ApiRest\src\main\java" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.org.laga.moneygestor.App">
+    <configuration name="App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.laga.moneygestor.db.App" />
+      <module name="ApiRest" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.laga.moneygestor.db.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="org.laga.moneygestor.App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="org.laga.moneygestor.App" />
+      <module name="ApiRest" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.laga.moneygestor.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PasswordEncryptDecryptTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ApiRest" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="org.laga.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="org.laga" />
+      <option name="MAIN_CLASS_NAME" value="org.laga.PasswordEncryptDecryptTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <dir value="$PROJECT_DIR$/src/test/java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="java in ApiRest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="ApiRest" />
+      <option name="TEST_OBJECT" value="directory" />
+      <dir value="$PROJECT_DIR$/src/test/java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.org.laga.moneygestor.App" />
+        <item itemvalue="JUnit.PasswordEncryptDecryptTest" />
+        <item itemvalue="JUnit.java in ApiRest" />
+        <item itemvalue="Application.App" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -38,6 +159,19 @@
       <option name="presentableId" value="Default" />
       <updated>1699897345754</updated>
     </task>
+    <task id="LOCAL-00001" summary="first commit">
+      <created>1699897443411</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1699897443411</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="first commit" />
+    <MESSAGE value="Create /user/new rest service" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create /user/new rest service" />
   </component>
 </project>
