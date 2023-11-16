@@ -15,6 +15,9 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT u.* FROM user u WHERE u.username = :username OR u.email = :username", nativeQuery = true)
     User findWithEmailOrUsername(@Param("username") String username);
 
+    @Query(value = "SELECT u.* FROM user u WHERE u.Token = :token", nativeQuery = true)
+    User findFromToken(@Param("token") String token);
+
     @Transactional
     @Modifying
     @Query(value = "UPDATE user SET Token = :token, ExpiratedToken = :expireToken WHERE Id = :id", nativeQuery = true)

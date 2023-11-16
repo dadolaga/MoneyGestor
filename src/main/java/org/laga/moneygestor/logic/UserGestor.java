@@ -102,6 +102,16 @@ public class UserGestor {
         return new org.laga.moneygestor.services.json.User(lastname, firstname, token, expiryToken);
     }
 
+    public boolean tokenIsValid() {
+        if(token == null)
+            return true;
+
+        if(expiryToken == null)
+            throw new IllegalArgumentException("token not null but expiryToken is null. This is impossible");
+
+        return expiryToken.isAfter(LocalDateTime.now());
+    }
+
     private String generateRandomString(int length) {
         if(length % 4 != 0)
             throw new IllegalArgumentException("length must be divisible for 4");

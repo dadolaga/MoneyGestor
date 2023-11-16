@@ -57,4 +57,18 @@ public class UserRest {
 
         return userGestor.generateReturnUser();
     }
+
+    @GetMapping("/token")
+    public User getUserFromToken(@RequestParam(value = "token") String token) {
+        var user = userRepository.findFromToken(token);
+        if(user == null)
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+
+        var userGestor = UserGestor.Builder.createFromDB(user);
+
+        if(!userGestor.tokenIsValid())
+            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+        return userGestor.generateReturnUser();
+    }
 }
