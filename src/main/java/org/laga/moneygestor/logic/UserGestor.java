@@ -1,19 +1,25 @@
 package org.laga.moneygestor.logic;
 
+import org.laga.moneygestor.db.entity.User;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
-import org.laga.moneygestor.services.json.User;
+import org.laga.moneygestor.services.json.UserRegistrationForm;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 
 public class UserGestor {
-    private Long id;
+    public static final TemporalAmount TOKEN_DURATION = Duration.ofHours(2);
+    private Integer id;
     private String lastname;
     private String firstname;
     private String username;
@@ -22,7 +28,7 @@ public class UserGestor {
     private LocalDateTime expiryToken;
     private String passwordHash;
 
-    private UserGestor(Long id, String lastname, String firstname, String username, String email, String token, LocalDateTime expiryToken, String passwordHash) {
+    private UserGestor(Integer id, String lastname, String firstname, String username, String email, String token, LocalDateTime expiryToken, String passwordHash) {
         this.id = id;
         this.lastname = lastname;
         this.firstname = firstname;
@@ -33,8 +39,40 @@ public class UserGestor {
         this.passwordHash = passwordHash;
     }
 
-    public org.laga.moneygestor.db.entity.User getDatabaseUser() {
-        org.laga.moneygestor.db.entity.User user = new org.laga.moneygestor.db.entity.User();
+    public Integer getId() {
+        return id;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public LocalDateTime getExpiryToken() {
+        return expiryToken;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public User getDatabaseUser() {
+        User user = new User();
 
         user.setFirstname(firstname);
         user.setLastname(lastname);
@@ -47,8 +85,35 @@ public class UserGestor {
         return user;
     }
 
+    public boolean checkPassword(String password) {
+        return checkPassword(password, passwordHash);
+    }
+
+    public void generateNewToken() {
+        token = generateRandomString(64);
+        refreshToken();
+    }
+
+    public void refreshToken() {
+        expiryToken = LocalDateTime.now().plus(TOKEN_DURATION);
+    }
+
+    public org.laga.moneygestor.services.json.User generateReturnUser() {
+        return new org.laga.moneygestor.services.json.User(lastname, firstname, token, expiryToken);
+    }
+
+    private String generateRandomString(int length) {
+        if(length % 4 != 0)
+            throw new IllegalArgumentException("length must be divisible for 4");
+
+        byte[] randomString = new byte[(length / 4) * 3];
+        new Random().nextBytes(randomString);
+
+        return Base64.getEncoder().encodeToString(randomString);
+    }
+
     public class Builder {
-        public static UserGestor createFromForm(User user) throws UserCreationException {
+        public static UserGestor createFromForm(UserRegistrationForm user) throws UserCreationException {
             if(user.getLastname().trim().isEmpty() ||
                     user.getFirstname().trim().isEmpty() ||
                     user.getUsername().trim().isEmpty() ||
@@ -69,6 +134,19 @@ public class UserGestor {
                     null,
                     null,
                     passwordEncrypt(user.getPassword())
+            );
+        }
+
+        public static UserGestor createFromDB(org.laga.moneygestor.db.entity.User user) {
+            return new UserGestor(
+                    user.getId(),
+                    user.getLastname(),
+                    user.getFirstname(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getToken(),
+                    user.getExpiratedToken(),
+                    user.getPassword()
             );
         }
     }
@@ -97,6 +175,10 @@ public class UserGestor {
             md.update(Base64.getDecoder().decode(passwordSplit[0]));
 
             final byte[] newPasswordHash = md.digest(password.getBytes(StandardCharsets.UTF_8));
+
+            System.out.println(Arrays.toString(newPasswordHash));
+            System.out.println(Arrays.toString(Base64.getDecoder().decode(passwordSplit[1])));
+            System.out.println(Arrays.equals(Base64.getDecoder().decode(passwordSplit[1]), newPasswordHash));
 
             return Arrays.equals(Base64.getDecoder().decode(passwordSplit[1]), newPasswordHash);
         } catch (NoSuchAlgorithmException e) {

@@ -19,4 +19,12 @@ public class PasswordEncryptDecryptTest {
 
         Assert.assertTrue(UserGestor.checkPassword(password, passwordHash));
     }
+
+    @Test
+    public void decryptWrongPassword() {
+        final String password = "HelloThisIsMyPassword";
+        final String passwordHash = UserGestor.passwordEncrypt(password);
+
+        Assert.assertFalse(UserGestor.checkPassword("HelloThisNotIsMyPassword", passwordHash));
+    }
 }

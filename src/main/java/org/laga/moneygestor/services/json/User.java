@@ -1,12 +1,19 @@
 package org.laga.moneygestor.services.json;
 
+import java.time.LocalDateTime;
+
 public class User {
     private String lastname;
     private String firstname;
-    private String username;
-    private String email;
-    private String password;
-    private String confirm;
+    private String token;
+    private LocalDateTime expireToken;
+
+    public User(String lastname, String firstname, String token, LocalDateTime expireToken) {
+        this.lastname = lastname;
+        this.firstname = firstname;
+        this.token = token;
+        this.expireToken = expireToken;
+    }
 
     public String getLastname() {
         return lastname;
@@ -24,47 +31,19 @@ public class User {
         this.firstname = firstname;
     }
 
-    public String getUsername() {
-        return username;
+    public String getToken() {
+        return token;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    public String getEmail() {
-        return email;
+    public LocalDateTime getExpireToken() {
+        return expireToken;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getConfirm() {
-        return confirm;
-    }
-
-    public void setConfirm(String confirm) {
-        this.confirm = confirm;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "lastname='" + lastname + '\'' +
-                ", firstname='" + firstname + '\'' +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", confirm='" + confirm + '\'' +
-                '}';
+    public void setExpireToken(LocalDateTime expireToken) {
+        this.expireToken = expireToken;
     }
 }

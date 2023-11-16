@@ -85,4 +85,18 @@ public class User {
     public void setExpiratedToken(LocalDateTime expiratedToken) {
         this.expiratedToken = expiratedToken;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", token='" + token + '\'' +
+                ", expiratedToken=" + expiratedToken +
+                '}';
+    }
 }
