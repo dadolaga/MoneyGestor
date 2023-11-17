@@ -10,4 +10,5 @@ public class MoneyGestorErrorSample {
     public static final HttpException USER_DUPLICATE_USERNAME = new HttpException(HttpStatusCode.valueOf(400), new Error(102, "duplicate username"));
     public static final HttpException USER_EMAIL_USERNAME_NOT_EXIST = new HttpException(HttpStatusCode.valueOf(400), new Error(103, "email or username not exist"));
     public static final HttpException USER_PASSWORD_NOT_CORRECT = new HttpException(HttpStatusCode.valueOf(400), new Error(104, "password not correct"));
+    public static final HttpException WALLET_WITH_SAME_NAME = new HttpException(HttpStatusCode.valueOf(400), new Error(201, "Duplicate wallet name"));
 }
