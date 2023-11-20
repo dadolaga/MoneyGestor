@@ -118,7 +118,7 @@ public class UserGestor {
         byte[] randomString = new byte[(length / 4) * 3];
         new Random().nextBytes(randomString);
 
-        return Base64.getEncoder().encodeToString(randomString);
+        return Base64.getEncoder().encodeToString(randomString).replaceAll("/", "-");
     }
 
     public class Builder {
@@ -147,6 +147,8 @@ public class UserGestor {
         }
 
         public static UserGestor createFromDB(UserDb user) {
+            if(user == null)
+                throw new IllegalArgumentException("user not be null");
             return new UserGestor(
                     user.getId(),
                     user.getLastname(),

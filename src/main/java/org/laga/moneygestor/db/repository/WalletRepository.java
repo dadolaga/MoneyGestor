@@ -8,4 +8,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface WalletRepository extends JpaRepository<WalletDb, Integer> {
+    @Query(value = "SELECT w.* FROM wallet w WHERE w.User = :userId", nativeQuery = true)
+    List<WalletDb> getWalletsFromUser(@Param("userId") Integer userId);
 }

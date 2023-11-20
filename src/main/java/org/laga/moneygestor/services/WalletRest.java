@@ -4,11 +4,16 @@ import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.db.repository.WalletRepository;
 import org.laga.moneygestor.logic.UserGestor;
+import org.laga.moneygestor.logic.WalletGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
 import org.laga.moneygestor.services.json.CreateWallet;
+import org.laga.moneygestor.services.json.Wallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/wallet")
@@ -46,6 +51,22 @@ public class WalletRest {
             if(e.getMessage().contains("index_wallet_name&user"))
                 throw MoneyGestorErrorSample.WALLET_WITH_SAME_NAME;
         }
+    }
 
+    @GetMapping("/list")
+    public List<Wallet> getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        System.out.println(authorization);
+        if(authorization == null)
+            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+
+        try {
+            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            if(!userGestor.tokenIsValid())
+                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+            return WalletGestor.convertToRest(walletRepository.getWalletsFromUser(userGestor.getId()));
+        } catch (IllegalArgumentException e) {
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        }
     }
 }

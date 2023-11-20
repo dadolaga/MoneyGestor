@@ -4,14 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /wallet/new rest service">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Rename db entity class">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/WalletGestor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Wallet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/UserDb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/Wallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/UserRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/UserGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/UserGestor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/controller/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/controller/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -181,7 +182,21 @@
       <option name="project" value="LOCAL" />
       <updated>1700251104133</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Rename db entity class">
+      <created>1700481553769</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1700481553769</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Rename db entity class">
+      <created>1700482354558</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1700482354558</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -191,6 +206,7 @@
     <MESSAGE value="Create /user/token rest service" />
     <MESSAGE value="Create /wallet/new&#10;rest service" />
     <MESSAGE value="Create /wallet/new rest service" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create /wallet/new rest service" />
+    <MESSAGE value="Rename db entity class" />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename db entity class" />
   </component>
 </project>
