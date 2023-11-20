@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /user/token rest service">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/Wallet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/CreateWallet.java" afterDir="false" />
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /wallet/new rest service">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/UserDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/Wallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/UserGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/UserGestor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +174,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700151021304</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Create /wallet/new rest service">
+      <created>1700251104133</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1700251104133</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -181,6 +189,8 @@
     <MESSAGE value="Create /user/new rest service" />
     <MESSAGE value="Create /user/login rest service" />
     <MESSAGE value="Create /user/token rest service" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create /user/token rest service" />
+    <MESSAGE value="Create /wallet/new&#10;rest service" />
+    <MESSAGE value="Create /wallet/new rest service" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create /wallet/new rest service" />
   </component>
 </project>

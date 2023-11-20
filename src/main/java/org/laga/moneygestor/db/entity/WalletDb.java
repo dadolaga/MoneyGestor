@@ -5,7 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-public class Wallet {
+@Table(name = "wallet")
+public class WalletDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

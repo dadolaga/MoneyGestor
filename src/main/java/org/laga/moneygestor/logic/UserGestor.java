@@ -1,6 +1,6 @@
 package org.laga.moneygestor.logic;
 
-import org.laga.moneygestor.db.entity.User;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
 import org.laga.moneygestor.services.json.UserRegistrationForm;
@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.time.temporal.TemporalAmount;
 import java.util.Arrays;
 import java.util.Base64;
@@ -71,8 +70,8 @@ public class UserGestor {
         return passwordHash;
     }
 
-    public User getDatabaseUser() {
-        User user = new User();
+    public UserDb getDatabaseUser() {
+        UserDb user = new UserDb();
 
         user.setFirstname(firstname);
         user.setLastname(lastname);
@@ -147,7 +146,7 @@ public class UserGestor {
             );
         }
 
-        public static UserGestor createFromDB(org.laga.moneygestor.db.entity.User user) {
+        public static UserGestor createFromDB(UserDb user) {
             return new UserGestor(
                     user.getId(),
                     user.getLastname(),

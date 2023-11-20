@@ -1,5 +1,6 @@
 package org.laga.moneygestor.services;
 
+import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.db.repository.WalletRepository;
 import org.laga.moneygestor.logic.UserGestor;
@@ -34,7 +35,7 @@ public class WalletRest {
         if(!userGestor.tokenIsValid())
             throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-        var walletDb = new org.laga.moneygestor.db.entity.Wallet();
+        var walletDb = new WalletDb();
         walletDb.setName(wallet.getName());
         walletDb.setValue(wallet.getValue());
         walletDb.setUser(userGestor.getId());
