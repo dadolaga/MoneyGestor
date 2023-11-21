@@ -54,8 +54,7 @@ public class WalletRest {
     }
 
     @GetMapping("/list")
-    public List<Wallet> getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
-        System.out.println(authorization);
+    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         if(authorization == null)
             throw MoneyGestorErrorSample.LOGIN_REQUIRED;
 
@@ -65,6 +64,22 @@ public class WalletRest {
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
             return WalletGestor.convertToRest(walletRepository.getWalletsFromUser(userGestor.getId()));
+        } catch (IllegalArgumentException e) {
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        }
+    }
+
+    @GetMapping("/get/{id}")
+    public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+        if(authorization == null)
+            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+
+        try {
+            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            if(!userGestor.tokenIsValid())
+                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+            return WalletGestor.convertToRest(walletRepository.getWalletsFromId(id.intValue(), userGestor.getId()));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
         }
