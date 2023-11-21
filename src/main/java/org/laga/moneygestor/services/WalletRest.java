@@ -84,4 +84,23 @@ public class WalletRest {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
         }
     }
+
+    @PostMapping("/edit")
+    public void editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Wallet wallet) {
+        if(authorization == null)
+            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+
+        try {
+            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            if(!userGestor.tokenIsValid())
+                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+            walletRepository.editWallet(wallet.getId(), wallet.getName(), wallet.getValue());
+        } catch (IllegalArgumentException e) {
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        } catch (DataIntegrityViolationException e) {
+            if(e.getMessage().contains("index_wallet_name&user"))
+                throw MoneyGestorErrorSample.WALLET_WITH_SAME_NAME;
+        }
+    }
 }
