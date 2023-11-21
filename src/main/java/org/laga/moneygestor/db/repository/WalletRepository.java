@@ -21,4 +21,9 @@ public interface WalletRepository extends JpaRepository<WalletDb, Integer> {
     @Modifying
     @Query(value = "UPDATE wallet SET Name = :name, Value = :value WHERE Id = :id", nativeQuery = true)
     int editWallet(@Param("id") Integer walletId, @Param("name") String name, @Param("value")BigDecimal value);
+
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE FROM wallet WHERE Id = :id AND User = :userId", nativeQuery = true)
+    int deleteWalletUserAuthorized(@Param("id") Integer walletId, @Param("userId") Integer userId);
 }

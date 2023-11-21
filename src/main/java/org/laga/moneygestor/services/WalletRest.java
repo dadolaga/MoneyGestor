@@ -103,4 +103,22 @@ public class WalletRest {
                 throw MoneyGestorErrorSample.WALLET_WITH_SAME_NAME;
         }
     }
+
+    @GetMapping("/delete/{id}")
+    public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+        if(authorization == null)
+            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+
+        try {
+            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            if(!userGestor.tokenIsValid())
+                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+            if(walletRepository.deleteWalletUserAuthorized(id.intValue(), userGestor.getId()) == 0)
+                throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
+
+        } catch (IllegalArgumentException e) {
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        }
+    }
 }
