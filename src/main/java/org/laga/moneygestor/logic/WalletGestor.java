@@ -8,7 +8,7 @@ import java.util.List;
 
 public class WalletGestor {
     public static Wallet convertToRest(WalletDb walletDb) {
-        return new Wallet(walletDb.getId(), walletDb.getName(), walletDb.getValue());
+        return new Wallet(walletDb.getId(), walletDb.getName(), walletDb.getValue(), walletDb.getFavorite());
     }
 
     public static List<Wallet> convertToRest(List<WalletDb> walletDbs) {

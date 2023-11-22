@@ -14,6 +14,7 @@ public class WalletDb {
     private BigDecimal value;
     @Column(name = "user")
     private Integer userId;
+    private Boolean favorite;
 
     public Integer getId() {
         return id;
@@ -39,11 +40,19 @@ public class WalletDb {
         this.value = value;
     }
 
-    public Integer getUser() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUser(Integer user) {
+    public void setUserId(Integer user) {
         this.userId = user;
+    }
+
+    public Boolean getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite) {
+        this.favorite = favorite;
     }
 }

@@ -15,8 +15,6 @@ import org.springframework.beans.PropertyAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +50,8 @@ public class WalletRest {
         var walletDb = new WalletDb();
         walletDb.setName(wallet.getName());
         walletDb.setValue(wallet.getValue());
-        walletDb.setUser(userGestor.getId());
+        walletDb.setUserId(userGestor.getId());
+        walletDb.setFavorite(false);
 
         try {
             walletRepository.saveAndFlush(walletDb);
@@ -73,7 +72,7 @@ public class WalletRest {
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
             WalletDb walletExample = new WalletDb();
-            walletExample.setUser(userGestor.getId());
+            walletExample.setUserId(userGestor.getId());
 
             Sort sort = SortGestor.decode(sortParams);
 
