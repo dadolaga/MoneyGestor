@@ -138,4 +138,22 @@ public class WalletRest {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
         }
     }
+
+    @PostMapping("/favorite/{id}")
+    public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+        if(authorization == null)
+            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+
+        try {
+            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            if(!userGestor.tokenIsValid())
+                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+            if(walletRepository.changeFavorite(id.intValue(), userGestor.getId()) == 0)
+                throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
+
+        } catch (IllegalArgumentException e) {
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        }
+    }
 }

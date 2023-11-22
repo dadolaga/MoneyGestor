@@ -24,6 +24,11 @@ public interface WalletRepository extends JpaRepository<WalletDb, Integer> {
 
     @Transactional
     @Modifying
+    @Query(value = "UPDATE wallet SET Favorite = !Favorite WHERE Id = :id AND User = :userId", nativeQuery = true)
+    int changeFavorite(@Param("id") Integer walletId, @Param("userId") Integer userId);
+
+    @Transactional
+    @Modifying
     @Query(value = "DELETE FROM wallet WHERE Id = :id AND User = :userId", nativeQuery = true)
     int deleteWalletUserAuthorized(@Param("id") Integer walletId, @Param("userId") Integer userId);
 }
