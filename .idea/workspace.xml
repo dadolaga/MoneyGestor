@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /wallet/edit rest service">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /wallet/delete rest service">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/SortGestor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" afterDir="false" />
     </list>
@@ -220,7 +220,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700560614636</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Create /wallet/delete rest service">
+      <created>1700563426542</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1700563426542</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -246,6 +253,7 @@
     <MESSAGE value="Correct cors option" />
     <MESSAGE value="Create /wallet/get rest service" />
     <MESSAGE value="Create /wallet/edit rest service" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create /wallet/edit rest service" />
+    <MESSAGE value="Create /wallet/delete rest service" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create /wallet/delete rest service" />
   </component>
 </project>

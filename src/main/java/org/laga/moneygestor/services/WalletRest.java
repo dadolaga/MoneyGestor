@@ -1,15 +1,23 @@
 package org.laga.moneygestor.services;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.db.repository.WalletRepository;
+import org.laga.moneygestor.logic.SortGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.WalletGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
 import org.laga.moneygestor.services.json.CreateWallet;
 import org.laga.moneygestor.services.json.Wallet;
+import org.springframework.beans.PropertyAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +26,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/wallet")
 public class WalletRest {
+    final static Logger logger = LogManager.getLogger(WalletRest.class);
 
     private UserRepository userRepository;
     private WalletRepository walletRepository;
@@ -54,7 +63,7 @@ public class WalletRest {
     }
 
     @GetMapping("/list")
-    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
         if(authorization == null)
             throw MoneyGestorErrorSample.LOGIN_REQUIRED;
 
@@ -63,9 +72,18 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-            return WalletGestor.convertToRest(walletRepository.getWalletsFromUser(userGestor.getId()));
+            WalletDb walletExample = new WalletDb();
+            walletExample.setUser(userGestor.getId());
+
+            Sort sort = SortGestor.decode(sortParams);
+
+            return WalletGestor.convertToRest(walletRepository.findAll(Example.of(walletExample), sort));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        } catch (PropertyAccessException e) {
+            logger.error(e);
+
+            throw MoneyGestorErrorSample.DATABASE_ERROR;
         }
     }
 
