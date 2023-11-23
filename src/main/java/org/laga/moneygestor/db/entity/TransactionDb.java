@@ -16,6 +16,9 @@ public class TransactionDb {
     private LocalDate date;
     @Column(name = "wallet")
     private Integer walletId;
+    @ManyToOne
+    @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
+    private WalletDb wallet;
     @Column(name = "user")
     private Integer userId;
 
@@ -65,5 +68,22 @@ public class TransactionDb {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    public WalletDb getWallet() {
+        return wallet;
+    }
+
+    @Override
+    public String toString() {
+        return "TransactionDb{" +
+                "id=" + id +
+                ", description='" + description + '\'' +
+                ", value=" + value +
+                ", date=" + date +
+                ", walletId=" + walletId +
+                ", wallet=" + wallet +
+                ", userId=" + userId +
+                '}';
     }
 }
