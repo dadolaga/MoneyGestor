@@ -118,4 +118,22 @@ public class TransactionRest {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
         }
     }
+
+    @GetMapping("/delete/{id}")
+    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Integer id) {
+        var user = userRepository.findFromToken(authorization);
+        if(user == null)
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+
+        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
+
+        if(!userGestor.tokenIsValid())
+            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+        TransactionDb transactionExample = new TransactionDb();
+        transactionExample.setUserId(userGestor.getId());
+        transactionExample.setId(id);
+
+        transactionRepository.delete(transactionExample);
+    }
 }
