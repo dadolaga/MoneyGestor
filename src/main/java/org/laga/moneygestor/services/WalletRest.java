@@ -113,7 +113,7 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-            walletRepository.editWallet(wallet.getId(), wallet.getName(), wallet.getValue());
+            walletRepository.editWallet(wallet.getId(), wallet.getName(), wallet.getValue(), wallet.getColor());
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
         } catch (DataIntegrityViolationException e) {

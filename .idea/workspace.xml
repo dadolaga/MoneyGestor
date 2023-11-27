@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /color/list rest service">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Save wallet color on DB">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/WalletRest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/CreateWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/CreateWallet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -296,7 +296,14 @@
       <option name="project" value="LOCAL" />
       <updated>1701090225769</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Save wallet color on DB">
+      <created>1701094261922</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1701094261922</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -331,6 +338,7 @@
     <MESSAGE value="Create /transaction/get and edit rest service" />
     <MESSAGE value="Create /transaction/delete rest service" />
     <MESSAGE value="Create /color/list rest service" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create /color/list rest service" />
+    <MESSAGE value="Save wallet color on DB" />
+    <option name="LAST_COMMIT_MESSAGE" value="Save wallet color on DB" />
   </component>
 </project>
