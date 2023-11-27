@@ -1,5 +1,7 @@
 package org.laga.moneygestor.services.json;
 
+import org.laga.moneygestor.db.entity.WalletDb;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,8 +11,7 @@ public class Transaction {
     private String description;
     private BigDecimal value;
     private String date;
-    private Integer walletId;
-    private String walletName;
+    private WalletDb wallet;
 
     public Integer getId() {
         return id;
@@ -44,19 +45,11 @@ public class Transaction {
         this.date = date;
     }
 
-    public Integer getWalletId() {
-        return walletId;
+    public WalletDb getWallet() {
+        return wallet;
     }
 
-    public void setWalletId(Integer walletId) {
-        this.walletId = walletId;
-    }
-
-    public String getWalletName() {
-        return walletName;
-    }
-
-    public void setWalletName(String walletName) {
-        this.walletName = walletName;
+    public void setWallet(WalletDb wallet) {
+        this.wallet = wallet;
     }
 }

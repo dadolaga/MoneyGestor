@@ -101,8 +101,8 @@ public class TransactionRest {
         }
     }
 
-    @PostMapping("/edit")
-    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Transaction transaction) {
+    @PostMapping("/edit/{id}")
+    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Integer id) {
         if(authorization == null)
             throw MoneyGestorErrorSample.LOGIN_REQUIRED;
 
@@ -111,7 +111,7 @@ public class TransactionRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-            if(transactionRepository.editWallet(transaction.getId(), transaction.getDescription(), transaction.getValue(), transaction.getDate(), transaction.getWalletId(), userGestor.getId()) == 0)
+            if(transactionRepository.editWallet(id, transaction.getDescription(), transaction.getValue(), transaction.getDate(), transaction.getWallet(), userGestor.getId()) == 0)
                 throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
 
         } catch (IllegalArgumentException e) {
