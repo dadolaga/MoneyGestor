@@ -4,9 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /transaction/get and edit rest service">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create /transaction/delete rest service">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/ColorDb.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/ColorRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/ColorGestor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/ColorRest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Color.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/WalletGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/WalletGestor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Wallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Wallet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -281,7 +288,14 @@
       <option name="project" value="LOCAL" />
       <updated>1700758011394</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Create /transaction/delete rest service">
+      <created>1700762836656</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1700762836657</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -314,6 +328,7 @@
     <MESSAGE value="Create /transaction/new rest service" />
     <MESSAGE value="Create /transaction/list rest service" />
     <MESSAGE value="Create /transaction/get and edit rest service" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create /transaction/get and edit rest service" />
+    <MESSAGE value="Create /transaction/delete rest service" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create /transaction/delete rest service" />
   </component>
 </project>
