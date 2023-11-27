@@ -52,6 +52,7 @@ public class WalletRest {
         walletDb.setValue(wallet.getValue());
         walletDb.setUserId(userGestor.getId());
         walletDb.setFavorite(false);
+        walletDb.setColor(wallet.getColor());
 
         try {
             walletRepository.saveAndFlush(walletDb);
