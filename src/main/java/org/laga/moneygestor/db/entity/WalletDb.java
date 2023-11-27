@@ -15,7 +15,7 @@ public class WalletDb {
     @Column(name = "user")
     private Integer userId;
     private Boolean favorite;
-    private Integer color;
+    private String color;
 
     public Integer getId() {
         return id;
@@ -57,11 +57,11 @@ public class WalletDb {
         this.favorite = favorite;
     }
 
-    public Integer getColor() {
+    public String getColor() {
         return color;
     }
 
-    public void setColor(Integer color) {
+    public void setColor(String color) {
         this.color = color;
     }
 }

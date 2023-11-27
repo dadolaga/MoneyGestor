@@ -1,7 +1,6 @@
 package org.laga.moneygestor.logic;
 
 import org.laga.moneygestor.db.entity.ColorDb;
-import org.laga.moneygestor.services.ColorRest;
 import org.laga.moneygestor.services.json.Color;
 
 import java.util.LinkedList;

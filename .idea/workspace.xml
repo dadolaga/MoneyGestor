@@ -4,11 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Add edit wallet color">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Show color in transaction">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/TransactionGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/TransactionGestor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Transaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Transaction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/ColorDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/ColorDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/WalletDb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/ColorRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/ColorRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/WalletRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/ColorGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/ColorGestor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Color.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Color.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/CreateWallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/CreateWallet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Wallet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Wallet.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -311,7 +316,14 @@
       <option name="project" value="LOCAL" />
       <updated>1701095968739</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Show color in transaction">
+      <created>1701098838797</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1701098838797</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -349,6 +361,7 @@
     <MESSAGE value="Save wallet color on DB" />
     <MESSAGE value="Edit wallet color" />
     <MESSAGE value="Add edit wallet color" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add edit wallet color" />
+    <MESSAGE value="Show color in transaction" />
+    <option name="LAST_COMMIT_MESSAGE" value="Show color in transaction" />
   </component>
 </project>

@@ -6,7 +6,7 @@ public class CreateWallet {
     private String token;
     private String name;
     private BigDecimal value;
-    private Integer color;
+    private String color;
 
     public String getToken() {
         return token;
@@ -32,11 +32,11 @@ public class CreateWallet {
         this.value = value;
     }
 
-    public Integer getColor() {
+    public String getColor() {
         return color;
     }
 
-    public void setColor(Integer color) {
+    public void setColor(String color) {
         this.color = color;
     }
 

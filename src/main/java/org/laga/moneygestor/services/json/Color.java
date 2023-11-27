@@ -1,13 +1,13 @@
 package org.laga.moneygestor.services.json;
 
 public class Color {
-    private Integer color;
+    private String color;
 
-    public Integer getColor() {
+    public String getColor() {
         return color;
     }
 
-    public void setColor(Integer color) {
+    public void setColor(String color) {
         this.color = color;
     }
 }
