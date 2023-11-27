@@ -5,6 +5,7 @@ import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.db.repository.TransactionRepository;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.db.repository.WalletRepository;
+import org.laga.moneygestor.logic.SortGestor;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
@@ -15,6 +16,7 @@ import org.laga.moneygestor.services.json.Wallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,7 +78,9 @@ public class TransactionRest {
         TransactionDb transactionExample = new TransactionDb();
         transactionExample.setUserId(userGestor.getId());
 
-        return TransactionGestor.convertToRest(transactionRepository.findAll(Example.of(transactionExample)));
+        Sort sort = SortGestor.decode(sortParams);
+
+        return TransactionGestor.convertToRest(transactionRepository.findAll(Example.of(transactionExample), sort));
     }
 
     @GetMapping("/get/{id}")
