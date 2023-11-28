@@ -1,8 +1,10 @@
 package org.laga.moneygestor.services;
 
 import org.laga.moneygestor.db.entity.TransactionDb;
+import org.laga.moneygestor.db.entity.TransactionTableView;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.db.repository.TransactionRepository;
+import org.laga.moneygestor.db.repository.TransactionTableRepository;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.db.repository.WalletRepository;
 import org.laga.moneygestor.logic.SortGestor;
@@ -34,12 +36,14 @@ public class TransactionRest {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final TransactionTableRepository transactionTableRepository;
 
     @Autowired
-    public TransactionRest(UserRepository userRepository, WalletRepository walletRepository, TransactionRepository transactionRepository) {
+    public TransactionRest(UserRepository userRepository, WalletRepository walletRepository, TransactionRepository transactionRepository, TransactionTableRepository transactionTableRepository) {
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
+        this.transactionTableRepository = transactionTableRepository;
     }
 
     @PostMapping("/new")
@@ -85,7 +89,7 @@ public class TransactionRest {
     }
 
     @GetMapping("/list")
-    public List<Transaction> getTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
+    public List<TransactionTableView> getTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
@@ -95,12 +99,12 @@ public class TransactionRest {
         if(!userGestor.tokenIsValid())
             throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-        TransactionDb transactionExample = new TransactionDb();
-        transactionExample.setUserId(userGestor.getId());
+        TransactionTableView transactionExample = new TransactionTableView();
+        transactionExample.setUser(userGestor.getId());
 
         Sort sort = SortGestor.decode(sortParams);
 
-        return TransactionGestor.convertToRest(transactionRepository.findAll(Example.of(transactionExample), sort));
+        return transactionTableRepository.findAll(Example.of(transactionExample), sort);
     }
 
     @GetMapping("/get/{id}")

@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Get only user type">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Create exchange transaction add">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionTableView.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/TransactionTableRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionDb.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionRest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/TransactionForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/TransactionForm.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +19,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Interface" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -374,7 +374,14 @@
       <option name="project" value="LOCAL" />
       <updated>1701176422829</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="Create exchange transaction add">
+      <created>1701185711135</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1701185711135</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -389,7 +396,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Rename db entity class" />
     <MESSAGE value="Create /wallet/list rest service" />
     <MESSAGE value="Correct cors option" />
     <MESSAGE value="Create /wallet/get rest service" />
@@ -414,6 +420,7 @@
     <MESSAGE value="Add type in /transaction/new" />
     <MESSAGE value="Add type in /transaction/edit and get" />
     <MESSAGE value="Get only user type" />
-    <option name="LAST_COMMIT_MESSAGE" value="Get only user type" />
+    <MESSAGE value="Create exchange transaction add" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create exchange transaction add" />
   </component>
 </project>
