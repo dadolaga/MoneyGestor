@@ -1,5 +1,6 @@
 package org.laga.moneygestor.services.json;
 
+import org.laga.moneygestor.db.entity.TransactionTypeDb;
 import org.laga.moneygestor.db.entity.WalletDb;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ public class Transaction {
     private BigDecimal value;
     private String date;
     private WalletDb wallet;
+    private TransactionTypeDb type;
 
     public Integer getId() {
         return id;
@@ -51,5 +53,13 @@ public class Transaction {
 
     public void setWallet(WalletDb wallet) {
         this.wallet = wallet;
+    }
+
+    public TransactionTypeDb getType() {
+        return type;
+    }
+
+    public void setType(TransactionTypeDb type) {
+        this.type = type;
     }
 }

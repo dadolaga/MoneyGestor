@@ -21,6 +21,11 @@ public class TransactionDb {
     private WalletDb wallet;
     @Column(name = "user")
     private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "type", nullable = false, insertable = false, updatable = false)
+    private TransactionTypeDb type;
+    @Column(name = "type")
+    private Integer typeId;
 
     public Integer getId() {
         return id;
@@ -72,6 +77,26 @@ public class TransactionDb {
 
     public WalletDb getWallet() {
         return wallet;
+    }
+
+    public void setWallet(WalletDb wallet) {
+        this.wallet = wallet;
+    }
+
+    public TransactionTypeDb getType() {
+        return type;
+    }
+
+    public void setType(TransactionTypeDb type) {
+        this.type = type;
+    }
+
+    public Integer getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Integer typeId) {
+        this.typeId = typeId;
     }
 
     @Override
