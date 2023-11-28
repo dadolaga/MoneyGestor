@@ -19,6 +19,8 @@ public class TransactionDb {
     @ManyToOne
     @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
     private WalletDb wallet;
+    @Column(name = "transactiondestination ")
+    private Integer transactionDestinationId;
     @Column(name = "user")
     private Integer userId;
     @ManyToOne
@@ -81,6 +83,14 @@ public class TransactionDb {
 
     public void setWallet(WalletDb wallet) {
         this.wallet = wallet;
+    }
+
+    public Integer getTransactionDestinationId() {
+        return transactionDestinationId;
+    }
+
+    public void setTransactionDestinationId(Integer transactionDestinationId) {
+        this.transactionDestinationId = transactionDestinationId;
     }
 
     public TransactionTypeDb getType() {

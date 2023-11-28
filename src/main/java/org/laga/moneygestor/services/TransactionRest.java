@@ -29,6 +29,8 @@ import java.util.NoSuchElementException;
 @RequestMapping("/transaction")
 public class TransactionRest {
 
+    private static final int ID_EXCHANGE_TYPE = 1;
+
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
@@ -56,12 +58,30 @@ public class TransactionRest {
         TransactionDb transactionDb = new TransactionDb();
         transactionDb.setDescription(transactionForm.getDescription());
         transactionDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
-        transactionDb.setValue(transactionForm.getValue());
+        transactionDb.setValue(transactionForm.getValue().negate());
         transactionDb.setWalletId(transactionForm.getWallet());
         transactionDb.setUserId(userGestor.getId());
         transactionDb.setTypeId(transactionForm.getTypeId());
 
-        transactionRepository.save(transactionDb);
+        TransactionDb transactionSaved = transactionRepository.save(transactionDb);
+
+        if(transactionForm.getTypeId() != ID_EXCHANGE_TYPE)
+            return;
+
+        TransactionDb transactionDestinationDb = new TransactionDb();
+        transactionDestinationDb.setDescription(transactionForm.getDescription());
+        transactionDestinationDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
+        transactionDestinationDb.setValue(transactionForm.getValue());
+        transactionDestinationDb.setWalletId(transactionForm.getWalletDestination());
+        transactionDestinationDb.setTransactionDestinationId(transactionSaved.getId());
+        transactionDestinationDb.setUserId(userGestor.getId());
+        transactionDestinationDb.setTypeId(transactionForm.getTypeId());
+
+        TransactionDb transactionDestinationSaved = transactionRepository.save(transactionDestinationDb);
+
+        transactionSaved.setTransactionDestinationId(transactionDestinationSaved.getId());
+
+        transactionRepository.save(transactionSaved);
     }
 
     @GetMapping("/list")
