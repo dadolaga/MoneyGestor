@@ -13,6 +13,6 @@ import java.time.LocalDate;
 public interface TransactionRepository extends JpaRepository<TransactionDb, Integer> {
     @Transactional
     @Modifying
-    @Query(value = "UPDATE transaction SET Description = :description, Value = :value, Date = :date, Wallet = :wallet WHERE Id = :id AND User = :userId", nativeQuery = true)
-    int editWallet(@Param("id") Integer transactionId, @Param("description") String description, @Param("value") BigDecimal value, @Param("date") String date, @Param("wallet") Integer walletId, @Param("userId") Integer userId);
+    @Query(value = "UPDATE transaction SET Description = :description, Value = :value, Date = :date, Wallet = :wallet, type = :type WHERE Id = :id AND User = :userId", nativeQuery = true)
+    int editWallet(@Param("id") Integer transactionId, @Param("description") String description, @Param("value") BigDecimal value, @Param("date") String date, @Param("wallet") Integer walletId, @Param("type") Integer typeId, @Param("userId") Integer userId);
 }

@@ -115,7 +115,7 @@ public class TransactionRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-            if(transactionRepository.editWallet(id, transaction.getDescription(), transaction.getValue(), transaction.getDate(), transaction.getWallet(), userGestor.getId()) == 0)
+            if(transactionRepository.editWallet(id, transaction.getDescription(), transaction.getValue(), transaction.getDate(), transaction.getWallet(), transaction.getTypeId(), userGestor.getId()) == 0)
                 throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
 
         } catch (IllegalArgumentException e) {
