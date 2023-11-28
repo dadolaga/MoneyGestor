@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Add sort management in transaction/list">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionTypeDb.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/repository/TransactionTypeRepository.java" afterDir="false" />
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Add transaction type in transaction/list">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/TransactionTypeRest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/TransactionTypeForm.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/TransactionDb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/TransactionGestor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/logic/TransactionGestor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Transaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/json/Transaction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/services/exceptions/MoneyGestorErrorSample.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,8 +19,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -341,7 +339,14 @@
       <option name="project" value="LOCAL" />
       <updated>1701116244399</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="Add transaction type in transaction/list">
+      <created>1701158005317</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1701158005317</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -356,7 +361,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Create /user/new rest service" />
     <MESSAGE value="Create /user/login rest service" />
     <MESSAGE value="Create /user/token rest service" />
     <MESSAGE value="Create /wallet/new&#10;rest service" />
@@ -381,6 +385,7 @@
     <MESSAGE value="Show color in transaction" />
     <MESSAGE value="Convert color to string" />
     <MESSAGE value="Add sort management in transaction/list" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add sort management in transaction/list" />
+    <MESSAGE value="Add transaction type in transaction/list" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add transaction type in transaction/list" />
   </component>
 </project>
