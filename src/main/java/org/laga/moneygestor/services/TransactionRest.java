@@ -62,7 +62,7 @@ public class TransactionRest {
         TransactionDb transactionDb = new TransactionDb();
         transactionDb.setDescription(transactionForm.getDescription());
         transactionDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
-        transactionDb.setValue(transactionForm.getValue().negate());
+        transactionDb.setValue(transactionForm.getTypeId() == ID_EXCHANGE_TYPE? transactionForm.getValue().negate() : transactionForm.getValue());
         transactionDb.setWalletId(transactionForm.getWallet());
         transactionDb.setUserId(userGestor.getId());
         transactionDb.setTypeId(transactionForm.getTypeId());
