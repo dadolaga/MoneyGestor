@@ -24,7 +24,7 @@ public class TransactionDb {
     @ManyToOne
     @JoinColumn(name = "type", nullable = false, insertable = false, updatable = false)
     private TransactionTypeDb type;
-    @Column(name = "type")
+    @Column(name = "Type")
     private Integer typeId;
 
     public Integer getId() {

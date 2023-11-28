@@ -53,13 +53,13 @@ public class TransactionRest {
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
-
         TransactionDb transactionDb = new TransactionDb();
         transactionDb.setDescription(transactionForm.getDescription());
         transactionDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
         transactionDb.setValue(transactionForm.getValue());
         transactionDb.setWalletId(transactionForm.getWallet());
         transactionDb.setUserId(userGestor.getId());
+        transactionDb.setTypeId(transactionForm.getTypeId());
 
         transactionRepository.save(transactionDb);
     }

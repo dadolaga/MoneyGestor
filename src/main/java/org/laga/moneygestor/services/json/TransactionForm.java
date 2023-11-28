@@ -8,6 +8,7 @@ public class TransactionForm {
     private String date;
     private BigDecimal value;
     private Integer wallet;
+    private Integer typeId;
 
     public String getDescription() {
         return description;
@@ -39,5 +40,13 @@ public class TransactionForm {
 
     public void setWallet(Integer wallet) {
         this.wallet = wallet;
+    }
+
+    public Integer getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Integer typeId) {
+        this.typeId = typeId;
     }
 }
