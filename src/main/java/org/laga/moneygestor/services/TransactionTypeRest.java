@@ -45,10 +45,7 @@ public class TransactionTypeRest {
         if(!userGestor.tokenIsValid())
             throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-        TransactionDb transactionExample = new TransactionDb();
-        transactionExample.setUserId(userGestor.getId());
-
-        return transactionTypeRepository.findAll();
+        return transactionTypeRepository.findWithUserOrNull(userGestor.getId());
     }
 
     @PostMapping("/new")
