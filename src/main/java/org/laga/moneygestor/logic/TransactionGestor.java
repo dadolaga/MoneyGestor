@@ -17,6 +17,7 @@ public class TransactionGestor {
         transaction.setDescription(transactionDb.getDescription());
         transaction.setValue(transactionDb.getValue());
         transaction.setWallet(transactionDb.getWallet());
+        transaction.setWalletDestination(transactionDb.getTransactionDestination() != null? transactionDb.getTransactionDestination().getWallet() : null);
         transaction.setDate(transactionDb.getDate().format(DateTimeFormatter.ISO_DATE));
         transaction.setType(transactionDb.getType());
 

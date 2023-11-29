@@ -19,7 +19,10 @@ public class TransactionDb {
     @ManyToOne
     @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
     private WalletDb wallet;
-    @Column(name = "transactiondestination ")
+    @ManyToOne
+    @JoinColumn(name = "transactiondestination", insertable = false, updatable = false)
+    private TransactionDb transactionDestination;
+    @Column(name = "transactiondestination")
     private Integer transactionDestinationId;
     @Column(name = "user")
     private Integer userId;
@@ -85,6 +88,14 @@ public class TransactionDb {
         this.wallet = wallet;
     }
 
+    public TransactionDb getTransactionDestination() {
+        return transactionDestination;
+    }
+
+    public void setTransactionDestination(TransactionDb transactionDestination) {
+        this.transactionDestination = transactionDestination;
+    }
+
     public Integer getTransactionDestinationId() {
         return transactionDestinationId;
     }
@@ -118,7 +129,11 @@ public class TransactionDb {
                 ", date=" + date +
                 ", walletId=" + walletId +
                 ", wallet=" + wallet +
+                //", transactionDestination=" + transactionDestination +
+                ", transactionDestinationId=" + transactionDestinationId +
                 ", userId=" + userId +
+                ", type=" + type +
+                ", typeId=" + typeId +
                 '}';
     }
 }

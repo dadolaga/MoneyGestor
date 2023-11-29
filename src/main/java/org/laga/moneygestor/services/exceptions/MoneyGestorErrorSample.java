@@ -3,6 +3,7 @@ package org.laga.moneygestor.services.exceptions;
 import org.springframework.http.HttpStatusCode;
 
 public class MoneyGestorErrorSample {
+    public static final HttpException GENERIC_ERROR = new HttpException(HttpStatusCode.valueOf(400), new Error(0, "Generetic error"));
     public static final HttpException NOT_ALL_FIELD_INSERT = new HttpException(HttpStatusCode.valueOf(400), new Error(1, "not all filed insert"));
     public static final HttpException USER_NOT_FOUND = new HttpException(HttpStatusCode.valueOf(400), new Error(2, "user not found"));
     public static final HttpException LOGIN_REQUIRED = new HttpException(HttpStatusCode.valueOf(403), new Error(3, "this page request login"));

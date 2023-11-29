@@ -13,6 +13,7 @@ public class Transaction {
     private BigDecimal value;
     private String date;
     private WalletDb wallet;
+    private WalletDb walletDestination;
     private TransactionTypeDb type;
 
     public Integer getId() {
@@ -53,6 +54,14 @@ public class Transaction {
 
     public void setWallet(WalletDb wallet) {
         this.wallet = wallet;
+    }
+
+    public WalletDb getWalletDestination() {
+        return walletDestination;
+    }
+
+    public void setWalletDestination(WalletDb walletDestination) {
+        this.walletDestination = walletDestination;
     }
 
     public TransactionTypeDb getType() {

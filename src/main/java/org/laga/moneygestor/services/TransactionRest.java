@@ -139,11 +139,37 @@ public class TransactionRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
 
-            if(transactionRepository.editWallet(id, transaction.getDescription(), transaction.getValue(), transaction.getDate(), transaction.getWallet(), transaction.getTypeId(), userGestor.getId()) == 0)
-                throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
+            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+            TransactionDb transactionSource = transactionRepository.findById(id).get();
+
+            transactionSource.setDescription(transaction.getDescription());
+            transactionSource.setDate(LocalDate.parse(transaction.getDate(), formatter));
+            transactionSource.setValue(transaction.getTypeId() == ID_EXCHANGE_TYPE? transaction.getValue().negate() : transaction.getValue());
+            transactionSource.setTypeId(transaction.getTypeId());
+            transactionSource.setWalletId(transaction.getWallet());
+
+            transactionRepository.save(transactionSource);
+
+            if(transaction.getTypeId() != ID_EXCHANGE_TYPE)
+                return;
+
+            TransactionDb transactionDestination = transactionRepository.findById(transactionSource.getTransactionDestinationId()).get();
+
+            transactionDestination.setDescription(transaction.getDescription());
+            transactionDestination.setDate(LocalDate.parse(transaction.getDate(), formatter));
+            transactionDestination.setValue(transaction.getValue());
+            transactionDestination.setTypeId(transaction.getTypeId());
+            transactionDestination.setWalletId(transaction.getWalletDestination());
+
+            transactionRepository.save(transactionDestination);
+
+            transactionRepository.flush();
 
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.USER_NOT_FOUND;
+        } catch (NoSuchElementException ignored) {
+            throw MoneyGestorErrorSample.GENERIC_ERROR;
         }
     }
 
