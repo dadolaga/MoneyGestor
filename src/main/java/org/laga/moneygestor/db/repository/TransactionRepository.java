@@ -2,6 +2,7 @@ package org.laga.moneygestor.db.repository;
 
 import jakarta.transaction.Transactional;
 import org.laga.moneygestor.db.entity.TransactionDb;
+import org.laga.moneygestor.db.entity.WalletDb;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<TransactionDb, Integer> {
     @Transactional

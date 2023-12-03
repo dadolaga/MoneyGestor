@@ -64,4 +64,16 @@ public class WalletDb {
     public void setColor(String color) {
         this.color = color;
     }
+
+    @Override
+    public String toString() {
+        return "WalletDb{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", value=" + value +
+                ", userId=" + userId +
+                ", favorite=" + favorite +
+                ", color='" + color + '\'' +
+                '}';
+    }
 }

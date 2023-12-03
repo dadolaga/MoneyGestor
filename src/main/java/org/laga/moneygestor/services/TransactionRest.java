@@ -1,29 +1,31 @@
 package org.laga.moneygestor.services;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.laga.moneygestor.db.entity.TransactionDb;
+import org.laga.moneygestor.db.entity.TransactionGraphView;
 import org.laga.moneygestor.db.entity.TransactionTableView;
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.db.repository.TransactionRepository;
-import org.laga.moneygestor.db.repository.TransactionTableRepository;
-import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.db.repository.WalletRepository;
+import org.laga.moneygestor.db.repository.*;
 import org.laga.moneygestor.logic.SortGestor;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.CreateWallet;
-import org.laga.moneygestor.services.json.Transaction;
-import org.laga.moneygestor.services.json.TransactionForm;
-import org.laga.moneygestor.services.json.Wallet;
+import org.laga.moneygestor.services.json.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -37,13 +39,17 @@ public class TransactionRest {
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionTableRepository transactionTableRepository;
+    private final TransactionGraphRepository transactionGraphRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
-    public TransactionRest(UserRepository userRepository, WalletRepository walletRepository, TransactionRepository transactionRepository, TransactionTableRepository transactionTableRepository) {
+    public TransactionRest(UserRepository userRepository, WalletRepository walletRepository, TransactionRepository transactionRepository, TransactionTableRepository transactionTableRepository, TransactionGraphRepository transactionGraphRepository) {
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
         this.transactionTableRepository = transactionTableRepository;
+        this.transactionGraphRepository = transactionGraphRepository;
     }
 
     @PostMapping("/new")
@@ -189,5 +195,51 @@ public class TransactionRest {
         transactionExample.setId(id);
 
         transactionRepository.delete(transactionExample);
+    }
+
+    @GetMapping("/graph")
+    public List<LineGraph<LocalDate, BigDecimal>> getGraph(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        var user = userRepository.findFromToken(authorization);
+        if(user == null)
+            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+
+        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
+
+        if(!userGestor.tokenIsValid())
+            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+
+        List<LineGraph<LocalDate, BigDecimal>> graph = new LinkedList<>();
+
+        List<WalletDb> walletDbs = walletRepository.getWalletsFromUser(userGestor.getId());
+
+        for(var wallet : walletDbs) {
+            Query query = entityManager.createNativeQuery("SELECT Value - (SELECT SUM(Value) FROM transaction WHERE Wallet = :id AND Date BETWEEN :dateStart AND :dateEnd) AS Value FROM wallet WHERE Id = :id");
+            query.setParameter("id", wallet.getId()).setParameter("dateStart", LocalDate.of(1970,Month.JANUARY,1)).setParameter("dateEnd", LocalDate.now());
+            BigDecimal walletValue = (BigDecimal) query.getResultList().get(0);
+
+            LineGraph<LocalDate, BigDecimal> lineGraph = new LineGraph<>();
+            lineGraph.setId(wallet.getName());
+            lineGraph.setColor(wallet.getColor());
+            lineGraph.setData(new LinkedList<>());
+
+            TransactionGraphView transactionExample = new TransactionGraphView();
+            transactionExample.setWallet(wallet.getId());
+
+            List<TransactionGraphView> transactions = transactionGraphRepository.findAll(Example.of(transactionExample));
+
+            for(var transaction : transactions) {
+                walletValue = walletValue.add(transaction.getValue());
+
+                var graphElement = new LineGraph.DataElement<LocalDate, BigDecimal>();
+                graphElement.setX(transaction.getDate());
+                graphElement.setY(walletValue);
+
+                lineGraph.getData().add(graphElement);
+            }
+
+            graph.add(lineGraph);
+        }
+
+        return graph;
     }
 }
