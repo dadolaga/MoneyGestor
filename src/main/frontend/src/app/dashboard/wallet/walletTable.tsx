@@ -70,7 +70,7 @@ const WalletTable = forwardRef((props: IWalletTable, ref) => {
             name: walletName,
             value: 0,
             favorite: false,
-            color: 0,
+            color: "000000",
         });
 
         setOpenDeleteWalletDialog(true);
@@ -142,7 +142,7 @@ const WalletTable = forwardRef((props: IWalletTable, ref) => {
                         <TableBody>
                             {wallets != null ? wallets.map((value: Wallet, index) => {
                                 return (
-                                    <TableRow key={value.id} sx={{"*": {color: '#' + value.color + '!important'}}}>
+                                    <TableRow key={index} sx={{"*": {color: '#' + value.color + '!important'}}}>
                                         <TableCell> {value.name} </TableCell>
                                         <TableCell align="right"> {convertNumberToValue(value.value)} </TableCell>
                                         <TableCell>

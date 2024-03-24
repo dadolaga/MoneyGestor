@@ -10,11 +10,11 @@ export default function Page() {
     const tableWallet = useRef();
     
     function refreshWallet() {
-        if(walletPie != null)
-            walletPie.current.refreshWallet();
+        if(walletPie.current)
+            (walletPie.current as any).refreshWallet();
 
-        if(tableWallet != null)
-            tableWallet.current.refreshWallet();
+        if(tableWallet.current)
+            (tableWallet.current as any).refreshWallet();
     }
 
     return (

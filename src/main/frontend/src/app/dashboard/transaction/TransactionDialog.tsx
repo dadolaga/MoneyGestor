@@ -332,7 +332,7 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
                                 onChange={(el) => setWallet(el.target.value)}
                                 label="Portafoglio">
                                 {wallets?.map((value, index) => {
-                                    return <MenuItem key={index} value={value.id}>{value.name}</MenuItem>
+                                    return (<MenuItem key={index} value={value.id.toString()}>{value.name}</MenuItem>);
                                 })}
                             </Select>
                             {walletError != null && <FormHelperText>{walletError}</FormHelperText>}
@@ -354,7 +354,9 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
                                         onChange={(el) => setWalletDestination(el.target.value)}
                                         label="Portafoglio">
                                         {wallets?.map((value, index) => {
-                                            return <MenuItem key={value.id} value={value.id}>{value.name}</MenuItem>
+                                            return (
+                                                <MenuItem value={value.id.toString()} key={index}>{value.name}</MenuItem>
+                                            );
                                         })}
                                     </Select>
                                     {walletDestinationError != null && <FormHelperText>{walletDestinationError}</FormHelperText>}

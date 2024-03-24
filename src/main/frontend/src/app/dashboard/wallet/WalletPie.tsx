@@ -53,7 +53,7 @@ const WalletPie = forwardRef((props, ref) => {
                 sortByValue
                 valueFormat={(number) => convertNumberToValue(number)}
                 activeOuterRadiusOffset={10}
-                colors={(data) => data.data.color}
+                colors={(data) => (data.data as any).color}
                 legends={[{
                     anchor: "right",
                     direction: "column",
