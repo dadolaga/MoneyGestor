@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/color")
+@RequestMapping("/api/color")
 public class ColorRest {
 
     private final ColorRepository colorRepository;

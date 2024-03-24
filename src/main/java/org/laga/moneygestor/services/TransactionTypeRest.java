@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
-@RequestMapping("/transaction_type")
+@RequestMapping("/api/transaction_type")
 public class TransactionTypeRest {
     private final TransactionTypeRepository transactionTypeRepository;
     private final UserRepository userRepository;
