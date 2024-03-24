@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Update edit exchange transaction">
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Union react and Java">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/new/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/new/page.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +88,7 @@
     </configuration>
     <configuration name="org.laga.moneygestor.App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.laga.moneygestor.App" />
-      <module name="ApiRest" />
+      <module name="MoneyGestor" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="org.laga.moneygestor.*" />
@@ -120,6 +119,19 @@
       <module name="ApiRest" />
       <option name="TEST_OBJECT" value="directory" />
       <dir value="$PROJECT_DIR$/src/test/java" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="MoneyGestor" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="MoneyGestor" />
+      <option name="filePath" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -401,7 +413,35 @@
       <option name="project" value="LOCAL" />
       <updated>1701248200355</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Add react project">
+      <created>1711286723415</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1711286723415</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Add react project">
+      <created>1711286737136</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1711286737136</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Correct typescript error">
+      <created>1711294679753</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1711294679753</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Union react and Java">
+      <created>1711295925693</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1711295925693</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -409,16 +449,25 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="move_to_mysql" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Create /wallet/edit rest service" />
-    <MESSAGE value="Create /wallet/delete rest service" />
-    <MESSAGE value="Add sort option in /wallet/list" />
     <MESSAGE value="Add favorite column and change /wallet/list" />
     <MESSAGE value="Create /wallet/favorite rest service" />
     <MESSAGE value="Create /transaction/new rest service" />
@@ -441,6 +490,9 @@
     <MESSAGE value="Modify show exchange in table" />
     <MESSAGE value="Correct negative value when insert new transaction" />
     <MESSAGE value="Update edit exchange transaction" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update edit exchange transaction" />
+    <MESSAGE value="Add react project" />
+    <MESSAGE value="Correct typescript error" />
+    <MESSAGE value="Union react and Java" />
+    <option name="LAST_COMMIT_MESSAGE" value="Union react and Java" />
   </component>
 </project>
