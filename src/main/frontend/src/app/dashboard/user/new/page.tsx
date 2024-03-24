@@ -1,7 +1,6 @@
 "use client"
 
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import './style.css'
 import { useState, useRef } from 'react';
 import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton, Typography, Button, Alert, FormHelperText, LinearProgress, CardMedia, CardContent, Snackbar, Slide } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -39,7 +38,7 @@ export default function Page() {
 
         setShowLoading(true);
 
-        fetch("http://localhost:8093/user/new", {
+        fetch("http://localhost:8093/api/user/new", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"
@@ -76,14 +75,14 @@ export default function Page() {
             let valid = true;
 
             formData.forEach((value, key) => {
-                if(value.trim().length == 0) {
+                if(value.toString().trim().length == 0) {
                     setFormError(value => value = {...value, [key]: "Il campo non può essere vuoto"});
                     valid = false;
                 }
             });
 
             if(valid) {
-                if(!regexUsername.test(formData.get("username"))) {
+                if(!regexUsername.test(formData.get("username").toString())) {
                     setFormError(value => value = {...value, "username": "L'username può solo contenere lettere numeri e _ o -"});
                     valid = false;
                 }
@@ -99,7 +98,7 @@ export default function Page() {
     }
 
     return(
-        <Box className="center">
+        <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
             <Card sx={{maxWidth: '500px'}} >
                 {showLoading && <LinearProgress sx={{width: "100%"}}/>}
                 <CardContent sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>

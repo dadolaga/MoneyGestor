@@ -1,6 +1,7 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
+import org.antlr.v4.runtime.misc.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -11,13 +12,17 @@ public class UserDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(nullable = false)
     private String firstname;
+    @Column(nullable = false)
     private String lastname;
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
+    @Column(nullable = false)
     private String username;
+    @Column(nullable = false)
     private String password;
-    @Column(length = 128, columnDefinition = "char")
+    @Column(columnDefinition = "char(128)")
     private String token;
 
     @Column(name = "expiratedtoken")

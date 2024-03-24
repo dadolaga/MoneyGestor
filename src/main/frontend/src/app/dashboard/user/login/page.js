@@ -38,7 +38,7 @@ export default function Page() {
             loginData[key] = value;
         });
 
-        fetch("http://localhost:8093/user/login", {
+        fetch("http://localhost:8093/api/user/login", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"

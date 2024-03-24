@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Update edit exchange transaction">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="a39626d7-089b-4b93-a902-49d35f59e096" name="Changes" comment="Add workspace.xml to .gitignore">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/frontend/src/app/Utilities/Datatypes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/frontend/src/app/Utilities/Datatypes.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/login/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/login/page.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/new/page.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/frontend/src/app/dashboard/user/new/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/UserDb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/laga/moneygestor/db/entity/UserDb.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -450,7 +454,14 @@
       <option name="project" value="LOCAL" />
       <updated>1711295925693</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="Add workspace.xml to .gitignore">
+      <created>1711296666828</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1711296666828</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -477,7 +488,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add favorite column and change /wallet/list" />
     <MESSAGE value="Create /wallet/favorite rest service" />
     <MESSAGE value="Create /transaction/new rest service" />
     <MESSAGE value="Create /transaction/list rest service" />
@@ -502,6 +512,7 @@
     <MESSAGE value="Add react project" />
     <MESSAGE value="Correct typescript error" />
     <MESSAGE value="Union react and Java" />
-    <option name="LAST_COMMIT_MESSAGE" value="Union react and Java" />
+    <MESSAGE value="Add workspace.xml to .gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add workspace.xml to .gitignore" />
   </component>
 </project>

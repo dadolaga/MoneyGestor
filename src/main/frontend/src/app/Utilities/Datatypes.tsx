@@ -1,3 +1,13 @@
+interface IUser {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    token: string;
+    expiratedToken: Date;
+}
+
 export interface Wallet {
     id: Number,
     name: String,
