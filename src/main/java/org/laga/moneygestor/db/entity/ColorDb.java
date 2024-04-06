@@ -11,6 +11,7 @@ public class ColorDb {
     @Id
     @Column(length = 6)
     private String color;
+    @Column(nullable = true)
     private Integer user;
 
     public String getColor() {
