@@ -2,13 +2,22 @@ package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.Subselect;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "transaction_graph")
+@Immutable
+@Subselect("select concat(transaction.Wallet, '_', unix_timestamp(transaction.Date)) AS uuid," +
+        "        transaction.Wallet AS wallet," +
+        "        transaction.Date AS date," +
+        "        sum(transaction.Value) AS value " +
+        "from transaction " +
+        "group by transaction.Date," +
+        "        transaction.Wallet " +
+        "order by transaction.Date")
 public class TransactionGraphView {
 
     @Id

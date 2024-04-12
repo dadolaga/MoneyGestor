@@ -1,12 +1,24 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Immutable;
+import org.hibernate.annotations.Subselect;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "transaction_table")
+@Immutable
+@Subselect("select t1.Id AS id," +
+        "    t1.Description AS description," +
+        "    t1.Value AS value," +
+        "    t1.Date AS date," +
+        "    t1.Type AS type," +
+        "    t1.Wallet AS wallet," +
+        "    t1.TransactionDestination AS transaction_destination," +
+        "    t1.User AS user," +
+        "    t2.Wallet AS wallet_destination " +
+        "from (transaction t1 left join transaction t2 on (t1.TransactionDestination = t2.Id)) where t1.TransactionDestination is null or t1.Value < 0")
 public class TransactionTableView {
     @Id
     private Integer id;
@@ -20,11 +32,11 @@ public class TransactionTableView {
     @ManyToOne
     @JoinColumn(name = "wallet", nullable = false, updatable = false, insertable = false)
     private WalletDb wallet;
-    @Column(name = "transactiondestination")
+    @Column(name = "transaction_destination")
     private Integer transactionDestination;
     private Integer user;
     @ManyToOne
-    @JoinColumn(name = "walletdestination", nullable = false, updatable = false, insertable = false)
+    @JoinColumn(name = "wallet_destination", nullable = false, updatable = false, insertable = false)
     private WalletDb walletDestination;
 
     public Integer getId() {

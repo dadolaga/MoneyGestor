@@ -3,6 +3,13 @@ package org.laga.moneygestor.logic;
 import org.springframework.data.domain.Sort;
 
 public class SortGestor {
+
+    /**
+     * This function decode a sort string pass in URL with follow code:
+     * <code>[!]ATTRIBUTE_NAME\[[!]ATTRIBUTE_NAME]*</code>
+     * @param sortString
+     * @return
+     */
     public static Sort decode(String sortString) {
         if(sortString == null)
             return Sort.unsorted();
