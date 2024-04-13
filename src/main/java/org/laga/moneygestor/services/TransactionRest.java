@@ -12,12 +12,10 @@ import org.laga.moneygestor.logic.SortGestor;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.*;
+import org.laga.moneygestor.services.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 

@@ -3,7 +3,7 @@ package org.laga.moneygestor.logic;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
-import org.laga.moneygestor.services.json.UserRegistrationForm;
+import org.laga.moneygestor.services.models.UserRegistrationForm;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -97,8 +97,8 @@ public class UserGestor {
         expiryToken = LocalDateTime.now().plus(TOKEN_DURATION);
     }
 
-    public org.laga.moneygestor.services.json.User generateReturnUser() {
-        return new org.laga.moneygestor.services.json.User(lastname, firstname, token, expiryToken);
+    public org.laga.moneygestor.services.models.User generateReturnUser() {
+        return new org.laga.moneygestor.services.models.User(lastname, firstname, token, expiryToken);
     }
 
     public boolean tokenIsValid() {

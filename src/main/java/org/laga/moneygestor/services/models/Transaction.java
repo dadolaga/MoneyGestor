@@ -1,11 +1,9 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
 import org.laga.moneygestor.db.entity.TransactionTypeDb;
 import org.laga.moneygestor.db.entity.WalletDb;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Transaction {
     private Integer id;

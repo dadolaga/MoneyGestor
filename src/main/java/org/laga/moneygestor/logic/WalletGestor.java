@@ -1,7 +1,7 @@
 package org.laga.moneygestor.logic;
 
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.services.json.Wallet;
+import org.laga.moneygestor.services.models.Wallet;
 
 import java.util.LinkedList;
 import java.util.List;

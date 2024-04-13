@@ -1,25 +1,16 @@
 package org.laga.moneygestor.services;
 
-import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.TransactionTypeDb;
 import org.laga.moneygestor.db.repository.TransactionTypeRepository;
 import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.logic.SortGestor;
-import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.Transaction;
-import org.laga.moneygestor.services.json.TransactionForm;
-import org.laga.moneygestor.services.json.TransactionTypeForm;
+import org.laga.moneygestor.services.models.TransactionTypeForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController

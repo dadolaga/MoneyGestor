@@ -1,7 +1,6 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class TransactionForm {
     private String description;

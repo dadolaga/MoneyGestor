@@ -1,9 +1,7 @@
 package org.laga.moneygestor.logic;
 
 import org.laga.moneygestor.db.entity.TransactionDb;
-import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.services.json.Transaction;
-import org.laga.moneygestor.services.json.Wallet;
+import org.laga.moneygestor.services.models.Transaction;
 
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;

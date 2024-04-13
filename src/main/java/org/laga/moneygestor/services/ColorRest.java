@@ -2,7 +2,7 @@ package org.laga.moneygestor.services;
 
 import org.laga.moneygestor.db.repository.ColorRepository;
 import org.laga.moneygestor.logic.ColorGestor;
-import org.laga.moneygestor.services.json.Color;
+import org.laga.moneygestor.services.models.Color;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

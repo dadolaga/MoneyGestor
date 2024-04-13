@@ -1,16 +1,14 @@
 package org.laga.moneygestor.services;
 
-import jakarta.transaction.Transactional;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.Login;
-import org.laga.moneygestor.services.json.User;
-import org.laga.moneygestor.services.json.UserRegistrationForm;
+import org.laga.moneygestor.services.models.Login;
+import org.laga.moneygestor.services.models.User;
+import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
