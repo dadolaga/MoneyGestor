@@ -28,12 +28,12 @@ public class UserRest {
 
             userRepository.save(userGestor.getDatabaseUser());
         } catch (UserCreationException e) {
-            throw MoneyGestorErrorSample.NOT_ALL_FIELD_INSERT;
+            throw MoneyGestorErrorSample.mapOfError.get(1);
         } catch (DataIntegrityViolationException e) {
             if(e.getMessage().contains("unique_user_email"))
-                throw MoneyGestorErrorSample.USER_DUPLICATE_EMAIL;
+                throw MoneyGestorErrorSample.mapOfError.get(101);
             if(e.getMessage().contains("unique_user_username"))
-                throw MoneyGestorErrorSample.USER_DUPLICATE_USERNAME;
+                throw MoneyGestorErrorSample.mapOfError.get(102);
         }
     }
 
@@ -41,11 +41,11 @@ public class UserRest {
     public User loginUser(@RequestBody Login login) {
         var user = userRepository.findWithEmailOrUsername(login.getUsername());
         if(user == null)
-            throw MoneyGestorErrorSample.USER_EMAIL_USERNAME_NOT_EXIST;
+            throw MoneyGestorErrorSample.mapOfError.get(103);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
         if(!userGestor.checkPassword(login.getPassword()))
-            throw MoneyGestorErrorSample.USER_PASSWORD_NOT_CORRECT;
+            throw MoneyGestorErrorSample.mapOfError.get(104);
 
         userGestor.generateNewToken();
 
@@ -60,12 +60,12 @@ public class UserRest {
     public User getUserFromToken(@RequestParam(value = "token") String token) {
         var user = userRepository.findFromToken(token);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         var userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         return userGestor.generateReturnUser();
     }

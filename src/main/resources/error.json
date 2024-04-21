@@ -1,0 +1,64 @@
+{
+  "errors": [
+    {
+      "code": 0,
+      "httpStatusCode": 400,
+      "message": "generetic error"
+    },
+    {
+      "code": 1,
+      "httpStatusCode": 400,
+      "message": "not all fields inserted"
+    },
+    {
+      "code": 2,
+      "httpStatusCode": 400,
+      "message": "user not found"
+    },
+    {
+      "code": 3,
+      "httpStatusCode": 403,
+      "message": "this page requires login"
+    },
+    {
+      "code": 4,
+      "httpStatusCode": 401,
+      "message": "this user does not have permission"
+    },
+    {
+      "code": 5,
+      "httpStatusCode": 400,
+      "message": "duplicate name"
+    },
+    {
+      "code": 10,
+      "httpStatusCode": 500,
+      "message": "database error, check log file"
+    },
+    {
+      "code": 101,
+      "httpStatusCode": 400,
+      "message": "duplicate email"
+    },
+    {
+      "code": 102,
+      "httpStatusCode": 400,
+      "message": "duplicate username"
+    },
+    {
+      "code": 103,
+      "httpStatusCode": 400,
+      "message": "email or username does not exist"
+    },
+    {
+      "code": 104,
+      "httpStatusCode": 400,
+      "message": "password not correct"
+    },
+    {
+      "code": 201,
+      "httpStatusCode": 400,
+      "message": "duplicate wallet name"
+    }
+  ]
+}

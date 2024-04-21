@@ -29,12 +29,12 @@ public class TransactionTypeRest {
     public List<TransactionTypeDb> getListTransactionType(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         return transactionTypeRepository.findWithUserOrNull(userGestor.getId());
     }
@@ -43,12 +43,12 @@ public class TransactionTypeRest {
     public void addNewTransactionType(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionTypeForm transactionTypeForm) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         TransactionTypeDb transactionTypeDb = new TransactionTypeDb();
         transactionTypeDb.setName(transactionTypeForm.getName());
@@ -58,7 +58,7 @@ public class TransactionTypeRest {
             transactionTypeRepository.save(transactionTypeDb);
         } catch (DataIntegrityViolationException e) {
             if(e.getMessage().contains("unique_name_user"))
-                throw MoneyGestorErrorSample.DUPLICATE_NAME;
+                throw MoneyGestorErrorSample.mapOfError.get(5);
         }
     }
 }

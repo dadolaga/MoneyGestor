@@ -1,5 +1,6 @@
 package org.laga.moneygestor;
 
+import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
