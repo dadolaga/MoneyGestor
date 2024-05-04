@@ -31,6 +31,11 @@
       "message": "duplicate name"
     },
     {
+      "code": 6,
+      "httpStatusCode": 400,
+      "message": "id not found"
+    },
+    {
       "code": 10,
       "httpStatusCode": 500,
       "message": "database error, check log file"

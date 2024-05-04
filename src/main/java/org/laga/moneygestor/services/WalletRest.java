@@ -37,29 +37,19 @@ public class WalletRest {
 
     @PostMapping("/new")
     public void addNewWallet(@RequestBody CreateWallet wallet) {
-        System.out.println(wallet);
-        var user = userRepository.findFromToken(wallet.getToken());
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-
+        UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, wallet.getToken());
         if(!userGestor.tokenIsValid())
             throw MoneyGestorErrorSample.mapOfError.get(2);
 
         var walletDb = new WalletDb();
+
         walletDb.setName(wallet.getName());
         walletDb.setValue(wallet.getValue());
         walletDb.setUserId(userGestor.getId());
         walletDb.setFavorite(false);
         walletDb.setColor(wallet.getColor());
 
-        try {
-            walletRepository.saveAndFlush(walletDb);
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("index_wallet_nameuser"))
-                throw MoneyGestorErrorSample.mapOfError.get(201);
-        }
+        WalletGestor.insertWallet(walletRepository, walletDb);
     }
 
     @GetMapping("/list")
@@ -68,11 +58,12 @@ public class WalletRest {
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
             WalletDb walletExample = new WalletDb();
+
             walletExample.setUserId(userGestor.getId());
 
             Sort sort = SortGestor.decode(sortParams);
@@ -88,12 +79,12 @@ public class WalletRest {
     }
 
     @GetMapping("/get/{id}")
-    public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+    public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
@@ -109,11 +100,11 @@ public class WalletRest {
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
+            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            walletRepository.editWallet(wallet.getId(), wallet.getName(), wallet.getValue(), wallet.getColor());
+            WalletGestor.updateWallet(walletRepository, userGestor, wallet.getId(), WalletGestor.convertToDb(wallet));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         } catch (DataIntegrityViolationException e) {
@@ -123,7 +114,7 @@ public class WalletRest {
     }
 
     @GetMapping("/delete/{id}")
-    public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+    public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
@@ -132,8 +123,7 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            if(walletRepository.deleteWalletUserAuthorized(id.intValue(), userGestor.getId()) == 0)
-                throw MoneyGestorErrorSample.mapOfError.get(4);
+            WalletGestor.deleteWallet(walletRepository, userGestor, id.intValue());
 
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
@@ -141,7 +131,7 @@ public class WalletRest {
     }
 
     @PostMapping("/favorite/{id}")
-    public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
+    public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
@@ -150,8 +140,16 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            if(walletRepository.changeFavorite(id.intValue(), userGestor.getId()) == 0)
-                throw MoneyGestorErrorSample.mapOfError.get(4);
+            var walletSetFavoriteOptional = walletRepository.findById(id.intValue());
+
+            if(walletSetFavoriteOptional.isEmpty())
+                throw MoneyGestorErrorSample.mapOfError.get(6);
+
+            WalletDb walletSetFavorite = walletSetFavoriteOptional.get();
+
+            walletSetFavorite.setFavorite(!walletSetFavorite.getFavorite());
+
+            WalletGestor.updateWallet(walletRepository, userGestor, id.intValue(), walletSetFavorite);
 
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);

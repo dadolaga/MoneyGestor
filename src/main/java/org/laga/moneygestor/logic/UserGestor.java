@@ -1,9 +1,12 @@
 package org.laga.moneygestor.logic;
 
 import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
+import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
+import org.springframework.data.domain.Example;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -159,6 +162,19 @@ public class UserGestor {
                     user.getExpiratedToken(),
                     user.getPassword()
             );
+        }
+
+        public static UserGestor loadFromAuthorization(UserRepository userRepository, String authorization) {
+            UserDb user = new UserDb();
+
+            user.setToken(authorization);
+
+            var optionalUser = userRepository.findOne(Example.of(user));
+
+            if(optionalUser.isEmpty())
+                throw MoneyGestorErrorSample.mapOfError.get(2); // user not found
+
+            return createFromDB(optionalUser.get());
         }
     }
 
