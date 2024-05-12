@@ -1,5 +1,6 @@
 package org.laga.moneygestor.services;
 
+import jakarta.persistence.EntityManagerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.laga.moneygestor.db.entity.WalletDb;
@@ -14,7 +15,6 @@ import org.laga.moneygestor.services.models.Wallet;
 import org.springframework.beans.PropertyAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -23,16 +23,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallet")
-public class WalletRest {
+public class WalletRest extends BaseRest {
     final static Logger logger = LogManager.getLogger(WalletRest.class);
-
     private UserRepository userRepository;
-    private WalletRepository walletRepository;
+
+    private WalletGestor walletGestor;
 
     @Autowired
-    public WalletRest(UserRepository userRepository, WalletRepository walletRepository) {
+    public WalletRest(EntityManagerFactory entityManagerFactory, UserRepository userRepository) {
+        super(entityManagerFactory);
         this.userRepository = userRepository;
-        this.walletRepository = walletRepository;
+        walletGestor = new WalletGestor(sessionFactory);
     }
 
     @PostMapping("/new")
@@ -49,7 +50,7 @@ public class WalletRest {
         walletDb.setFavorite(false);
         walletDb.setColor(wallet.getColor());
 
-        WalletGestor.insertWallet(walletRepository, walletDb);
+        walletGestor.insert(userGestor, walletDb);
     }
 
     @GetMapping("/list")
@@ -62,13 +63,9 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            WalletDb walletExample = new WalletDb();
-
-            walletExample.setUserId(userGestor.getId());
-
             Sort sort = SortGestor.decode(sortParams);
 
-            return WalletGestor.convertToRest(walletRepository.findAll(Example.of(walletExample), sort));
+            return WalletGestor.convertToRest(walletGestor.getAll(userGestor).toList());
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         } catch (PropertyAccessException e) {
@@ -88,7 +85,7 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            return WalletGestor.convertToRest(walletRepository.getWalletsFromId(id.intValue(), userGestor.getId()));
+            return WalletGestor.convertToRest(walletGestor.getById(userGestor, id.intValue()));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         }
@@ -104,7 +101,7 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            WalletGestor.updateWallet(walletRepository, userGestor, wallet.getId(), WalletGestor.convertToDb(wallet));
+            walletGestor.update(userGestor, WalletGestor.convertToDb(wallet));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         } catch (DataIntegrityViolationException e) {
@@ -123,8 +120,7 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            WalletGestor.deleteWallet(walletRepository, userGestor, id.intValue());
-
+            walletGestor.deleteById(userGestor, id.intValue());
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         }
@@ -140,17 +136,14 @@ public class WalletRest {
             if(!userGestor.tokenIsValid())
                 throw MoneyGestorErrorSample.mapOfError.get(2);
 
-            var walletSetFavoriteOptional = walletRepository.findById(id.intValue());
+            WalletDb wallet = walletGestor.getById(userGestor, id.intValue());
 
-            if(walletSetFavoriteOptional.isEmpty())
+            if(wallet == null)
                 throw MoneyGestorErrorSample.mapOfError.get(6);
 
-            WalletDb walletSetFavorite = walletSetFavoriteOptional.get();
+            wallet.setFavorite(!wallet.getFavorite());
 
-            walletSetFavorite.setFavorite(!walletSetFavorite.getFavorite());
-
-            WalletGestor.updateWallet(walletRepository, userGestor, id.intValue(), walletSetFavorite);
-
+            walletGestor.update(userGestor, wallet);
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         }

@@ -1,85 +1,26 @@
 package org.laga.moneygestor.logic;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.Session;
+import org.hibernate.SessionException;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.db.repository.WalletRepository;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
-import org.laga.moneygestor.services.WalletRest;
-import org.laga.moneygestor.services.models.User;
 import org.laga.moneygestor.services.models.Wallet;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-public class WalletGestor {
+public class WalletGestor implements Gestor<Integer, WalletDb> {
 
-    public static void insertWallet(WalletRepository walletRepository, WalletDb walletDb) {
-        if(walletRepository == null || walletDb == null)
-            throw new IllegalArgumentException("one or more argument is null");
+    private final SessionFactory sessionFactory;
 
-        walletRepository.save(walletDb);
-    }
-
-    public static void deleteWallet(WalletRepository walletRepository, UserGestor userLogged, Integer walletId) {
-        deleteWallet(walletRepository, userLogged, walletId, false);
-    }
-
-    public static void deleteWallet(WalletRepository walletRepository, UserGestor userLogged, Integer walletId, boolean forceDelete) {
-        if(walletRepository == null || walletId == null)
-            throw new IllegalArgumentException("one or more argument is null");
-
-        var walletDb = walletRepository.findById(walletId);
-
-        if(walletDb.isEmpty())
-            throw new EntityNotFoundException("Wallet with " + walletId + " not found");
-
-        deleteWallet(walletRepository, userLogged, walletDb.get(), forceDelete);
-    }
-
-    public static void deleteWallet(WalletRepository walletRepository, UserGestor userLogged, WalletDb walletDb) {
-        deleteWallet(walletRepository, userLogged, walletDb, false);
-    }
-
-    public static void deleteWallet(WalletRepository walletRepository, UserGestor userLogged, WalletDb walletDb, boolean forceDelete) {
-        if(walletRepository == null || walletDb == null || userLogged == null)
-            throw new IllegalArgumentException("one or more argument is null");
-
-        if(walletDb.getId() == null)
-            throw new IllegalArgumentException("id of wallet is null");
-
-        if(!forceDelete && !walletDb.getTransaction().isEmpty())
-            throw new TableNotEmptyException("transaction table is not empty");
-
-        if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
-            throw new UserNotHavePermissionException();
-
-        walletRepository.deleteById(walletDb.getId());
-    }
-    public static void updateWallet(WalletRepository walletRepository, UserGestor userLogged, Integer walletId, WalletDb newWallet) {
-        if(walletRepository == null || walletId == null || newWallet == null || userLogged == null)
-            throw new IllegalArgumentException("one or more argument is null");
-
-        if(newWallet.getId() != null && !Objects.equals(walletId, newWallet.getId()))
-            throw new IllegalArgumentException("walletId and newWallet id must be the same");
-
-        var optionalOldWallet = walletRepository.findById(walletId);
-
-        if(optionalOldWallet.isEmpty())
-            throw new EntityNotFoundException("Wallet with " + walletId + " not found");
-
-        if(!Objects.equals(userLogged.getId(), optionalOldWallet.get().getUserId()))
-            throw new UserNotHavePermissionException();
-
-        WalletDb wallet = optionalOldWallet.get();
-
-        wallet.setName(newWallet.getName());
-        wallet.setValue(newWallet.getValue());
-        wallet.setColor(newWallet.getColor());
-        wallet.setFavorite(newWallet.getFavorite());
-
-        walletRepository.save(wallet);
+    public WalletGestor(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public static Wallet convertToRest(WalletDb walletDb) {
@@ -113,5 +54,109 @@ public class WalletGestor {
         walletDb.setValue(wallet.getValue());
 
         return walletDb;
+    }
+
+    @Override
+    public Integer insert(UserGestor userLogged, WalletDb walletDb) {
+        if(sessionFactory == null)
+            throw new SessionException("Session is null");
+
+        if(walletDb == null)
+            throw new IllegalArgumentException("wallet is null");
+
+        Session session = sessionFactory.openSession();
+        Transaction transaction = session.beginTransaction();
+
+        session.persist(walletDb);
+
+        transaction.commit();
+        session.close();
+
+        return null;
+    }
+
+    @Override
+    public void deleteById(UserGestor userLogged, Integer id, boolean forceDelete) {
+        if(sessionFactory == null)
+            throw new SessionException("Session is null");
+        if(userLogged == null)
+            throw new IllegalArgumentException("user logged is null");
+        if(id == null)
+            throw new IllegalArgumentException("id is null");
+
+        Transaction transaction;
+
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            WalletDb walletDb = getById(userLogged, id);
+
+            if(walletDb == null)
+                throw new EntityNotFoundException("Wallet with " + id + " not found");
+
+            if(!forceDelete && !walletDb.getTransaction().isEmpty())
+                throw new TableNotEmptyException("transaction table is not empty");
+
+            if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
+                throw new UserNotHavePermissionException();
+
+            session.remove(walletDb);
+
+            transaction.commit();
+        }
+
+    }
+
+    @Override
+    public void update(UserGestor userLogged, Integer walletId, WalletDb newWallet) {
+        if(sessionFactory == null || walletId == null || newWallet == null || userLogged == null)
+            throw new IllegalArgumentException("one or more argument is null");
+
+        if(newWallet.getId() != null && !Objects.equals(walletId, newWallet.getId()))
+            throw new IllegalArgumentException("walletId and newWallet id must be the same");
+
+        Transaction transaction;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            WalletDb wallet = getById(userLogged, walletId);
+
+            if(wallet == null)
+                throw new EntityNotFoundException("Wallet with " + walletId + " not found");
+
+            if (!Objects.equals(userLogged.getId(), wallet.getUserId()))
+                throw new UserNotHavePermissionException();
+
+            wallet.setName(newWallet.getName());
+            wallet.setValue(newWallet.getValue());
+            wallet.setColor(newWallet.getColor());
+            wallet.setFavorite(newWallet.getFavorite());
+
+            session.merge(wallet);
+
+            transaction.commit();
+        }
+    }
+
+    @Override
+    public void update(UserGestor userGestor, WalletDb newObject) {
+        update(userGestor, newObject.getId(), newObject);
+    }
+
+    @Override
+    public WalletDb getById(UserGestor userLogged, Integer id) {
+        Session session = sessionFactory.openSession();
+
+        return session.get(WalletDb.class, id);
+    }
+
+    @Override
+    public Stream<WalletDb> getAll(UserGestor userGestor) {
+        Session session = sessionFactory.openSession();
+
+        var query = session.createQuery("FROM WalletDb WHERE userId = :userId", WalletDb.class);
+        query.setParameter("userId", userGestor.getId());
+
+        return query.getResultStream();
     }
 }
