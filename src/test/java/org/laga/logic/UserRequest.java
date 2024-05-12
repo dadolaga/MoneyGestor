@@ -1,15 +1,11 @@
 package org.laga.logic;
 
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.laga.moneygestor.App;
-import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.logic.UserGestor;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +24,7 @@ public abstract class UserRequest extends LogicBaseTest {
     private static final String username = "test-suit";
     private static final String password = "This_is_my_strong_password123";
 
-    protected UserGestor userGestor;
+    protected UserGestor userLogged;
 
     private final List<Integer> idsUserCreate;
 
@@ -39,7 +35,7 @@ public abstract class UserRequest extends LogicBaseTest {
     @BeforeEach
     public void beforeEach() throws Exception {
         createUser(username, "first@test.ts");
-        userGestor = login(username);
+        userLogged = login(username);
     }
 
     @Test

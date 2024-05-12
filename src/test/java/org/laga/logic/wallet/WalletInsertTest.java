@@ -1,58 +1,69 @@
 package org.laga.logic.wallet;
 
+import org.hibernate.Session;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.logic.WalletGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 
 public class WalletInsertTest extends WalletLogicTest {
-    @Test
-    public void insertWallet_repositoryIsNull_throw() {
+   @Test
+    public void insert_userIsNull_throw() {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
-            WalletGestor.insertWallet(null, walletDb);
+            walletGestor.insert(null, walletDb);
         });
     }
 
     @Test
-    public void insertWallet_walletIsNull_throw() {
+    public void insert_walletIsNull_throw() {
         Assert.assertThrows(IllegalArgumentException.class, () -> {
-            WalletGestor.insertWallet(walletRepository, null);
+            walletGestor.insert(userLogged, null);
         });
     }
 
     @Test
-    public void insertWallet_noError() {
-        WalletGestor.insertWallet(walletRepository, walletDb);
+    public void insert_noError() {
+        walletGestor.insert(userLogged, walletDb);
     }
 
     @Test
-    public void insertWallet_effectiveInsert() {
-        WalletGestor.insertWallet(walletRepository, walletDb);
+    public void insert_effectiveInsert() {
+        walletGestor.insert(userLogged, walletDb);
 
-        Assert.assertEquals(walletDb.getName(), walletRepository.findById(walletDb.getId()).get().getName());
+        Session session = sessionFactory.openSession();
+        var query = session.createQuery("FROM WalletDb WHERE name = :walletName", WalletDb.class);
+        query.setParameter("walletName", walletDb.getName());
+        WalletDb wallet = query.getSingleResultOrNull();
+
+        Assert.assertNotNull(wallet);
     }
 
     @Test
-    public void insertWallet_returnNewWalletWithId_return() {
-        Assert.fail("Not implemented");
+    public void insert_returnNewWalletWithId_return() {
+        Integer id = walletGestor.insert(userLogged, walletDb);
+
+        Session session = sessionFactory.openSession();
+        var query = session.createQuery("FROM WalletDb WHERE name = :walletName", WalletDb.class);
+        query.setParameter("walletName", walletDb.getName());
+        WalletDb wallet = query.getSingleResultOrNull();
+
+        Assert.assertEquals(wallet.getId(), id);
     }
 
     @Test
-    public void insertWallet_duplicateName_throw() {
-        WalletGestor.insertWallet(walletRepository, walletDb);
+    public void insert_duplicateName_throw() {
+        walletGestor.insert(userLogged, walletDb);
 
         var wallet2 = new WalletDb();
 
         wallet2.setName(walletDb.getName());
         wallet2.setColor(walletDb.getColor());
-        wallet2.setUserId(userGestor.getId());
+        wallet2.setUserId(userLogged.getId());
         wallet2.setFavorite(false);
         wallet2.setValue(walletDb.getValue());
 
         Assert.assertThrows(DuplicateValueException.class, () -> {
-            WalletGestor.insertWallet(walletRepository, wallet2);
+            walletGestor.insert(userLogged, wallet2);
         });
     }
-
 }
