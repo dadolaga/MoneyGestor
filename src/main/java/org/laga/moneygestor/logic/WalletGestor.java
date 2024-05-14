@@ -5,7 +5,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.exception.ConstraintViolationException;
 import org.laga.moneygestor.db.entity.WalletDb;
+import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.Wallet;
@@ -70,9 +72,12 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
             session.persist(walletDb);
 
             transaction.commit();
+        } catch (ConstraintViolationException e) {
+            if(e.getMessage().contains("index_wallet_nameuser"))
+                throw new DuplicateValueException("Duplicate value for wallet", e);
         }
 
-        return null;
+        return walletDb.getId();
     }
 
     @Override

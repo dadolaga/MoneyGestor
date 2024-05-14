@@ -44,7 +44,7 @@ public abstract class WalletLogicTest extends UserRequest {
 
             query.executeUpdate();
 
-            transaction.rollback();
+            transaction.commit();
         }
     }
 }
