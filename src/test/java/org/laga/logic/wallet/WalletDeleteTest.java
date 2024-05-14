@@ -1,7 +1,7 @@
 package org.laga.logic.wallet;
 
 import org.hibernate.Session;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.db.entity.WalletDb;
@@ -16,14 +16,14 @@ public class WalletDeleteTest extends WalletLogicTest {
 
     @Test
     public void delete_userIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.deleteById(null, walletDb.getId());
         });
     }
 
     @Test
     public void delete_walletIdIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.deleteById(userLogged, null);
         });
     }
@@ -38,7 +38,7 @@ public class WalletDeleteTest extends WalletLogicTest {
         walletGestor.deleteById(userLogged, walletDb.getId());
 
         try (Session session = sessionFactory.openSession()) {
-            Assert.assertNull(session.get(WalletDb.class, walletDb.getId()));
+            Assertions.assertNull(session.get(WalletDb.class, walletDb.getId()));
         }
     }
 
@@ -47,7 +47,7 @@ public class WalletDeleteTest extends WalletLogicTest {
         createUser("second-user-test", "second@test.ts");
         var secondUser = login("second-user-test");
 
-        Assert.assertThrows(UserNotHavePermissionException.class, () -> {
+        Assertions.assertThrows(UserNotHavePermissionException.class, () -> {
             walletGestor.deleteById(secondUser, walletDb.getId());
         });
     }

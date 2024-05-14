@@ -1,7 +1,7 @@
 package org.laga.logic.wallet;
 
 import org.hibernate.Session;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
@@ -12,28 +12,28 @@ import java.math.BigDecimal;
 public class WalletUpdateTest extends WalletLogicTest {
     @Test
     public void updateWallet_userIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.update(null, walletDb.getId(), walletDb);
         });
     }
 
     @Test
     public void updateWallet_idIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.update(userLogged, null, walletDb);
         });
     }
 
     @Test
     public void updateWallet_walletIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.update(userLogged, walletDb.getId(), null);
         });
     }
 
     @Test
     public void updateWallet_idIsNotTheSame_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.update(userLogged, walletDb.getId() + 1, walletDb);
         });
     }
@@ -57,7 +57,7 @@ public class WalletUpdateTest extends WalletLogicTest {
         walletGestor.update(userLogged, id, walletDb);
 
         try (Session session = sessionFactory.openSession()) {
-            Assert.assertEquals(newText, session.get(WalletDb.class, id).getName());
+            Assertions.assertEquals(newText, session.get(WalletDb.class, id).getName());
         }
     }
 
@@ -73,7 +73,7 @@ public class WalletUpdateTest extends WalletLogicTest {
         wallet2.setFavorite(false);
         wallet2.setValue(new BigDecimal(302));
 
-        Assert.assertThrows(DuplicateValueException.class, () -> {
+        Assertions.assertThrows(DuplicateValueException.class, () -> {
             walletGestor.update(userLogged, id, wallet2);
         });
     }
@@ -89,7 +89,7 @@ public class WalletUpdateTest extends WalletLogicTest {
         createUser("second-user-test", "second@test.ts");
         var secondUser = login("second-user-test");
 
-        Assert.assertThrows(UserNotHavePermissionException.class, () -> {
+        Assertions.assertThrows(UserNotHavePermissionException.class, () -> {
             walletGestor.update(secondUser, walletDb.getId(), wallet2);
         });
     }

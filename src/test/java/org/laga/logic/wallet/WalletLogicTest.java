@@ -2,22 +2,19 @@ package org.laga.logic.wallet;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
 import org.laga.TestUtilities;
 import org.laga.logic.UserRequest;
 import org.laga.moneygestor.App;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.WalletGestor;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = App.class)
-public class WalletLogicTest extends UserRequest {
+public abstract class WalletLogicTest extends UserRequest {
     protected WalletGestor walletGestor;
 
     protected WalletDb walletDb;

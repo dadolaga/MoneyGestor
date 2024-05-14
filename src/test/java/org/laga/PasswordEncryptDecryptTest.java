@@ -1,7 +1,7 @@
 package org.laga;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.logic.UserGestor;
 
 public class PasswordEncryptDecryptTest {
@@ -9,7 +9,7 @@ public class PasswordEncryptDecryptTest {
     public void encryptPassword() {
         final String password = "HelloThisIsMyPassword";
 
-        Assert.assertNotNull(UserGestor.passwordEncrypt(password));
+        Assertions.assertNotNull(UserGestor.passwordEncrypt(password));
     }
 
     @Test
@@ -17,7 +17,7 @@ public class PasswordEncryptDecryptTest {
         final String password = "HelloThisIsMyPassword";
         final String passwordHash = UserGestor.passwordEncrypt(password);
 
-        Assert.assertTrue(UserGestor.checkPassword(password, passwordHash));
+        Assertions.assertTrue(UserGestor.checkPassword(password, passwordHash));
     }
 
     @Test
@@ -25,6 +25,6 @@ public class PasswordEncryptDecryptTest {
         final String password = "HelloThisIsMyPassword";
         final String passwordHash = UserGestor.passwordEncrypt(password);
 
-        Assert.assertFalse(UserGestor.checkPassword("HelloThisNotIsMyPassword", passwordHash));
+        Assertions.assertFalse(UserGestor.checkPassword("HelloThisNotIsMyPassword", passwordHash));
     }
 }

@@ -1,21 +1,17 @@
 package org.laga.logic;
 
-import org.junit.Test;
 import org.junit.jupiter.api.*;
-import org.junit.runner.RunWith;
 import org.laga.moneygestor.App;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.LinkedList;
 import java.util.List;
 
 @Disabled
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class)
 public abstract class UserRequest extends LogicBaseTest {
     @Autowired
@@ -37,9 +33,6 @@ public abstract class UserRequest extends LogicBaseTest {
         createUser(username, "first@test.ts");
         userLogged = login(username);
     }
-
-    @Test
-    public void ignoreThisTest() { }
 
     @AfterEach
     public void afterEach() throws Exception {

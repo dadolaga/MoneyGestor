@@ -58,31 +58,29 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
 
     @Override
     public Integer insert(UserGestor userLogged, WalletDb walletDb) {
+        if(userLogged == null || walletDb == null)
+            throw new IllegalArgumentException("one or more argument is null");
+
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        if(walletDb == null)
-            throw new IllegalArgumentException("wallet is null");
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
 
-        Session session = sessionFactory.openSession();
-        Transaction transaction = session.beginTransaction();
+            session.persist(walletDb);
 
-        session.persist(walletDb);
-
-        transaction.commit();
-        session.close();
+            transaction.commit();
+        }
 
         return null;
     }
 
     @Override
     public void deleteById(UserGestor userLogged, Integer id, boolean forceDelete) {
+        if(userLogged == null || id == null)
+            throw new IllegalArgumentException("one or more argument is null");
         if(sessionFactory == null)
             throw new SessionException("Session is null");
-        if(userLogged == null)
-            throw new IllegalArgumentException("user logged is null");
-        if(id == null)
-            throw new IllegalArgumentException("id is null");
 
         Transaction transaction;
 

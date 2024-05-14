@@ -1,7 +1,7 @@
 package org.laga.logic.wallet;
 
 import org.hibernate.Session;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
@@ -9,14 +9,14 @@ import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 public class WalletInsertTest extends WalletLogicTest {
    @Test
     public void insert_userIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.insert(null, walletDb);
         });
     }
 
     @Test
     public void insert_walletIsNull_throw() {
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.insert(userLogged, null);
         });
     }
@@ -35,7 +35,7 @@ public class WalletInsertTest extends WalletLogicTest {
         query.setParameter("walletName", walletDb.getName());
         WalletDb wallet = query.getSingleResultOrNull();
 
-        Assert.assertNotNull(wallet);
+        Assertions.assertNotNull(wallet);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class WalletInsertTest extends WalletLogicTest {
         query.setParameter("walletName", walletDb.getName());
         WalletDb wallet = query.getSingleResultOrNull();
 
-        Assert.assertEquals(wallet.getId(), id);
+        Assertions.assertEquals(wallet.getId(), id);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class WalletInsertTest extends WalletLogicTest {
         wallet2.setFavorite(false);
         wallet2.setValue(walletDb.getValue());
 
-        Assert.assertThrows(DuplicateValueException.class, () -> {
+        Assertions.assertThrows(DuplicateValueException.class, () -> {
             walletGestor.insert(userLogged, wallet2);
         });
     }
