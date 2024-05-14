@@ -108,7 +108,7 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
             if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
                 throw new UserNotHavePermissionException();
 
-            session.remove(walletDb);
+            session.remove(session.contains(walletDb) ? walletDb : session.merge(walletDb));
 
             transaction.commit();
         }
