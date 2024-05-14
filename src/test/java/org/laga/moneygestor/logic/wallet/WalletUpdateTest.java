@@ -33,6 +33,8 @@ public class WalletUpdateTest extends WalletLogicTest {
 
     @Test
     public void updateWallet_idIsNotTheSame_throw() {
+        walletGestor.insert(userLogged, walletDb);
+
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             walletGestor.update(userLogged, walletDb.getId() + 1, walletDb);
         });
@@ -67,11 +69,15 @@ public class WalletUpdateTest extends WalletLogicTest {
 
         var wallet2 = new WalletDb();
 
-        wallet2.setName(walletDb.getName());
+        wallet2.setName(walletDb.getName() + "SECOND");
         wallet2.setColor("ff0000");
         wallet2.setUserId(userLogged.getId());
         wallet2.setFavorite(false);
         wallet2.setValue(new BigDecimal(302));
+
+        walletGestor.insert(userLogged, wallet2);
+
+        wallet2.setId(null);
 
         Assertions.assertThrows(DuplicateValueException.class, () -> {
             walletGestor.update(userLogged, id, wallet2);

@@ -1,6 +1,7 @@
 package org.laga.moneygestor.logic;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.RollbackException;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
@@ -66,13 +67,17 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+            transaction = session.beginTransaction();
 
             session.persist(walletDb);
 
             transaction.commit();
         } catch (ConstraintViolationException e) {
+            if(transaction != null)
+                transaction.rollback();
+
             if(e.getMessage().contains("index_wallet_nameuser"))
                 throw new DuplicateValueException("Duplicate value for wallet", e);
         }
@@ -118,7 +123,7 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
         if(newWallet.getId() != null && !Objects.equals(walletId, newWallet.getId()))
             throw new IllegalArgumentException("walletId and newWallet id must be the same");
 
-        Transaction transaction;
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
 
@@ -138,6 +143,11 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
             session.merge(wallet);
 
             transaction.commit();
+        } catch (RollbackException e) {
+            if(transaction != null)
+                transaction.rollback();
+
+            throw new DuplicateValueException("Duplicate value for wallet", e);
         }
     }
 
