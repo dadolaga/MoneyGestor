@@ -1,4 +1,4 @@
-package org.laga.logic.wallet;
+package org.laga.moneygestor.logic.wallet;
 
 import org.hibernate.Session;
 import org.junit.jupiter.api.Assertions;

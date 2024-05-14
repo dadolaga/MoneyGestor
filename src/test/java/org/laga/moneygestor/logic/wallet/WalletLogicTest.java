@@ -1,10 +1,10 @@
-package org.laga.logic.wallet;
+package org.laga.moneygestor.logic.wallet;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.*;
-import org.laga.TestUtilities;
-import org.laga.logic.UserRequest;
+import org.laga.moneygestor.TestUtilities;
+import org.laga.moneygestor.logic.UserRequest;
 import org.laga.moneygestor.App;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.WalletGestor;

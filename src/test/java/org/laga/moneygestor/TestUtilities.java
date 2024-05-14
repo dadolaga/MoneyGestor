@@ -1,4 +1,4 @@
-package org.laga;
+package org.laga.moneygestor;
 
 import java.util.Random;
 

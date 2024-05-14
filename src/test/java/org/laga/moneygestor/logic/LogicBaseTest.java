@@ -1,4 +1,4 @@
-package org.laga.logic;
+package org.laga.moneygestor.logic;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;

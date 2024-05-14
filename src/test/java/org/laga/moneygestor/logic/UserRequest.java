@@ -1,9 +1,8 @@
-package org.laga.logic;
+package org.laga.moneygestor.logic;
 
 import org.junit.jupiter.api.*;
 import org.laga.moneygestor.App;
 import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package org.laga;
+package org.laga.moneygestor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
