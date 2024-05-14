@@ -43,12 +43,13 @@ public class WalletInsertTest extends WalletLogicTest {
     public void insert_returnNewWalletWithId_return() {
         Integer id = walletGestor.insert(userLogged, walletDb);
 
-        Session session = sessionFactory.openSession();
-        var query = session.createQuery("FROM WalletDb WHERE name = :walletName", WalletDb.class);
-        query.setParameter("walletName", walletDb.getName());
-        WalletDb wallet = query.getSingleResultOrNull();
+        try (Session session = sessionFactory.openSession()) {
+            var query = session.createQuery("FROM WalletDb WHERE name = :walletName", WalletDb.class);
+            query.setParameter("walletName", walletDb.getName());
+            WalletDb wallet = query.getSingleResultOrNull();
 
-        Assertions.assertEquals(wallet.getId(), id);
+            Assertions.assertEquals(wallet.getId(), id);
+        }
     }
 
     @Test
