@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class TransactionDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     private String description;
     private BigDecimal value;
     private LocalDate date;
@@ -23,7 +23,7 @@ public class TransactionDb {
     @JoinColumn(name = "transactiondestination", insertable = false, updatable = false)
     private TransactionDb transactionDestination;
     @Column(name = "transactiondestination")
-    private Integer transactionDestinationId;
+    private Long transactionDestinationId;
     @Column(name = "user")
     private Integer userId;
     @ManyToOne
@@ -32,11 +32,11 @@ public class TransactionDb {
     @Column(name = "Type")
     private Integer typeId;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -96,11 +96,11 @@ public class TransactionDb {
         this.transactionDestination = transactionDestination;
     }
 
-    public Integer getTransactionDestinationId() {
+    public Long getTransactionDestinationId() {
         return transactionDestinationId;
     }
 
-    public void setTransactionDestinationId(Integer transactionDestinationId) {
+    public void setTransactionDestinationId(Long transactionDestinationId) {
         this.transactionDestinationId = transactionDestinationId;
     }
 

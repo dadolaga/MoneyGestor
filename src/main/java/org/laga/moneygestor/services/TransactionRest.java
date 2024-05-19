@@ -112,7 +112,7 @@ public class TransactionRest {
     }
 
     @GetMapping("/get/{id}")
-    public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Integer id) {
+    public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
             throw MoneyGestorErrorSample.mapOfError.get(2);
@@ -134,7 +134,7 @@ public class TransactionRest {
     }
 
     @PostMapping("/edit/{id}")
-    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Integer id) {
+    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Long id) {
         if(authorization == null)
             throw MoneyGestorErrorSample.mapOfError.get(3);
 
@@ -178,7 +178,7 @@ public class TransactionRest {
     }
 
     @GetMapping("/delete/{id}")
-    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Integer id) {
+    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
             throw MoneyGestorErrorSample.mapOfError.get(2);
