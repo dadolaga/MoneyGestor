@@ -65,7 +65,7 @@ public class WalletRest extends BaseRest {
 
             Sort sort = SortGestor.decode(sortParams);
 
-            return WalletGestor.convertToRest(walletGestor.getAll(userGestor).toList());
+            return WalletGestor.convertToRest(walletGestor.getAll(userGestor));
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         } catch (PropertyAccessException e) {

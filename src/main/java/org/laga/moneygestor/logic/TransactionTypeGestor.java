@@ -12,8 +12,8 @@ import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb> {
 
@@ -97,7 +97,12 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public Stream<TransactionTypeDb> getAll(UserGestor userLogged) {
-        return null;
+    public List<TransactionTypeDb> getAll(UserGestor userLogged) {
+        try (Session session = sessionFactory.openSession()) {
+            var query = session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class);
+            query.setParameter("userId", userLogged.getId());
+
+            return query.list();
+        }
     }
 }

@@ -1,6 +1,6 @@
 package org.laga.moneygestor.logic;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 public interface Gestor<ID, T> {
     /**
@@ -45,5 +45,5 @@ public interface Gestor<ID, T> {
      */
     T getById(UserGestor userLogged, ID id);
 
-    Stream<T> getAll(UserGestor userLogged);
+    List<T> getAll(UserGestor userLogged);
 }

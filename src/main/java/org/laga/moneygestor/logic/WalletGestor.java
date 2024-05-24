@@ -158,12 +158,12 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public Stream<WalletDb> getAll(UserGestor userGestor) {
+    public List<WalletDb> getAll(UserGestor userGestor) {
         Session session = sessionFactory.openSession();
 
         var query = session.createQuery("FROM WalletDb WHERE userId = :userId", WalletDb.class);
         query.setParameter("userId", userGestor.getId());
 
-        return query.getResultStream();
+        return query.list();
     }
 }
