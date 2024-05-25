@@ -14,4 +14,12 @@ public class TestUtilities {
 
         return builder.toString();
     }
+
+    public static String generateEmail() {
+        return generateEmail("test");
+    }
+
+    public static String generateEmail(String baseWord) {
+        return baseWord + "." + generateRandomString(6) + "@test.ts";
+    }
 }
