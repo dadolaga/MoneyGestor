@@ -171,7 +171,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
             throw new UserNotHavePermissionException();
 
         try {
-            var user = getById(userLogged, id);
+            var user = getById(session, userLogged, id);
 
             user.setFirstname(newUser.getFirstname());
             user.setLastname(newUser.getLastname());
