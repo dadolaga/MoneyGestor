@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 public class UserRest {
-    private final UserRepository userRepository;
+    /*private final UserRepository userRepository;
 
     @Autowired
     public UserRest(UserRepository userRepository) {
@@ -68,5 +68,5 @@ public class UserRest {
             throw MoneyGestorErrorSample.mapOfError.get(2);
 
         return userGestor.generateReturnUser();
-    }
+    }*/
 }

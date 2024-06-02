@@ -8,13 +8,6 @@ public class User {
     private String token;
     private LocalDateTime expireToken;
 
-    public User(String lastname, String firstname, String token, LocalDateTime expireToken) {
-        this.lastname = lastname;
-        this.firstname = firstname;
-        this.token = token;
-        this.expireToken = expireToken;
-    }
-
     public String getLastname() {
         return lastname;
     }

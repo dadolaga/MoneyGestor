@@ -26,7 +26,7 @@ public class TransactionTypeRest extends BaseRest {
         super(sessionFactory);
         this.userRepository = userRepository;
     }
-
+/*
     @GetMapping("/list")
     public List<TransactionTypeDb> getListTransactionType(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
         UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
@@ -55,5 +55,5 @@ public class TransactionTypeRest extends BaseRest {
         } catch (DuplicateValueException e) {
                 throw MoneyGestorErrorSample.mapOfError.get(5);
         }
-    }
+    }*/
 }

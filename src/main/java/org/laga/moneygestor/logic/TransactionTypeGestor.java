@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
 import org.laga.moneygestor.db.entity.TransactionTypeDb;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.exceptions.NotImplementedMethod;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
@@ -24,7 +25,7 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public Integer insert(UserGestor userLogged, TransactionTypeDb transactionTypeDb) {
+    public Integer insert(UserDb userLogged, TransactionTypeDb transactionTypeDb) {
         if(userLogged == null || transactionTypeDb == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -47,7 +48,7 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public void deleteById(UserGestor userLogged, Integer id, boolean forceDelete) {
+    public void deleteById(UserDb userLogged, Integer id, boolean forceDelete) {
         if(userLogged == null || id == null)
             throw new IllegalArgumentException("one or more argument is null");
         if(sessionFactory == null)
@@ -76,28 +77,28 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public void update(UserGestor userLogged, TransactionTypeDb newObject) {
+    public void update(UserDb userLogged, TransactionTypeDb newObject) {
         throw new NotImplementedMethod();
     }
 
     @Override
-    public void update(UserGestor userLogged, Integer integer, TransactionTypeDb newObject) {
+    public void update(UserDb userLogged, Integer integer, TransactionTypeDb newObject) {
         throw new NotImplementedMethod();
     }
 
     @Override
-    public TransactionTypeDb getById(UserGestor userLogged, Integer id) {
+    public TransactionTypeDb getById(UserDb userLogged, Integer id) {
         try (Session session = sessionFactory.openSession()) {
             return getById(session, userLogged, id);
         }
     }
 
-    private TransactionTypeDb getById(Session session, UserGestor userLogged, Integer id) {
+    private TransactionTypeDb getById(Session session, UserDb userLogged, Integer id) {
         return session.get(TransactionTypeDb.class, id);
     }
 
     @Override
-    public List<TransactionTypeDb> getAll(UserGestor userLogged) {
+    public List<TransactionTypeDb> getAll(UserDb userLogged) {
         try (Session session = sessionFactory.openSession()) {
             var query = session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class);
             query.setParameter("userId", userLogged.getId());

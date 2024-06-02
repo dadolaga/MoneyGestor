@@ -7,6 +7,7 @@ import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
@@ -60,7 +61,7 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public Integer insert(UserGestor userLogged, WalletDb walletDb) {
+    public Integer insert(UserDb userLogged, WalletDb walletDb) {
         if(userLogged == null || walletDb == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -83,7 +84,7 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public void deleteById(UserGestor userLogged, Integer id, boolean forceDelete) {
+    public void deleteById(UserDb userLogged, Integer id, boolean forceDelete) {
         if(userLogged == null || id == null)
             throw new IllegalArgumentException("one or more argument is null");
         if(sessionFactory == null)
@@ -113,7 +114,7 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public void update(UserGestor userLogged, Integer walletId, WalletDb newWallet) {
+    public void update(UserDb userLogged, Integer walletId, WalletDb newWallet) {
         if(sessionFactory == null || walletId == null || newWallet == null || userLogged == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -146,19 +147,19 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public void update(UserGestor userGestor, WalletDb newObject) {
+    public void update(UserDb userGestor, WalletDb newObject) {
         update(userGestor, newObject.getId(), newObject);
     }
 
     @Override
-    public WalletDb getById(UserGestor userLogged, Integer id) {
+    public WalletDb getById(UserDb userLogged, Integer id) {
         Session session = sessionFactory.openSession();
 
         return session.get(WalletDb.class, id);
     }
 
     @Override
-    public List<WalletDb> getAll(UserGestor userGestor) {
+    public List<WalletDb> getAll(UserDb userGestor) {
         Session session = sessionFactory.openSession();
 
         var query = session.createQuery("FROM WalletDb WHERE userId = :userId", WalletDb.class);

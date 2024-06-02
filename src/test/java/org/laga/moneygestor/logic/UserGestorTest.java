@@ -222,7 +222,7 @@ public class UserGestorTest extends LogicBaseTest {
             "ALLUPPERCASE1!",   // No lowercase letter
             "NoNumber!",        // No number
             "NoSpecialChar1",   // No special character
-            "Noupperlower1!",   // No uppercase letter, only lowercase
+            "noupperlower1!",   // No uppercase letter, only lowercase
             "12345678!",        // No uppercase or lowercase letter
             "NoSpecialChar1",   // No special character
             "Short1",           // Less than 8 characters
@@ -333,7 +333,7 @@ public class UserGestorTest extends LogicBaseTest {
 
         userGestor.insert(null, user);
 
-        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> userGestor.login(email, password));
+        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> userGestor.login(email, "ThisPasswordIsNotCorrect"));
     }
 
     @Test

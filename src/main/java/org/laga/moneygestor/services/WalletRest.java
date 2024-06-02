@@ -36,7 +36,7 @@ public class WalletRest extends BaseRest {
         walletGestor = new WalletGestor(sessionFactory);
     }
 
-    @PostMapping("/new")
+    /*@PostMapping("/new")
     public void addNewWallet(@RequestBody CreateWallet wallet) {
         UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, wallet.getToken());
         if(!userGestor.tokenIsValid())
@@ -147,5 +147,5 @@ public class WalletRest extends BaseRest {
         } catch (IllegalArgumentException e) {
             throw MoneyGestorErrorSample.mapOfError.get(2);
         }
-    }
+    }*/
 }

@@ -1,6 +1,6 @@
 package org.laga.moneygestor.logic.exceptions;
 
-public class UserCreationException extends Exception {
+public class UserCreationException extends RuntimeException {
     public UserCreationException() {
     }
 

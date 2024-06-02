@@ -2,6 +2,8 @@ package org.laga.moneygestor.services;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
+import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.logic.UserGestor;
 
 public abstract class BaseRest {
     protected SessionFactory sessionFactory;
@@ -12,5 +14,11 @@ public abstract class BaseRest {
         }
 
         sessionFactory = managerFactory.unwrap(SessionFactory.class);
+    }
+
+    protected UserDb getUserLogged(String authorizationToken) {
+        var userGestor =new UserGestor(sessionFactory);
+
+        return userGestor.getFromAuthorizationTokenAndCheckToken(authorizationToken);
     }
 }

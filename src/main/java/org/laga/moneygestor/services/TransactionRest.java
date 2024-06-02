@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/api/transaction")
 public class TransactionRest {
-
+/*
     private static final int ID_EXCHANGE_TYPE = 1;
 
     private final UserRepository userRepository;
@@ -239,5 +239,5 @@ public class TransactionRest {
         }
 
         return graph;
-    }
+    }*/
 }
