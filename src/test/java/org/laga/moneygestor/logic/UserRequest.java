@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.*;
 import org.laga.moneygestor.App;
+import org.laga.moneygestor.TestUtilities;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
@@ -21,7 +22,7 @@ public abstract class UserRequest extends LogicBaseTest {
     @Autowired
     UserRepository userRepository;
 
-    private static final String username = "test-suit";
+    private static final String username = "LoggedTestUser";
     private static final String password = "This_is_my_strong_password123";
 
     protected UserDb userLogged;
@@ -39,11 +40,11 @@ public abstract class UserRequest extends LogicBaseTest {
     }
 
     @AfterEach
-    public void afterEach() throws Exception {
+    public void afterEach() {
         deleteUser();
     }
 
-    protected UserDb createUser(String username, String email) throws Exception {
+    protected UserDb createUser(String username, String email) {
         UserRegistrationForm userRegistrationForm = new UserRegistrationForm();
 
         userRegistrationForm.setFirstname("Test");
@@ -68,7 +69,7 @@ public abstract class UserRequest extends LogicBaseTest {
         return userDb;
     }
 
-    protected UserDb login(String username) throws Exception {
+    protected UserDb login(String username) {
         try (Session session = sessionFactory.openSession()) {
             var selectQuery = session.createQuery("FROM UserDb WHERE username = :username", UserDb.class);
             selectQuery.setParameter("username", username);
@@ -86,6 +87,11 @@ public abstract class UserRequest extends LogicBaseTest {
 
             return user;
         }
+    }
+
+    protected UserDb createAndLoginOtherUser(String username) {
+        createUser(username, TestUtilities.generateEmail("second"));
+        return login(username);
     }
 
     protected void deleteUser() {
