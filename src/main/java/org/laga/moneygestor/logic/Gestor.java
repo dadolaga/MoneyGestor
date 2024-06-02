@@ -76,7 +76,7 @@ public abstract class Gestor<ID, T> {
     /**
      * Search object in the database by id
      * @param id id of object to find
-     * @return the object found, or <code>null</code> if object not found
+     * @return the object found, or <code>null</code> if object not found or user not have permission
      */
     public T getById(UserDb userLogged, ID id) {
         try (Session session = sessionFactory.openSession()) {

@@ -126,6 +126,8 @@ public class WalletTest extends UserRequest {
 
         walletDb.setName(newText);
 
+        namesToDelete.add(newText);
+
         walletGestor.update(userLogged, id, walletDb);
 
         try (Session session = sessionFactory.openSession()) {
@@ -144,6 +146,8 @@ public class WalletTest extends UserRequest {
         wallet2.setUserId(userLogged.getId());
         wallet2.setFavorite(false);
         wallet2.setValue(new BigDecimal(302));
+
+        namesToDelete.add(wallet2.getName());
 
         walletGestor.insert(userLogged, wallet2);
 
@@ -171,6 +175,17 @@ public class WalletTest extends UserRequest {
 
     @Test
     public void delete_deleteCorrect_effectiveDelete() {
+        try (Session session = sessionFactory.openSession()) {
+            var transaction = session.beginTransaction();
+
+            walletDb.setFavorite(false);
+            walletDb.setUserId(userLogged.getId());
+
+            session.persist(walletDb);
+
+            transaction.commit();
+        }
+
         walletGestor.deleteById(userLogged, walletDb.getId());
 
         try (Session session = sessionFactory.openSession()) {
@@ -180,6 +195,17 @@ public class WalletTest extends UserRequest {
 
     @Test
     public void delete_userNotHavePermission_throw() {
+        try (Session session = sessionFactory.openSession()) {
+            var transaction = session.beginTransaction();
+
+            walletDb.setFavorite(false);
+            walletDb.setUserId(userLogged.getId());
+
+            session.persist(walletDb);
+
+            transaction.commit();
+        }
+
         final String secondUsername = "SecondUser_Test_" + TestUtilities.generateRandomString(6);
         var secondUserLogged = createAndLoginOtherUser(secondUsername);
 
@@ -221,11 +247,14 @@ public class WalletTest extends UserRequest {
 
         var secondUserLogged = createAndLoginOtherUser(secondUsername);
 
-        Assertions.assertThrows(UserNotHavePermissionException.class, () -> walletGestor.getById(secondUserLogged, walletDb.getId()));
+        Assertions.assertNull(walletGestor.getById(secondUserLogged, walletDb.getId()));
     }
 
     @Test
     public void getAll_effectiveReturn_return() {
+        final String secondUsername = "SecondUser_Test_" + TestUtilities.generateRandomString(6);
+        var secondUserLogged = createAndLoginOtherUser(secondUsername);
+
         try (Session session = sessionFactory.openSession()) {
             var transaction = session.beginTransaction();
 
@@ -234,10 +263,20 @@ public class WalletTest extends UserRequest {
 
             session.persist(walletDb);
 
+            WalletDb secondWallet = new WalletDb();
+
+            secondWallet.setName(walletDb.getName());
+            secondWallet.setValue(new BigDecimal(100));
+            secondWallet.setColor("ff0000");
+            secondWallet.setFavorite(false);
+            secondWallet.setUserId(secondUserLogged.getId());
+
+            session.persist(secondWallet);
+
             transaction.commit();
         }
 
-        Assertions.assertEquals(walletDb.getName(), walletGestor.getAll(userLogged).get(0).getName());
+        Assertions.assertEquals(1, walletGestor.getAll(userLogged).size());
     }
 
     @AfterEach

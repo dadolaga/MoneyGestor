@@ -1,6 +1,5 @@
 package org.laga.moneygestor.logic;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.RollbackException;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
@@ -65,6 +64,9 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
+        walletDb.setUserId(userLogged.getId());
+        walletDb.setFavorite(false);
+
         try {
             Transaction transaction = session.getTransaction();
 
@@ -88,16 +90,13 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
 
         Transaction transaction = session.getTransaction();
 
-        WalletDb walletDb = getById(userLogged, id);
+        WalletDb walletDb = getById(session, userLogged, id);
 
         if(walletDb == null)
-            throw new EntityNotFoundException("Wallet with " + id + " not found");
+            throw new UserNotHavePermissionException();
 
         if(!forceDelete && !walletDb.getTransaction().isEmpty())
             throw new TableNotEmptyException("transaction table is not empty");
-
-        if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
-            throw new UserNotHavePermissionException();
 
         session.remove(session.contains(walletDb) ? walletDb : session.merge(walletDb));
 
@@ -120,9 +119,6 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
             WalletDb wallet = getById(userLogged, walletId);
 
             if(wallet == null)
-                throw new EntityNotFoundException("Wallet with " + walletId + " not found");
-
-            if (!Objects.equals(userLogged.getId(), wallet.getUserId()))
                 throw new UserNotHavePermissionException();
 
             wallet.setName(newWallet.getName());
@@ -145,7 +141,15 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
 
     @Override
     public WalletDb getById(Session session, UserDb userLogged, Integer id) {
-        return session.get(WalletDb.class, id);
+        try {
+            return session.createQuery("FROM WalletDb WHERE id = :id AND userId = :userId ", WalletDb.class)
+                    .setParameter("id", id)
+                    .setParameter("userId", userLogged.getId())
+                    .setMaxResults(1)
+                    .list().get(0);
+        } catch (IndexOutOfBoundsException ignored) {
+            return null;
+        }
     }
 
     @Override
