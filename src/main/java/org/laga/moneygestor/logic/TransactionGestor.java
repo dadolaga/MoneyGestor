@@ -1,5 +1,6 @@
 package org.laga.moneygestor.logic;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.UserDb;
@@ -8,14 +9,43 @@ import org.laga.moneygestor.services.models.Transaction;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
-public class TransactionGestor implements Gestor<Long, TransactionDb> {
-    private final SessionFactory sessionFactory;
+public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
     public TransactionGestor(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+        super(sessionFactory);
     }
+
+    @Override
+    protected Long insert(Session session, UserDb userLogged, TransactionDb object) {
+        return null;
+    }
+
+    @Override
+    protected void deleteById(Session session, UserDb userLogged, Long aLong, boolean forceDelete) {
+
+    }
+
+    @Override
+    public void update(UserDb userLogged, TransactionDb newObject) {
+
+    }
+
+    @Override
+    protected void update(Session session, UserDb userLogged, Long aLong, TransactionDb newObject) {
+
+    }
+
+    @Override
+    protected TransactionDb getById(Session session, UserDb userLogged, Long aLong) {
+        return null;
+    }
+
+    @Override
+    public List<TransactionDb> getAll(Session session, UserDb userLogged) {
+        return null;
+    }
+
     public static Transaction convertToRest(TransactionDb transactionDb) {
         Transaction transaction = new Transaction();
 
@@ -37,35 +67,5 @@ public class TransactionGestor implements Gestor<Long, TransactionDb> {
             transactions.add(convertToRest(transaction));
 
         return transactions;
-    }
-
-    @Override
-    public Long insert(UserDb userLogged, TransactionDb object) {
-        return null;
-    }
-
-    @Override
-    public void deleteById(UserDb userLogged, Long aLong, boolean forceDelete) {
-
-    }
-
-    @Override
-    public void update(UserDb userLogged, TransactionDb newObject) {
-
-    }
-
-    @Override
-    public void update(UserDb userLogged, Long aLong, TransactionDb newObject) {
-
-    }
-
-    @Override
-    public TransactionDb getById(UserDb userLogged, Long aLong) {
-        return null;
-    }
-
-    @Override
-    public List<TransactionDb> getAll(UserDb userLogged) {
-        return null;
     }
 }

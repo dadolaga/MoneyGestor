@@ -6,32 +6,18 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.laga.moneygestor.db.entity.UserDb;
-import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.exceptions.NotImplementedMethod;
 import org.laga.moneygestor.logic.exceptions.*;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.models.User;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.data.domain.Example;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UserGestor implements Gestor<Integer, UserDb> {
-
-    private SessionFactory sessionFactory;
+public class UserGestor extends Gestor<Integer, UserDb> {
 
     public UserGestor(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+        super(sessionFactory);
     }
 
     public static UserDb createUserFromRegistrationForm(UserRegistrationForm user) throws UserCreationException {
@@ -134,12 +120,12 @@ public class UserGestor implements Gestor<Integer, UserDb> {
     }
 
     @Override
-    public Integer insert(UserDb userLogged, UserDb object) {
+    public Integer insert(Session session, UserDb userLogged, UserDb object) {
         if(object == null)
             throw new IllegalArgumentException();
-        
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+
+        try {
+            Transaction transaction = session.getTransaction();
 
             session.persist(object);
 
@@ -158,19 +144,17 @@ public class UserGestor implements Gestor<Integer, UserDb> {
     }
 
     @Override
-    public void deleteById(UserDb userLogged, Integer id, boolean forceDelete) {
+    public void deleteById(Session session, UserDb userLogged, Integer id, boolean forceDelete) {
         if(!Objects.equals(userLogged.getId(), id))
             throw new UserNotHavePermissionException();
 
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
+        Transaction transaction = session.getTransaction();
 
-            session.createMutationQuery("DELETE UserDb WHERE id = :id")
-                    .setParameter("id", id)
-                    .executeUpdate();
+        session.createMutationQuery("DELETE UserDb WHERE id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
 
-            transaction.commit();
-        }
+        transaction.commit();
     }
 
     @Override
@@ -179,14 +163,14 @@ public class UserGestor implements Gestor<Integer, UserDb> {
     }
 
     @Override
-    public void update(UserDb userLogged, Integer id, UserDb newUser) {
+    public void update(Session session, UserDb userLogged, Integer id, UserDb newUser) {
         if(newUser == null || id == null || userLogged == null)
             throw new IllegalArgumentException();
 
         if(!Objects.equals(userLogged.getId(), id))
             throw new UserNotHavePermissionException();
 
-        try (Session session = sessionFactory.openSession())  {
+        try {
             var user = getById(userLogged, id);
 
             user.setFirstname(newUser.getFirstname());
@@ -194,7 +178,7 @@ public class UserGestor implements Gestor<Integer, UserDb> {
             user.setUsername(newUser.getUsername());
             user.setEmail(newUser.getEmail());
 
-            Transaction transaction = session.beginTransaction();
+            Transaction transaction = session.getTransaction();
 
             session.persist(user);
 
@@ -205,8 +189,8 @@ public class UserGestor implements Gestor<Integer, UserDb> {
     }
 
     @Override
-    public UserDb getById(UserDb userLogged, Integer id) {
-        try (Session session = sessionFactory.openSession()) {
+    public UserDb getById(Session session, UserDb userLogged, Integer id) {
+        try {
             return session.createQuery("FROM UserDb WHERE id = :id", UserDb.class)
                     .setParameter("id", id)
                     .setMaxResults(1)
@@ -217,10 +201,8 @@ public class UserGestor implements Gestor<Integer, UserDb> {
     }
 
     @Override
-    public List<UserDb> getAll(UserDb userLogged) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM UserDb", UserDb.class)
-                    .list();
-        }
+    public List<UserDb> getAll(Session session, UserDb userLogged) {
+        return session.createQuery("FROM UserDb", UserDb.class)
+                .list();
     }
 }

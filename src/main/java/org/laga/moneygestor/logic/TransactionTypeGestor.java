@@ -16,25 +16,22 @@ import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import java.util.List;
 import java.util.Objects;
 
-public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb> {
-
-    SessionFactory sessionFactory;
+public class TransactionTypeGestor extends Gestor<Integer, TransactionTypeDb> {
 
     public TransactionTypeGestor(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+        super(sessionFactory);
     }
 
     @Override
-    public Integer insert(UserDb userLogged, TransactionTypeDb transactionTypeDb) {
+    public Integer insert(Session session, UserDb userLogged, TransactionTypeDb transactionTypeDb) {
         if(userLogged == null || transactionTypeDb == null)
             throw new IllegalArgumentException("one or more argument is null");
 
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        Transaction transaction;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        try {
+            Transaction transaction = session.getTransaction();
 
             session.persist(transactionTypeDb);
 
@@ -48,32 +45,28 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public void deleteById(UserDb userLogged, Integer id, boolean forceDelete) {
+    public void deleteById(Session session, UserDb userLogged, Integer id, boolean forceDelete) {
         if(userLogged == null || id == null)
             throw new IllegalArgumentException("one or more argument is null");
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        Transaction transaction;
+        Transaction transaction = session.getTransaction();
 
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        TransactionTypeDb transactionTypeDb = getById(session, userLogged, id);
 
-            TransactionTypeDb transactionTypeDb = getById(session, userLogged, id);
+        if(transactionTypeDb == null)
+            throw new EntityNotFoundException("Wallet with " + id + " not found");
 
-            if(transactionTypeDb == null)
-                throw new EntityNotFoundException("Wallet with " + id + " not found");
+        if(!forceDelete && !transactionTypeDb.getTransaction().isEmpty())
+            throw new TableNotEmptyException("transaction table is not empty");
 
-            if(!forceDelete && !transactionTypeDb.getTransaction().isEmpty())
-                throw new TableNotEmptyException("transaction table is not empty");
+        if(!Objects.equals(userLogged.getId(), transactionTypeDb.getUserId()))
+            throw new UserNotHavePermissionException();
 
-            if(!Objects.equals(userLogged.getId(), transactionTypeDb.getUserId()))
-                throw new UserNotHavePermissionException();
+        session.remove(session.contains(transactionTypeDb) ? transactionTypeDb : session.merge(transactionTypeDb));
 
-            session.remove(session.contains(transactionTypeDb) ? transactionTypeDb : session.merge(transactionTypeDb));
-
-            transaction.commit();
-        }
+        transaction.commit();
     }
 
     @Override
@@ -82,28 +75,19 @@ public class TransactionTypeGestor implements Gestor<Integer, TransactionTypeDb>
     }
 
     @Override
-    public void update(UserDb userLogged, Integer integer, TransactionTypeDb newObject) {
+    public void update(Session session, UserDb userLogged, Integer integer, TransactionTypeDb newObject) {
         throw new NotImplementedMethod();
     }
 
     @Override
-    public TransactionTypeDb getById(UserDb userLogged, Integer id) {
-        try (Session session = sessionFactory.openSession()) {
-            return getById(session, userLogged, id);
-        }
-    }
-
-    private TransactionTypeDb getById(Session session, UserDb userLogged, Integer id) {
+    public TransactionTypeDb getById(Session session, UserDb userLogged, Integer id) {
         return session.get(TransactionTypeDb.class, id);
     }
 
     @Override
-    public List<TransactionTypeDb> getAll(UserDb userLogged) {
-        try (Session session = sessionFactory.openSession()) {
-            var query = session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class);
-            query.setParameter("userId", userLogged.getId());
-
-            return query.list();
-        }
+    public List<TransactionTypeDb> getAll(Session session, UserDb userLogged) {
+        return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class)
+                .setParameter("userId", userLogged.getId())
+                .list();
     }
 }

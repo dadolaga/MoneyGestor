@@ -17,14 +17,11 @@ import org.laga.moneygestor.services.models.Wallet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
-public class WalletGestor implements Gestor<Integer, WalletDb> {
-
-    private final SessionFactory sessionFactory;
+public class WalletGestor extends Gestor<Integer, WalletDb> {
 
     public WalletGestor(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+        super(sessionFactory);
     }
 
     public static Wallet convertToRest(WalletDb walletDb) {
@@ -61,16 +58,15 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public Integer insert(UserDb userLogged, WalletDb walletDb) {
+    public Integer insert(Session session, UserDb userLogged, WalletDb walletDb) {
         if(userLogged == null || walletDb == null)
             throw new IllegalArgumentException("one or more argument is null");
 
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        Transaction transaction;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        try {
+            Transaction transaction = session.getTransaction();
 
             session.persist(walletDb);
 
@@ -84,37 +80,33 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public void deleteById(UserDb userLogged, Integer id, boolean forceDelete) {
+    public void deleteById(Session session, UserDb userLogged, Integer id, boolean forceDelete) {
         if(userLogged == null || id == null)
             throw new IllegalArgumentException("one or more argument is null");
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        Transaction transaction;
+        Transaction transaction = session.getTransaction();
 
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        WalletDb walletDb = getById(userLogged, id);
 
-            WalletDb walletDb = getById(userLogged, id);
+        if(walletDb == null)
+            throw new EntityNotFoundException("Wallet with " + id + " not found");
 
-            if(walletDb == null)
-                throw new EntityNotFoundException("Wallet with " + id + " not found");
+        if(!forceDelete && !walletDb.getTransaction().isEmpty())
+            throw new TableNotEmptyException("transaction table is not empty");
 
-            if(!forceDelete && !walletDb.getTransaction().isEmpty())
-                throw new TableNotEmptyException("transaction table is not empty");
+        if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
+            throw new UserNotHavePermissionException();
 
-            if(!Objects.equals(userLogged.getId(), walletDb.getUserId()))
-                throw new UserNotHavePermissionException();
+        session.remove(session.contains(walletDb) ? walletDb : session.merge(walletDb));
 
-            session.remove(session.contains(walletDb) ? walletDb : session.merge(walletDb));
-
-            transaction.commit();
-        }
+        transaction.commit();
 
     }
 
     @Override
-    public void update(UserDb userLogged, Integer walletId, WalletDb newWallet) {
+    public void update(Session session, UserDb userLogged, Integer walletId, WalletDb newWallet) {
         if(sessionFactory == null || walletId == null || newWallet == null || userLogged == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -122,8 +114,8 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
             throw new IllegalArgumentException("walletId and newWallet id must be the same");
 
         Transaction transaction;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        try {
+            transaction = session.getTransaction();
 
             WalletDb wallet = getById(userLogged, walletId);
 
@@ -152,19 +144,14 @@ public class WalletGestor implements Gestor<Integer, WalletDb> {
     }
 
     @Override
-    public WalletDb getById(UserDb userLogged, Integer id) {
-        Session session = sessionFactory.openSession();
-
+    public WalletDb getById(Session session, UserDb userLogged, Integer id) {
         return session.get(WalletDb.class, id);
     }
 
     @Override
-    public List<WalletDb> getAll(UserDb userGestor) {
-        Session session = sessionFactory.openSession();
-
-        var query = session.createQuery("FROM WalletDb WHERE userId = :userId", WalletDb.class);
-        query.setParameter("userId", userGestor.getId());
-
-        return query.list();
+    public List<WalletDb> getAll(Session session, UserDb userGestor) {
+        return session.createQuery("FROM WalletDb WHERE userId = :userId", WalletDb.class)
+                .setParameter("userId", userGestor.getId())
+                .list();
     }
 }
