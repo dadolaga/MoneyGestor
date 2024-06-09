@@ -11,25 +11,38 @@ public class TransactionDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 1024)
     private String description;
+    @Column(length = 4096)
+    private String longDescription;
+    @Column(nullable = false)
     private BigDecimal value;
+    @Column(nullable = false)
     private LocalDate date;
-    @Column(name = "wallet")
+    @Column(name = "wallet", nullable = false)
     private Integer walletId;
     @ManyToOne
     @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
     private WalletDb wallet;
     @ManyToOne
-    @JoinColumn(name = "transactiondestination", insertable = false, updatable = false)
+    @JoinColumn(name = "transaction_destination", insertable = false, updatable = false)
     private TransactionDb transactionDestination;
-    @Column(name = "transactiondestination")
+    @Column(name = "transaction_destination")
     private Long transactionDestinationId;
-    @Column(name = "user")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_transaction", nullable = false, insertable = false, updatable = false)
+    private UserDb userOfTransaction;
+    @Column(name = "user_transaction", nullable = false)
+    private Integer userOfTransactionId;
+    @ManyToOne
+    @JoinColumn(name = "user_insert", nullable = false, insertable = false, updatable = false)
+    private UserDb userInsertTransaction;
+    @Column(name = "user_insert", nullable = false)
+    private Integer userInsertTransactionId;
     @ManyToOne
     @JoinColumn(name = "type", nullable = false, insertable = false, updatable = false)
     private TransactionTypeDb type;
-    @Column(name = "Type")
+    @Column(name = "type", nullable = false)
     private Integer typeId;
 
     public Long getId() {
@@ -46,6 +59,14 @@ public class TransactionDb {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
+
+    public void setLongDescription(String longDescription) {
+        this.longDescription = longDescription;
     }
 
     public BigDecimal getValue() {
@@ -72,12 +93,36 @@ public class TransactionDb {
         this.walletId = walletId;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public UserDb getUserOfTransaction() {
+        return userOfTransaction;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUserOfTransaction(UserDb userOfTransaction) {
+        this.userOfTransaction = userOfTransaction;
+    }
+
+    public Integer getUserOfTransactionId() {
+        return userOfTransactionId;
+    }
+
+    public void setUserOfTransactionId(Integer userOfTransactionId) {
+        this.userOfTransactionId = userOfTransactionId;
+    }
+
+    public UserDb getUserInsertTransaction() {
+        return userInsertTransaction;
+    }
+
+    public void setUserInsertTransaction(UserDb userInsertTransaction) {
+        this.userInsertTransaction = userInsertTransaction;
+    }
+
+    public Integer getUserInsertTransactionId() {
+        return userInsertTransactionId;
+    }
+
+    public void setUserInsertTransactionId(Integer userInsertTransactionId) {
+        this.userInsertTransactionId = userInsertTransactionId;
     }
 
     public WalletDb getWallet() {
@@ -131,7 +176,7 @@ public class TransactionDb {
                 ", wallet=" + wallet +
                 //", transactionDestination=" + transactionDestination +
                 ", transactionDestinationId=" + transactionDestinationId +
-                ", userId=" + userId +
+                ", userId=" + userOfTransactionId +
                 ", type=" + type +
                 ", typeId=" + typeId +
                 '}';
