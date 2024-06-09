@@ -2,6 +2,8 @@ package org.laga.moneygestor.logic;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.laga.moneygestor.db.entity.UserDb;
 
 import java.util.List;
@@ -20,9 +22,14 @@ public abstract class Gestor<ID, T> {
      */
     public ID insert(UserDb userLogged, T object) {
         try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
 
-            return insert(session, userLogged, object);
+            ID id = insert(session, userLogged, object);
+
+            if(transactionIsToClose(transaction))
+                transaction.rollback();
+
+            return id;
         }
     }
 
@@ -44,9 +51,12 @@ public abstract class Gestor<ID, T> {
      */
     public void deleteById(UserDb userLogged, ID id, boolean forceDelete) {
         try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
 
             deleteById(session, userLogged, id, forceDelete);
+
+            if(transactionIsToClose(transaction))
+                transaction.rollback();
         }
     }
 
@@ -65,9 +75,12 @@ public abstract class Gestor<ID, T> {
      */
     public void update(UserDb userLogged, ID id, T newObject) {
         try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
+            Transaction transaction = session.beginTransaction();
 
             update(session, userLogged, id, newObject);
+
+            if(transactionIsToClose(transaction))
+                transaction.rollback();
         }
     }
 
@@ -93,4 +106,8 @@ public abstract class Gestor<ID, T> {
         }
     }
     public abstract List<T> getAll(Session session, UserDb userLogged);
+
+    private boolean transactionIsToClose(Transaction transaction) {
+        return transaction.getStatus().isOneOf(TransactionStatus.ACTIVE);
+    }
 }
