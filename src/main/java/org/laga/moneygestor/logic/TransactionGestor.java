@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.services.models.Transaction;
 
 import java.time.format.DateTimeFormatter;
@@ -14,6 +15,14 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
     public TransactionGestor(SessionFactory sessionFactory) {
         super(sessionFactory);
+    }
+
+    public void moneyTransfer(TransactionDb primaryTransaction, WalletDb walletDestination) {
+        moneyTransfer(primaryTransaction, walletDestination.getId());
+    }
+
+    public void moneyTransfer(TransactionDb primaryTransaction, Integer walletDestinationId) {
+
     }
 
     @Override
