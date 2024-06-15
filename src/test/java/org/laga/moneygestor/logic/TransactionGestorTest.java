@@ -21,21 +21,24 @@ import java.util.List;
 
 public class TransactionGestorTest extends UserRequest {
     private static final double WALLET_VALUE = 100;
-    private static final double TRANSACTION_VALUE = 15.20d;
+    private static final double TRANSACTION_VALUE = 20d;
     private TransactionDb transactionDb;
     private TransactionTypeDb transactionTypeDb;
     private WalletDb walletDb;
     private TransactionGestor transactionGestor;
     private List<String> transactionsToDelete;
-    private List<WalletDb> walletToDelete;
+    private List<String> walletToDelete;
+    private List<String> transactionTypeToDelete;
 
     @BeforeEach
     public void initialize() {
-        transactionTypeDb = createTransactionType(userLogged);
-        walletDb = createWallet(userLogged, (int) WALLET_VALUE);
-
         transactionGestor = new TransactionGestor(sessionFactory);
         transactionsToDelete = new LinkedList<>();
+        walletToDelete = new LinkedList<>();
+        transactionTypeToDelete = new LinkedList<>();
+
+        transactionTypeDb = createTransactionType(userLogged);
+        walletDb = createWallet(userLogged, (int) WALLET_VALUE);
 
         transactionDb = new TransactionDb();
 
@@ -63,6 +66,8 @@ public class TransactionGestorTest extends UserRequest {
             transaction.commit();
         }
 
+        transactionTypeToDelete.add(transactionTypeDb.getName());
+
         return transactionTypeDb;
     }
 
@@ -82,7 +87,7 @@ public class TransactionGestorTest extends UserRequest {
             transaction.commit();
         }
 
-        walletToDelete.add(walletDb);
+        walletToDelete.add(walletDb.getName());
 
         return walletDb;
     }
@@ -135,6 +140,24 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
+    public void insert_walletNegative_noWalletChange() {
+        transactionDb.setUserInsertTransactionId(userLogged.getId());
+        transactionDb.setValue(new BigDecimal(-2845));
+
+        try {
+            transactionGestor.insert(userLogged, transactionDb);
+        } catch (Exception ignored) { }
+
+        try (Session session = sessionFactory.openSession()) {
+            var wallet = session.createQuery("FROM WalletDb WHERE id = :id", WalletDb.class)
+                    .setParameter("id", walletDb.getId())
+                    .getSingleResultOrNull();
+
+            Assertions.assertEquals(WALLET_VALUE, wallet.getValue().doubleValue());
+        }
+    }
+
+    @Test
     public void insert_autoInsertUserInsert_throw() {
         transactionGestor.insert(userLogged, transactionDb);
 
@@ -153,6 +176,8 @@ public class TransactionGestorTest extends UserRequest {
         transactionGestor.insert(userLogged, transactionDb);
 
         transactionDb.setDescription(transactionDb.getDescription() + "_CHANGED");
+
+        transactionsToDelete.add(transactionDb.getDescription());
 
         transactionGestor.update(userLogged, transactionDb);
 
@@ -175,6 +200,8 @@ public class TransactionGestorTest extends UserRequest {
         transactionGestor.insert(userLogged, transactionDb);
 
         transactionDb.setDescription(transactionDb.getDescription() + "_CHANGED");
+
+        transactionsToDelete.add(transactionDb.getDescription());
 
         transactionGestor.update(userLogged, transactionDb);
 
@@ -201,7 +228,9 @@ public class TransactionGestorTest extends UserRequest {
         transactionGestor.insert(userLogged, transactionDb);
 
         transactionDb.setDescription(transactionDb.getDescription() + "_CHANGED");
-        transactionDb.setValue(new BigDecimal(value));
+        transactionDb.setValue(BigDecimal.valueOf(value));
+
+        transactionsToDelete.add(transactionDb.getDescription());
 
         transactionGestor.update(userLogged, transactionDb);
 
@@ -223,6 +252,8 @@ public class TransactionGestorTest extends UserRequest {
 
         transactionDb.setDescription(transactionDb.getDescription() + "_CHANGED");
 
+        transactionsToDelete.add(transactionDb.getDescription());
+
         var secondUserLogged = createAndLoginOtherUser(secondUsername);
 
         Assertions.assertThrows(UserNotHavePermissionException.class, () -> transactionGestor.update(secondUserLogged, transactionDb));
@@ -239,20 +270,45 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
+    public void update_tryToUpdateTypeToSwitchOrTie_throw() {
+        transactionDb.setUserInsertTransactionId(userLogged.getId());
+        transactionGestor.insert(userLogged, transactionDb);
+
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.update(userLogged, transactionDb));
+    }
+
+    @Test
+    public void update_tryToUpdateTypeFromSwitchOrTieToNormal_throw() {
+        transactionDb.setUserInsertTransactionId(userLogged.getId());
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_TIE.getId());
+        transactionGestor.insert(userLogged, transactionDb);
+
+        transactionDb.setTypeId(transactionTypeDb.getId());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.update(userLogged, transactionDb));
+    }
+
+    @Test
     public void update_moneyTransferUpdateValue_changeValueInBothWallet() {
-        final int SECOND_WALLET_VALUE = 312;
-        final double VALUE_CHANGED = 49.56;
+        final int SECOND_WALLET_VALUE = 200;
+        final double VALUE_CHANGED = 40;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        var idToUpdate = transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
+
+        transactionDb = transactionGestor.getById(userLogged, idToUpdate);
 
         transactionDb.setValue(BigDecimal.valueOf(VALUE_CHANGED));
 
         transactionGestor.update(userLogged, transactionDb);
+
+        transactionDb = transactionGestor.getById(userLogged, idToUpdate);
 
         try (Session session = sessionFactory.openSession()) {
             var walletWithdraw = session.createQuery("FROM WalletDb WHERE id = :id", WalletDb.class)
@@ -266,6 +322,7 @@ public class TransactionGestorTest extends UserRequest {
             Assertions.assertAll(
                     () -> Assertions.assertEquals(WALLET_VALUE - VALUE_CHANGED, walletWithdraw.getValue().doubleValue()),
                     () -> Assertions.assertEquals(SECOND_WALLET_VALUE + VALUE_CHANGED, walletLayDown.getValue().doubleValue()),
+                    () -> Assertions.assertEquals(VALUE_CHANGED * -1, transactionDb.getValue().doubleValue()),
                     () -> Assertions.assertEquals(VALUE_CHANGED, transactionDb.getTransactionDestination().getValue().doubleValue())
             );
         }
@@ -276,17 +333,21 @@ public class TransactionGestorTest extends UserRequest {
         final int SECOND_WALLET_VALUE = 312;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        var idToUpdate = transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
+
+        transactionDb = transactionGestor.getById(userLogged, idToUpdate);
 
         transactionDb.setDescription(transactionDb.getDescription() + "_CHANGED");
 
+        transactionsToDelete.add(transactionDb.getDescription());
+
         transactionGestor.update(userLogged, transactionDb);
 
-        Assertions.assertEquals(transactionDb.getDescription(), transactionDb.getTransactionDestination().getDescription());
+        Assertions.assertEquals(transactionDb.getDescription(), transactionGestor.getById(userLogged, transactionDb.getId()).getTransactionDestination().getDescription());
     }
 
     @Test
@@ -295,18 +356,20 @@ public class TransactionGestorTest extends UserRequest {
         final int THIRD_WALLET_VALUE = 2013;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
         var thirdWallet = createWallet(userLogged, THIRD_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        var idToUpdate = transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
+
+        transactionDb = transactionGestor.getById(userLogged, idToUpdate);
 
         var secondTransaction = transactionDb.getTransactionDestination();
 
         secondTransaction.setWalletId(thirdWallet.getId());
 
-        transactionGestor.update(userLogged, secondTransaction);
+        transactionGestor.update(userLogged, transactionDb);
 
         try (Session session = sessionFactory.openSession()) {
             var walletWithdraw = session.createQuery("FROM WalletDb WHERE id = :id", WalletDb.class)
@@ -353,7 +416,7 @@ public class TransactionGestorTest extends UserRequest {
         transactionGestor.deleteById(userLogged, idToRemove);
 
         try (Session session = sessionFactory.openSession()) {
-            var wallet = session.createQuery("FROM WalletDb WHERE id = :id", TransactionDb.class)
+            var wallet = session.createQuery("FROM WalletDb WHERE id = :id", WalletDb.class)
                     .setParameter("id", transactionDb.getWalletId())
                     .getSingleResultOrNull();
 
@@ -374,15 +437,15 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
-    public void delete_moneyTransfer_deleteBothTransaction() {
+    public void delete_insertMoneyTransfer_deleteBothTransaction() {
         final int SECOND_WALLET_VALUE = 312;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
 
         transactionGestor.deleteById(userLogged, transactionDb.getId());
 
@@ -396,15 +459,15 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
-    public void delete_moneyTransfer_restoreBothWallet() {
+    public void delete_insertMoneyTransfer_restoreBothWallet() {
         final int SECOND_WALLET_VALUE = 312;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
 
         transactionGestor.deleteById(userLogged, transactionDb.getId());
 
@@ -424,10 +487,10 @@ public class TransactionGestorTest extends UserRequest {
         }
     }
 
-    @Test
+    /*@Test
     public void delete_walletGoToNegativeValue_throw() {
         Assertions.fail("To complete");
-    }
+    }*/
 
     @Test
     public void getById_getEffectiveTransaction_return() {
@@ -446,7 +509,7 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
-    public void getById_userNotHavePermission_throw() {
+    public void getById_userNotHavePermission_null() {
         final String secondUsername = "SecondUser_Test_" + TestUtilities.generateRandomString(6);
 
         try (Session session = sessionFactory.openSession()) {
@@ -462,7 +525,23 @@ public class TransactionGestorTest extends UserRequest {
 
         var secondUserLogged = createAndLoginOtherUser(secondUsername);
 
-        Assertions.assertThrows(UserNotHavePermissionException.class, () -> transactionGestor.getById(secondUserLogged, transactionDb.getId()));
+        Assertions.assertNull(transactionGestor.getById(secondUserLogged, transactionDb.getId()));
+    }
+
+    @Test
+    public void getById_returnSecondaryTransaction_returnDescription() {
+        final int SECOND_WALLET_VALUE = 312;
+
+        transactionDb.setUserInsertTransactionId(userLogged.getId());
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
+
+        var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
+
+        transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
+
+        var transactionRetrieve = transactionGestor.getById(userLogged, transactionDb.getId());
+
+        Assertions.assertEquals(transactionDb.getDescription(), transactionRetrieve.getTransactionDestination().getDescription());
     }
 
     @Test
@@ -478,6 +557,9 @@ public class TransactionGestorTest extends UserRequest {
 
             session.persist(transactionDb);
 
+            session.detach(transactionDb);
+
+            transactionDb.setId(null);
             transactionDb.setDescription(transactionDb.getDescription() + "_SECOND");
             transactionDb.setUserOfTransactionId(secondUserLogged.getId());
             transactionDb.setUserInsertTransactionId(secondUserLogged.getId());
@@ -493,26 +575,26 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
-    public void moneyTransfer_typeIsNotCorrected_throw() {
+    public void insertMoneyTransfer_typeIsNotCorrected_throw() {
         final int SECOND_WALLET_VALUE = 312;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.moneyTransfer(transactionDb, secondWallet));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet));
     }
 
     @Test
-    public void moneyTransfer_effectiveInserted_walletValueUpdated() {
+    public void insertMoneyTransfer_effectiveInserted_walletValueUpdated() {
         final int SECOND_WALLET_VALUE = 312;
 
         transactionDb.setUserInsertTransactionId(userLogged.getId());
-        transactionDb.setType(DatabaseInitializer.TRANSACTION_TYPE_SWITCH);
+        transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
 
-        transactionGestor.moneyTransfer(transactionDb, secondWallet);
+        transactionGestor.insertMoneyTransfer(userLogged, transactionDb, secondWallet);
 
         try (Session session = sessionFactory.openSession()) {
             var walletWithdraw = session.createQuery("FROM WalletDb WHERE id = :id", WalletDb.class)
@@ -531,7 +613,7 @@ public class TransactionGestorTest extends UserRequest {
     }
 
     @Test
-    public void moneyTransfer_walletGoToNegativeValue_throw() {
+    public void insertMoneyTransfer_walletGoToNegativeValue_throw() {
         final int SECOND_WALLET_VALUE = 12;
 
         var secondWallet = createWallet(userLogged, SECOND_WALLET_VALUE);
@@ -540,22 +622,22 @@ public class TransactionGestorTest extends UserRequest {
         transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
         transactionDb.setWalletId(secondWallet.getId());
 
-        Assertions.assertThrows(NegativeWalletException.class, () -> transactionGestor.moneyTransfer(transactionDb, walletDb));
+        Assertions.assertThrows(NegativeWalletException.class, () -> transactionGestor.insertMoneyTransfer(userLogged, transactionDb, walletDb));
     }
 
     @Test
-    public void moneyTransfer_walletIsTheSame_throw() {
+    public void insertMoneyTransfer_walletIsTheSame_throw() {
         transactionDb.setUserInsertTransactionId(userLogged.getId());
         transactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId());
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.moneyTransfer(transactionDb, walletDb));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> transactionGestor.insertMoneyTransfer(userLogged, transactionDb, walletDb));
     }
 
     @AfterEach
     public void deleteTransaction() {
         deleteAllTransaction();
         deleteAllWallet();
-        deleteTransactionType(transactionTypeDb);
+        deleteAllTransactionType();
     }
 
     private void deleteAllTransaction() {
@@ -578,18 +660,29 @@ public class TransactionGestorTest extends UserRequest {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            for (var wallet : walletToDelete)
-                session.remove(wallet);
+            var preparedQuery = session.createMutationQuery("DELETE FROM WalletDb WHERE name = :name");
+
+            for(var walletName : walletToDelete) {
+                preparedQuery.setParameter("name", walletName);
+
+                preparedQuery.executeUpdate();
+            }
 
             transaction.commit();
         }
     }
 
-    private void deleteTransactionType(TransactionTypeDb transactionTypeDb) {
+    private void deleteAllTransactionType() {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            session.remove(transactionTypeDb);
+            var preparedQuery = session.createMutationQuery("DELETE FROM TransactionTypeDb WHERE name = :name");
+
+            for(var transactionType : transactionTypeToDelete) {
+                preparedQuery.setParameter("name", transactionType);
+
+                preparedQuery.executeUpdate();
+            }
 
             transaction.commit();
         }

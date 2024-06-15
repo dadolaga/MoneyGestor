@@ -1,6 +1,8 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,7 +26,8 @@ public class TransactionDb {
     @ManyToOne
     @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
     private WalletDb wallet;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "transaction_destination", insertable = false, updatable = false)
     private TransactionDb transactionDestination;
     @Column(name = "transaction_destination")

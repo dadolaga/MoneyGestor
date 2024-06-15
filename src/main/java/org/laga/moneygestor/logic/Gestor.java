@@ -26,8 +26,7 @@ public abstract class Gestor<ID, T> {
 
             ID id = insert(session, userLogged, object);
 
-            if(transactionIsToClose(transaction))
-                transaction.rollback();
+            closeTransactionIfNecessary(transaction);
 
             return id;
         }
@@ -55,8 +54,7 @@ public abstract class Gestor<ID, T> {
 
             deleteById(session, userLogged, id, forceDelete);
 
-            if(transactionIsToClose(transaction))
-                transaction.rollback();
+            closeTransactionIfNecessary(transaction);
         }
     }
 
@@ -79,8 +77,7 @@ public abstract class Gestor<ID, T> {
 
             update(session, userLogged, id, newObject);
 
-            if(transactionIsToClose(transaction))
-                transaction.rollback();
+            closeTransactionIfNecessary(transaction);
         }
     }
 
@@ -97,6 +94,11 @@ public abstract class Gestor<ID, T> {
         }
     }
 
+    /**
+     * Search object in the database by id
+     * @param id id of object to find
+     * @return the object found, or <code>null</code> if object not found or user not have permission
+     */
     protected abstract T getById(Session session, UserDb userLogged, ID id);
 
 
@@ -106,6 +108,11 @@ public abstract class Gestor<ID, T> {
         }
     }
     public abstract List<T> getAll(Session session, UserDb userLogged);
+
+    protected void closeTransactionIfNecessary(Transaction transaction) {
+        if(transactionIsToClose(transaction))
+            transaction.rollback();
+    }
 
     private boolean transactionIsToClose(Transaction transaction) {
         return transaction.getStatus().isOneOf(TransactionStatus.ACTIVE);
