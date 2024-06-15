@@ -17,7 +17,7 @@ public class UserDb {
     private String firstname;
     @Column(nullable = false)
     private String lastname;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
     @Column(nullable = false)
     private String username;
