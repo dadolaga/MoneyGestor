@@ -3,19 +3,25 @@ package org.laga.moneygestor.services.exceptions;
 import org.springframework.http.HttpStatusCode;
 
 public class HttpException extends RuntimeException {
-    private HttpStatusCode code;
-    private Error error;
+    private final HttpStatusCode httpStatusCode;
+    private final Integer errorCode;
 
-    public HttpException(HttpStatusCode code, Error error) {
-        this.code = code;
-        this.error = error;
+    public HttpException(Integer errorCode, HttpStatusCode httpStatusCode) {
+        this.errorCode = errorCode;
+        this.httpStatusCode = httpStatusCode;
     }
 
-    public HttpStatusCode getCode() {
-        return code;
+    public HttpException(HttpStatusCode httpStatusCode, Integer errorCode, String message) {
+        super(message);
+        this.httpStatusCode = httpStatusCode;
+        this.errorCode = errorCode;
     }
 
-    public Error getError() {
-        return error;
+    public HttpStatusCode getHttpStatusCode() {
+        return httpStatusCode;
+    }
+
+    public Integer getErrorCode() {
+        return errorCode;
     }
 }

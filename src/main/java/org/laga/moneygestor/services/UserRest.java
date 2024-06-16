@@ -1,72 +1,54 @@
 package org.laga.moneygestor.services;
 
-import org.laga.moneygestor.db.repository.UserRepository;
+import jakarta.persistence.EntityManagerFactory;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.UserGestor;
+import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.models.Login;
-import org.laga.moneygestor.services.models.User;
+import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
+import org.laga.moneygestor.services.exceptions.HttpException;
+import org.laga.moneygestor.services.models.LoginForm;
+import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserRest {
-    /*private final UserRepository userRepository;
+public class UserRest extends BaseRest {
+
+    private final UserGestor userGestor;
 
     @Autowired
-    public UserRest(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserRest(EntityManagerFactory managerFactory) {
+        super(managerFactory);
+        userGestor = new UserGestor(sessionFactory);
     }
 
-    @PostMapping("/new")
-    public void createNewUser(@RequestBody UserRegistrationForm user) {
+    @PostMapping("/registration")
+    public Response registrationUser(@RequestBody UserRegistrationForm userRegistrationForm) {
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromForm(user);
+            UserDb userCreated = UserGestor.createUserFromRegistrationForm(userRegistrationForm);
 
-            userRepository.save(userGestor.getDatabaseUser());
-        } catch (UserCreationException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(1);
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("unique_user_email"))
-                throw MoneyGestorErrorSample.mapOfError.get(101);
-            if(e.getMessage().contains("unique_user_username"))
-                throw MoneyGestorErrorSample.mapOfError.get(102);
+            userGestor.insert(null, userCreated);
+
+            return Response.ok();
+        } catch (UserPasswordNotEqualsException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 112, "Password is not equal");
+        } catch (DuplicateValueException | UserCreationException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public User loginUser(@RequestBody Login login) {
-        var user = userRepository.findWithEmailOrUsername(login.getUsername());
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(103);
+    public Response login(@RequestBody LoginForm loginForm) {
+        try {
+            var userDb = userGestor.login(loginForm.getUsername(), loginForm.getPassword());
 
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-        if(!userGestor.checkPassword(login.getPassword()))
-            throw MoneyGestorErrorSample.mapOfError.get(104);
-
-        userGestor.generateNewToken();
-
-        userRepository.updateToken(userGestor.getId(), userGestor.getToken(), userGestor.getExpiryToken());
-
-        userRepository.flush();
-
-        return userGestor.generateReturnUser();
+            return Response.create(UserGestor.convertToRest(userDb));
+        } catch (UserPasswordNotEqualsException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 111, "Password is not correct");
+        }
     }
-
-    @GetMapping("/token")
-    public User getUserFromToken(@RequestParam(value = "token") String token) {
-        var user = userRepository.findFromToken(token);
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        var userGestor = UserGestor.Builder.createFromDB(user);
-
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        return userGestor.generateReturnUser();
-    }*/
 }

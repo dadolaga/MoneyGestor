@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.*;
+import org.laga.moneygestor.services.models.User;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
             throw new UserCreationException("Not a valid mail insert");
 
         if(!PasswordUtilities.checkIsValid(user.getPassword()))
-            throw new UserCreationException("Not a valid mail password");
+            throw new UserCreationException("Not a valid password");
 
         var userDb = new UserDb();
 
@@ -60,6 +61,17 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         Pattern pattern = Pattern.compile(regexValidMail);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public static User convertToRest(UserDb userDb) {
+        var user = new User();
+
+        user.setLastname(userDb.getLastname());
+        user.setFirstname(userDb.getFirstname());
+        user.setToken(userDb.getToken());
+        user.setExpireToken(userDb.getExpiratedToken());
+
+        return user;
     }
 
     public UserDb getFromAuthorizationToken(String authorizationToken) {
@@ -96,6 +108,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
     public UserDb login(String usernameOrMail, String password) {
         try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+
             var query = session.createQuery("FROM UserDb WHERE email LIKE :email OR username LIKE :username", UserDb.class);
             query.setParameter("email", usernameOrMail);
             query.setParameter("username", usernameOrMail);
@@ -112,9 +126,13 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
                 session.persist(userLogged);
 
+                transaction.commit();
+
                 return userLogged;
             } catch (IndexOutOfBoundsException e) {
                 throw new UserNotFoundException(e);
+            } finally {
+                session.getTransaction().rollback();
             }
         }
     }
