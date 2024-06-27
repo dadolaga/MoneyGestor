@@ -9,6 +9,7 @@ import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
 import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.models.LoginForm;
 import org.laga.moneygestor.services.models.Response;
+import org.laga.moneygestor.services.models.SendId;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,9 +32,13 @@ public class UserRest extends BaseRest {
         try {
             UserDb userCreated = UserGestor.createUserFromRegistrationForm(userRegistrationForm);
 
-            userGestor.insert(null, userCreated);
+            var id = userGestor.insert(null, userCreated);
 
-            return Response.ok();
+            var sendId = new SendId();
+
+            sendId.setId(id.longValue());
+
+            return Response.create(sendId);
         } catch (UserPasswordNotEqualsException ex) {
             throw new HttpException(HttpStatus.BAD_REQUEST, 112, "Password is not equal");
         } catch (DuplicateValueException | UserCreationException ex) {
