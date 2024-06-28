@@ -36,21 +36,17 @@ export class Request {
         this.enqueueSnackbar = enqueueSnackbar;
     }
 
-    public static ErrorGestor = (options?: CodeAction[]): (error: any) => void => {
+    public static ErrorGestor = (options?: CodeAction[]): (error: ResponseError) => void => {
         return (error) => {
-            if(error instanceof ResponseError) {
-                let responseError = error as ResponseError;
-                
+            if(error instanceof ResponseError) {                
                 if(options) {
-                    let codeAction = options.find(codeAction => codeAction.code == responseError.code);
+                    let codeAction = options.find(codeAction => codeAction.code == error.code);
 
                     if(codeAction) {
-                        codeAction.action();
+                        codeAction.action(error);
                         return;
                     }
                 }
-            } else {
-                Request.printServerError("Error is not a Response Error. IMPOSSIBLE ERROR");
             }
         };
     }
@@ -72,12 +68,18 @@ export class Request {
             .catch(error => {
                 if(error.code == "ERR_NETWORK") {
                     this.router.push("dashboard/error/unavailable");
-                    return ;
+                    throw new Error;
+                }
+
+                if (error.response.status == 500) {
+                    Request.printServerError("Server return 500");
+                    throw new Error;
                 }
                 
                 const response = error.response.data as any as Response<any>;
     
                 if(response.type == ERROR_BASE_TYPE) {
+                    console.error(response);
                     this.basicErrorGestor(response);
                     throw new ResponseError(response.code, response.content);
                 } else 
@@ -87,19 +89,17 @@ export class Request {
 
     private basicErrorGestor(errorResponse: Response<any>) {
         switch (errorResponse.code) {
-            default: 
-                this.enqueueSnackbar(errorResponse.content);
-                console.log("ciao");
+
         }
     }
 
     private static printServerError = (message?: string) => {
-        console.error("SERVER ERROR", message);
+        console.error("SERVER ERROR:", message);
     }
 }
 
 interface CodeAction {
     code: number,
-    action: () => void,
+    action: (_: ResponseError) => void,
 }
 
