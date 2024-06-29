@@ -6,7 +6,9 @@ import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
+import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
 import org.laga.moneygestor.services.exceptions.HttpException;
+import org.laga.moneygestor.services.exceptions.IllegalArgumentHttpException;
 import org.laga.moneygestor.services.models.LoginForm;
 import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.SendId;
@@ -40,9 +42,11 @@ public class UserRest extends BaseRest {
 
             return Response.create(sendId);
         } catch (UserPasswordNotEqualsException ex) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, 112, "Password is not equal");
-        } catch (DuplicateValueException | UserCreationException ex) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage());
+            throw new IllegalArgumentHttpException("Password is not equal");
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException(ex.getMessage());
+        } catch (UserCreationException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 111, ex.getMessage());
         }
     }
 

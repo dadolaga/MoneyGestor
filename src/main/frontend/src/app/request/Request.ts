@@ -79,7 +79,6 @@ export class Request {
                 const response = error.response.data as any as Response<any>;
     
                 if(response.type == ERROR_BASE_TYPE) {
-                    console.error(response);
                     this.basicErrorGestor(response);
                     throw new ResponseError(response.code, response.content);
                 } else 
@@ -89,7 +88,8 @@ export class Request {
 
     private basicErrorGestor(errorResponse: Response<any>) {
         switch (errorResponse.code) {
-
+            case 100: // Illegal argument
+                Request.printServerError("Illegal argument: " + errorResponse.content);
         }
     }
 

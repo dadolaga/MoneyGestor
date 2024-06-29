@@ -54,13 +54,8 @@ export default function Page() {
             enqueueSnackbar("Utente aggiunto con successo", {variant: 'success'});
         })
         .catch(Request.ErrorGestor([{
-            code: 112,
+            code: 102,
             action: (error) => {
-                if(error.message.includes("password")) {
-                    enqueueSnackbar( "La password non rispetta i creteri", {variant: 'error'});
-                    return;
-                }
-
                 if(error.message.includes("duplicate email")) {
                     enqueueSnackbar( "L'email è già stata inserita", {variant: 'error'});
                     return;
@@ -70,8 +65,16 @@ export default function Page() {
                     enqueueSnackbar( "L'username è già stato inserito", {variant: 'error'});
                     return;
                 }
+            }}, {
+                code: 111,
+                action: (error) => {
+                    if(error.message.includes("password")) {
+                        enqueueSnackbar( "La password non rispetta i creteri", {variant: 'error'});
+                        return;
+                    }
+                }
             }
-        }]))
+        ]))
         .finally(() => setShowLoading(false));
 
 
