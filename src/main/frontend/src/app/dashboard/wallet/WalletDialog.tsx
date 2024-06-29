@@ -3,6 +3,8 @@ import { useRef, useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import axios from "../../axios/axios";
 import { TransitionDialog } from "../base/transition";
+import { Request, useRestApi } from "../../request/Request";
+import { CreateWalletForm } from "../../Utilities/BackEndTypes";
 
 interface Wallet {
     name: String,
@@ -10,7 +12,7 @@ interface Wallet {
     color: string
 }
 
-const WALLET_DEFAULT: Wallet = {
+const WALLET_DEFAULT: CreateWalletForm = {
     name: "",
     value: 0,
     color: ""
@@ -30,10 +32,12 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
     const [valueError, setValueError] = useState(null);
     const [colorError, setColorError] = useState(null);
     const [showLoading, setShowLoading] = useState(false);
-    const [wallet, setWallet] = useState(WALLET_DEFAULT);
+    const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
     const [colors, setColors] = useState([]);
 
     const [cookie, setCookie] = useCookies(["_token"]);
+
+    const restApi = useRestApi();
 
     useEffect(() => {
         setShowLoading(true);
@@ -89,7 +93,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
 
     function save() {
         const formData = new FormData(form.current);
-        let myWallet: Wallet = WALLET_DEFAULT;
+        let myWallet: CreateWalletForm = WALLET_DEFAULT;
 
         setNameError(null);
         setValueError(null);
@@ -105,7 +109,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
         myWallet.color = wallet.color;
 
         if(walletId == null)
-            saveNewWallet(myWallet);
+            saveNewWallet();
         else 
             editWallet(myWallet, walletId);
 
@@ -157,26 +161,20 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
             });
         }
 
-        function saveNewWallet(wallet) {
+        function saveNewWallet() {
             setShowLoading(true);
 
-            axios.post("/wallet/new", {
-                ...wallet,
-                token: cookie._token
-            })
-            .then(response => {
+            restApi.Wallet.Create(wallet)
+            .then(id => {
                 onClose();
             })
-            .catch(error => {
-                if (error.response.data.code == 201) {
-                    setNameError("Il nome esiste già");
-                }
-            })
+            .catch(Request.ErrorGestor([{
+                code: 102,
+                action: _ => setNameError("Il nome esiste già"),
+            }]))
             .finally(() => {
                 setShowLoading(false);
-
-                onSave(wallet);
-            });
+            })
         }
     }
 
@@ -207,7 +205,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                             label="Valore iniziale"
                             name="value"
                             value={wallet.value}
-                            onChange={(text) => setWallet({ name: wallet.name, value: text.target.value, color: wallet.color })}
+                            onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
                             InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
                             disabled={showLoading} />
                     </Grid>

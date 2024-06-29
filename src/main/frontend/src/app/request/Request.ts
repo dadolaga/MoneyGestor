@@ -1,23 +1,26 @@
 import { useRouter } from "next/navigation";
-import { LoginForm, ReceiveId as ReceiveId, Response, User, UserRegistrationForm } from "../Utilities/BackEndTypes"
+import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, User, UserRegistrationForm } from "../Utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
 
 const ERROR_BASE_TYPE = "ERROR";
 
 export function useRestApi() {
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-    const router = useRouter();
+    const router = useRouter();    
+    const [cookie, setCookie] = useCookies(["_token"]);
 
-    return new Request(router, enqueueSnackbar);
+    return new Request(router, enqueueSnackbar, cookie);
 }
 
 export class Request {
     public router: AppRouterInstance = null;
     public enqueueSnackbar: EnqueueSnackbar = null;
+    public cookie: {_token?: any} = null;
 
     public User = {
         Registration: async (registration: UserRegistrationForm): Promise<ReceiveId> => {
@@ -31,9 +34,17 @@ export class Request {
         }
     }
 
-    public constructor(router: AppRouterInstance, enqueueSnackbar: EnqueueSnackbar) {
+    public Wallet = {
+        Create: async (wallet: CreateWalletForm): Promise<ReceiveId> => {
+            return this.baseRequestPost("wallet/new", wallet)
+            .then(response => response as ReceiveId)
+        }
+    }
+
+    public constructor(router: AppRouterInstance, enqueueSnackbar: EnqueueSnackbar, cookie: {_token?: any}) {
         this.router = router;
         this.enqueueSnackbar = enqueueSnackbar;
+        this.cookie = cookie;
     }
 
     public static ErrorGestor = (options?: CodeAction[]): (error: ResponseError) => void => {
@@ -53,7 +64,11 @@ export class Request {
 
     private async baseRequestPost(url: string, data: any): Promise<any> {
         return axios
-            .post(url, data)
+            .post(url, data, {
+                headers: this.cookie._token && {
+                    Authorization: this.cookie._token
+                }
+            })
             .then(axiosResponse => {
                 const myResponse = axiosResponse.data as any as Response<any>;
     
@@ -81,8 +96,10 @@ export class Request {
                 if(response.type == ERROR_BASE_TYPE) {
                     this.basicErrorGestor(response);
                     throw new ResponseError(response.code, response.content);
-                } else 
+                } else {
                     Request.printServerError("Response is not a error or type is not recognized");
+                    throw new Error;
+                }
             })
     }
 
@@ -90,6 +107,11 @@ export class Request {
         switch (errorResponse.code) {
             case 100: // Illegal argument
                 Request.printServerError("Illegal argument: " + errorResponse.content);
+                break;
+            case 104:
+                this.enqueueSnackbar("Sessione scaduta", {variant: "info"});
+                this.router.push("/dashboard/user/login");
+                break;
         }
     }
 
