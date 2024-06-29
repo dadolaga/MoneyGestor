@@ -5,6 +5,7 @@ import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
+import org.laga.moneygestor.logic.exceptions.UserNotFoundException;
 import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
 import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
 import org.laga.moneygestor.services.exceptions.HttpException;
@@ -56,8 +57,8 @@ public class UserRest extends BaseRest {
             var userDb = userGestor.login(loginForm.getUsername(), loginForm.getPassword());
 
             return Response.create(UserGestor.convertToRest(userDb));
-        } catch (UserPasswordNotEqualsException ex) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, 111, "Password is not correct");
+        } catch (UserPasswordNotEqualsException | UserNotFoundException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage());
         }
     }
 }

@@ -119,7 +119,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
                 var userLogged = query.list().get(0);
 
                 if(!PasswordUtilities.checkPassword(password, userLogged.getPassword()))
-                    throw new UserPasswordNotEqualsException();
+                    throw new UserPasswordNotEqualsException("Password is not correct");
 
                 userLogged.setToken(TokenUtilities.generateNewToken());
                 userLogged.setExpiratedToken(LocalDateTime.now().plus(TokenUtilities.TOKEN_DURATION));
@@ -130,7 +130,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
                 return userLogged;
             } catch (IndexOutOfBoundsException e) {
-                throw new UserNotFoundException(e);
+                throw new UserNotFoundException("User not found", e);
             } finally {
                 session.getTransaction().rollback();
             }

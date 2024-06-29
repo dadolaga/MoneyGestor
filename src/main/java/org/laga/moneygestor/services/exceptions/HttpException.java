@@ -1,20 +1,25 @@
 package org.laga.moneygestor.services.exceptions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.laga.moneygestor.services.WalletRest;
 import org.springframework.http.HttpStatusCode;
 
 public class HttpException extends RuntimeException {
+    private final static Logger logger = LogManager.getLogger(WalletRest.class);
     private final HttpStatusCode httpStatusCode;
     private final Integer errorCode;
 
     public HttpException(Integer errorCode, HttpStatusCode httpStatusCode) {
-        this.errorCode = errorCode;
-        this.httpStatusCode = httpStatusCode;
+        this(httpStatusCode, errorCode, null);
     }
 
     public HttpException(HttpStatusCode httpStatusCode, Integer errorCode, String message) {
         super(message);
         this.httpStatusCode = httpStatusCode;
         this.errorCode = errorCode;
+
+        printOnLogger();
     }
 
     public HttpStatusCode getHttpStatusCode() {
@@ -23,5 +28,12 @@ public class HttpException extends RuntimeException {
 
     public Integer getErrorCode() {
         return errorCode;
+    }
+
+    private void printOnLogger() {
+        String message = String.format("HTTP EXCEPTION: [%s] http_code: %d, message_code: %d, message: \"%s\"",
+                this.getClass().getSimpleName(), getHttpStatusCode().value(), getErrorCode(), getMessage());
+
+        logger.error(message);
     }
 }

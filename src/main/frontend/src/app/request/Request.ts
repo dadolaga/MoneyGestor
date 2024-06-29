@@ -20,7 +20,7 @@ export class Request {
     public enqueueSnackbar: EnqueueSnackbar = null;
 
     public User = {
-        Registration: async (registration: UserRegistrationForm) => {
+        Registration: async (registration: UserRegistrationForm): Promise<ReceiveId> => {
             return this.baseRequestPost("user/registration", registration)
             .then(response => response as ReceiveId)
         },
