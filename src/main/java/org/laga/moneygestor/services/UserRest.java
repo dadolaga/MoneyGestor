@@ -12,7 +12,6 @@ import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.exceptions.IllegalArgumentHttpException;
 import org.laga.moneygestor.services.models.LoginForm;
 import org.laga.moneygestor.services.models.Response;
-import org.laga.moneygestor.services.models.SendId;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,11 +36,7 @@ public class UserRest extends BaseRest {
 
             var id = userGestor.insert(null, userCreated);
 
-            var sendId = new SendId();
-
-            sendId.setId(id.longValue());
-
-            return Response.create(sendId);
+            return Response.sendId(id);
         } catch (UserPasswordNotEqualsException ex) {
             throw new IllegalArgumentHttpException("Password is not equal", ex);
         } catch (DuplicateValueException ex) {

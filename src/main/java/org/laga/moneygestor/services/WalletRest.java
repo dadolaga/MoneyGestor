@@ -1,21 +1,15 @@
 package org.laga.moneygestor.services;
 
 import jakarta.persistence.EntityManagerFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.db.repository.WalletRepository;
-import org.laga.moneygestor.logic.SortGestor;
-import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.WalletGestor;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
+import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
+import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
 import org.laga.moneygestor.services.models.CreateWallet;
+import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.Wallet;
-import org.springframework.beans.PropertyAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,57 +18,44 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/wallet")
 public class WalletRest extends BaseRest {
-    final static Logger logger = LogManager.getLogger(WalletRest.class);
-    private UserRepository userRepository;
-
-    private WalletGestor walletGestor;
-
     @Autowired
-    public WalletRest(EntityManagerFactory entityManagerFactory, UserRepository userRepository) {
+    public WalletRest(EntityManagerFactory entityManagerFactory) {
         super(entityManagerFactory);
-        this.userRepository = userRepository;
-        walletGestor = new WalletGestor(sessionFactory);
     }
 
-    /*@PostMapping("/new")
-    public void addNewWallet(@RequestBody CreateWallet wallet) {
-        UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, wallet.getToken());
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
+    @PostMapping("/new")
+    public Response addNewWallet(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization, @RequestBody CreateWallet wallet) {
+        UserDb loggedUser = getUserLogged(authorization);
+
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
         var walletDb = new WalletDb();
 
         walletDb.setName(wallet.getName());
         walletDb.setValue(wallet.getValue());
-        walletDb.setUserId(userGestor.getId());
-        walletDb.setFavorite(false);
         walletDb.setColor(wallet.getColor());
-
-        walletGestor.insert(userGestor, walletDb);
-    }
-
-    @GetMapping("/list")
-    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
+        walletDb.setUserId(loggedUser.getId());
+        walletDb.setFavorite(false);
 
         try {
-            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
+            var id = walletGestor.insert(loggedUser, walletDb);
 
-            Sort sort = SortGestor.decode(sortParams);
-
-            return WalletGestor.convertToRest(walletGestor.getAll(userGestor));
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        } catch (PropertyAccessException e) {
-            logger.error(e);
-
-            throw MoneyGestorErrorSample.mapOfError.get(10);
+            return Response.sendId(id);
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException("Wallet already exist", ex);
         }
     }
 
+    @GetMapping("/getAll")
+    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        UserDb loggedUser = getUserLogged(authorization);
+
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        return WalletGestor.convertToRest(walletGestor.getAll(loggedUser));
+    }
+
+    /*
     @GetMapping("/get/{id}")
     public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)

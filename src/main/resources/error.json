@@ -1,6 +1,10 @@
 {
   "errors": [
     {
+      "code": 0,
+      "httpStatusCode": 400,
+      "message": "General error"
+    }, {
       "code": 100,
       "httpStatusCode": 400,
       "message": "Illegal argument receive"
@@ -12,6 +16,10 @@
       "code": 102,
       "httpStatusCode": 400,
       "message": "Duplicate entities"
+    }, {
+      "code": 103,
+      "httpStatusCode": 401,
+      "message": "Token expired"
     }, {
       "code": 111,
       "httpStatusCode": 400,

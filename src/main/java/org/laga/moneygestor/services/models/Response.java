@@ -18,6 +18,14 @@ public class Response {
         return new Response(OK_CODE, null, null);
     }
 
+    public static<ID> Response sendId(ID id) {
+        var sendId = new SendId<ID>();
+
+        sendId.setId(id);
+
+        return Response.create(sendId);
+    }
+
     private final Integer code;
     private final String type;
     private final Object content;

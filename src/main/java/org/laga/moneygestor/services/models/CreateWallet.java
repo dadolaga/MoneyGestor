@@ -3,18 +3,9 @@ package org.laga.moneygestor.services.models;
 import java.math.BigDecimal;
 
 public class CreateWallet {
-    private String token;
     private String name;
     private BigDecimal value;
     private String color;
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 
     public String getName() {
         return name;
@@ -38,15 +29,5 @@ public class CreateWallet {
 
     public void setColor(String color) {
         this.color = color;
-    }
-
-    @Override
-    public String toString() {
-        return "CreateWallet{" +
-                "token='" + token + '\'' +
-                ", name='" + name + '\'' +
-                ", value=" + value +
-                ", color=" + color +
-                '}';
     }
 }

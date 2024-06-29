@@ -44,18 +44,6 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
         return wallets;
     }
 
-    public static WalletDb convertToDb(Wallet wallet) {
-        var walletDb = new WalletDb();
-
-        walletDb.setId(wallet.getId());
-        walletDb.setName(wallet.getName());
-        walletDb.setColor(wallet.getColor());
-        walletDb.setFavorite(wallet.getFavorite());
-        walletDb.setValue(wallet.getValue());
-
-        return walletDb;
-    }
-
     @Override
     public Integer insert(Session session, UserDb userLogged, WalletDb walletDb) {
         if(userLogged == null || walletDb == null)
