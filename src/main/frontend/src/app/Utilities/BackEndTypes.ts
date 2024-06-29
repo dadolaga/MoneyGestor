@@ -33,6 +33,14 @@ export interface User {
     expireToken: Array<number>,
 }
 
+export interface Wallet {
+    id: number;
+    name: string;
+    value: number; // In TS, BigDecimal can be represented as a number
+    favorite: boolean;
+    color: string;
+}
+
 
 export interface ReceiveId {
     id: number,

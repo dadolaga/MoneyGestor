@@ -1,11 +1,11 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, User, UserRegistrationForm } from "../Utilities/BackEndTypes"
+import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
-import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 
 const ERROR_BASE_TYPE = "ERROR";
 
@@ -38,6 +38,11 @@ export class Request {
         Create: async (wallet: CreateWalletForm): Promise<ReceiveId> => {
             return this.baseRequestPost("wallet/new", wallet)
             .then(response => response as ReceiveId)
+        },
+        
+        List: async (): Promise<Wallet[]> => {
+            return this.baseRequestGet("wallet/list")
+            .then(response => response as Wallet[])
         }
     }
 
@@ -63,32 +68,46 @@ export class Request {
     }
 
     private async baseRequestPost(url: string, data: any): Promise<any> {
-        return axios
-            .post(url, data, {
-                headers: this.cookie._token && {
-                    Authorization: this.cookie._token
-                }
-            })
+        return this.baseRequest(true, url, data);
+    }
+
+    private async baseRequestGet(url: string): Promise<any> {
+        return this.baseRequest(false, url);
+    }
+
+    private async baseRequest(isPost: boolean, url: string, data?: any): Promise<any> {
+        let axiosPromise: Promise<AxiosResponse<any, any>>;
+        let axiosConfig: AxiosRequestConfig<any> = {
+            headers: this.cookie._token && {
+                Authorization: this.cookie._token
+            }
+        };
+
+        if(isPost) {
+            axiosPromise = axios.post(url, data, axiosConfig);
+        } else {
+            axiosPromise = axios.get(url, axiosConfig);
+        }
+
+        return axiosPromise
             .then(axiosResponse => {
                 const myResponse = axiosResponse.data as any as Response<any>;
     
                 if(myResponse.code && myResponse.code == 1) {
                     return myResponse.content;
-                } else if(myResponse.type != ERROR_BASE_TYPE) {
+                } else if(myResponse.type && myResponse.type != ERROR_BASE_TYPE) {
                     throw new ResponseError(myResponse.code, myResponse.content);
                 } else {
-                    Request.printServerError("response is not a recognized response")
+                    Request.printServerError("response is not a recognized response");
                 }
             })
             .catch(error => {
                 if(error.code == "ERR_NETWORK") {
                     this.router.push("dashboard/error/unavailable");
-                    throw new Error;
                 }
 
                 if (error.response.status == 500) {
                     Request.printServerError("Server return 500");
-                    throw new Error;
                 }
                 
                 const response = error.response.data as any as Response<any>;
@@ -98,7 +117,6 @@ export class Request {
                     throw new ResponseError(response.code, response.content);
                 } else {
                     Request.printServerError("Response is not a error or type is not recognized");
-                    throw new Error;
                 }
             })
     }
@@ -117,6 +135,7 @@ export class Request {
 
     private static printServerError = (message?: string) => {
         console.error("SERVER ERROR:", message);
+        throw new Error;
     }
 }
 

@@ -55,6 +55,19 @@ public class WalletRest extends BaseRest {
         return WalletGestor.convertToRest(walletGestor.getAll(loggedUser));
     }
 
+    @GetMapping(value = "/list")
+    public Response getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                   @RequestParam(name = "sort", required = false) String sortParams,
+                                   @RequestParam(name = "limit", required = false, defaultValue = "25") Integer limitParams,
+                                   @RequestParam(name = "page", required = false, defaultValue = "0") Integer pageParams) {
+        UserDb loggedUser = getUserLogged(authorization);
+
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        return Response.create(
+                WalletGestor.convertToRest(walletGestor.list(loggedUser, sortParams, limitParams, pageParams)));
+    }
+
     /*
     @GetMapping("/get/{id}")
     public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {

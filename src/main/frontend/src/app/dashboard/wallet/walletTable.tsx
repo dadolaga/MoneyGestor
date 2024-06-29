@@ -9,6 +9,7 @@ import WalletDialog from "./WalletDialog";
 import DeleteDialog from "./DeleteDialog";
 import { convertNumberToValue } from "../../Utilities/Utilities";
 import { Wallet } from "../../Utilities/Datatypes";
+import { useRestApi } from "../../request/Request";
 
 interface IWalletTable {
     refreshWallets: () => void
@@ -26,6 +27,8 @@ const WalletTable = forwardRef((props: IWalletTable, ref) => {
 
     const [cookie, setCookie] = useCookies(["_token"]);
 
+    const restApi = useRestApi();
+
     useEffect(() => {
         refreshWallet()
     }, [sortColumn, sortDirection]);
@@ -37,16 +40,9 @@ const WalletTable = forwardRef((props: IWalletTable, ref) => {
     function refreshWallet() {
         setWallets(null);
 
-        axios.get("/wallet/list", {
-            params: {
-                sort: sortColumn == null? "!favorite+name" : ((!sortDirection? '!' : '') + sortColumn) 
-            },
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
-            setWallets(message.data);
+        restApi.Wallet.List()
+        .then(wallets => {
+            setWallets(wallets);
         });
     }
 

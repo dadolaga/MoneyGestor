@@ -4,12 +4,15 @@ import { convertNumberToValue } from "../../Utilities/Utilities";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import axios from "../../axios/axios";
 import { useCookies } from "react-cookie";
-import { Wallet } from "../../Utilities/Datatypes";
+import { useRestApi } from "../../request/Request";
+import { Wallet } from "../../Utilities/BackEndTypes";
 
 const WalletPie = forwardRef((props, ref) => {
     const [wallets, setWallets] = useState(null);
 
     const [cookie, setCookie] = useCookies(["_token"]);
+
+    const restApi = useRestApi();
 
     useEffect(() => {
         refreshWallet();
@@ -22,17 +25,10 @@ const WalletPie = forwardRef((props, ref) => {
     function refreshWallet() {
         setWallets(null);
 
-        axios.get("/wallet/list", {
-            params: {
-                sort: 'name'
-            },
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
+        restApi.Wallet.List()
+        .then(wallets => {
             let wallet: Wallet[] = [];
-            message.data.forEach((el) => {
+            wallets.forEach((el) => {
                 wallet.push({
                     ...el,
                     color: '#' + el.color

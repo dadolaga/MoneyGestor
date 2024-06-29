@@ -12,6 +12,7 @@ import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.Wallet;
+import org.springframework.data.domain.Sort;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +43,17 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
             wallets.add(convertToRest(wallet));
 
         return wallets;
+    }
+
+    public List<WalletDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM WalletDb WHERE userId = :userId "
+                            + SortGestor.toSql(sortString), WalletDb.class)
+                    .setParameter("userId", userLogged.getId())
+                    .setFirstResult(page * limit)
+                    .setMaxResults(limit)
+                    .list();
+        }
     }
 
     @Override
