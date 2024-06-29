@@ -43,11 +43,11 @@ public class UserRest extends BaseRest {
 
             return Response.create(sendId);
         } catch (UserPasswordNotEqualsException ex) {
-            throw new IllegalArgumentHttpException("Password is not equal");
+            throw new IllegalArgumentHttpException("Password is not equal", ex);
         } catch (DuplicateValueException ex) {
-            throw new DuplicateEntitiesHttpException(ex.getMessage());
+            throw new DuplicateEntitiesHttpException(ex.getMessage(), ex);
         } catch (UserCreationException ex) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, 111, ex.getMessage());
+            throw new HttpException(HttpStatus.BAD_REQUEST, 111, ex.getMessage(), ex);
         }
     }
 
@@ -58,7 +58,7 @@ public class UserRest extends BaseRest {
 
             return Response.create(UserGestor.convertToRest(userDb));
         } catch (UserPasswordNotEqualsException | UserNotFoundException ex) {
-            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage());
+            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage(), ex);
         }
     }
 }

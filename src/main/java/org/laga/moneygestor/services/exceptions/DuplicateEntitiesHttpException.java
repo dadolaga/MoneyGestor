@@ -9,6 +9,10 @@ public class DuplicateEntitiesHttpException extends HttpException {
     }
 
     public DuplicateEntitiesHttpException(String message) {
-        super(HttpStatus.BAD_REQUEST, 102, message);
+        this(message, null);
+    }
+
+    public DuplicateEntitiesHttpException(String message, Throwable throwable) {
+        super(HttpStatus.BAD_REQUEST, 102, message, throwable);
     }
 }

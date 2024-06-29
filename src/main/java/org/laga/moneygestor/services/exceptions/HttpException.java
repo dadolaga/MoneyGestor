@@ -15,7 +15,12 @@ public class HttpException extends RuntimeException {
     }
 
     public HttpException(HttpStatusCode httpStatusCode, Integer errorCode, String message) {
-        super(message);
+        this(httpStatusCode, errorCode, message, null);
+    }
+
+    public HttpException(HttpStatusCode httpStatusCode, Integer errorCode, String message, Throwable throwable) {
+        super(message, throwable);
+
         this.httpStatusCode = httpStatusCode;
         this.errorCode = errorCode;
 
@@ -35,5 +40,15 @@ public class HttpException extends RuntimeException {
                 this.getClass().getSimpleName(), getHttpStatusCode().value(), getErrorCode(), getMessage());
 
         logger.error(message);
+
+        if(getCause() != null) {
+            StringBuilder traceBuilder = new StringBuilder("Trace of error: \n");
+
+            for (StackTraceElement traceElement : getStackTrace()) {
+                traceBuilder.append('\t').append(traceElement).append('\n');
+            }
+
+            logger.trace(traceBuilder);
+        }
     }
 }
