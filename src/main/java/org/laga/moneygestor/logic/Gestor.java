@@ -78,6 +78,8 @@ public abstract class Gestor<ID, T> {
             update(session, userLogged, id, newObject);
 
             closeTransactionIfNecessary(transaction);
+        } catch (Exception e) {
+            throw e;
         }
     }
 

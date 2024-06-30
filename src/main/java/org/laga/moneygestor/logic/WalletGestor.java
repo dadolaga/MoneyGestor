@@ -12,7 +12,6 @@ import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.Wallet;
-import org.springframework.data.domain.Sort;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -122,7 +121,7 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
                 throw new UserNotHavePermissionException();
 
             wallet.setName(newWallet.getName());
-            wallet.setValue(newWallet.getValue());
+            wallet.setValue(newWallet.getValue() == null? wallet.getValue() : newWallet.getValue());
             wallet.setColor(newWallet.getColor());
             wallet.setFavorite(newWallet.getFavorite());
 
@@ -130,7 +129,8 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
 
             transaction.commit();
         } catch (RollbackException e) {
-            throw new DuplicateValueException("Duplicate value for wallet", e);
+            if(e.getCause().getMessage().contains("index_wallet_nameuser"))
+                throw new DuplicateValueException("Duplicate value for wallet", e);
         }
     }
 

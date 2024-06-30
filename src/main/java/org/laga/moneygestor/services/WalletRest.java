@@ -68,42 +68,37 @@ public class WalletRest extends BaseRest {
                 WalletGestor.convertToRest(walletGestor.list(loggedUser, sortParams, limitParams, pageParams)));
     }
 
-    /*
+
     @GetMapping("/get/{id}")
-    public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
+    public Response getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
-        try {
-            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
+        var wallet = WalletGestor.convertToRest(walletGestor.getById(userLogged, id));
 
-            return WalletGestor.convertToRest(walletGestor.getById(userGestor, id.intValue()));
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        }
+        return Response.create(wallet);
     }
 
-    @PostMapping("/edit")
-    public void editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Wallet wallet) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
+
+    @PostMapping("/edit/{id}")
+    public Response editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Wallet wallet, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        var newWallet = new WalletDb();
+
+        newWallet.setName(wallet.getName());
+        newWallet.setColor(wallet.getColor());
 
         try {
-            UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
+            walletGestor.update(userLogged, id, newWallet);
 
-            walletGestor.update(userGestor, WalletGestor.convertToDb(wallet));
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("index_wallet_nameuser"))
-                throw MoneyGestorErrorSample.mapOfError.get(201);
+            return Response.ok();
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException("Wallet already exist", ex);
         }
     }
-
+/*
     @GetMapping("/delete/{id}")
     public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)

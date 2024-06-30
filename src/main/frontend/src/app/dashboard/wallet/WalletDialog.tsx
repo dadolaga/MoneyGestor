@@ -22,7 +22,7 @@ interface WalletDialogInterface {
     open: boolean,
     onClose: () => void,
     onSave: (wallet: Wallet) => void,
-    walletId?: Number
+    walletId?: number
 }
 
 export default function WalletDialog({ open, onClose, onSave, walletId }: WalletDialogInterface) {
@@ -65,19 +65,10 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
 
     }, [open]);
 
-    const loadWallet = () => 
-        axios.get("/wallet/get/" + walletId, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(response => {
-            setWallet({
-                name: response.data.name,
-                value: response.data.value,
-                color: response.data.color,
-            });
-        });
+    function loadWallet() {
+        restApi.Wallet.Get(walletId)
+        .then(wallet => setWallet(wallet));
+    }
 
     const loadColor = () => {
         axios.get("/color/list")
@@ -138,27 +129,19 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
         function editWallet(wallet, walletId) {
             setShowLoading(true);
 
-            axios.post("/wallet/edit", {
-                id: walletId,
-                ...wallet,
-            }, {
-                headers: {
-                    Authorization: cookie._token
-                }
-            })
-            .then(response => {
+            restApi.Wallet.Modify(walletId, wallet)
+            .then(() => {
                 onClose();
             })
-            .catch(error => {
-                if (error.response.data.code == 201) {
-                    setNameError("Il nome esiste già");
+            .catch(Request.ErrorGestor([{
+                code: 102,
+                action: _ => {
+                    setNameError("Il nome è gia presente");
                 }
-            })
+            }]))
             .finally(() => {
                 setShowLoading(false);
-
-                onSave(wallet);
-            });
+            })
         }
 
         function saveNewWallet() {
@@ -207,7 +190,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                             value={wallet.value}
                             onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
                             InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
-                            disabled={showLoading} />
+                            disabled={showLoading || walletId != undefined} />
                     </Grid>
                     <Grid item xs={12}>
                         <FormControl fullWidth error={colorError != null}>

@@ -12,15 +12,16 @@ const ERROR_BASE_TYPE = "ERROR";
 export function useRestApi() {
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const router = useRouter();    
-    const [cookie, setCookie] = useCookies(["_token"]);
+    const [cookie, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
 
-    return new Request(router, enqueueSnackbar, cookie);
+    return new Request(router, enqueueSnackbar, cookie, removeCookie);
 }
 
 export class Request {
     public router: AppRouterInstance = null;
     public enqueueSnackbar: EnqueueSnackbar = null;
     public cookie: {_token?: any} = null;
+    public removeCookie: (name: "_displayName", any?) => void = null;
 
     public User = {
         Registration: async (registration: UserRegistrationForm): Promise<ReceiveId> => {
@@ -43,13 +44,27 @@ export class Request {
         List: async (): Promise<Wallet[]> => {
             return this.baseRequestGet("wallet/list")
             .then(response => response as Wallet[])
+        },
+        
+        Get: async (id: number): Promise<Wallet> => {
+            return this.baseRequestGet("wallet/get/" + id)
+            .then(response => response as Wallet)
+        },
+
+        Modify: async (id: number, wallet: CreateWalletForm): Promise<void> => {
+            return this.baseRequestPost("wallet/edit/" + id, wallet)
+            .then(response => response as void)
         }
     }
 
-    public constructor(router: AppRouterInstance, enqueueSnackbar: EnqueueSnackbar, cookie: {_token?: any}) {
+    public constructor(router: AppRouterInstance, 
+            enqueueSnackbar: EnqueueSnackbar, 
+            cookie: {_token?: any}, 
+            removeCookie: (name: "_displayName", any?) => void) {
         this.router = router;
         this.enqueueSnackbar = enqueueSnackbar;
         this.cookie = cookie;
+        this.removeCookie = removeCookie;
     }
 
     public static ErrorGestor = (options?: CodeAction[]): (error: ResponseError) => void => {
@@ -103,7 +118,7 @@ export class Request {
             })
             .catch(error => {
                 if(error.code == "ERR_NETWORK") {
-                    this.router.push("dashboard/error/unavailable");
+                    this.router.push("/dashboard/error/unavailable");
                 }
 
                 if (error.response.status == 500) {
@@ -127,6 +142,7 @@ export class Request {
                 Request.printServerError("Illegal argument: " + errorResponse.content);
                 break;
             case 104:
+                this.removeCookie("_displayName", {path: '/'});
                 this.enqueueSnackbar("Sessione scaduta", {variant: "info"});
                 this.router.push("/dashboard/user/login");
                 break;
