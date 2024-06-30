@@ -54,6 +54,11 @@ export class Request {
         Modify: async (id: number, wallet: CreateWalletForm): Promise<void> => {
             return this.baseRequestPost("wallet/edit/" + id, wallet)
             .then(response => response as void)
+        },
+
+        Delete: async (id: number): Promise<void> => {
+            return this.baseRequestPost("wallet/delete/" + id)
+            .then(response => response as void)
         }
     }
 
@@ -82,7 +87,7 @@ export class Request {
         };
     }
 
-    private async baseRequestPost(url: string, data: any): Promise<any> {
+    private async baseRequestPost(url: string, data?: any): Promise<any> {
         return this.baseRequest(true, url, data);
     }
 
@@ -141,10 +146,13 @@ export class Request {
             case 100: // Illegal argument
                 Request.printServerError("Illegal argument: " + errorResponse.content);
                 break;
-            case 104:
+            case 103:
                 this.removeCookie("_displayName", {path: '/'});
                 this.enqueueSnackbar("Sessione scaduta", {variant: "info"});
                 this.router.push("/dashboard/user/login");
+                break;
+            case 104:
+                this.enqueueSnackbar("L'utente non ha i permessi", {variant: "warning"});
                 break;
         }
     }

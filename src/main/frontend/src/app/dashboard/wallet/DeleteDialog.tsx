@@ -1,26 +1,23 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress } from "@mui/material";
 import { useState } from "react";
-import axios from "../../axios/axios";
-import { useCookies } from "react-cookie";
+import { useRestApi } from "../../request/Request";
 
 export default function DeleteDialog({open, onClose, onDelete, wallet}) {
     const [showLoading, setShowLoading] = useState(false);
-    const [cookie, setCookie] = useCookies(["_token"]);
+
+    const restApi = useRestApi();
 
     function deleteWallet() {
         setShowLoading(true);
 
-        axios.get("/wallet/delete/" + wallet.id, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
+        restApi.Wallet.Delete(wallet.id)
         .then(() => {
-            onDelete();
+            onClose();
         })
         .finally(() => {
             setShowLoading(false);
-        })
+        });
+
     }
 
     return (

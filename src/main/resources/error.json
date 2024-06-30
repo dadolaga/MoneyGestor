@@ -21,6 +21,10 @@
       "httpStatusCode": 401,
       "message": "Token expired"
     }, {
+      "code": 104,
+      "httpStatusCode": 401,
+      "message": "User not have permission"
+    }, {
       "code": 111,
       "httpStatusCode": 400,
       "message": "Registration user error"

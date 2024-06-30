@@ -98,23 +98,17 @@ public class WalletRest extends BaseRest {
             throw new DuplicateEntitiesHttpException("Wallet already exist", ex);
         }
     }
-/*
-    @GetMapping("/delete/{id}")
-    public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
 
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
+    @PostMapping("/delete/{id}")
+    public Response deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
-            walletGestor.deleteById(userGestor, id.intValue());
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        }
+        walletGestor.deleteById(userLogged, id);
+
+        return Response.ok();
     }
-
+/*
     @PostMapping("/favorite/{id}")
     public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         if(authorization == null)
