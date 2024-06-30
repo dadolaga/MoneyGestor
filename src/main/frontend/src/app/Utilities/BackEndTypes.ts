@@ -20,9 +20,10 @@ export interface UserRegistrationForm {
 }
 
 export interface CreateWalletForm {
-    name: string,
-    value: number,
-    color: string,
+    name?: string,
+    value?: number,
+    color?: string,
+    favorite?: boolean,
 }
 
 // RECEIVE FROM SERVER

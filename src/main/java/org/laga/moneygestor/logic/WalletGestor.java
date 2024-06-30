@@ -120,10 +120,10 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
             if(wallet == null)
                 throw new UserNotHavePermissionException();
 
-            wallet.setName(newWallet.getName());
+            wallet.setName(newWallet.getName() == null? wallet.getName() : newWallet.getName());
             wallet.setValue(newWallet.getValue() == null? wallet.getValue() : newWallet.getValue());
-            wallet.setColor(newWallet.getColor());
-            wallet.setFavorite(newWallet.getFavorite());
+            wallet.setColor(newWallet.getColor() == null? wallet.getColor() : newWallet.getColor());
+            wallet.setFavorite(newWallet.getFavorite() == null? wallet.getFavorite() : newWallet.getFavorite());
 
             session.merge(wallet);
 

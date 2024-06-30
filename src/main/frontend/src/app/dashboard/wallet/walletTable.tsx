@@ -10,6 +10,7 @@ import DeleteDialog from "./DeleteDialog";
 import { convertNumberToValue } from "../../Utilities/Utilities";
 import { Wallet } from "../../Utilities/Datatypes";
 import { useRestApi } from "../../request/Request";
+import { enqueueSnackbar } from "notistack";
 
 interface IWalletTable {
     refreshWallets: () => void
@@ -89,18 +90,13 @@ const WalletTable = forwardRef((props: IWalletTable, ref) => {
         }
     }
 
-    const favoriteHandler = (id) => (event) => {
-        axios.post("/wallet/favorite/" + id, {}, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
-            refreshWallet();
-        })
-        .catch(error => {
+    const favoriteHandler = (id) =>  async (event) => {
+        let wallet = await restApi.Wallet.Get(id);
 
-        });
+        restApi.Wallet.Modify(id, { favorite: !wallet.favorite })
+        .then(() => {
+            enqueueSnackbar("ok");
+        })
     }
 
     return (

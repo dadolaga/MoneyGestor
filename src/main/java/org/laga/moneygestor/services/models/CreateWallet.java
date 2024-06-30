@@ -6,6 +6,7 @@ public class CreateWallet {
     private String name;
     private BigDecimal value;
     private String color;
+    private Boolean favorite;
 
     public String getName() {
         return name;
@@ -29,5 +30,13 @@ public class CreateWallet {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Boolean getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite) {
+        this.favorite = favorite;
     }
 }

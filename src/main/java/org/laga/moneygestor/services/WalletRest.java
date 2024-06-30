@@ -81,7 +81,7 @@ public class WalletRest extends BaseRest {
 
 
     @PostMapping("/edit/{id}")
-    public Response editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Wallet wallet, @PathVariable(name = "id") Integer id) {
+    public Response editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody CreateWallet wallet, @PathVariable(name = "id") Integer id) {
         UserDb userLogged = getUserLogged(authorization);
         WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
@@ -89,6 +89,7 @@ public class WalletRest extends BaseRest {
 
         newWallet.setName(wallet.getName());
         newWallet.setColor(wallet.getColor());
+        newWallet.setFavorite(wallet.getFavorite());
 
         try {
             walletGestor.update(userLogged, id, newWallet);
@@ -108,27 +109,4 @@ public class WalletRest extends BaseRest {
 
         return Response.ok();
     }
-/*
-    @PostMapping("/favorite/{id}")
-    public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
-
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
-
-            WalletDb wallet = walletGestor.getById(userGestor, id.intValue());
-
-            if(wallet == null)
-                throw MoneyGestorErrorSample.mapOfError.get(6);
-
-            wallet.setFavorite(!wallet.getFavorite());
-
-            walletGestor.update(userGestor, wallet);
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        }
-    }*/
 }
