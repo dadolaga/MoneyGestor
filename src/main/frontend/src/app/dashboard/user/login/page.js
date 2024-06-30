@@ -1,12 +1,12 @@
 "use client"
 
-import './style.css'
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useCookies } from 'react-cookie';
 import { Alert, Box, Button, Card, CardContent, TextField, Typography } from '@mui/material';
-import { useDispatch } from 'react-redux'
+import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { useCookies } from 'react-cookie';
+import { useDispatch } from 'react-redux';
 import { changeName } from '../../../redux/userSlice';
+import './style.css';
 
 export default function Page() {
     const form = useRef();
@@ -82,11 +82,12 @@ export default function Page() {
 
     return(
         <Box className="center">
-            <Card>
-            <CardContent sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
-                    <Box>
-                        <img src='/logo.png' style={{width: '300px'}}/>
+            <Card style={{width: '30%', borderRadius: '10%'}}>
+                <CardContent  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+                    <Box className="image">
+                        <img src='/logo.png' style={{width: '80%'}}/>
                     </Box>
+                    
                     <Box sx={{width: '100%'}}>
                         <Typography variant='h5' sx={{paddingLeft: 2}}>Login</Typography>
                     </Box> 
@@ -96,8 +97,13 @@ export default function Page() {
                         <TextField error={formError.password != null} helperText={formError.password} fullWidth name='password' type='password' label='password' required/>
                         <Button variant='contained' onClick={login}> Login </Button>
                     </Box>
+                    <Box className="image">
+                        <img  src='/login_without_background.png' style={{width: '60%'}} />
+                    </Box>
                 </CardContent>
+                
             </Card>
+            
         </Box>
     );
 }
