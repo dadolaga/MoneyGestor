@@ -1,31 +1,28 @@
 import { faPen, faPlus, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faStar as faStartEmpty} from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TableSortLabel } from "@mui/material";
-import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
-import axios from "../../axios/axios";
-import { useCookies } from "react-cookie";
+import { Box, Button, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { useState, forwardRef } from 'react'
 import WalletDialog from "./WalletDialog";
 import DeleteDialog from "./DeleteDialog";
 import { convertNumberToValue } from "../../Utilities/Utilities";
 import { Wallet } from "../../Utilities/BackEndTypes";
 import { useRestApi } from "../../request/Request";
-import { enqueueSnackbar } from "notistack";
+import { Order } from "../base/Order";
 
 interface IWalletTable {
     wallets: Wallet[],
     loading: boolean,
     refreshWallets: () => void,
+    sort: Order,
+    setSort: (_: Order) => void,
 }
 
-const WalletTable = forwardRef(({wallets, loading, refreshWallets}: IWalletTable, ref) => {
+const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, ref) => {
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
     const [openDeleteWalletDialog, setOpenDeleteWalletDialog] = useState(false);
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
     const [deleteWalletId, setDeleteWalletId] = useState<number>(undefined);
-
-    const [sortColumn, setSortColumn] = useState(null);
-    const [sortDirection, setSortDirection] = useState(true);
 
     const restApi = useRestApi();
 
@@ -67,6 +64,11 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets}: IWalletTable
             refreshWallets();
     }
 
+    const clickOnOrderHandler = (nameOfElement: string) => () => {
+        setSort(sort.clickOnElement(nameOfElement));
+
+    }
+
     return (
         <Box sx={{height: '100%', flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
             <WalletDialog open={openWalletDialog} onClose={closeWalletDialogHandler} walletId={editWalletId} />
@@ -79,16 +81,18 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets}: IWalletTable
                             <TableRow>
                                 <TableCell>
                                     <TableSortLabel
-                                        active={sortColumn == 'name'}
-                                        direction={sortDirection? 'asc' : 'desc'}
+                                        active={sort.haveElement('name')}
+                                        direction={sort.getElement('name')?.order}
+                                        onClick={clickOnOrderHandler('name')}
                                         >
                                         Nome
                                     </TableSortLabel>
                                 </TableCell>
                                 <TableCell style={{ width: '100px' }}>
                                     <TableSortLabel
-                                        active={sortColumn == 'value'}
-                                        direction={sortDirection? 'asc' : 'desc'}
+                                        active={sort.haveElement('value')}
+                                        direction={sort.getElement('value')?.order}
+                                        onClick={clickOnOrderHandler('value')}
                                         >
                                         Valore
                                     </TableSortLabel>

@@ -27,7 +27,7 @@ public class SortGestor {
     }
 
     public static String toSql(String sortString) {
-        if(sortString == null)
+        if(sortString == null || sortString.trim().length() == 0)
             return "";
 
         final String MULTIPLE_SORT_REGEX = "\\+";

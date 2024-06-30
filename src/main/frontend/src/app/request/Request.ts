@@ -41,8 +41,8 @@ export class Request {
             .then(response => response as ReceiveId)
         },
         
-        List: async (): Promise<Wallet[]> => {
-            return this.baseRequestGet("wallet/list")
+        List: async (listData: ListData): Promise<Wallet[]> => {
+            return this.baseRequestGet("wallet/list?sort=" + listData.order)
             .then(response => response as Wallet[])
         },
         
@@ -163,8 +163,11 @@ export class Request {
     }
 }
 
+export interface ListData {
+    order: string,
+}
+
 interface CodeAction {
     code: number,
     action: (_: ResponseError) => void,
 }
-
