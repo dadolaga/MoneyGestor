@@ -1,16 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, Slide, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, TextField } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
-import { useCookies } from "react-cookie";
 import axios from "../../axios/axios";
-import { TransitionDialog } from "../base/transition";
 import { Request, useRestApi } from "../../request/Request";
 import { CreateWalletForm } from "../../Utilities/BackEndTypes";
-
-interface Wallet {
-    name: String,
-    value: any,
-    color: string
-}
 
 const WALLET_DEFAULT: CreateWalletForm = {
     name: "",
@@ -20,27 +12,25 @@ const WALLET_DEFAULT: CreateWalletForm = {
 
 interface WalletDialogInterface {
     open: boolean,
-    onClose: () => void,
-    onSave: (wallet: Wallet) => void,
+    onClose: (isSave: boolean) => void,
     walletId?: number
 }
 
-export default function WalletDialog({ open, onClose, onSave, walletId }: WalletDialogInterface) {
+export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
     const form = useRef();
 
-    const [nameError, setNameError] = useState(null);
-    const [valueError, setValueError] = useState(null);
-    const [colorError, setColorError] = useState(null);
-    const [showLoading, setShowLoading] = useState(false);
+    const [nameError, setNameError] = useState<string>(undefined);
+    const [valueError, setValueError] = useState<string>(null);
+    const [colorError, setColorError] = useState<string>(null);
+    const [loading, setLoading] = useState<boolean>(false);
     const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
     const [colors, setColors] = useState([]);
-
-    const [cookie, setCookie] = useCookies(["_token"]);
 
     const restApi = useRestApi();
 
     useEffect(() => {
-        setShowLoading(true);
+        if(!open)
+            return;
 
         setWallet({
             name: "",
@@ -48,9 +38,11 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
             color: ""
         });
 
-        setValueError(null);
-        setNameError(null);
-        setColorError(null);
+        setValueError(undefined);
+        setNameError(undefined);
+        setColorError(undefined);
+
+        setLoading(true);
 
         let promiseList = [];
 
@@ -60,7 +52,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
         }
 
         Promise.all(promiseList).finally(() => {
-            setShowLoading(false);
+            setLoading(false);
         })
 
     }, [open]);
@@ -82,7 +74,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
         })
     }
 
-    function save() {
+    const saveOrModifyHandler = () => {
         const formData = new FormData(form.current);
         let myWallet: CreateWalletForm = WALLET_DEFAULT;
 
@@ -127,11 +119,11 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
         }
 
         function editWallet(wallet, walletId) {
-            setShowLoading(true);
+            setLoading(true);
 
             restApi.Wallet.Modify(walletId, wallet)
             .then(() => {
-                onClose();
+                onClose(true);
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
@@ -140,30 +132,34 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                 }
             }]))
             .finally(() => {
-                setShowLoading(false);
+                setLoading(false);
             })
         }
 
         function saveNewWallet() {
-            setShowLoading(true);
+            setLoading(true);
 
             restApi.Wallet.Create(wallet)
             .then(id => {
-                onClose();
+                onClose(true);
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
                 action: _ => setNameError("Il nome esiste già"),
             }]))
             .finally(() => {
-                setShowLoading(false);
+                setLoading(false);
             })
         }
     }
 
+    const onCloseHandler = () => {
+        onClose(false);
+    }
+
     return (
         <Dialog open={open} onClose={onClose} PaperProps={{}}>
-            {showLoading && <LinearProgress />}
+            {loading && <LinearProgress />}
             <DialogTitle color={'#' + parseInt(wallet.color)}>Crea nuovo portafoglio</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -178,7 +174,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                             name="name" 
                             value={wallet.name}
                             onChange={(text) => setWallet({ name: text.target.value, value: wallet.value, color: wallet.color })} 
-                            disabled={showLoading} />
+                            disabled={loading} />
                     </Grid>
                     <Grid item xs={4}>
                         <TextField
@@ -190,7 +186,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                             value={wallet.value}
                             onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
                             InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
-                            disabled={showLoading || walletId != undefined} />
+                            disabled={loading || walletId != undefined} />
                     </Grid>
                     <Grid item xs={12}>
                         <FormControl fullWidth error={colorError != null}>
@@ -206,7 +202,7 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                                 name="color"
                                 value={wallet.color}
                                 onChange={(text) => setWallet({ name: wallet.name, value: wallet.value, color: text.target.value })}
-                                disabled={showLoading} >
+                                disabled={loading} >
                                 { colors.map((value, index) => {
                                     return (<MenuItem key={index} value={value}><span style={{height: '20px', width: '20px', backgroundColor: '#' + value, marginRight: "10px"}}></span>#{value}</MenuItem>)
                                 }) }
@@ -217,8 +213,8 @@ export default function WalletDialog({ open, onClose, onSave, walletId }: Wallet
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="secondary" >Annulla</Button>
-                <Button onClick={save} disabled={showLoading}>{walletId != null? "modifica" : "salva"}</Button>
+                <Button onClick={onCloseHandler} color="secondary" >Annulla</Button>
+                <Button onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "salva"}</Button>
             </DialogActions>
         </Dialog>
     );

@@ -1,27 +1,35 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRestApi } from "../../request/Request";
+import { Wallet } from "../../Utilities/BackEndTypes";
 
-export default function DeleteDialog({open, onClose, onDelete, wallet}) {
+export default function DeleteDialog({open, onClose, walletId}) {
     const [showLoading, setShowLoading] = useState(false);
+    const [wallet, setWallet] = useState<Wallet>(undefined);
 
     const restApi = useRestApi();
+
+    useEffect(() => {
+        if(!open)
+            return;
+
+        restApi.Wallet.Get(walletId).then(wallet => setWallet(wallet));
+    }, [open])
 
     function deleteWallet() {
         setShowLoading(true);
 
         restApi.Wallet.Delete(wallet.id)
         .then(() => {
-            onClose();
+            onClose(true);
         })
         .finally(() => {
             setShowLoading(false);
         });
-
     }
 
     return (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open} onClose={() => onClose(false)}>
             {showLoading && <LinearProgress />}
             <DialogTitle>
                 Confermi di voler cancellare il portafoglio

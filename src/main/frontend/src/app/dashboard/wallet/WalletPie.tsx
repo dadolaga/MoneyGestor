@@ -7,38 +7,12 @@ import { useCookies } from "react-cookie";
 import { useRestApi } from "../../request/Request";
 import { Wallet } from "../../Utilities/BackEndTypes";
 
-const WalletPie = forwardRef((props, ref) => {
-    const [wallets, setWallets] = useState(null);
+interface IWalletPie {
+    wallets: Wallet[],
+    loading: boolean,
+}
 
-    const [cookie, setCookie] = useCookies(["_token"]);
-
-    const restApi = useRestApi();
-
-    useEffect(() => {
-        refreshWallet();
-    }, []);
-
-    useImperativeHandle(ref, () => ({
-        refreshWallet,
-    }))
-    
-    function refreshWallet() {
-        setWallets(null);
-
-        restApi.Wallet.List()
-        .then(wallets => {
-            let wallet: Wallet[] = [];
-            wallets.forEach((el) => {
-                wallet.push({
-                    ...el,
-                    color: '#' + el.color
-                })
-            });
-
-            setWallets(wallet);
-        });
-    }
-
+export function WalletPie({wallets, loading}: IWalletPie, ref) {
     return (
         <Box sx={{flex: 1}} width={'100%'} height={'400px'}>
             <ResponsivePie 
@@ -49,7 +23,7 @@ const WalletPie = forwardRef((props, ref) => {
                 sortByValue
                 valueFormat={(number) => convertNumberToValue(number)}
                 activeOuterRadiusOffset={10}
-                colors={(data) => (data.data as any).color}
+                colors={(data) => "#" + data.data.color}
                 legends={[{
                     anchor: "right",
                     direction: "column",
@@ -61,8 +35,4 @@ const WalletPie = forwardRef((props, ref) => {
             />
         </Box>
     )
-});
-
-WalletPie.displayName = "WalletTable";
-
-export default WalletPie;
+};

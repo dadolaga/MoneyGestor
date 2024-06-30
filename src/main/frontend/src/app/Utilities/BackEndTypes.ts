@@ -37,7 +37,7 @@ export interface User {
 export interface Wallet {
     id: number;
     name: string;
-    value: number; // In TS, BigDecimal can be represented as a number
+    value: number;
     favorite: boolean;
     color: string;
 }
