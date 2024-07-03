@@ -1,18 +1,12 @@
-"use client"
+"use client";
 
-import { Alert, Box, Button, Card, CardContent, TextField, Typography } from '@mui/material';
-import './style.css'
-import { useState, useRef, use, KeyboardEventHandler } from 'react';
-import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
-import { useCookies } from 'react-cookie';
-import { useDispatch } from 'react-redux';
-import { Alert, Box, Button, Card, CardContent, LinearProgress, TextField, Typography } from '@mui/material';
-import { useDispatch } from 'react-redux'
-import { changeName } from '../../../redux/userSlice';
 import './style.css';
-import { LoginForm } from '../../../Utilities/BackEndTypes'
-import { Request, useRestApi } from '../../../request/Request';
+import { KeyboardEventHandler, useRef, useState } from "react";
+import { useCookies } from "react-cookie";
+import { Request, useRestApi } from "../../../request/Request";
+import { LoginForm } from "../../../Utilities/BackEndTypes";
+import { Alert, Box, Button, Card, CardContent, LinearProgress, TextField, Typography } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
     const DEFAULT_FORM_ERROR = {
@@ -23,7 +17,6 @@ export default function Page() {
     const form = useRef();
     const router = useRouter();
     const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
-    const dispatch = useDispatch();
 
     const restApi = useRestApi();
 
@@ -39,7 +32,7 @@ export default function Page() {
         setFormError(DEFAULT_FORM_ERROR);
         setLoading(true);
 
-        if(!checkField())
+        if (!checkField())
             return;
 
         let loginData: LoginForm = {
@@ -48,21 +41,21 @@ export default function Page() {
         };
 
         restApi.User.Login(loginData)
-        .then(user => {
-            setCookie('_displayName', user.lastname + " " + user.firstname, {path: '/'})
-            setCookie('_token', user.token, {path: '/'});
+            .then(user => {
+                setCookie('_displayName', user.lastname + " " + user.firstname, { path: '/' });
+                setCookie('_token', user.token, { path: '/' });
 
-            router.push("/dashboard");
-        })
-        .catch(Request.ErrorGestor([{
-            code: 112,
-            action: err => {
-                setMessage("Email/username o password errati");
-            }
-        }]))
-        .finally(() => {
-            setLoading(false);
-        })
+                router.push("/dashboard");
+            })
+            .catch(Request.ErrorGestor([{
+                code: 112,
+                action: err => {
+                    setMessage("Email/username o password errati");
+                }
+            }]))
+            .finally(() => {
+                setLoading(false);
+            });
 
         function checkField() {
             const regexUsername = /^[A-Za-z0-9_\-]+$/;
@@ -70,15 +63,15 @@ export default function Page() {
             let valid = true;
 
             formData.forEach((value, key) => {
-                if(value.toString().trim().length == 0) {
-                    setFormError(value => value = {...value, [key]: "Il campo non può essere vuoto"});
+                if (value.toString().trim().length == 0) {
+                    setFormError(value => value = { ...value, [key]: "Il campo non può essere vuoto" });
                     valid = false;
                 }
             });
 
-            if(valid) {
-                if(!regexUsername.test(formData.get("username").toString())) {
-                    setFormError(value => value = {...value, "username": "L'username può solo contenere lettere numeri e _ o -"});
+            if (valid) {
+                if (!regexUsername.test(formData.get("username").toString())) {
+                    setFormError(value => value = { ...value, "username": "L'username può solo contenere lettere numeri e _ o -" });
                     valid = false;
                 }
             }
@@ -88,12 +81,12 @@ export default function Page() {
     }
 
     const keyPressedOnPasswordHandler: KeyboardEventHandler<HTMLDivElement> = (event) => {
-        if(event.key == "Enter") {
+        if (event.key == "Enter") {
             login();
         }
-    }
+    };
 
-    return(
+    return (
         <Box className="center">
             <Card style={{width: '30%', borderRadius: '10%'}}>
                 {loading && <LinearProgress sx={{width: "100%"}}/>}
