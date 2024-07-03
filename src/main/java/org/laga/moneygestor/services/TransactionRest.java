@@ -1,31 +1,7 @@
 package org.laga.moneygestor.services;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-import org.laga.moneygestor.db.entity.TransactionDb;
-import org.laga.moneygestor.db.entity.TransactionGraphView;
-import org.laga.moneygestor.db.entity.TransactionTableView;
-import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.db.repository.*;
-import org.laga.moneygestor.logic.SortGestor;
-import org.laga.moneygestor.logic.TransactionGestor;
-import org.laga.moneygestor.logic.UserGestor;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/transaction")
@@ -33,22 +9,8 @@ public class TransactionRest {
 /*
     private static final int ID_EXCHANGE_TYPE = 1;
 
-    private final UserRepository userRepository;
-    private final WalletRepository walletRepository;
-    private final TransactionRepository transactionRepository;
-    private final TransactionTableRepository transactionTableRepository;
-    private final TransactionGraphRepository transactionGraphRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
-    @Autowired
-    public TransactionRest(UserRepository userRepository, WalletRepository walletRepository, TransactionRepository transactionRepository, TransactionTableRepository transactionTableRepository, TransactionGraphRepository transactionGraphRepository) {
-        this.userRepository = userRepository;
-        this.walletRepository = walletRepository;
-        this.transactionRepository = transactionRepository;
-        this.transactionTableRepository = transactionTableRepository;
-        this.transactionGraphRepository = transactionGraphRepository;
-    }
 
     @PostMapping("/new")
     public void addNewTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transactionForm) {

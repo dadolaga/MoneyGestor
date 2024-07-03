@@ -1,30 +1,15 @@
 package org.laga.moneygestor.services;
 
 import org.hibernate.SessionFactory;
-import org.laga.moneygestor.db.entity.TransactionTypeDb;
-import org.laga.moneygestor.db.repository.TransactionTypeRepository;
-import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.logic.TransactionTypeGestor;
-import org.laga.moneygestor.logic.UserGestor;
-import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.models.TransactionTypeForm;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/transaction_type")
 public class TransactionTypeRest extends BaseRest {
-    private final UserRepository userRepository;
-
     @Autowired
-    public TransactionTypeRest(UserRepository userRepository, SessionFactory sessionFactory) {
+    public TransactionTypeRest(SessionFactory sessionFactory) {
         super(sessionFactory);
-        this.userRepository = userRepository;
     }
 /*
     @GetMapping("/list")

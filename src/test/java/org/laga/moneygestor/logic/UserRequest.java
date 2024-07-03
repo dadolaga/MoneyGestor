@@ -6,9 +6,7 @@ import org.junit.jupiter.api.*;
 import org.laga.moneygestor.App;
 import org.laga.moneygestor.TestUtilities;
 import org.laga.moneygestor.db.entity.UserDb;
-import org.laga.moneygestor.db.repository.UserRepository;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
@@ -18,9 +16,6 @@ import java.util.List;
 @Disabled
 @SpringBootTest(classes = App.class)
 public abstract class UserRequest extends LogicBaseTest {
-
-    @Autowired
-    UserRepository userRepository;
 
     private static final String username = "LoggedTestUser";
     private static final String password = "This_is_my_strong_password123";
@@ -34,7 +29,7 @@ public abstract class UserRequest extends LogicBaseTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws Exception {
+    public void beforeEach() {
         createUser(username, "first@test.ts");
         userLogged = login(username);
     }
@@ -95,7 +90,18 @@ public abstract class UserRequest extends LogicBaseTest {
     }
 
     protected void deleteUser() {
-        userRepository.deleteAllById(idsUserCreate);
-        userRepository.flush();
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            var preparedQuery = session.createMutationQuery("DELETE FROM UserDb WHERE id = :id");
+
+            for(var id : idsUserCreate) {
+                preparedQuery.setParameter("id", id);
+
+                preparedQuery.executeUpdate();
+            }
+
+            transaction.commit();
+        }
     }
 }
