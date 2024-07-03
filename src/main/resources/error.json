@@ -1,0 +1,37 @@
+{
+  "errors": [
+    {
+      "code": 0,
+      "httpStatusCode": 400,
+      "message": "General error"
+    }, {
+      "code": 100,
+      "httpStatusCode": 400,
+      "message": "Illegal argument receive"
+    }, {
+      "code": 101,
+      "httpStatusCode": 404,
+      "message": "User not found"
+    }, {
+      "code": 102,
+      "httpStatusCode": 400,
+      "message": "Duplicate entities"
+    }, {
+      "code": 103,
+      "httpStatusCode": 401,
+      "message": "Token expired"
+    }, {
+      "code": 104,
+      "httpStatusCode": 401,
+      "message": "User not have permission"
+    }, {
+      "code": 111,
+      "httpStatusCode": 400,
+      "message": "Registration user error"
+    }, {
+      "code": 112,
+      "httpStatusCode": 400,
+      "message": "Login error"
+    }
+  ]
+}

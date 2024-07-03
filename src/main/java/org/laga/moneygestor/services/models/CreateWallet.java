@@ -1,21 +1,12 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
 import java.math.BigDecimal;
 
-public class Wallet {
-    private Integer id;
+public class CreateWallet {
     private String name;
     private BigDecimal value;
-    private Boolean favorite;
     private String color;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    private Boolean favorite;
 
     public String getName() {
         return name;
@@ -33,19 +24,19 @@ public class Wallet {
         this.value = value;
     }
 
-    public Boolean getFavorite() {
-        return favorite;
-    }
-
-    public void setFavorite(Boolean favorite) {
-        this.favorite = favorite;
-    }
-
     public String getColor() {
         return color;
     }
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Boolean getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite) {
+        this.favorite = favorite;
     }
 }

@@ -1,18 +1,15 @@
 "use client"
 
-import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Toolbar } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Toolbar } from "@mui/material";
 import Header from "./header";
 import Drawer from "./drawer";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWallet } from "@fortawesome/free-solid-svg-icons";
 import { ThemeOptions, createTheme } from '@mui/material/styles'
-import { orange } from '@mui/material/colors'
 import { ThemeProvider } from '@emotion/react'
 import { Provider, useDispatch, useSelector } from 'react-redux'
 import store from '../redux/store'
 import { expiredToken, setExpiredToken } from "../redux/showTokenExpirated";
-import { selectUser } from "../redux/userSlice";
 import { useRouter } from "next/navigation";
+import { SnackbarProvider } from "notistack";
 
 export const themeOptions: ThemeOptions = {
   palette: {
@@ -28,23 +25,25 @@ export const themeOptions: ThemeOptions = {
 
 export const theme = createTheme(themeOptions);
 
-export default function DashboardLayout({children}) {
+export default function DashboardLayout({children}) {  
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <Box sx={{position: 'relative', height: '100vh'}}>
-          <Header />
-          <Box sx={{display: 'flex', height: '100%'}}>
-            <Drawer width={200} />
-            <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
-                <Toolbar />
-                <Box sx={{margin: 2, flexGrow: 1, overflowY: 'hidden'}}>
-                  {children}
-                </Box>
+        <SnackbarProvider>
+          <Box sx={{position: 'relative', height: '100vh'}}>
+            <Header />
+            <Box sx={{display: 'flex', height: '100%'}}>
+              <Drawer width={200} />
+              <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
+                  <Toolbar />
+                  <Box sx={{margin: 2, flexGrow: 1, overflowY: 'hidden'}}>
+                    {children}
+                  </Box>
+              </Box>
             </Box>
           </Box>
-        </Box>
-        <ShowTokenExpired />
+          <ShowTokenExpired />
+        </SnackbarProvider>
       </ThemeProvider>
     </Provider>
   );

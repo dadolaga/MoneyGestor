@@ -1,74 +1,59 @@
 package org.laga.moneygestor.services;
 
-import jakarta.transaction.Transactional;
-import org.laga.moneygestor.db.repository.UserRepository;
+import jakarta.persistence.EntityManagerFactory;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.UserGestor;
+import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.UserCreationException;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.Login;
-import org.laga.moneygestor.services.json.User;
-import org.laga.moneygestor.services.json.UserRegistrationForm;
+import org.laga.moneygestor.logic.exceptions.UserNotFoundException;
+import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
+import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
+import org.laga.moneygestor.services.exceptions.HttpException;
+import org.laga.moneygestor.services.exceptions.IllegalArgumentHttpException;
+import org.laga.moneygestor.services.models.LoginForm;
+import org.laga.moneygestor.services.models.Response;
+import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserRest {
-    private final UserRepository userRepository;
+public class UserRest extends BaseRest {
+
+    private final UserGestor userGestor;
 
     @Autowired
-    public UserRest(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserRest(EntityManagerFactory managerFactory) {
+        super(managerFactory);
+        userGestor = new UserGestor(sessionFactory);
     }
 
-    @PostMapping("/new")
-    public void createNewUser(@RequestBody UserRegistrationForm user) {
+    @PostMapping("/registration")
+    public Response registrationUser(@RequestBody UserRegistrationForm userRegistrationForm) {
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromForm(user);
+            UserDb userCreated = UserGestor.createUserFromRegistrationForm(userRegistrationForm);
 
-            userRepository.save(userGestor.getDatabaseUser());
-        } catch (UserCreationException e) {
-            throw MoneyGestorErrorSample.NOT_ALL_FIELD_INSERT;
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("unique_user_email"))
-                throw MoneyGestorErrorSample.USER_DUPLICATE_EMAIL;
-            if(e.getMessage().contains("unique_user_username"))
-                throw MoneyGestorErrorSample.USER_DUPLICATE_USERNAME;
+            var id = userGestor.insert(null, userCreated);
+
+            return Response.sendId(id);
+        } catch (UserPasswordNotEqualsException ex) {
+            throw new IllegalArgumentHttpException("Password is not equal", ex);
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException(ex.getMessage(), ex);
+        } catch (UserCreationException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 111, ex.getMessage(), ex);
         }
     }
 
     @PostMapping("/login")
-    public User loginUser(@RequestBody Login login) {
-        var user = userRepository.findWithEmailOrUsername(login.getUsername());
-        if(user == null)
-            throw MoneyGestorErrorSample.USER_EMAIL_USERNAME_NOT_EXIST;
+    public Response login(@RequestBody LoginForm loginForm) {
+        try {
+            var userDb = userGestor.login(loginForm.getUsername(), loginForm.getPassword());
 
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-        if(!userGestor.checkPassword(login.getPassword()))
-            throw MoneyGestorErrorSample.USER_PASSWORD_NOT_CORRECT;
-
-        userGestor.generateNewToken();
-
-        userRepository.updateToken(userGestor.getId(), userGestor.getToken(), userGestor.getExpiryToken());
-
-        userRepository.flush();
-
-        return userGestor.generateReturnUser();
-    }
-
-    @GetMapping("/token")
-    public User getUserFromToken(@RequestParam(value = "token") String token) {
-        var user = userRepository.findFromToken(token);
-        if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
-
-        var userGestor = UserGestor.Builder.createFromDB(user);
-
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
-
-        return userGestor.generateReturnUser();
+            return Response.create(UserGestor.convertToRest(userDb));
+        } catch (UserPasswordNotEqualsException | UserNotFoundException ex) {
+            throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage(), ex);
+        }
     }
 }

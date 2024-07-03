@@ -3,9 +3,12 @@ package org.laga.moneygestor.db.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "wallet")
+@Table(name = "wallet", indexes =
+    @Index(name = "index_wallet_nameuser", columnList = "name, user", unique = true))
 public class WalletDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +19,8 @@ public class WalletDb {
     private Integer userId;
     private Boolean favorite;
     private String color;
+    @OneToMany(mappedBy = "wallet")
+    private Set<TransactionDb> transaction;
 
     public Integer getId() {
         return id;
@@ -63,6 +68,10 @@ public class WalletDb {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Set<TransactionDb> getTransaction() {
+        return transaction;
     }
 
     @Override

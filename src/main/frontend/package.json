@@ -27,6 +27,7 @@
     "chart.js": "^4.4.0",
     "dayjs": "^1.11.10",
     "next": "latest",
+    "notistack": "^3.0.1",
     "react": "latest",
     "react-cookie": "^6.1.1",
     "react-dom": "latest",

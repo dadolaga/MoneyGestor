@@ -1,21 +1,15 @@
 package org.laga.moneygestor.services;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import jakarta.persistence.EntityManagerFactory;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.db.entity.WalletDb;
-import org.laga.moneygestor.db.repository.UserRepository;
-import org.laga.moneygestor.db.repository.WalletRepository;
-import org.laga.moneygestor.logic.SortGestor;
-import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.WalletGestor;
-import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.CreateWallet;
-import org.laga.moneygestor.services.json.Wallet;
-import org.springframework.beans.PropertyAccessException;
+import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
+import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
+import org.laga.moneygestor.services.models.CreateWallet;
+import org.laga.moneygestor.services.models.Response;
+import org.laga.moneygestor.services.models.Wallet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,138 +17,96 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallet")
-public class WalletRest {
-    final static Logger logger = LogManager.getLogger(WalletRest.class);
-
-    private UserRepository userRepository;
-    private WalletRepository walletRepository;
-
+public class WalletRest extends BaseRest {
     @Autowired
-    public WalletRest(UserRepository userRepository, WalletRepository walletRepository) {
-        this.userRepository = userRepository;
-        this.walletRepository = walletRepository;
+    public WalletRest(EntityManagerFactory entityManagerFactory) {
+        super(entityManagerFactory);
     }
 
     @PostMapping("/new")
-    public void addNewWallet(@RequestBody CreateWallet wallet) {
-        System.out.println(wallet);
-        var user = userRepository.findFromToken(wallet.getToken());
-        if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+    public Response addNewWallet(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization, @RequestBody CreateWallet wallet) {
+        UserDb loggedUser = getUserLogged(authorization);
 
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
         var walletDb = new WalletDb();
+
         walletDb.setName(wallet.getName());
         walletDb.setValue(wallet.getValue());
-        walletDb.setUserId(userGestor.getId());
-        walletDb.setFavorite(false);
         walletDb.setColor(wallet.getColor());
+        walletDb.setUserId(loggedUser.getId());
+        walletDb.setFavorite(false);
 
         try {
-            walletRepository.saveAndFlush(walletDb);
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("index_wallet_name&user"))
-                throw MoneyGestorErrorSample.WALLET_WITH_SAME_NAME;
+            var id = walletGestor.insert(loggedUser, walletDb);
+
+            return Response.sendId(id);
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException("Wallet already exist", ex);
         }
     }
 
-    @GetMapping("/list")
-    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+    @GetMapping("/getAll")
+    public List<Wallet> getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        UserDb loggedUser = getUserLogged(authorization);
 
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
-            WalletDb walletExample = new WalletDb();
-            walletExample.setUserId(userGestor.getId());
-
-            Sort sort = SortGestor.decode(sortParams);
-
-            return WalletGestor.convertToRest(walletRepository.findAll(Example.of(walletExample), sort));
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
-        } catch (PropertyAccessException e) {
-            logger.error(e);
-
-            throw MoneyGestorErrorSample.DATABASE_ERROR;
-        }
+        return WalletGestor.convertToRest(walletGestor.getAll(loggedUser));
     }
+
+    @GetMapping(value = "/list")
+    public Response getWallets(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                   @RequestParam(name = "sort", required = false) String sortParams,
+                                   @RequestParam(name = "limit", required = false, defaultValue = "25") Integer limitParams,
+                                   @RequestParam(name = "page", required = false, defaultValue = "0") Integer pageParams) {
+        UserDb loggedUser = getUserLogged(authorization);
+
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        return Response.create(
+                WalletGestor.convertToRest(walletGestor.list(loggedUser, sortParams, limitParams, pageParams)));
+    }
+
 
     @GetMapping("/get/{id}")
-    public Wallet getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+    public Response getWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        var wallet = WalletGestor.convertToRest(walletGestor.getById(userLogged, id));
+
+        return Response.create(wallet);
+    }
+
+
+    @PostMapping("/edit/{id}")
+    public Response editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody CreateWallet wallet, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+        var newWallet = new WalletDb();
+
+        newWallet.setName(wallet.getName());
+        newWallet.setColor(wallet.getColor());
+        newWallet.setFavorite(wallet.getFavorite());
 
         try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            walletGestor.update(userLogged, id, newWallet);
 
-            return WalletGestor.convertToRest(walletRepository.getWalletsFromId(id.intValue(), userGestor.getId()));
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            return Response.ok();
+        } catch (DuplicateValueException ex) {
+            throw new DuplicateEntitiesHttpException("Wallet already exist", ex);
         }
     }
 
-    @PostMapping("/edit")
-    public void editWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody Wallet wallet) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+    @PostMapping("/delete/{id}")
+    public Response deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+        WalletGestor walletGestor = new WalletGestor(sessionFactory);
 
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+        walletGestor.deleteById(userLogged, id);
 
-            walletRepository.editWallet(wallet.getId(), wallet.getName(), wallet.getValue(), wallet.getColor());
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
-        } catch (DataIntegrityViolationException e) {
-            if(e.getMessage().contains("index_wallet_name&user"))
-                throw MoneyGestorErrorSample.WALLET_WITH_SAME_NAME;
-        }
-    }
-
-    @GetMapping("/delete/{id}")
-    public void deleteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
-
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
-
-            if(walletRepository.deleteWalletUserAuthorized(id.intValue(), userGestor.getId()) == 0)
-                throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
-
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
-        }
-    }
-
-    @PostMapping("/favorite/{id}")
-    public void favoriteWallet(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) throws InterruptedException {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
-
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
-
-            if(walletRepository.changeFavorite(id.intValue(), userGestor.getId()) == 0)
-                throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
-
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
-        }
+        return Response.ok();
     }
 }

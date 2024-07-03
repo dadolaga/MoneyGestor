@@ -1,6 +1,6 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
-public class Login {
+public class LoginForm {
     private String username;
     private String password;
 

@@ -1,30 +1,35 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress } from "@mui/material";
-import { useState } from "react";
-import axios from "../../axios/axios";
-import { useCookies } from "react-cookie";
+import { useEffect, useState } from "react";
+import { useRestApi } from "../../request/Request";
+import { Wallet } from "../../Utilities/BackEndTypes";
 
-export default function DeleteDialog({open, onClose, onDelete, wallet}) {
+export default function DeleteDialog({open, onClose, walletId}) {
     const [showLoading, setShowLoading] = useState(false);
-    const [cookie, setCookie] = useCookies(["_token"]);
+    const [wallet, setWallet] = useState<Wallet>(undefined);
+
+    const restApi = useRestApi();
+
+    useEffect(() => {
+        if(!open)
+            return;
+
+        restApi.Wallet.Get(walletId).then(wallet => setWallet(wallet));
+    }, [open])
 
     function deleteWallet() {
         setShowLoading(true);
 
-        axios.get("/wallet/delete/" + wallet.id, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
+        restApi.Wallet.Delete(wallet.id)
         .then(() => {
-            onDelete();
+            onClose(true);
         })
         .finally(() => {
             setShowLoading(false);
-        })
+        });
     }
 
     return (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open} onClose={() => onClose(false)}>
             {showLoading && <LinearProgress />}
             <DialogTitle>
                 Confermi di voler cancellare il portafoglio

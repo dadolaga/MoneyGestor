@@ -4,8 +4,8 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 
 # TODO change username and password with yours
-spring.datasource.username=root
-spring.datasource.password=root
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
 
 # TODO change server address with your. ATTENTION: Before run this app create database manualy
 spring.datasource.url=jdbc:mysql://localhost/moneygestor

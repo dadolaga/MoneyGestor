@@ -3,12 +3,11 @@ package org.laga.moneygestor.logic;
 import org.springframework.data.domain.Sort;
 
 public class SortGestor {
+    private final static char DESCEND = '!';
 
     /**
-     * This function decode a sort string pass in URL with follow code:
-     * <code>[!]ATTRIBUTE_NAME\[[!]ATTRIBUTE_NAME]*</code>
-     * @param sortString
-     * @return
+     * This function decode a sort string pass in URL with follow code:<br>
+     * <code>[!]ATTRIBUTE_NAME(+[!]ATTRIBUTE_NAME)*</code>
      */
     public static Sort decode(String sortString) {
         if(sortString == null)
@@ -25,5 +24,26 @@ public class SortGestor {
         }
 
         return Sort.by(orders);
+    }
+
+    public static String toSql(String sortString) {
+        if(sortString == null || sortString.trim().length() == 0)
+            return "";
+
+        final String MULTIPLE_SORT_REGEX = "\\+";
+
+        String[] sortSplit = sortString.split(MULTIPLE_SORT_REGEX);
+        StringBuilder sqlOrderBy = new StringBuilder("ORDER BY ");
+
+        for(int i = 0; i < sortSplit.length; i++) {
+            String sortElement = sortSplit[i];
+            sqlOrderBy.append(sortElement.substring(sortElement.charAt(0) == DESCEND? 1 : 0))
+                    .append(sortElement.charAt(0) == DESCEND? " DESC" : " ASC");
+
+            if(i < sortSplit.length - 1)
+                sqlOrderBy.append(", ");
+        }
+
+        return sqlOrderBy.toString();
     }
 }

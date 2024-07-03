@@ -1,14 +1,12 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
 import org.laga.moneygestor.db.entity.TransactionTypeDb;
 import org.laga.moneygestor.db.entity.WalletDb;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Transaction {
-    private Integer id;
+    private Long id;
     private String description;
     private BigDecimal value;
     private String date;
@@ -16,11 +14,11 @@ public class Transaction {
     private WalletDb walletDestination;
     private TransactionTypeDb type;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

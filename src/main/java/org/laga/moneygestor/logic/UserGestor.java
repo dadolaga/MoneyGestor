@@ -1,207 +1,226 @@
 package org.laga.moneygestor.logic;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.laga.moneygestor.db.entity.UserDb;
-import org.laga.moneygestor.logic.exceptions.UserCreationException;
-import org.laga.moneygestor.logic.exceptions.UserPasswordNotEqualsException;
-import org.laga.moneygestor.services.json.UserRegistrationForm;
+import org.laga.moneygestor.logic.exceptions.*;
+import org.laga.moneygestor.services.models.User;
+import org.laga.moneygestor.services.models.UserRegistrationForm;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Random;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class UserGestor {
-    public static final TemporalAmount TOKEN_DURATION = Duration.ofHours(2);
-    private Integer id;
-    private String lastname;
-    private String firstname;
-    private String username;
-    private String email;
-    private String token;
-    private LocalDateTime expiryToken;
-    private String passwordHash;
+public class UserGestor extends Gestor<Integer, UserDb> {
 
-    private UserGestor(Integer id, String lastname, String firstname, String username, String email, String token, LocalDateTime expiryToken, String passwordHash) {
-        this.id = id;
-        this.lastname = lastname;
-        this.firstname = firstname;
-        this.username = username;
-        this.email = email;
-        this.token = token;
-        this.expiryToken = expiryToken;
-        this.passwordHash = passwordHash;
+    public UserGestor(SessionFactory sessionFactory) {
+        super(sessionFactory);
     }
 
-    public Integer getId() {
-        return id;
+    public static UserDb createUserFromRegistrationForm(UserRegistrationForm user) throws UserCreationException {
+        if(user.getLastname().trim().isEmpty() ||
+                user.getFirstname().trim().isEmpty() ||
+                user.getUsername().trim().isEmpty() ||
+                user.getEmail().trim().isEmpty() ||
+                user.getPassword().isEmpty() ||
+                user.getConfirm().isEmpty())
+            throw new UserCreationException("All field must be compiled");
+
+        if(!user.getPassword().equals(user.getConfirm()))
+            throw new UserPasswordNotEqualsException();
+
+        if(!isValidEmail(user.getEmail()))
+            throw new UserCreationException("Not a valid mail insert");
+
+        if(!PasswordUtilities.checkIsValid(user.getPassword()))
+            throw new UserCreationException("Not a valid password");
+
+        var userDb = new UserDb();
+
+        userDb.setFirstname(user.getFirstname().trim());
+        userDb.setLastname(user.getLastname().trim());
+        userDb.setUsername(user.getUsername().trim());
+        userDb.setEmail(user.getEmail().trim());
+        userDb.setPassword(PasswordUtilities.passwordEncrypt(user.getPassword()));
+
+        return userDb;
     }
 
-    public String getLastname() {
-        return lastname;
+    public static void checkUser(UserDb userDb) {
+        if(userDb == null)
+            throw new IllegalArgumentException();
     }
 
-    public String getFirstname() {
-        return firstname;
+    private static boolean isValidEmail(String email) {
+        final String regexValidMail = "^(?![.])[A-Za-z0-9._%+-]+(?<![.])@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+
+        Pattern pattern = Pattern.compile(regexValidMail);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 
-    public String getUsername() {
-        return username;
-    }
+    public static User convertToRest(UserDb userDb) {
+        var user = new User();
 
-    public String getEmail() {
-        return email;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public LocalDateTime getExpiryToken() {
-        return expiryToken;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public UserDb getDatabaseUser() {
-        UserDb user = new UserDb();
-
-        user.setFirstname(firstname);
-        user.setLastname(lastname);
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(passwordHash);
-        user.setToken(token);
-        user.setExpiratedToken(expiryToken);
+        user.setLastname(userDb.getLastname());
+        user.setFirstname(userDb.getFirstname());
+        user.setToken(userDb.getToken());
+        user.setExpireToken(userDb.getExpiratedToken());
 
         return user;
     }
 
-    public boolean checkPassword(String password) {
-        return checkPassword(password, passwordHash);
-    }
+    public UserDb getFromAuthorizationToken(String authorizationToken) {
+        try (Session session = sessionFactory.openSession()) {
+            var query = session.createQuery("FROM UserDb WHERE token = :token", UserDb.class);
+            query.setParameter("token", authorizationToken);
 
-    public void generateNewToken() {
-        token = generateRandomString(64);
-        refreshToken();
-    }
+            var listOfUser = query.list();
 
-    public void refreshToken() {
-        expiryToken = LocalDateTime.now().plus(TOKEN_DURATION);
-    }
+            if(listOfUser.size() == 0)
+                throw new EntityNotFoundException("user not found");
 
-    public org.laga.moneygestor.services.json.User generateReturnUser() {
-        return new org.laga.moneygestor.services.json.User(lastname, firstname, token, expiryToken);
-    }
+            if(listOfUser.size() > 1)
+                throw new IllegalStateException("More user with token found");
 
-    public boolean tokenIsValid() {
-        if(token == null)
-            return true;
-
-        if(expiryToken == null)
-            throw new IllegalArgumentException("token not null but expiryToken is null. This is impossible");
-
-        return expiryToken.isAfter(LocalDateTime.now());
-    }
-
-    private String generateRandomString(int length) {
-        if(length % 4 != 0)
-            throw new IllegalArgumentException("length must be divisible for 4");
-
-        byte[] randomString = new byte[(length / 4) * 3];
-        new Random().nextBytes(randomString);
-
-        return Base64.getEncoder().encodeToString(randomString).replaceAll("/", "-");
-    }
-
-    public class Builder {
-        public static UserGestor createFromForm(UserRegistrationForm user) throws UserCreationException {
-            if(user.getLastname().trim().isEmpty() ||
-                    user.getFirstname().trim().isEmpty() ||
-                    user.getUsername().trim().isEmpty() ||
-                    user.getEmail().trim().isEmpty() ||
-                    user.getPassword().isEmpty() ||
-                    user.getConfirm().isEmpty())
-                throw new UserCreationException("All field must be compiled");
-
-            if(!user.getPassword().equals(user.getConfirm()))
-                throw new UserPasswordNotEqualsException();
-
-            return new UserGestor(
-                    null,
-                    user.getLastname(),
-                    user.getFirstname(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    null,
-                    null,
-                    passwordEncrypt(user.getPassword())
-            );
-        }
-
-        public static UserGestor createFromDB(UserDb user) {
-            if(user == null)
-                throw new IllegalArgumentException("user not be null");
-            return new UserGestor(
-                    user.getId(),
-                    user.getLastname(),
-                    user.getFirstname(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getToken(),
-                    user.getExpiratedToken(),
-                    user.getPassword()
-            );
+            return listOfUser.get(0);
         }
     }
 
-    public static String passwordEncrypt(String password) {
+    public void checkValidityOfUser(UserDb userDb) {
+        if(userDb == null || userDb.getToken() == null || userDb.getExpiratedToken() == null)
+            throw new IllegalArgumentException();
+
+        if(userDb.getExpiratedToken().isBefore(LocalDateTime.now()))
+            throw new TokenExpiredException();
+    }
+
+    public UserDb getFromAuthorizationTokenAndCheckToken(String authorizationToken) {
+        var user = getFromAuthorizationToken(authorizationToken);
+        checkValidityOfUser(user);
+
+        return user;
+    }
+
+    public UserDb login(String usernameOrMail, String password) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            var query = session.createQuery("FROM UserDb WHERE email LIKE :email OR username LIKE :username", UserDb.class);
+            query.setParameter("email", usernameOrMail);
+            query.setParameter("username", usernameOrMail);
+            query.setMaxResults(1);
+
+            try {
+                var userLogged = query.list().get(0);
+
+                if(!PasswordUtilities.checkPassword(password, userLogged.getPassword()))
+                    throw new UserPasswordNotEqualsException("Password is not correct");
+
+                userLogged.setToken(TokenUtilities.generateNewToken());
+                userLogged.setExpiratedToken(LocalDateTime.now().plus(TokenUtilities.TOKEN_DURATION));
+
+                session.persist(userLogged);
+
+                transaction.commit();
+
+                return userLogged;
+            } catch (IndexOutOfBoundsException e) {
+                throw new UserNotFoundException("User not found", e);
+            } finally {
+                session.getTransaction().rollback();
+            }
+        }
+    }
+
+    @Override
+    public Integer insert(Session session, UserDb userLogged, UserDb object) {
+        if(object == null)
+            throw new IllegalArgumentException();
+
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            Transaction transaction = session.getTransaction();
 
-            byte[] salt = generateSalt(18);
+            session.persist(object);
 
-            md.update(salt);
+            transaction.commit();
 
-            byte[] passwordHash = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            return object.getId();
+        } catch (HibernateException e) {
+            if(e.getMessage().contains("unique_user_email"))
+                throw new DuplicateValueException("Try to insert duplicate email");
 
-            return Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(passwordHash);
+            if(e.getMessage().contains("unique_user_username"))
+                throw new DuplicateValueException("Try to insert duplicate username");
 
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
-    public static boolean checkPassword(String password, String passwordHash) {
-        final String[] passwordSplit = passwordHash.split("\\$");
+    @Override
+    public void deleteById(Session session, UserDb userLogged, Integer id, boolean forceDelete) {
+        if(!Objects.equals(userLogged.getId(), id))
+            throw new UserNotHavePermissionException();
+
+        Transaction transaction = session.getTransaction();
+
+        session.createMutationQuery("DELETE UserDb WHERE id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+
+        transaction.commit();
+    }
+
+    @Override
+    public void update(UserDb userLogged, UserDb newObject) {
+        update(userLogged, newObject.getId(), newObject);
+    }
+
+    @Override
+    public void update(Session session, UserDb userLogged, Integer id, UserDb newUser) {
+        if(newUser == null || id == null || userLogged == null)
+            throw new IllegalArgumentException();
+
+        if(!Objects.equals(userLogged.getId(), id))
+            throw new UserNotHavePermissionException();
+
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(Base64.getDecoder().decode(passwordSplit[0]));
+            var user = getById(session, userLogged, id);
 
-            final byte[] newPasswordHash = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            user.setFirstname(newUser.getFirstname());
+            user.setLastname(newUser.getLastname());
+            user.setUsername(newUser.getUsername());
+            user.setEmail(newUser.getEmail());
 
-            System.out.println(Arrays.toString(newPasswordHash));
-            System.out.println(Arrays.toString(Base64.getDecoder().decode(passwordSplit[1])));
-            System.out.println(Arrays.equals(Base64.getDecoder().decode(passwordSplit[1]), newPasswordHash));
+            Transaction transaction = session.getTransaction();
 
-            return Arrays.equals(Base64.getDecoder().decode(passwordSplit[1]), newPasswordHash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            session.persist(user);
+
+            transaction.commit();
+        } catch (IndexOutOfBoundsException e) {
+            throw new UserNotFoundException(e);
         }
     }
 
-    private static byte[] generateSalt(int dimension) {
-        byte[] salt = new byte[dimension];
+    @Override
+    public UserDb getById(Session session, UserDb userLogged, Integer id) {
+        try {
+            return session.createQuery("FROM UserDb WHERE id = :id", UserDb.class)
+                    .setParameter("id", id)
+                    .setMaxResults(1)
+                    .list().get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new UserNotFoundException(e);
+        }
+    }
 
-        new SecureRandom().nextBytes(salt);
-
-        return salt;
+    @Override
+    public List<UserDb> getAll(Session session, UserDb userLogged) {
+        return session.createQuery("FROM UserDb", UserDb.class)
+                .list();
     }
 }

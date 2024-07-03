@@ -1,4 +1,4 @@
-package org.laga.moneygestor.services.json;
+package org.laga.moneygestor.services.models;
 
 public class UserRegistrationForm {
     private String lastname;

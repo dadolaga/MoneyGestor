@@ -4,48 +4,17 @@ import { useRouter } from 'next/navigation'
 import { useCookies } from 'react-cookie'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useEffect, useState } from 'react'
 import AppBar from '@mui/material/AppBar'
-import { Avatar, Box, Dialog, Skeleton, Toolbar } from '@mui/material'
+import { Avatar, Box, Toolbar } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import { useDispatch, useSelector } from 'react-redux'
-import { changeName, selectUser } from '../redux/userSlice'
-import axios from "../axios/axios";
-import { setExpiredToken } from '../redux/showTokenExpirated'
 
 
 export default function Header() {
-    const name = useSelector(selectUser);
-    const dispatch = useDispatch();
-
-    const [cookies, setCookie] = useCookies(["_token"]);
+    const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
 
     const router = useRouter();
-
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        setLoading(true);
-
-        axios.get("/user/token", {
-            params: {
-                token: cookies._token
-            }
-        })
-        .then(response => {
-            dispatch(changeName(response.data.lastname + " " + response.data.firstname));
-        })
-        .catch(error => {
-            if (error.response.status == 401) {
-                dispatch(setExpiredToken(true))
-            }
-        })
-        .finally(() => {
-            setLoading(false);
-        })
-    }, []);
 
     function stringToColor(string) {
         let hash = 0;
@@ -84,24 +53,17 @@ export default function Header() {
                 </IconButton>
                 <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
 
-                {(!loading && name == null) && (
+                {(!cookies._displayName) && (
                     <>
                         <Button color='inherit' onClick={() => router.push('/dashboard/user/login')}>Login</Button>
                         <Button color='inherit' onClick={() => router.push('/dashboard/user/new')}>Registrati</Button>
                     </>
                 )}
 
-                {(!loading && name != null) && (
+                {(cookies._displayName) && (
                     <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
-                        <Typography align='center'>{name}</Typography>
-                        <Avatar {... stringAvatar(name)} />
-                    </Box>
-                )}  
-
-                {loading && (
-                    <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
-                        <Skeleton variant='text' sx={{fontSize: "1em"}} width={100} />
-                        <Skeleton variant='circular' width={40} height={40}/>
+                        <Typography align='center'>{cookies._displayName}</Typography>
+                        <Avatar {... stringAvatar(cookies._displayName)} />
                     </Box>
                 )}
 

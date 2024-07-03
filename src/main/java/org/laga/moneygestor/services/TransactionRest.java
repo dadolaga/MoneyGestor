@@ -12,12 +12,10 @@ import org.laga.moneygestor.logic.SortGestor;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.services.exceptions.MoneyGestorErrorSample;
-import org.laga.moneygestor.services.json.*;
+import org.laga.moneygestor.services.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.provider.HibernateUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +30,7 @@ import java.util.NoSuchElementException;
 @RestController
 @RequestMapping("/api/transaction")
 public class TransactionRest {
-
+/*
     private static final int ID_EXCHANGE_TYPE = 1;
 
     private final UserRepository userRepository;
@@ -56,12 +54,12 @@ public class TransactionRest {
     public void addNewTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transactionForm) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
@@ -98,12 +96,12 @@ public class TransactionRest {
     public List<TransactionTableView> getTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         TransactionTableView transactionExample = new TransactionTableView();
         transactionExample.setUser(userGestor.getId());
@@ -114,15 +112,15 @@ public class TransactionRest {
     }
 
     @GetMapping("/get/{id}")
-    public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Integer id) {
+    public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         TransactionDb transactionExample = new TransactionDb();
         transactionExample.setUserId(userGestor.getId());
@@ -131,19 +129,19 @@ public class TransactionRest {
         try {
             return TransactionGestor.convertToRest(transactionRepository.findOne(Example.of(transactionExample)).get());
         } catch (NoSuchElementException ignored) {
-            throw MoneyGestorErrorSample.USER_NOT_HAVE_PERMISSION;
+            throw MoneyGestorErrorSample.mapOfError.get(4);
         }
     }
 
     @PostMapping("/edit/{id}")
-    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Integer id) {
+    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Long id) {
         if(authorization == null)
-            throw MoneyGestorErrorSample.LOGIN_REQUIRED;
+            throw MoneyGestorErrorSample.mapOfError.get(3);
 
         try {
             UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
             if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+                throw MoneyGestorErrorSample.mapOfError.get(2);
 
             final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
@@ -173,22 +171,22 @@ public class TransactionRest {
             transactionRepository.flush();
 
         } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
         } catch (NoSuchElementException ignored) {
-            throw MoneyGestorErrorSample.GENERIC_ERROR;
+            throw MoneyGestorErrorSample.mapOfError.get(0);
         }
     }
 
     @GetMapping("/delete/{id}")
-    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Integer id) {
+    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         TransactionDb transactionExample = new TransactionDb();
         transactionExample.setUserId(userGestor.getId());
@@ -201,12 +199,12 @@ public class TransactionRest {
     public List<LineGraph<LocalDate, BigDecimal>> getGraph(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
-            throw MoneyGestorErrorSample.USER_NOT_FOUND;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         UserGestor userGestor = UserGestor.Builder.createFromDB(user);
 
         if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.USER_TOKEN_NOT_VALID;
+            throw MoneyGestorErrorSample.mapOfError.get(2);
 
         List<LineGraph<LocalDate, BigDecimal>> graph = new LinkedList<>();
 
@@ -241,5 +239,5 @@ public class TransactionRest {
         }
 
         return graph;
-    }
+    }*/
 }

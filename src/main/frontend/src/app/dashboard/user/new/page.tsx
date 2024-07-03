@@ -4,6 +4,9 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { useState, useRef } from 'react';
 import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton, Typography, Button, Alert, FormHelperText, LinearProgress, CardMedia, CardContent, Snackbar, Slide } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Request, useRestApi } from '../../../request/Request';
+import { UserRegistrationForm } from '../../../Utilities/BackEndTypes';
+import { useSnackbar } from 'notistack';
 
 export default function Page() {
     const form = useRef(null);
@@ -23,6 +26,10 @@ export default function Page() {
     const [showLoading, setShowLoading] = useState(false);
     const [completeRegistration, setCompleteRegistration] = useState(false);
 
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+    const restApi = useRestApi();
+
     function registrationUser() {
         const formData = new FormData(form.current);
 
@@ -31,43 +38,45 @@ export default function Page() {
         if(!checkField())
             return;
 
-        let userData = {};
-        formData.forEach((value, key) => {
-            userData[key] = value;
-        });
+        let userData: UserRegistrationForm = {
+            firstname: formData.get("firstname") as string,
+            lastname: formData.get("lastname") as string,
+            username: formData.get("username") as string,
+            email: formData.get("email") as string,
+            password: formData.get("password") as string,
+            confirm: formData.get("confirm") as string,
+        };
 
         setShowLoading(true);
 
-        fetch("http://localhost:8093/api/user/new", {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
+        restApi.User.Registration(userData)
+        .then(response => {
+            enqueueSnackbar("Utente aggiunto con successo", {variant: 'success'});
         })
-        .then(res => {
-            if(!res.ok) {
-                return res.json();
-            }
-            return null;
-        })
-        .then((json) => {
-            setShowLoading(false);
+        .catch(Request.ErrorGestor([{
+            code: 102,
+            action: (error) => {
+                if(error.message.includes("duplicate email")) {
+                    enqueueSnackbar( "L'email è già stata inserita", {variant: 'error'});
+                    return;
+                }
 
-            if(json == null) {
-                setCompleteRegistration(true);
-                return;
+                if(error.message.includes("duplicate username")) {
+                    enqueueSnackbar( "L'username è già stato inserito", {variant: 'error'});
+                    return;
+                }
+            }}, {
+                code: 111,
+                action: (error) => {
+                    if(error.message.includes("password")) {
+                        enqueueSnackbar( "La password non rispetta i creteri", {variant: 'error'});
+                        return;
+                    }
+                }
             }
+        ]))
+        .finally(() => setShowLoading(false));
 
-            switch(json.code) {
-                case 101: 
-                    setFormError(value => value = {...value, email: "L'email esiste già"});
-                    break;
-                case 102: 
-                    setFormError(value => value = {...value, username: "L'username esiste già"});
-                    break;
-            }
-        })
 
         function checkField() {
             const regexUsername = /^[A-Za-z0-9_\-]+$/;

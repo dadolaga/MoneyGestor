@@ -1,12 +1,13 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
-import org.antlr.v4.runtime.misc.NotNull;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user", indexes = {
+    @Index(name = "unique_user_email", columnList = "email", unique = true),
+    @Index(name = "unique_user_username", columnList = "username", unique = true)})
 public class UserDb {
 
     @Id
@@ -16,7 +17,7 @@ public class UserDb {
     private String firstname;
     @Column(nullable = false)
     private String lastname;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
     @Column(nullable = false)
     private String username;
