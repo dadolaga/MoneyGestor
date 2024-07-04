@@ -1,28 +1,33 @@
 package org.laga.moneygestor.services;
 
 import org.hibernate.SessionFactory;
+import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.logic.TransactionTypeGestor;
+import org.laga.moneygestor.services.models.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/transaction_type")
+@RequestMapping("/api/transactionType")
 public class TransactionTypeRest extends BaseRest {
     @Autowired
     public TransactionTypeRest(SessionFactory sessionFactory) {
         super(sessionFactory);
     }
-/*
-    @GetMapping("/list")
-    public List<TransactionTypeDb> getListTransactionType(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
-        UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
 
-        TransactionTypeGestor transactionTypeGestor = new TransactionTypeGestor(sessionFactory);
+    @GetMapping("/getAll")
+    public Response getListTransactionType(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
+        UserDb loggedUser = getUserLogged(authorization);
 
-        return transactionTypeGestor.getAll(userGestor);
+        TransactionTypeGestor gestor = new TransactionTypeGestor(sessionFactory);
+
+        return Response.create(TransactionTypeGestor.convertToRest(gestor.getAll(loggedUser)));
     }
-
+/*
     @PostMapping("/new")
     public void addNewTransactionType(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionTypeForm transactionTypeForm) {
         UserGestor userGestor = UserGestor.Builder.loadFromAuthorization(userRepository, authorization);

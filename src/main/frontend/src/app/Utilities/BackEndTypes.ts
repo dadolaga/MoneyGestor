@@ -42,6 +42,10 @@ export interface Wallet {
     color: string;
 }
 
+export interface TransactionType {
+    id: number,
+    name: string,
+}
 
 export interface ReceiveId {
     id: number,

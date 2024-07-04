@@ -10,10 +10,30 @@ import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
+import org.laga.moneygestor.services.models.TransactionType;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class TransactionTypeGestor extends Gestor<Integer, TransactionTypeDb> {
+
+    public static TransactionType convertToRest(TransactionTypeDb transactionTypeDb) {
+        var transactionType = new TransactionType();
+
+        transactionType.setId(transactionTypeDb.getId());
+        transactionType.setName(transactionTypeDb.getName());
+
+        return transactionType;
+    }
+
+    public static List<TransactionType> convertToRest(List<TransactionTypeDb> transactionTypeDbs) {
+        List<TransactionType> transactionTypes = new LinkedList<>();
+
+        for(var transactionType : transactionTypeDbs)
+            transactionTypes.add(convertToRest(transactionType));
+
+        return transactionTypes;
+    }
 
     public TransactionTypeGestor(SessionFactory sessionFactory) {
         super(sessionFactory);
@@ -105,7 +125,7 @@ public class TransactionTypeGestor extends Gestor<Integer, TransactionTypeDb> {
 
     @Override
     public List<TransactionTypeDb> getAll(Session session, UserDb userLogged) {
-        return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class)
+        return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId OR userId IS NULL", TransactionTypeDb.class)
                 .setParameter("userId", userLogged.getId())
                 .list();
     }

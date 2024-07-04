@@ -7,13 +7,15 @@ import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import axios from "../../axios/axios";
 import { useCookies } from "react-cookie";
-import { ITransaction, ITransactionType, Wallet } from "../../Utilities/Datatypes";
+import { ITransaction } from "../../Utilities/Datatypes";
 import { ICheckForm, checkForm } from "../../Utilities/CheckForm";
 import { TransitionDialog } from "../base/transition";
 import dayjs from "dayjs";
 import { CSSProperties } from "@mui/material/styles/createTypography";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightLong, faRightLong } from "@fortawesome/free-solid-svg-icons";
+import { useRestApi } from "../../request/Request";
+import { TransactionType, Wallet } from "../../Utilities/BackEndTypes";
 
 const ID_EXCHANGE_TYPE = 1;
 const ID_TIE_TYPE = 2;
@@ -21,7 +23,7 @@ const ID_TIE_TYPE = 2;
 export default function TransactionDialog({open, onclose, onSave, transactionId}) {
     const [loading, setLoading] = useState(true);
     const [wallets, setWallets] = useState<Wallet[]>(null);
-    const [types, setTypes] = useState<ITransactionType[]>(null);
+    const [types, setTypes] = useState<TransactionType[]>(null);
 
     const [description, setDescription] = useState("");
     const [date, setDate] = useState(null);
@@ -40,6 +42,8 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
     const [typeError, setTypeError] = useState(null);
 
     const [cookie, setCookie] = useCookies(['_token']);
+
+    const restApi = useRestApi();
 
     useEffect(() => {
         if(!open)
@@ -75,29 +79,14 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
 
     }, [type])
 
-    function loadWallet(): Promise<any> {
-        return axios.get("/wallet/list", {
-            params: {
-                sort: "!favorite+name" 
-            },
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
-            setWallets(message.data);
-        });
+    function loadWallet(): Promise<void> {
+        return restApi.Wallet.List({ order: "!favorite#name" })
+        .then(wallets => setWallets(wallets));
     }
 
     function loadType(): Promise<any> {
-        return axios.get("/transaction_type/list", {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
-            setTypes(message.data);
-        });
+        return restApi.TransactionType.GetAll()
+        .then(transactionTypes => setTypes(transactionTypes));
     }
 
     function loadTransaction(): Promise<any> {
@@ -311,7 +300,7 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
                                 label="Tipo">
                                 {types?.map((value, index) => {
                                     let style: CSSProperties = {};
-                                    if(value.userId == null)
+                                    if(value.id == 1 || value.id == 2)
                                         style = {fontWeight: 'bold', textTransform: 'uppercase'}
 
                                     return <MenuItem key={value.id} value={value.id} style={style} disabled={transactionId != null && value.id == 1}>{value.name}</MenuItem>
