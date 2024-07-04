@@ -26,6 +26,10 @@ export interface CreateWalletForm {
     favorite?: boolean,
 }
 
+export interface TransactionTypeForm {
+    name: string,
+}
+
 // RECEIVE FROM SERVER
 export interface User {
     lastname: string,

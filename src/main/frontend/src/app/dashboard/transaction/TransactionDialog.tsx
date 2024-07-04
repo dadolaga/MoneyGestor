@@ -13,9 +13,10 @@ import { TransitionDialog } from "../base/transition";
 import dayjs from "dayjs";
 import { CSSProperties } from "@mui/material/styles/createTypography";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightLong, faRightLong } from "@fortawesome/free-solid-svg-icons";
-import { useRestApi } from "../../request/Request";
+import { faArrowRightLong, faL, faRightLong, fas } from "@fortawesome/free-solid-svg-icons";
+import { Request, useRestApi } from "../../request/Request";
 import { TransactionType, Wallet } from "../../Utilities/BackEndTypes";
+import { enqueueSnackbar } from "notistack";
 
 const ID_EXCHANGE_TYPE = 1;
 const ID_TIE_TYPE = 2;
@@ -370,7 +371,7 @@ function AddNewTypeDialog({open, onAdd, onCancel}) {
 
     const [typeError, setTypeError] = useState(null);
 
-    const [cookie, setCookie] = useCookies(['_token']);
+    const restApi = useRestApi();
 
     const cancelHandler = (event) => {
         onCancel();
@@ -395,24 +396,17 @@ function AddNewTypeDialog({open, onAdd, onCancel}) {
 
         setLoading(true);
 
-        axios.post("/transaction_type/new", {
-            name: value
-        }, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(() => {
+        restApi.TransactionType.Create({ name: value })
+        .then(_ => {
             onAdd();
         })
-        .catch((error) => {
-            if(error.response.data.code == 5) {
-                setTypeError("Tipo già inserito");
+        .catch(Request.ErrorGestor([{
+            code: 102,
+            action: () => {
+                enqueueSnackbar("Il tipo esiste gia", {variant: "error"});
             }
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+        }]))
+        .finally(() => setLoading(false));
     }
 
     return (
