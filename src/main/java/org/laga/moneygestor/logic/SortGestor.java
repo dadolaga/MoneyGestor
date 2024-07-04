@@ -4,6 +4,8 @@ import org.springframework.data.domain.Sort;
 
 public class SortGestor {
     private final static char DESCEND = '!';
+    private final static String MULTIPLE_SORT_REGEX = "#";
+
 
     /**
      * This function decode a sort string pass in URL with follow code:<br>
@@ -12,8 +14,6 @@ public class SortGestor {
     public static Sort decode(String sortString) {
         if(sortString == null)
             return Sort.unsorted();
-
-        final String MULTIPLE_SORT_REGEX = "\\+";
 
         String[] sortSplit = sortString.split(MULTIPLE_SORT_REGEX);
         Sort.Order[] orders = new Sort.Order[sortSplit.length];
@@ -29,8 +29,6 @@ public class SortGestor {
     public static String toSql(String sortString) {
         if(sortString == null || sortString.trim().length() == 0)
             return "";
-
-        final String MULTIPLE_SORT_REGEX = "\\+";
 
         String[] sortSplit = sortString.split(MULTIPLE_SORT_REGEX);
         StringBuilder sqlOrderBy = new StringBuilder("ORDER BY ");

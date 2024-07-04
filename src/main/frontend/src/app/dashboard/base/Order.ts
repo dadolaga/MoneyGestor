@@ -37,7 +37,7 @@ export class Order {
         let urlString = "";
 
         this._listOfElement.forEach(el => {
-            urlString += (el.order == "desc"? "!" : "") + el.name + "+";
+            urlString += (el.order == "desc"? "!" : "") + el.name + "#";
         })
 
         return urlString.substring(0, urlString.length - 1);
