@@ -93,7 +93,7 @@ export default function Page() {
                     <h1 className="login_text">Login</h1>
                     <input type="text" className="information"/>
                     <input type="text" className="information"/>
-                    <button type="submit" className="submit"> Login </button>
+                    <button type="submit" className="submit" onClick={login}> Login </button>
                 </div>
                 
             </div>
