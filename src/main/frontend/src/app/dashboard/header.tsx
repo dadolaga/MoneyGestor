@@ -54,7 +54,7 @@ export default function Header() {
                         <div id="bar3" className="bar"></div>
                     </div>
                     <a className='link_homepage' onClick={() => router.push('/dashboard')}>Money Gestor</a>
-                </div> 
+                </div>
                     <nav className="nav" id="nav">
                         <ul>
                             <li><a onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a></li>
@@ -62,7 +62,6 @@ export default function Header() {
                             <li><a >Planner</a></li>
                         </ul>
                     </nav>
-                   
             </div>
 
             <div className="menu-bg" id="menu-bg"></div>

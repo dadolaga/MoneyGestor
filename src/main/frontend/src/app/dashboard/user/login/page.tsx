@@ -89,6 +89,7 @@ export default function Page() {
         <div className="login-page">
             <div className="login-page__container">
                 <img src="/logo.png" alt="logo_image" className="logo_image" />
+                <h1 className="login_text">Login</h1>
                 <div className="login-page_information">
                     <input type="text" className="information"/>
                     <input type="text" className="information"/>
