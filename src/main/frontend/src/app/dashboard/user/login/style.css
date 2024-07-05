@@ -1,17 +1,25 @@
 .login-page{
-    padding-top: 200px;
+    padding-top: 100px;
     display: grid;
     grid-template-columns: 0px 0px;
     justify-content: space-evenly;
 }
 
 .login-page__container{
-    display: grid;
-    justify-items: center;
+    display: flex;
     width: 464px;
     height: 509px;
     border-radius: 50px;
     background-color: #1E1E1E;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo_container{
+    display: grid;
+    grid-row-gap: 39px;
+    justify-items: center;
     align-items: center;
 }
 
@@ -40,6 +48,7 @@
     background-color: rgba(255, 0, 0, 0.05);
     border-style: solid;
     border-color: #590004;
+    color: white;
 }
 
 .submit{
@@ -62,7 +71,6 @@
 }
 
 #registrationForm {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: 24px;

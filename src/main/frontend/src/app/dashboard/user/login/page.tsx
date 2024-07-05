@@ -88,13 +88,14 @@ export default function Page() {
     return (
         <div className="login-page">
             <div className="login-page__container">
-                <img src="/logo.png" alt="logo_image" className="logo_image" />
-                <h1 className="login_text">Login</h1>
-                <div className="login-page_information">
+                <div className="logo_container">
+                    <img src="/logo.png" alt="logo_image" className="logo_image" />
+                    <h1 className="login_text">Login</h1>
                     <input type="text" className="information"/>
                     <input type="text" className="information"/>
                     <button type="submit" className="submit"> Login </button>
                 </div>
+                
             </div>
             <img src="/login_without_background.png" alt="login_image" className="login_image" />
         </div>
