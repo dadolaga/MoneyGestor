@@ -38,33 +38,41 @@ export default function Header() {
         };
     }
 
+    function BurgerMenuHandler() {
+        document.getElementById('menu-bar').classList.toggle('change');
+        document.getElementById('nav').classList.toggle('change');
+        document.getElementById('menu-bg').classList.toggle('change-bg');
+    }
+
     return (
         <div className='navbar_container'>
             <div id="menu">
-                <div id="menu-bar" onClick={menuOnClick}>
-                    <div id="bar1" className="bar"></div>
-                    <div id="bar2" className="bar"></div>
-                    <div id="bar3" className="bar"></div>
-                </div>
-                <nav className="nav" id="nav">
-                    <ul>
-                    <li><a href="#">Portfaoglio</a></li>
-                    <li><a href="#">Transizioni</a></li>
-                    <li><a href="#">Planner</a></li>
-                    </ul>
-                </nav> 
+                <div className="menu_link">
+                    <div id="menu-bar" onClick={BurgerMenuHandler}>
+                        <div id="bar1" className="bar"></div>
+                        <div id="bar2" className="bar"></div>
+                        <div id="bar3" className="bar"></div>
+                    </div>
+                    <a className='link_homepage' onClick={() => router.push('/dashboard')}>Money Gestor</a>
+                </div> 
+                    <nav className="nav" id="nav">
+                        <ul>
+                            <li><a onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a></li>
+                            <li><a onClick={() => router.push('/dashboard/transaction')}>Transizioni</a></li>
+                            <li><a >Planner</a></li>
+                        </ul>
+                    </nav>
+                   
             </div>
 
             <div className="menu-bg" id="menu-bg"></div>
-
             <nav className='navbar_right'>
-                <a href="#" className='link_login'>Login</a>
-                <a href="#" className='link_register'>Register</a>
+                <a className='link_login' onClick={() => router.push('/dashboard/user/login')}>Login</a>
+                <a className='link_register' onClick={() => router.push('/dashboard/user/new')}>Register</a>
             </nav>
+            
         </div>
             
-        
-        
         // <AppBar sx={{ zIndex: 1300 }}>
         //     <Toolbar>
         //         <IconButton sx={{ mr: 2 }} color='inherit'>
@@ -88,10 +96,5 @@ export default function Header() {
 
         //     </Toolbar>
         // </AppBar>
-    )
-    function menuOnClick() {
-        document.getElementById('menu-bar').classList.toggle('change');
-        document.getElementById('nav').classList.toggle('change');
-        document.getElementById('menu-bg').classList.toggle('change-bg');
-      }
+    )    
 }
