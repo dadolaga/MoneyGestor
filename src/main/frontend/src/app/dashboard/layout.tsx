@@ -1,15 +1,15 @@
 "use client"
 
+import { ThemeProvider } from '@emotion/react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Toolbar } from "@mui/material";
-import Header from "./header";
-import Drawer from "./drawer";
-import { ThemeOptions, createTheme } from '@mui/material/styles'
-import { ThemeProvider } from '@emotion/react'
-import { Provider, useDispatch, useSelector } from 'react-redux'
-import store from '../redux/store'
-import { expiredToken, setExpiredToken } from "../redux/showTokenExpirated";
+import { ThemeOptions, createTheme } from '@mui/material/styles';
 import { useRouter } from "next/navigation";
 import { SnackbarProvider } from "notistack";
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { expiredToken, setExpiredToken } from "../redux/showTokenExpirated";
+import store from '../redux/store';
+import Drawer from "./drawer";
+import Header from "./header";
 
 export const themeOptions: ThemeOptions = {
   palette: {

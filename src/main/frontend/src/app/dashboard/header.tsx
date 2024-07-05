@@ -1,15 +1,8 @@
 "use client"
 
-import { useRouter } from 'next/navigation'
-import { useCookies } from 'react-cookie'
-import { faBars } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import AppBar from '@mui/material/AppBar'
-import { Avatar, Box, Toolbar } from '@mui/material'
-import IconButton from '@mui/material/IconButton'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-
+import { useRouter } from 'next/navigation';
+import { useCookies } from 'react-cookie';
+import './header.css';
 
 export default function Header() {
     const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
@@ -46,28 +39,59 @@ export default function Header() {
     }
 
     return (
-        <AppBar sx={{ zIndex: 1300 }}>
-            <Toolbar>
-                <IconButton sx={{ mr: 2 }} color='inherit'>
-                    <FontAwesomeIcon icon={faBars} />
-                </IconButton>
-                <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
+        <div className='navbar_container'>
+            <div id="menu">
+                <div id="menu-bar" onClick={menuOnClick}>
+                    <div id="bar1" className="bar"></div>
+                    <div id="bar2" className="bar"></div>
+                    <div id="bar3" className="bar"></div>
+                </div>
+                <nav className="nav" id="nav">
+                    <ul>
+                    <li><a href="#">Portfaoglio</a></li>
+                    <li><a href="#">Transizioni</a></li>
+                    <li><a href="#">Planner</a></li>
+                    </ul>
+                </nav> 
+            </div>
 
-                {(!cookies._displayName) && (
-                    <>
-                        <Button color='inherit' onClick={() => router.push('/dashboard/user/login')}>Login</Button>
-                        <Button color='inherit' onClick={() => router.push('/dashboard/user/new')}>Registrati</Button>
-                    </>
-                )}
+            <div className="menu-bg" id="menu-bg"></div>
 
-                {(cookies._displayName) && (
-                    <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
-                        <Typography align='center'>{cookies._displayName}</Typography>
-                        <Avatar {... stringAvatar(cookies._displayName)} />
-                    </Box>
-                )}
+            <nav className='navbar_right'>
+                <a href="#" className='link_login'>Login</a>
+                <a href="#" className='link_register'>Register</a>
+            </nav>
+        </div>
+            
+        
+        
+        // <AppBar sx={{ zIndex: 1300 }}>
+        //     <Toolbar>
+        //         <IconButton sx={{ mr: 2 }} color='inherit'>
+        //             <FontAwesomeIcon icon={faBars} />
+        //         </IconButton>
+        //         <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
 
-            </Toolbar>
-        </AppBar>
+        //         {(!cookies._displayName) && (
+        //             <>
+        //                 <Button color='inherit' onClick={() => router.push('/dashboard/user/login')}>Login</Button>
+        //                 <Button color='inherit' onClick={() => router.push('/dashboard/user/new')}>Registrati</Button>
+        //             </>
+        //         )}
+
+        //         {(cookies._displayName) && (
+        //             <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
+        //                 <Typography align='center'>{cookies._displayName}</Typography>
+        //                 <Avatar {... stringAvatar(cookies._displayName)} />
+        //             </Box>
+        //         )}
+
+        //     </Toolbar>
+        // </AppBar>
     )
+    function menuOnClick() {
+        document.getElementById('menu-bar').classList.toggle('change');
+        document.getElementById('nav').classList.toggle('change');
+        document.getElementById('menu-bg').classList.toggle('change-bg');
+      }
 }

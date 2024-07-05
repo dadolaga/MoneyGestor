@@ -1,12 +1,11 @@
 "use client";
 
-import './style.css';
+import { useRouter } from "next/navigation";
 import { KeyboardEventHandler, useRef, useState } from "react";
 import { useCookies } from "react-cookie";
-import { Request, useRestApi } from "../../../request/Request";
 import { LoginForm } from "../../../Utilities/BackEndTypes";
-import { Alert, Box, Button, Card, CardContent, LinearProgress, TextField, Typography } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { Request, useRestApi } from "../../../request/Request";
+import './style.css';
 
 export default function Page() {
     const DEFAULT_FORM_ERROR = {
@@ -87,30 +86,40 @@ export default function Page() {
     };
 
     return (
-        <Box className="center">
-            <Card style={{width: '30%', borderRadius: '10%'}}>
-                {loading && <LinearProgress sx={{width: "100%"}}/>}
-                <CardContent  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
-                    <Box className="image">
-                        <img src='/logo.png' style={{width: '80%'}}/>
-                    </Box>
+        <div className="login-page">
+            <div className="login-page__container">
+                <img src="/logo.png" alt="logo_image" className="logo_image" />
+                <div className="login-page_information">
+                    <input type="text" className="information"/>
+                    <input type="text" className="information"/>
+                    <button type="submit" className="submit"> Login </button>
+                </div>
+            </div>
+            <img src="/login_without_background.png" alt="login_image" className="login_image" />
+        </div>
 
-                    <Box sx={{width: '100%'}}>
-                        <Typography variant='h5' sx={{paddingLeft: 2}}>Login</Typography>
-                    </Box> 
-                    {message != null && <Alert variant='filled' severity='error' >{message}</Alert>}
-                    <Box component={'form'} ref={form} sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 2}}>
-                        <TextField error={formError.username != null} helperText={formError.username} fullWidth name='username' label='username o email' required/>
-                        <TextField error={formError.password != null} helperText={formError.password} onKeyUp={keyPressedOnPasswordHandler} fullWidth name='password' type='password' label='password' required/>
-                        <Button variant='contained' onClick={login}> Login </Button>
-                    </Box>
-                    <Box className="image">
-                        <img  src='/login_without_background.png' style={{width: '60%'}} />
-                    </Box>
-                </CardContent>
+        // <Box className="center">
+        //     <Card style={{width: '30%', borderStartStartRadius: '20%'}}>
+        //         {loading && <LinearProgress sx={{width: "100%"}}/>}
+        //         <CardContent  sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+        //             <Box className="image">
+        //                 <img src='/logo.png' style={{width: '80%'}}/>
+        //             </Box>
 
-            </Card>
-
-        </Box>
+        //             <Box sx={{width: '100%'}}>
+        //                 <Typography variant='h5' sx={{paddingLeft: 2}}>Login</Typography>
+        //             </Box> 
+        //             {message != null && <Alert variant='filled' severity='error' >{message}</Alert>}
+        //             <Box component={'form'} ref={form} sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 2}}>
+        //                 <TextField error={formError.username != null} helperText={formError.username} fullWidth name='username' label='username o email' required/>
+        //                 <TextField error={formError.password != null} helperText={formError.password} onKeyUp={keyPressedOnPasswordHandler} fullWidth name='password' type='password' label='password' required/>
+        //                 <Button variant='contained' onClick={login}> Login </Button>
+        //             </Box>
+        //             <Box className="image">
+        //                 <img  src='/login_without_background.png' style={{width: '60%'}} />
+        //             </Box>
+        //         </CardContent>
+        //     </Card>
+        // </Box>
     );
 }
