@@ -28,48 +28,16 @@ export const theme = createTheme(themeOptions);
 export default function DashboardLayout({children}) {  
   return (
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <SnackbarProvider>
-          <Box sx={{position: 'relative', height: '100vh'}}>
-            <Header />
-            <Box sx={{display: 'flex', height: '100%'}}>
-              <Drawer width={200} />
-              <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
-                  <Toolbar />
-                  <Box sx={{margin: 2, flexGrow: 1, overflowY: 'hidden'}}>
-                    {children}
-                  </Box>
-              </Box>
-            </Box>
-          </Box>
-          <ShowTokenExpired />
-        </SnackbarProvider>
-      </ThemeProvider>
+      <SnackbarProvider>
+        <div style={{height: "100vh", width: "100vw", display: "flex", flexDirection: 'column'}}>
+          <Header />
+          <div style={{height: "100%", width: "100%"}}>
+            <div style={{padding: 16, height: "calc(100% - 32px)"}}>
+              {children}
+            </div>
+          </div>
+        </div>
+      </SnackbarProvider>
     </Provider>
-  );
-}
-
-function ShowTokenExpired() {
-  const router = useRouter();
-  const open = useSelector(expiredToken);
-  const dispatch = useDispatch();
-
-  function clickOk() {
-    router.push('/dashboard/user/login');
-    dispatch(setExpiredToken(false));
-  }
-
-  return (
-    <Dialog open={open} >
-      <DialogTitle>
-        Sessione terminata
-      </DialogTitle>
-      <DialogContent>
-        La sessione per l&apos;utente è terminata. Rieffettuare il login
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={clickOk}>ok</Button>
-      </DialogActions>
-    </Dialog>
   );
 }
