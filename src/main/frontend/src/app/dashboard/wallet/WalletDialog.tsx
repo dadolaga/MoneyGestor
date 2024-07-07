@@ -1,9 +1,10 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { useState, useEffect, ChangeEventHandler } from "react";
 import axios from "../../axios/axios";
-import { Request, useRestApi } from "../../request/Request";
-import { CreateWalletForm } from "../../Utilities/BackEndTypes";
+import { useRestApi } from "../../request/Request";
+import { Color, CreateWalletForm } from "../../Utilities/BackEndTypes";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
+import Input from "../../component/Input";
 
 const WALLET_DEFAULT: CreateWalletForm = {
     name: "",
@@ -82,9 +83,9 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     const loadColor = () => {
         axios.get("/color/list")
         .then((message) => {
-            let colorList = [];
+            let colorList: Color[] = [];
             message.data.forEach((el) => {
-                colorList.push(el.color);
+                colorList.push(new Color(el.color));
             })
 
             setColors(colorList);
@@ -192,49 +193,36 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 </DialogContentText>
                 <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
                     <Grid item xs={8}>
-                        <TextField
-                            fullWidth 
-                            error={form.haveError("name")} 
-                            helperText={form.getError("name")} 
-                            label="Nome" 
-                            name="name" 
-                            value={form.getValue("name")}
-                            onChange={textChangeHandler("name")} 
-                            disabled={loading} />
+                        <Input
+                            type="text"
+                            form={form}
+                            setForm={setForm}
+                            label="Nome"
+                            name="name"
+                            disabled={loading}
+                            />
                     </Grid>
                     <Grid item xs={4}>
-                        <TextField
-                            fullWidth
-                            error={form.haveError("value")}
-                            helperText={form.getError("value")}
+                        <Input
+                            type="text"
+                            form={form}
+                            setForm={setForm}
                             label="Valore iniziale"
                             name="value"
-                            value={form.getValue("value")}
-                            onChange={textChangeHandler("value")}
                             InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
-                            disabled={loading || walletId != undefined} />
+                            disabled={loading || walletId != undefined}
+                            />
                     </Grid>
                     <Grid item xs={12}>
-                        <FormControl fullWidth error={form.haveError("color")}>
-                            <InputLabel id="select-color" >Color</InputLabel>
-                            <Select
-                                sx={{
-                                    ".MuiSelect-select": {
-                                        display: 'inline-flex'
-                                    }
-                                }}
-                                labelId="select-color"
-                                label="Colore"
-                                name="color"
-                                value={form.getValue("color")}
-                                onChange={selectChangeHandler("color")}
-                                disabled={loading} >
-                                { colors.map((value, index) => {
-                                    return (<MenuItem key={index} value={value}><span style={{height: '20px', width: '20px', backgroundColor: '#' + value, marginRight: "10px"}}></span>#{value}</MenuItem>)
-                                }) }
-                            </Select>
-                            <FormHelperText>{form.getError("color")}</FormHelperText>
-                        </FormControl>
+                    <Input
+                        type="multi"
+                        form={form}
+                        setForm={setForm}
+                        label="Colore portafoglio"
+                        name="color"
+                        values={colors}
+                        disabled={loading}
+                        />
                     </Grid>
                 </Grid>
             </DialogContent>

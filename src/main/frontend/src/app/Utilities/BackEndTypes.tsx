@@ -1,3 +1,5 @@
+import { IPrintable } from "./Interfaces";
+
 export interface Response<T> {
     code: number,
     content: T,
@@ -53,4 +55,16 @@ export interface TransactionType {
 
 export interface ReceiveId {
     id: number,
+}
+
+export class Color implements IPrintable {
+    public color: string;
+
+    constructor(color: string) {
+        this.color = color;
+    }
+
+    print(): string | JSX.Element {
+        return (<><span style={{height: '20px', width: '20px', backgroundColor: '#' + this.color, marginRight: "10px"}}></span>#{this.color}</>);
+    }
 }
