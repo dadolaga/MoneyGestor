@@ -1,8 +1,9 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, TextField } from "@mui/material";
-import { useRef, useState, useEffect } from "react";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { useState, useEffect, ChangeEventHandler } from "react";
 import axios from "../../axios/axios";
 import { Request, useRestApi } from "../../request/Request";
 import { CreateWalletForm } from "../../Utilities/BackEndTypes";
+import { BaseChecker, Form, FormSettings } from "../../form/Form";
 
 const WALLET_DEFAULT: CreateWalletForm = {
     name: "",
@@ -16,15 +17,35 @@ interface WalletDialogInterface {
     walletId?: number
 }
 
-export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
-    const form = useRef();
+const formSettings: FormSettings[] = [{
+    name: "name",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il parametro non può essere vuoto"
+    }],
+}, {
+    name: "value",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il parametro non può essere vuoto"
+    }, {
+        action: BaseChecker.isNotNumber,
+        text: "Il valore deve essere un numero"
+    }],
+}, {
+    name: "color",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il parametro non può essere vuoto"
+    }],
+}]
 
-    const [nameError, setNameError] = useState<string>(undefined);
-    const [valueError, setValueError] = useState<string>(null);
-    const [colorError, setColorError] = useState<string>(null);
+export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
     const [loading, setLoading] = useState<boolean>(false);
     const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
     const [colors, setColors] = useState([]);
+
+    const [form, setForm] = useState<Form>(new Form(formSettings))
 
     const restApi = useRestApi();
 
@@ -37,10 +58,6 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             value: 0,
             color: ""
         });
-
-        setValueError(undefined);
-        setNameError(undefined);
-        setColorError(undefined);
 
         setLoading(true);
 
@@ -75,8 +92,9 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     }
 
     const saveOrModifyHandler = () => {
-        const formData = new FormData(form.current);
-        let myWallet: CreateWalletForm = WALLET_DEFAULT;
+        setForm(form => form.check());
+
+        /*let myWallet: CreateWalletForm = WALLET_DEFAULT;
 
         setNameError(null);
         setValueError(null);
@@ -150,11 +168,19 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             .finally(() => {
                 setLoading(false);
             })
-        }
+        }*/
     }
 
     const onCloseHandler = () => {
         onClose(false);
+    }
+
+    const textChangeHandler = (name: string):  ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> => (action) => {
+        setForm(form => form.setValue(name, action.target.value));
+    }
+
+    const selectChangeHandler = (name: string):  (event: SelectChangeEvent<string>) => void => (action) => {
+        setForm(form => form.setValue(name, action.target.value));
     }
 
     return (
@@ -164,32 +190,32 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             <DialogContent>
                 <DialogContentText>
                 </DialogContentText>
-                <Grid ref={form} container spacing={2} sx={{ marginTop: 1 }} component="form">
+                <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
                     <Grid item xs={8}>
                         <TextField
                             fullWidth 
-                            error={nameError != null} 
-                            helperText={nameError} 
+                            error={form.haveError("name")} 
+                            helperText={form.getError("name")} 
                             label="Nome" 
                             name="name" 
-                            value={wallet.name}
-                            onChange={(text) => setWallet({ name: text.target.value, value: wallet.value, color: wallet.color })} 
+                            value={form.getValue("name")}
+                            onChange={textChangeHandler("name")} 
                             disabled={loading} />
                     </Grid>
                     <Grid item xs={4}>
                         <TextField
                             fullWidth
-                            error={valueError != null}
-                            helperText={valueError}
+                            error={form.haveError("value")}
+                            helperText={form.getError("value")}
                             label="Valore iniziale"
                             name="value"
-                            value={wallet.value}
-                            onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
+                            value={form.getValue("value")}
+                            onChange={textChangeHandler("value")}
                             InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
                             disabled={loading || walletId != undefined} />
                     </Grid>
                     <Grid item xs={12}>
-                        <FormControl fullWidth error={colorError != null}>
+                        <FormControl fullWidth error={form.haveError("color")}>
                             <InputLabel id="select-color" >Color</InputLabel>
                             <Select
                                 sx={{
@@ -200,14 +226,14 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                                 labelId="select-color"
                                 label="Colore"
                                 name="color"
-                                value={wallet.color}
-                                onChange={(text) => setWallet({ name: wallet.name, value: wallet.value, color: text.target.value })}
+                                value={form.getValue("color")}
+                                onChange={selectChangeHandler("color")}
                                 disabled={loading} >
                                 { colors.map((value, index) => {
                                     return (<MenuItem key={index} value={value}><span style={{height: '20px', width: '20px', backgroundColor: '#' + value, marginRight: "10px"}}></span>#{value}</MenuItem>)
                                 }) }
                             </Select>
-                            <FormHelperText>{colorError}</FormHelperText>
+                            <FormHelperText>{form.getError("color")}</FormHelperText>
                         </FormControl>
                     </Grid>
                 </Grid>
