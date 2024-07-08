@@ -17,19 +17,12 @@
   justify-content: flex-end;
 }
 
-.link_login{
+.link{
     display: flex;
     flex-direction: row-reverse;
     color: white;
     font-size: 1.5em;
-}
-
-.link_register{
-    display: flex;
-    flex-direction: row-reverse;
-    color: white;
-    font-size: 1.5em;
-}
+} 
 
 .link_homepage{
   display: flex;
@@ -40,6 +33,18 @@
   justify-content: center;
 }
 
+.underlineHomepage{
+  display: flex;
+  color: white;
+  font-size: 1.5em;
+  padding-left: 20px;
+  width: -webkit-fill-available;
+  justify-content: center;
+  text-decoration: underline;
+  font-family: 'Fredoka One';
+  cursor: pointer;
+}
+
 .fontNav{
   font-family: 'Fredoka One';
 }
@@ -47,12 +52,14 @@
   cursor: pointer;
 }
 
-.onActive:active{
+.underline {
+  display: flex;
+  flex-direction: row-reverse;
+  color: white;
+  font-size: 1.5em;
   text-decoration: underline;
-}
-
-a{
-  text-decoration: none;
+  font-family: 'Fredoka One';
+  cursor: pointer;
 }
 
 /* DA MODIFICARE */

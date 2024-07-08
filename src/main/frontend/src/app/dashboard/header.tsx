@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useCookies } from 'react-cookie';
 import './header.css';
 
@@ -9,34 +10,59 @@ export default function Header() {
 
     const router = useRouter();
 
-    function stringToColor(string) {
-        let hash = 0;
-        let i;
+    const [loginUnderline, setLoginUnderline] = useState(false);
+    const [registerUnderline, setRegisterUnderline] = useState(false);
+    const [homepageUnderline, setHomepageUnderline] = useState(false);
 
-        /* eslint-disable no-bitwise */
-        for (i = 0; i < string.length; i += 1) {
-            hash = string.charCodeAt(i) + ((hash << 5) - hash);
-        }
+    const handleLoginClick = (location) => {
+        setLoginUnderline(true);
+        setHomepageUnderline(false)
+        setRegisterUnderline(false);
+        router.push(location);
+    };
 
-        let color = '#';
+    const handleRegisterClick = (location) => {
+        setLoginUnderline(false);
+        setHomepageUnderline(false)
+        setRegisterUnderline(true);
+        router.push(location);
+    };
 
-        for (i = 0; i < 3; i += 1) {
-            const value = (hash >> (i * 8)) & 0xff;
-            color += `00${value.toString(16)}`.slice(-2);
-        }
-        /* eslint-enable no-bitwise */
+    const handleHomepageClick = (location) => {
+        setLoginUnderline(false);
+        setRegisterUnderline(false);
+        setHomepageUnderline(true);
+        router.push(location);
+    };
 
-        return color;
-    }
+    // function stringToColor(string) {
+    //     let hash = 0;
+    //     let i;
 
-    function stringAvatar(name) {
-        return {
-            sx: {
-                bgcolor: stringToColor(name),
-            },
-            children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
-        };
-    }
+    //     /* eslint-disable no-bitwise */
+    //     for (i = 0; i < string.length; i += 1) {
+    //         hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    //     }
+
+    //     let color = '#';
+
+    //     for (i = 0; i < 3; i += 1) {
+    //         const value = (hash >> (i * 8)) & 0xff;
+    //         color += `00${value.toString(16)}`.slice(-2);
+    //     }
+    //     /* eslint-enable no-bitwise */
+
+    //     return color;
+    // }
+
+    // function stringAvatar(name) {
+    //     return {
+    //         sx: {
+    //             bgcolor: stringToColor(name),
+    //         },
+    //         children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    //     };
+    // }
 
     function BurgerMenuHandler() {
         document.getElementById('menu-bar').classList.toggle('change');
@@ -63,11 +89,11 @@ export default function Header() {
                     </ul>
                 </nav>
             </div>
-            <a  className='link_homepage pointer fontNav' onClick={() => router.push('/dashboard')}>Money Gestor</a>
+            <a  className={homepageUnderline? 'underlineHomepage' :'link_homepage pointer fontNav'} onClick={() => handleHomepageClick('/dashboard')}>Money Gestor</a>
             <div className="menu-bg" id="menu-bg"></div>
             <nav className='navbar_right'>
-                <a  className='link_login pointer fontNav onActive' onClick={() => router.push('/dashboard/user/login')}>Login</a>
-                <a  className='link_register pointer fontNav onActive' onClick={() => router.push('/dashboard/user/new')}>Register</a>
+                <a className={loginUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>handleLoginClick('/dashboard/user/login')}>Login</a>
+                <a className={registerUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>handleRegisterClick('/dashboard/user/new')}>Register</a>
             </nav>
             
         </div>
