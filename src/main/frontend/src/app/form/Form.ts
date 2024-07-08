@@ -41,6 +41,12 @@ export class Form {
         return this.getError(name) != undefined;
     }
 
+    public setManualError(name: string, error: string): Form {
+        this._errors[name] = error;
+
+        return new Form(this._settings, this._values, this._errors);
+    }
+
     public check(): Form {
         this._settings.forEach(setting => {
             for(const check of setting.checks) {

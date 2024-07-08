@@ -109,7 +109,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
-                action: _ => console.log("Il nome è gia presente")
+                action: _ => setForm(form => form.setManualError("name", "Il nome inserito esiste già")),
             }]))
             .finally(() => {
                 setLoading(false);
@@ -125,7 +125,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
-                action: _ => console.log("Il nome esiste già"),
+                action: _ => setForm(form => form.setManualError("name", "Il nome inserito esiste già")),
             }]))
             .finally(() => {
                 setLoading(false);
