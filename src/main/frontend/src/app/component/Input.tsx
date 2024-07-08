@@ -33,7 +33,7 @@ export default function Input(props: IInput) {
                 helperText={props.form.getError(props.name)}
                 label={props.label}
                 name={props.name}
-                value={props.form.getValue(props.name)}
+                value={props.form.getStringValue(props.name)}
                 onChange={textChangeHandler(props.name)}
                 InputProps={props.InputProps}
                 disabled={props.disabled} />
@@ -46,7 +46,7 @@ export default function Input(props: IInput) {
                 helperText={props.form.getError(props.name)}
                 label={props.label}
                 name={props.name}
-                value={props.form.getValue(props.name)}
+                value={props.form.getStringValue(props.name)}
                 onChange={textChangeHandler(props.name)}
                 InputProps={props.InputProps}
                 disabled={props.disabled} />

@@ -1,16 +1,10 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { useState, useEffect, ChangeEventHandler } from "react";
 import axios from "../../axios/axios";
-import { useRestApi } from "../../request/Request";
-import { Color, CreateWalletForm } from "../../Utilities/BackEndTypes";
+import { Request, useRestApi } from "../../request/Request";
+import { Color, CreateWalletForm, Wallet } from "../../Utilities/BackEndTypes";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import Input from "../../component/Input";
-
-const WALLET_DEFAULT: CreateWalletForm = {
-    name: "",
-    value: 0,
-    color: ""
-}
 
 interface WalletDialogInterface {
     open: boolean,
@@ -43,7 +37,7 @@ const formSettings: FormSettings[] = [{
 
 export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
     const [loading, setLoading] = useState<boolean>(false);
-    const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
+    const [wallet, setWallet] = useState<CreateWalletForm>(undefined);
     const [colors, setColors] = useState([]);
 
     const [form, setForm] = useState<Form>(new Form(formSettings))
@@ -54,12 +48,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
         if(!open)
             return;
 
-        setWallet({
-            name: "",
-            value: 0,
-            color: ""
-        });
-
+        setWallet(undefined);
         setLoading(true);
 
         let promiseList = [];
@@ -94,48 +83,22 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
     const saveOrModifyHandler = () => {
         setForm(form => form.check());
-
-        /*let myWallet: CreateWalletForm = WALLET_DEFAULT;
-
-        setNameError(null);
-        setValueError(null);
-
-        const name = wallet.name;
-        const stringValue = wallet.value.toString().replaceAll(/\s+/g, "");
-
-        if (checkError())
+        if(form.isCheckFail())
             return;
+
+        let myWallet: CreateWalletForm = {};
+
+        const name = form.getStringValue("name");
+        const stringValue = form.getStringValue("value").replaceAll(/\s+/g, "");
 
         myWallet.name = name;
         myWallet.value = parseFloat(stringValue.replace(",", "."));
-        myWallet.color = wallet.color;
+        myWallet.color = (form.getValue("color") as Color).color;
 
         if(walletId == null)
-            saveNewWallet();
+            saveNewWallet(myWallet);
         else 
             editWallet(myWallet, walletId);
-
-        function checkError() {
-            const valueRegex = /^[\d]+(?:[\.,][\d]+)?$/;
-            let thereIsError = false;
-
-            if (name.trim().length == 0) {
-                setNameError("Il nome non può essere vuoto");
-                thereIsError = true;
-            }
-
-            if (!valueRegex.test(stringValue)) {
-                setValueError("Il valore deve essere un valore monetario valido");
-                thereIsError = true;
-            }
-
-            if(wallet.color == "") {
-                setColorError("Il colore è un campo obbligatorio");
-                thereIsError = true;
-            }
-
-            return thereIsError;
-        }
 
         function editWallet(wallet, walletId) {
             setLoading(true);
@@ -146,16 +109,14 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
-                action: _ => {
-                    setNameError("Il nome è gia presente");
-                }
+                action: _ => console.log("Il nome è gia presente")
             }]))
             .finally(() => {
                 setLoading(false);
             })
         }
 
-        function saveNewWallet() {
+        function saveNewWallet(wallet: CreateWalletForm) {
             setLoading(true);
 
             restApi.Wallet.Create(wallet)
@@ -164,30 +125,22 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             })
             .catch(Request.ErrorGestor([{
                 code: 102,
-                action: _ => setNameError("Il nome esiste già"),
+                action: _ => console.log("Il nome esiste già"),
             }]))
             .finally(() => {
                 setLoading(false);
             })
-        }*/
+        }
     }
 
     const onCloseHandler = () => {
         onClose(false);
     }
 
-    const textChangeHandler = (name: string):  ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> => (action) => {
-        setForm(form => form.setValue(name, action.target.value));
-    }
-
-    const selectChangeHandler = (name: string):  (event: SelectChangeEvent<string>) => void => (action) => {
-        setForm(form => form.setValue(name, action.target.value));
-    }
-
     return (
         <Dialog open={open} onClose={onClose} PaperProps={{}}>
             {loading && <LinearProgress />}
-            <DialogTitle color={'#' + parseInt(wallet.color)}>Crea nuovo portafoglio</DialogTitle>
+            <DialogTitle >Crea nuovo portafoglio</DialogTitle>
             <DialogContent>
                 <DialogContentText>
                 </DialogContentText>

@@ -9,7 +9,7 @@ export interface Check {
 }
 
 export class Form {
-    private _values: string[];
+    private _values: string[] | any[];
     private _errors: string[];
     private _settings: FormSettings[];
 
@@ -25,8 +25,12 @@ export class Form {
         return new Form(this._settings, this._values, this._errors);
     }
 
-    public getValue(name: string): string {        
-        return this._values[name];
+    public getStringValue(name: string): string {        
+        return this._values[name] as string;
+    }
+
+    public getValue(name: string): any {        
+        return this._values[name] as any;
     }
 
     public getError(name: string): string {
@@ -50,11 +54,15 @@ export class Form {
 
         return new Form(this._settings, this._values, this._errors);
     }
+
+    public isCheckFail(): boolean {
+        return Object.values(this._errors).reduce((counter, value) => value != undefined? counter + 1 : counter, 0) != 0
+    }
 }
 
 export const BaseChecker = {
-    isEmpty: (value: string): boolean => {
-        return value === undefined || value.trim().length == 0;
+    isEmpty: (value: string | any): boolean => {
+        return value === undefined || (typeof value === 'string' && value.trim().length == 0);
     },
 
     isNotNumber: (value: string): boolean => {
