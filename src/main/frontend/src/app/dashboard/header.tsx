@@ -53,17 +53,17 @@ export default function Header() {
                         <div id="bar2" className="bar"></div>
                         <div id="bar3" className="bar"></div>
                     </div>
-                    <a className='link_homepage' onClick={() => router.push('/dashboard')}>Money Gestor</a>
                 </div>
-                    <nav className="nav" id="nav">
-                        <ul>
-                            <li><a onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a></li>
-                            <li><a onClick={() => router.push('/dashboard/transaction')}>Transizioni</a></li>
-                            <li><a >Planner</a></li>
-                        </ul>
-                    </nav>
+                
+                <nav className="nav" id="nav">
+                    <ul>
+                        <li><a onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a></li>
+                        <li><a onClick={() => router.push('/dashboard/transaction')}>Transizioni</a></li>
+                        <li><a >Planner</a></li>
+                    </ul>
+                </nav>
             </div>
-
+            <a className='link_homepage' onClick={() => router.push('/dashboard')}>Money Gestor</a>
             <div className="menu-bg" id="menu-bg"></div>
             <nav className='navbar_right'>
                 <a className='link_login' onClick={() => router.push('/dashboard/user/login')}>Login</a>
