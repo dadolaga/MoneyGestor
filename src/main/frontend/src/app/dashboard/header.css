@@ -1,4 +1,4 @@
-
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
 .navbar_container{
   display: flex;
   width: 100%;
@@ -40,11 +40,26 @@
   justify-content: center;
 }
 
+.fontNav{
+  font-family: 'Fredoka One';
+}
+.pointer{
+  cursor: pointer;
+}
+
+.onActive:active{
+  text-decoration: underline;
+}
+
+a{
+  text-decoration: none;
+}
+
 /* DA MODIFICARE */
 #menu {
-    z-index: 2;
-    display: flex;
-    align-items: center;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
   }
   
   .menu_link{

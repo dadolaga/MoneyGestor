@@ -32,7 +32,8 @@
     "react-cookie": "^6.1.1",
     "react-dom": "latest",
     "react-redux": "^8.1.3",
-    "react-router-dom": "^6.16.0"
+    "react-router-dom": "^6.16.0",
+    "typeface-fredoka-one": "^1.1.13"
   },
   "devDependencies": {
     "@types/node": "20.8.4",

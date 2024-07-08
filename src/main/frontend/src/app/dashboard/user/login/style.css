@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Kaisei+HarunoUmi&display=swap');
 .login-page{
     padding-top: 100px;
     display: flex;
@@ -108,7 +109,6 @@ input {
     border: none;
     border-radius: .15rem;
     padding: .35rem;
-
     font-size: 1em;
 }
 
@@ -118,11 +118,14 @@ input:focus {
 
 .valid {
     display: none;
-
     color: #d90429;
     font-size: small;
 }
 
+#font{
+    font-family: 'Kaisei HarunoUmi';
+    font-weight: normal;
+}
 
 .validation input ~ .valid {
     display: block;

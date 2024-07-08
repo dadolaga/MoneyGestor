@@ -90,10 +90,10 @@ export default function Page() {
             <div className="login-page__container">
                 <div className="logo_container">
                     <img src="/logo.png" alt="logo_image" className="logo_image" />
-                    <h1 className="login_text">Login</h1>
-                    <input type="text" className="information"/>
-                    <input type="text" className="information"/>
-                    <button type="submit" className="submit" onClick={login}> Login </button>
+                    <h1 className="login_text" id="font">Login</h1>
+                    <input type="text" className="information" id="font"/>
+                    <input type="text" className="information" id="font"/>
+                    <button type="submit" className="submit" id="font" onClick={login}> Login </button>
                 </div>
                 
             </div>
