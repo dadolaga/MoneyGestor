@@ -91,8 +91,15 @@ export default function Page() {
                 <div className="logo_container">
                     <img src="/logo.png" alt="logo_image" className="logo_image" />
                     <h1 className="login_text" id="font">Login</h1>
-                    <input type="text" className="information" id="font"/>
-                    <input type="text" className="information" id="font"/>
+                    <label className='text' id="font" htmlFor="username">
+                        Username
+                        <input type="text" className="information " name="username"/>
+                    </label>
+                         
+                    <label className='text' id="font" htmlFor="password">
+                        Password
+                        <input type="text" className="information "  name="password"/>
+                    </label>
                     <button type="submit" className="submit" id="font" onClick={login}> Login </button>
                 </div>
                 
