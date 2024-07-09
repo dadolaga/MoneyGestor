@@ -1,12 +1,10 @@
 "use client"
 
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { useState, useRef } from 'react';
-import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton, Typography, Button, Alert, FormHelperText, LinearProgress, CardMedia, CardContent, Snackbar, Slide } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Request, useRestApi } from '../../../request/Request';
-import { UserRegistrationForm } from '../../../Utilities/BackEndTypes';
 import { useSnackbar } from 'notistack';
+import { useRef, useState } from 'react';
+import { UserRegistrationForm } from '../../../Utilities/BackEndTypes';
+import { Request, useRestApi } from '../../../request/Request';
+import '../login/style.css';
 
 export default function Page() {
     const form = useRef(null);
@@ -107,66 +105,98 @@ export default function Page() {
     }
 
     return(
-        <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
-            <Card sx={{maxWidth: '500px'}} >
-                {showLoading && <LinearProgress sx={{width: "100%"}}/>}
-                <CardContent sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
-                    <Box>
-                        <img src='/logo.png' style={{width: '300px'}}/>
-                    </Box>
-                    <Box sx={{width: '100%'}}>
-                        <Typography sx={{paddingLeft: 2}}> <span style={{fontWeight: 'bold', fontSize: '1.3em'}}>Benvenuto!!</span> <br /> Registrati per cominciare a registrare i tuoi movimenti bancari</Typography>
-                    </Box> 
-                    <Box component={'form'} ref={form}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={6}>
-                                <TextField error={formError.lastname != null} helperText={formError.lastname} fullWidth label="Cognome" name='lastname' color='primary' required />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextField error={formError.firstname != null} helperText={formError.firstname} fullWidth label="Nome" name='firstname' color='primary' required />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField error={formError.username != null} helperText={formError.username} fullWidth label="Username" name='username' color='primary' required />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField error={formError.email != null} helperText={formError.email} fullWidth label="Email" name='email' color='primary' required />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <FormControl variant="outlined" error={formError.password != null}>
-                                    <InputLabel htmlFor="outlined-adornment-password">
-                                        Password *
-                                    </InputLabel>
-                                    <OutlinedInput
-                                        id="outlined-adornment-password"
-                                        type={showPassword ? 'text' : 'password'}
-                                        endAdornment={
-                                        <InputAdornment position="end">
-                                            <IconButton size='small' onClick={() => setShowPassword(!showPassword)} tabIndex={-1}> 
-                                                <FontAwesomeIcon
-                                                icon={showPassword? faEyeSlash : faEye}
-                                                />
-                                            </IconButton>
-                                        </InputAdornment>
-                                        }
-                                        label="Password"
-                                        name='password'
-                                    />
-                                    { formError.password != null && (
-                                        <FormHelperText >{formError.password}</FormHelperText>
-                                    )}
-                                </FormControl>
-                            </Grid>
-                            <Grid item xs={6}>
-                                <TextField error={formError.confirm != null} helperText={formError.confirm} fullWidth type='password' label="Conferma" name='confirm' color='primary' required />
-                            </Grid>
-                        </Grid>
-                    </Box>
-                    <Button variant='contained' fullWidth onClick={registrationUser}> Registrati </Button>
-                </CardContent>
-            </Card>
-            <Snackbar open={completeRegistration} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} autoHideDuration={5000} onClose={() => setCompleteRegistration(false)}>
-                <Alert severity='success' variant='filled' sx={{width: "100%"}}> Registrazione avvenuta con successo </Alert>
-            </Snackbar>
-        </Box>
+        <div className="login-page">
+            <div className="login-page__container">
+                <div className="logo_container">
+                    <img src="/logo.png" alt="logo_image" className="logo_image" />
+                    <h1 className="login_text" id="font">Benvenuto!!</h1>
+                    <div className='registration_container'>
+                        <div className='item1'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                        <div className='item2'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                        <div className='item3'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                        <div className='item4'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                        <div className='item5'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                        <div className='item6'>
+                            <input type="text" className="information " id="font"/>
+                        </div>
+                    </div>    
+                    <button type="submit" className="submit" id="font" onClick={registrationUser}> Registrati </button>
+                </div>
+                
+            </div>
+            <img src="/registration_without_background.png" alt="login_image" className="login_image" />
+        </div>
+
+        // <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
+        //     <Card sx={{maxWidth: '500px'}} >
+        //         {showLoading && <LinearProgress sx={{width: "100%"}}/>}
+        //         <CardContent sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>
+        //             <Box>
+        //                 <img src='/logo.png' style={{width: '300px'}}/>
+        //             </Box>
+        //             <Box sx={{width: '100%'}}>
+        //                 <Typography sx={{paddingLeft: 2}}> <span style={{fontWeight: 'bold', fontSize: '1.3em'}}>Benvenuto!!</span> <br /> Registrati per cominciare a registrare i tuoi movimenti bancari</Typography>
+        //             </Box> 
+        //             <Box component={'form'} ref={form}>
+        //                 <Grid container spacing={2}>
+        //                     <Grid item xs={6}>
+        //                         <TextField error={formError.lastname != null} helperText={formError.lastname} fullWidth label="Cognome" name='lastname' color='primary' required />
+        //                     </Grid>
+        //                     <Grid item xs={6}>
+        //                         <TextField error={formError.firstname != null} helperText={formError.firstname} fullWidth label="Nome" name='firstname' color='primary' required />
+        //                     </Grid>
+        //                     <Grid item xs={12}>
+        //                         <TextField error={formError.username != null} helperText={formError.username} fullWidth label="Username" name='username' color='primary' required />
+        //                     </Grid>
+        //                     <Grid item xs={12}>
+        //                         <TextField error={formError.email != null} helperText={formError.email} fullWidth label="Email" name='email' color='primary' required />
+        //                     </Grid>
+        //                     <Grid item xs={6}>
+        //                         <FormControl variant="outlined" error={formError.password != null}>
+        //                             <InputLabel htmlFor="outlined-adornment-password">
+        //                                 Password *
+        //                             </InputLabel>
+        //                             <OutlinedInput
+        //                                 id="outlined-adornment-password"
+        //                                 type={showPassword ? 'text' : 'password'}
+        //                                 endAdornment={
+        //                                 <InputAdornment position="end">
+        //                                     <IconButton size='small' onClick={() => setShowPassword(!showPassword)} tabIndex={-1}> 
+        //                                         <FontAwesomeIcon
+        //                                         icon={showPassword? faEyeSlash : faEye}
+        //                                         />
+        //                                     </IconButton>
+        //                                 </InputAdornment>
+        //                                 }
+        //                                 label="Password"
+        //                                 name='password'
+        //                             />
+        //                             { formError.password != null && (
+        //                                 <FormHelperText >{formError.password}</FormHelperText>
+        //                             )}
+        //                         </FormControl>
+        //                     </Grid>
+        //                     <Grid item xs={6}>
+        //                         <TextField error={formError.confirm != null} helperText={formError.confirm} fullWidth type='password' label="Conferma" name='confirm' color='primary' required />
+        //                     </Grid>
+        //                 </Grid>
+        //             </Box>
+        //             <Button variant='contained' fullWidth onClick={registrationUser}> Registrati </Button>
+        //         </CardContent>
+        //     </Card>
+        //     <Snackbar open={completeRegistration} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}} autoHideDuration={5000} onClose={() => setCompleteRegistration(false)}>
+        //         <Alert severity='success' variant='filled' sx={{width: "100%"}}> Registrazione avvenuta con successo </Alert>
+        //     </Snackbar>
+        // </Box>
     )
 }

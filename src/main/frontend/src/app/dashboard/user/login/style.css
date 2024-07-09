@@ -8,13 +8,12 @@
 
 .login-page__container{
     display: flex;
-    width: 464px;
-    height: 509px;
     border-radius: 50px;
     background-color: #1E1E1E;
     align-items: center;
     flex-direction: column;
     justify-content: center;
+    padding: 40px;
 }
 
 .logo_container{
@@ -23,6 +22,40 @@
     justify-items: center;
     align-items: center;
 }
+
+.registration_container{
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    grid-template-areas:
+        'name surname'
+        'username username'
+        'email email'
+        'password checkPassword';
+    gap: 40px;
+}
+.item1{
+    grid-area: name;
+}
+.item2{
+    grid-area: surname;
+}
+.item3{
+    grid-area: username;
+}
+.item4{
+    grid-area: email;
+}
+.item5{
+    grid-area: password;
+}
+.item6{
+    grid-area: checkPassword;
+}
+
+.registration_container > div {
+    width: -webkit-fill-available;
+  }
 
 .logo_image{
     display: flex;
@@ -73,7 +106,7 @@
 
 .login_image{
     width: 480px;
-    height: 509px;
+    height: auto;
     object-fit: contain;
 }
 
