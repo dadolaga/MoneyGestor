@@ -14,21 +14,21 @@ export default function Header() {
     const [registerUnderline, setRegisterUnderline] = useState(false);
     const [homepageUnderline, setHomepageUnderline] = useState(false);
 
-    const handleLoginClick = (location) => {
+    const LoginClickHandler = (location) => {
         setLoginUnderline(true);
         setHomepageUnderline(false)
         setRegisterUnderline(false);
         router.push(location);
     };
 
-    const handleRegisterClick = (location) => {
+    const RegisterClickHandler = (location) => {
         setLoginUnderline(false);
         setHomepageUnderline(false)
         setRegisterUnderline(true);
         router.push(location);
     };
 
-    const handleHomepageClick = (location) => {
+    const HomepageClickHandler = (location) => {
         setLoginUnderline(false);
         setRegisterUnderline(false);
         setHomepageUnderline(true);
@@ -89,11 +89,11 @@ export default function Header() {
                     </ul>
                 </nav>
             </div>
-            <a  className={homepageUnderline? 'underlineHomepage' :'link_homepage pointer fontNav'} onClick={() => handleHomepageClick('/dashboard')}>Money Gestor</a>
+            <a  className={homepageUnderline? 'underlineHomepage' :'link_homepage pointer fontNav'} onClick={() => HomepageClickHandler('/dashboard')}>Money Gestor</a>
             <div className="menu-bg" id="menu-bg"></div>
             <nav className='navbar_right'>
-                <a className={loginUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>handleLoginClick('/dashboard/user/login')}>Login</a>
-                <a className={registerUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>handleRegisterClick('/dashboard/user/new')}>Register</a>
+                <a className={loginUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>LoginClickHandler('/dashboard/user/login')}>Login</a>
+                <a className={registerUnderline? 'underline' : 'link pointer fontNav'} onClick={()=>RegisterClickHandler('/dashboard/user/new')}>Register</a>
             </nav>
             
         </div>
