@@ -1,5 +1,6 @@
 "use client"
 
+import { Icon } from '@iconify-icon/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCookies } from 'react-cookie';
@@ -83,9 +84,17 @@ export default function Header() {
                 
                 <nav className="nav" id="nav">
                     <ul>
-                        <li><a className="pointer font" onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a></li>
-                        <li><a className="pointer font" onClick={() => router.push('/dashboard/transaction')}>Transizioni</a></li>
-                        <li><a className="pointer font" >Planner</a></li>
+                        <li className='icon_menu'>
+                        <Icon icon="fluent:wallet-credit-card-32-filled" width="2rem" height="2rem"  style={{color: 'white', paddingRight: '5px'}} />
+                            <a className="pointer font" onClick={() => router.push('/dashboard/wallet')}>Portfaoglio</a>
+                        </li>
+                        <li className='icon_menu'>
+                            <Icon icon="mdi:swap-horizontal-bold" width="2rem" height="2rem"  style={{color: 'white', paddingRight: '5px'}} />
+                            <a className="pointer font" onClick={() => router.push('/dashboard/transaction')}>Transizioni</a>
+                            </li>
+                        <li className='icon_menu'>
+                            <a className="pointer font" >Planner</a>
+                        </li>
                     </ul>
                 </nav>
             </div>

@@ -44,6 +44,10 @@
   font-family: 'Fredoka One';
   cursor: pointer;
 }
+.icon_menu{
+  display: flex;
+  align-items: center;
+}
 
 .fontNav{
   font-family: 'Fredoka One';

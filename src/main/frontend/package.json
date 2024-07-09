@@ -36,6 +36,7 @@
     "typeface-fredoka-one": "^1.1.13"
   },
   "devDependencies": {
+    "@iconify-icon/react": "^2.1.0",
     "@types/node": "20.8.4",
     "eslint": "latest",
     "eslint-config-next": "latest"
