@@ -63,6 +63,11 @@
     width: 400px;
 }
 
+.text{
+    color: white;
+    font-size: 1em;
+}
+
 .login_text{
     color: white;
     font-size: 2em;

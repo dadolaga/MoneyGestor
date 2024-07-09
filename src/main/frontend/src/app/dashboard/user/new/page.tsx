@@ -112,22 +112,28 @@ export default function Page() {
                     <h1 className="login_text" id="font">Benvenuto!!</h1>
                     <div className='registration_container'>
                         <div className='item1'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="name">Nome</label>
+                            <input type="text" className="information "  name="name"/>
                         </div>
                         <div className='item2'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="surname">Cognome</label>
+                            <input type="text" className="information "  name="surname"/>
                         </div>
                         <div className='item3'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="username">Username</label>
+                            <input type="text" className="information " name="username"/>
                         </div>
                         <div className='item4'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="email">Email</label>
+                            <input type="text" className="information " name="email"/>
                         </div>
                         <div className='item5'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="password">Password</label>
+                            <input type="text" className="information "  name="password"/>
                         </div>
                         <div className='item6'>
-                            <input type="text" className="information " id="font"/>
+                            <label className='text' id="font" htmlFor="checkPass">Conferma</label>
+                            <input type="text" className="information "  name="checkPass"/>
                         </div>
                     </div>    
                     <button type="submit" className="submit" id="font" onClick={registrationUser}> Registrati </button>
