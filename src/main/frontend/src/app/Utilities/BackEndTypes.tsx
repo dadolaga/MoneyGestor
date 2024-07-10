@@ -1,4 +1,4 @@
-import { IPrintable } from "./Interfaces";
+import { IFormMultiType } from "./Interfaces";
 
 export interface Response<T> {
     code: number,
@@ -57,7 +57,7 @@ export interface ReceiveId {
     id: number,
 }
 
-export class Color implements IPrintable {
+export class Color implements IFormMultiType {
     public color: string;
 
     constructor(color: string) {
@@ -66,5 +66,9 @@ export class Color implements IPrintable {
 
     print(): string | JSX.Element {
         return (<><span style={{height: '20px', width: '20px', backgroundColor: '#' + this.color, marginRight: "10px"}}></span>#{this.color}</>);
+    }
+
+    getKey(): string {
+        return this.color;
     }
 }

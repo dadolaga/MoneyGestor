@@ -66,7 +66,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
     function loadWallet() {
         restApi.Wallet.Get(walletId)
-        .then(wallet => setWallet(wallet));
+        .then(wallet => setForm(form => form.setValues({...wallet, color: new Color(wallet.color)})));
     }
 
     const loadColor = () => {

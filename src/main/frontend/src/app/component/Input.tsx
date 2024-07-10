@@ -1,7 +1,7 @@
 import { FilledInputProps, FormControl, FormHelperText, InputLabel, InputProps, MenuItem, OutlinedInputProps, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { Form } from "../form/Form";
-import { ChangeEventHandler, Dispatch, SetStateAction } from "react";
-import { IPrintable } from "../Utilities/Interfaces";
+import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from "react";
+import { IFormMultiType } from "../Utilities/Interfaces";
 
 interface IInput {
     type: "text" | "password" | "multi",
@@ -11,10 +11,20 @@ interface IInput {
     label: string,
     disabled: boolean,
     InputProps?: Partial<FilledInputProps> | Partial<OutlinedInputProps> | Partial<InputProps>,
-    values?: IPrintable[],
+    values?: IFormMultiType[],
 }
 
 export default function Input(props: IInput) {
+    const [value, setValue] = useState<string>("");
+
+    useEffect(() => {
+        let value = props.form.getStringValue(props.name);
+        if (value) {
+            console.log(value);
+            setValue(value);
+        }
+    }, [props.form])
+
     let element = undefined;
 
     const textChangeHandler = (name: string):  ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> => (action) => {
@@ -22,7 +32,7 @@ export default function Input(props: IInput) {
     }
 
     const selectChangeHandler = (name: string):  (event: SelectChangeEvent<string>) => void => (action) => {
-        props.setForm(form => form.setValue(name, action.target.value));
+        props.setForm(form => form.setValue(name, FormMultiTypeUtilities.findByKey(props.values, action.target.value)));
     }
 
     switch(props.type) {
@@ -33,7 +43,7 @@ export default function Input(props: IInput) {
                 helperText={props.form.getError(props.name)}
                 label={props.label}
                 name={props.name}
-                value={props.form.getStringValue(props.name)}
+                value={value}
                 onChange={textChangeHandler(props.name)}
                 InputProps={props.InputProps}
                 disabled={props.disabled} />
@@ -46,7 +56,7 @@ export default function Input(props: IInput) {
                 helperText={props.form.getError(props.name)}
                 label={props.label}
                 name={props.name}
-                value={props.form.getStringValue(props.name)}
+                value={value}
                 onChange={textChangeHandler(props.name)}
                 InputProps={props.InputProps}
                 disabled={props.disabled} />
@@ -63,11 +73,11 @@ export default function Input(props: IInput) {
                     labelId="select-color"
                     label="Colore"
                     name={props.name}
-                    value={props.form.getValue(props.name)}
+                    value={value}
                     onChange={selectChangeHandler(props.name)}
                     disabled={props.disabled} >
                     { props.values?.map((value, index) => {
-                        return (<MenuItem key={index} value={value as any}>{value.print()}</MenuItem>)
+                        return (<MenuItem key={index} value={value.getKey()}>{value.print()}</MenuItem>)
                     }) }
                 </Select>
                 <FormHelperText>{props.form.getError(props.name)}</FormHelperText>
@@ -76,4 +86,10 @@ export default function Input(props: IInput) {
     }
 
     return element;
+}
+
+class FormMultiTypeUtilities {
+    public static findByKey(source: IFormMultiType[], key: string): any {
+        return source.find(value => value.getKey() === key);
+    }
 }

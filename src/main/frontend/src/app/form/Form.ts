@@ -1,3 +1,5 @@
+import { IFormMultiType } from "../Utilities/Interfaces";
+
 export interface FormSettings {
     name: string,
     checks: Check[],
@@ -9,24 +11,31 @@ export interface Check {
 }
 
 export class Form {
-    private _values: string[] | any[];
+    private _values: string[] | IFormMultiType[];
     private _errors: string[];
     private _settings: FormSettings[];
 
-    constructor(settings: FormSettings[], values?: string[], errors?: string[]) {
+    constructor(settings: FormSettings[], values?: string[] | IFormMultiType[], errors?: string[]) {
         this._values = values ?? []; 
         this._errors = errors ?? []; 
         this._settings = settings;
     }
 
-    public setValue(name: string, value: string): Form {
+    public setValue(name: string, value: string | IFormMultiType): Form {
         this._values[name] = value;
         
         return new Form(this._settings, this._values, this._errors);
     }
 
-    public getStringValue(name: string): string {        
-        return this._values[name] as string;
+    public getStringValue(name: string): string {   
+        if(typeof(this._values[name]) === "number")
+            return "" + this._values[name];
+
+        try {
+            return this._values[name]?.getKey() ?? this._values[name];
+        } catch (Error) {
+            return this._values[name];
+        }
     }
 
     public getValue(name: string): any {        
@@ -43,6 +52,14 @@ export class Form {
 
     public setManualError(name: string, error: string): Form {
         this._errors[name] = error;
+
+        return new Form(this._settings, this._values, this._errors);
+    }
+
+    public setValues(object: any): Form {
+        Object.keys(object).forEach(key => {
+            this._values[key] = object[key];
+        });
 
         return new Form(this._settings, this._values, this._errors);
     }
