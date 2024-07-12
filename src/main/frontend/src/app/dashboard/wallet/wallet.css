@@ -1,17 +1,12 @@
 .popUp_page{
     padding-top: 100px;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
+    
 }
 
 .popUp_page__container{
-    display: flex;
     border-radius: 50px;
     background-color: #121212;
-    align-items: center;
     flex-direction: column;
-    justify-content: center;
     padding: 40px;
 }
 
@@ -19,7 +14,11 @@
     display: grid;
     grid-row-gap: 40px;
     justify-items: center;
-    align-items: center;
+}
+
+.input_text{
+    display: flex;
+    gap: 40px;
 }
 
 .popUp_text{
@@ -76,4 +75,8 @@ input:focus {
 
 .submit:hover{
     background-color: #FF0000;
+}
+
+.color_picker{
+    margin-left: 40px;
 }

@@ -171,23 +171,25 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             <div className="popUp_page__container">
                 <div className="popUp_container">
                     <h1 className="popUp_text" id="font">Crea un nuovo portafoglio</h1>
-                    <label className='text' id="font" htmlFor="username">
-                        Nome portafoglio
-                        <input type="text" className="information " id="username" name="username" value={name}
-                        onChange={(e) => setName(e.target.value)}/>
-                    </label>
-
-                    
-                    <label htmlFor="quantity" className='text' id="font">
-                        Ammontare
-                        <input type="number" className="information " id="quantity" name="quantity" min="1" max="1000000" value={number}
-                        onChange={(e) => setNumber(e.target.value)}/>
-                    </label>
+                    <div className="input_text">
+                        <label className='text' id="font" htmlFor="username">
+                            Nome portafoglio
+                            <input type="text" className="information " id="username" name="username" value={name}
+                            onChange={(e) => setName(e.target.value)}/>
+                        </label>
+                        
+                        <label htmlFor="quantity" className='text' id="font">
+                            Ammontare
+                            <input type="number" className="information " id="quantity" name="quantity" min="1" max="1000000" value={number}
+                            onChange={(e) => setNumber(e.target.value)}/>
+                        </label>
+                    </div>
 
                     <label htmlFor="favcolor" className="popUp_text" id="font">
                         Scegli un colore 
-                        <input type="color" id="favcolor" name="favcolor" value="#ff0000"/>
+                        <input type="color" className="color_picker" id="favcolor" name="favcolor" value="#ff0000"/>
                     </label>
+
                     <button type="submit" value="Submit" className="submit" id="font" onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "Salva"}  </button>
                     <button type="reset" value="Reset" className="submit" id="font" onClick={onClickResetHandler}> Annulla </button>
                 </div>
