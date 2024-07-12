@@ -1,8 +1,8 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, TextField } from "@mui/material";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { CreateWalletForm } from "../../Utilities/BackEndTypes";
 import axios from "../../axios/axios";
 import { Request, useRestApi } from "../../request/Request";
-import { CreateWalletForm } from "../../Utilities/BackEndTypes";
+import './wallet.css';
 
 const WALLET_DEFAULT: CreateWalletForm = {
     name: "",
@@ -25,6 +25,13 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     const [loading, setLoading] = useState<boolean>(false);
     const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
     const [colors, setColors] = useState([]);
+    const [name, setName] = useState("");
+    const [number, setNumber] = useState("");
+
+    const onClickResetHandler = () => {
+        setName('');
+        setNumber('');
+    }
 
     const restApi = useRestApi();
 
@@ -155,67 +162,159 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
     const onCloseHandler = () => {
         onClose(false);
+        
     }
 
     return (
-        <Dialog open={open} onClose={onClose} PaperProps={{}}>
-            {loading && <LinearProgress />}
-            <DialogTitle color={'#' + parseInt(wallet.color)}>Crea nuovo portafoglio</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                </DialogContentText>
-                <Grid ref={form} container spacing={2} sx={{ marginTop: 1 }} component="form">
-                    <Grid item xs={8}>
-                        <TextField
-                            fullWidth 
-                            error={nameError != null} 
-                            helperText={nameError} 
-                            label="Nome" 
-                            name="name" 
-                            value={wallet.name}
-                            onChange={(text) => setWallet({ name: text.target.value, value: wallet.value, color: wallet.color })} 
-                            disabled={loading} />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField
-                            fullWidth
-                            error={valueError != null}
-                            helperText={valueError}
-                            label="Valore iniziale"
-                            name="value"
-                            value={wallet.value}
-                            onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
-                            InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
-                            disabled={loading || walletId != undefined} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <FormControl fullWidth error={colorError != null}>
-                            <InputLabel id="select-color" >Color</InputLabel>
-                            <Select
-                                sx={{
-                                    ".MuiSelect-select": {
-                                        display: 'inline-flex'
-                                    }
-                                }}
-                                labelId="select-color"
-                                label="Colore"
-                                name="color"
-                                value={wallet.color}
-                                onChange={(text) => setWallet({ name: wallet.name, value: wallet.value, color: text.target.value })}
-                                disabled={loading} >
-                                { colors.map((value, index) => {
-                                    return (<MenuItem key={index} value={value}><span style={{height: '20px', width: '20px', backgroundColor: '#' + value, marginRight: "10px"}}></span>#{value}</MenuItem>)
-                                }) }
-                            </Select>
-                            <FormHelperText>{colorError}</FormHelperText>
-                        </FormControl>
-                    </Grid>
-                </Grid>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onCloseHandler} color="secondary" >Annulla</Button>
-                <Button onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "salva"}</Button>
-            </DialogActions>
-        </Dialog>
+
+        <div className="popUp_page" >
+            <div className="popUp_page__container">
+                <div className="popUp_container">
+                    <h1 className="popUp_text" id="font">Crea un nuovo portafoglio</h1>
+                    <label className='text' id="font" htmlFor="username">
+                        Nome portafoglio
+                        <input type="text" className="information " id="username" name="username" value={name}
+                        onChange={(e) => setName(e.target.value)}/>
+                    </label>
+
+                    
+                    <label htmlFor="quantity" className='text' id="font">
+                        Ammontare
+                        <input type="number" className="information " id="quantity" name="quantity" min="1" max="1000000" value={number}
+                        onChange={(e) => setNumber(e.target.value)}/>
+                    </label>
+
+                    <label htmlFor="favcolor" className="popUp_text" id="font">
+                        Scegli un colore 
+                        <input type="color" id="favcolor" name="favcolor" value="#ff0000"/>
+                    </label>
+                    <button type="submit" value="Submit" className="submit" id="font" onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "Salva"}  </button>
+                    <button type="reset" value="Reset" className="submit" id="font" onClick={onClickResetHandler}> Annulla </button>
+                </div>
+                
+            </div>
+        </div>
+        //finestra pop-up per aggiungere
+        
+        // <div className="dialog" style={{ color: 'red', backgroundColor: 'gray'}}>
+        //     <div className="dialog-title" >
+        //         Crea nuovo portafoglio
+        //     </div>
+        //     {loading && <div className="linear-progress"></div>}
+        //     <div className="dialog-content">
+        //         <form ref={form}>
+        //         <div className="grid-container" style={{ marginTop: 1 }}>
+        //             <div className="grid-item" >
+        //             <input
+        //                 type="text"
+        //                 name="name"
+        //                 value={wallet.name}
+        //                 onChange={(e) => setWallet({ name: e.target.value, value: wallet.value, color: wallet.color })}
+        //                 disabled={loading}
+        //             />
+        //             </div>
+        //             <div className="grid-item" >
+        //             <input
+        //                 type="number"
+        //                 name="value"
+        //                 value={wallet.value}
+        //                 onChange={(e) => setWallet({ name: wallet.name, value: parseInt(e.target.value), color: wallet.color })}
+        //                 disabled={loading || walletId != undefined}
+        //             />
+        //             <span className="input-adornment">€</span>
+        //             </div>
+        //             <div className="grid-item" >
+        //             <select
+        //                 name="color"
+        //                 value={wallet.color}
+        //                 onChange={(e) => setWallet({ name: wallet.name, value: wallet.value, color: e.target.value })}
+        //                 disabled={loading}
+        //             >
+        //                 {colors.map((value, index) => (
+        //                 <option key={index} value={value}>
+        //                     <span
+        //                     style={{
+        //                         height: '20px',
+        //                         width: '20px',
+        //                         backgroundColor: '#' + value,
+        //                         marginRight: '10px',
+        //                     }}
+        //                     ></span>
+        //                     #{value}
+        //                 </option>
+        //                 ))}
+        //             </select>
+        //             <span className="form-helper-text">{colorError}</span>
+        //             </div>
+        //         </div>
+        //         </form>
+        //     </div>
+        //     <div className="dialog-actions">
+        //         <button onClick={onCloseHandler} color="secondary">Annulla</button>
+        //         <button onClick={saveOrModifyHandler} disabled={loading}>
+        //             {walletId != null ? "modifica" : "salva"}
+        //         </button>
+        //     </div>
+        //     </div>
+        
+        // <Dialog open={open} onClose={onClose} PaperProps={{}}>
+        //     {loading && <LinearProgress />}
+        //     <DialogTitle color={'#' + parseInt(wallet.color)}>Crea nuovo portafoglio</DialogTitle>
+        //     <DialogContent>
+        //         <DialogContentText>
+        //         </DialogContentText>
+        //         <Grid ref={form} container spacing={2} sx={{ marginTop: 1 }} component="form">
+        //             <Grid item xs={8}>
+        //                 <TextField
+        //                     fullWidth 
+        //                     error={nameError != null} 
+        //                     helperText={nameError} 
+        //                     label="Nome" 
+        //                     name="name" 
+        //                     value={wallet.name}
+        //                     onChange={(text) => setWallet({ name: text.target.value, value: wallet.value, color: wallet.color })} 
+        //                     disabled={loading} />
+        //             </Grid>
+        //             <Grid item xs={4}>
+        //                 <TextField
+        //                     fullWidth
+        //                     error={valueError != null}
+        //                     helperText={valueError}
+        //                     label="Valore iniziale"
+        //                     name="value"
+        //                     value={wallet.value}
+        //                     onChange={(text) => setWallet({ name: wallet.name, value: parseInt(text.target.value), color: wallet.color })}
+        //                     InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
+        //                     disabled={loading || walletId != undefined} />
+        //             </Grid>
+        //             <Grid item xs={12}>
+        //                 <FormControl fullWidth error={colorError != null}>
+        //                     <InputLabel id="select-color" >Color</InputLabel>
+        //                     <Select
+        //                         sx={{
+        //                             ".MuiSelect-select": {
+        //                                 display: 'inline-flex'
+        //                             }
+        //                         }}
+        //                         labelId="select-color"
+        //                         label="Colore"
+        //                         name="color"
+        //                         value={wallet.color}
+        //                         onChange={(text) => setWallet({ name: wallet.name, value: wallet.value, color: text.target.value })}
+        //                         disabled={loading} >
+        //                         { colors.map((value, index) => {
+        //                             return (<MenuItem key={index} value={value}><span style={{height: '20px', width: '20px', backgroundColor: '#' + value, marginRight: "10px"}}></span>#{value}</MenuItem>)
+        //                         }) }
+        //                     </Select>
+        //                     <FormHelperText>{colorError}</FormHelperText>
+        //                 </FormControl>
+        //             </Grid>
+        //         </Grid>
+        //     </DialogContent>
+        //     <DialogActions>
+        //         <Button onClick={onCloseHandler} color="secondary" >Annulla</Button>
+        //         <Button onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "salva"}</Button>
+        //     </DialogActions>
+        // </Dialog>
     );
 }

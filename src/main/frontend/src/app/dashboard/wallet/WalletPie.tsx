@@ -1,11 +1,7 @@
 import { Box } from "@mui/material";
 import { ResponsivePie } from "@nivo/pie";
-import { convertNumberToValue } from "../../Utilities/Utilities";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import axios from "../../axios/axios";
-import { useCookies } from "react-cookie";
-import { useRestApi } from "../../request/Request";
 import { Wallet } from "../../Utilities/BackEndTypes";
+import { convertNumberToValue } from "../../Utilities/Utilities";
 
 interface IWalletPie {
     wallets: Wallet[],

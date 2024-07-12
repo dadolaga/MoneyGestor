@@ -1,7 +1,6 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useRestApi } from "../../request/Request";
 import { Wallet } from "../../Utilities/BackEndTypes";
+import { useRestApi } from "../../request/Request";
 
 export default function DeleteDialog({open, onClose, walletId}) {
     const [showLoading, setShowLoading] = useState(false);
@@ -29,20 +28,21 @@ export default function DeleteDialog({open, onClose, walletId}) {
     }
 
     return (
-        <Dialog open={open} onClose={() => onClose(false)}>
-            {showLoading && <LinearProgress />}
-            <DialogTitle>
-                Confermi di voler cancellare il portafoglio
-            </DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Sei sicuro di voler cancellare il portafoglio &quot;{wallet?.name}&quot;?
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} color="secondary">No</Button>
-                <Button onClick={deleteWallet}>si</Button>
-            </DialogActions>
-        </Dialog>
+        <h1 style={{color: 'white'}}>ciao</h1>
+        // <Dialog open={open} onClose={() => onClose(false)}>
+        //     {showLoading && <LinearProgress />}
+        //     <DialogTitle>
+        //         Confermi di voler cancellare il portafoglio
+        //     </DialogTitle>
+        //     <DialogContent>
+        //         <DialogContentText>
+        //             Sei sicuro di voler cancellare il portafoglio &quot;{wallet?.name}&quot;?
+        //         </DialogContentText>
+        //     </DialogContent>
+        //     <DialogActions>
+        //         <Button onClick={onClose} color="secondary">No</Button>
+        //         <Button onClick={deleteWallet}>si</Button>
+        //     </DialogActions>
+        // </Dialog>
     )
 }

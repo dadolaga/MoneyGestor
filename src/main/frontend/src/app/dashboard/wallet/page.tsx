@@ -2,11 +2,11 @@
 
 import { Box } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import WalletTable from './walletTable'
 import { Wallet } from '../../Utilities/BackEndTypes'
 import { useRestApi } from '../../request/Request'
-import { WalletPie } from './WalletPie'
 import { Order } from '../base/Order'
+import { WalletPie } from './WalletPie'
+import WalletTable from './walletTable'
 
 export default function Page() {
     const tableWallet = useRef();
