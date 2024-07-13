@@ -84,6 +84,11 @@ export class Request {
             return this.baseRequestGet("transaction/list?sort=" + encodeURI(listData.order))
             .then(response => response as Transaction[])
         },
+
+        Delete: async (id: number): Promise<void> => {
+            return this.baseRequestPost("transaction/delete/" + id)
+            .then(response => response as void)
+        }
     }
 
     public constructor(router: AppRouterInstance, 

@@ -45,21 +45,26 @@ export default function Page() {
         graph.current.loadTransaction();
     }
 
-    function deleteTransactionHandler() {
-        setOpenTransactionDeleteDialog(false);
-
-        graph.current.loadTransaction();
-    }
-
     function openTransactionDialogHandler() {
         setTransactionId(null);
         setOpenTransactionDialog(true);
     }
+
+    const closeDeleteDialogHandler = (isToReload: boolean) => {
+        if(isToReload)
+            loadTransaction();
+
+        setOpenTransactionDeleteDialog(false);
+    } 
     
     return (
         <>
             <TransactionDialog open={openTransactionDialog} onClose={() => setOpenTransactionDialog(false)} onSave={saveTransactionHandler} transactionId={transactionId} />
-            <DeleteDialog open={openTransactionDeleteDialog} onClose={() => setOpenTransactionDeleteDialog(false)} transactionId={transactionId} transactionDescription={transactionDescription} onDelete={deleteTransactionHandler}/>
+            <DeleteDialog 
+                open={openTransactionDeleteDialog} 
+                onClose={closeDeleteDialogHandler} 
+                transactionId={transactionId} 
+                transactionDescription={transactionDescription} />
             <Box sx={{height: '100%', display: 'flex', flexDirection: 'column'}} >
                 <Box sx={{height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1}}>
                     <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>

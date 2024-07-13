@@ -126,27 +126,20 @@ public class TransactionRest extends BaseRest {
         } catch (NoSuchElementException ignored) {
             throw MoneyGestorErrorSample.mapOfError.get(0);
         }
+    }*/
+
+    @PostMapping("/delete/{id}")
+    public Response deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
+
+        transactionGestor.deleteById(userLogged, id);
+
+        return Response.ok();
     }
 
-    @GetMapping("/delete/{id}")
-    public void deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
-        var user = userRepository.findFromToken(authorization);
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        TransactionDb transactionExample = new TransactionDb();
-        transactionExample.setUserId(userGestor.getId());
-        transactionExample.setId(id);
-
-        transactionRepository.delete(transactionExample);
-    }
-
-    @GetMapping("/graph")
+    /*@GetMapping("/graph")
     public List<LineGraph<LocalDate, BigDecimal>> getGraph(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
