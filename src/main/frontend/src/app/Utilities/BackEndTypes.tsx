@@ -68,6 +68,16 @@ export interface ReceiveId {
     id: number,
 }
 
+export interface Transaction {
+    id: number;
+    description?: string;
+    value: number;
+    date: string;
+    wallet: Wallet;
+    walletDestination?: Wallet;
+    type: TransactionType;
+}
+
 export class Color implements IFormMultiType {
     public color: string;
 

@@ -1,8 +1,5 @@
 package org.laga.moneygestor.services.models;
 
-import org.laga.moneygestor.db.entity.TransactionTypeDb;
-import org.laga.moneygestor.db.entity.WalletDb;
-
 import java.math.BigDecimal;
 
 public class Transaction {
@@ -10,9 +7,9 @@ public class Transaction {
     private String description;
     private BigDecimal value;
     private String date;
-    private WalletDb wallet;
-    private WalletDb walletDestination;
-    private TransactionTypeDb type;
+    private Wallet wallet;
+    private Wallet walletDestination;
+    private TransactionType type;
 
     public Long getId() {
         return id;
@@ -46,27 +43,27 @@ public class Transaction {
         this.date = date;
     }
 
-    public WalletDb getWallet() {
+    public Wallet getWallet() {
         return wallet;
     }
 
-    public void setWallet(WalletDb wallet) {
+    public void setWallet(Wallet wallet) {
         this.wallet = wallet;
     }
 
-    public WalletDb getWalletDestination() {
+    public Wallet getWalletDestination() {
         return walletDestination;
     }
 
-    public void setWalletDestination(WalletDb walletDestination) {
+    public void setWalletDestination(Wallet walletDestination) {
         this.walletDestination = walletDestination;
     }
 
-    public TransactionTypeDb getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(TransactionTypeDb type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 }

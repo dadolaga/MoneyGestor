@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
+import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -78,7 +78,12 @@ export class Request {
         Create: async (transaction: TransactionForm): Promise<ReceiveId> => {
             return this.baseRequestPost("transaction/new", transaction)
             .then(response => response as ReceiveId)
-        }
+        },
+
+        List: async (listData: ListData): Promise<Transaction[]> => {
+            return this.baseRequestGet("transaction/list?sort=" + encodeURI(listData.order))
+            .then(response => response as Transaction[])
+        },
     }
 
     public constructor(router: AppRouterInstance, 

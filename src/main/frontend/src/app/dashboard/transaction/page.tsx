@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Button } from "@mui/material";
@@ -8,27 +8,46 @@ import TransactionDialog from "./TransactionDialog";
 import { TransactionTable } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
 import { TransactionGraph } from './TransactionGraph';
+import { Transaction } from '../../Utilities/BackEndTypes';
+import { useRestApi } from '../../request/Request';
+import { Order } from '../base/Order';
 
 export default function Page() {
-    const table = useRef(null);
     const graph = useRef(null);
+
+    const [transactions, setTransactions] = useState<Transaction[]>(undefined);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [sort, setSort] = useState<Order>(new Order());
+
+    const restApi = useRestApi();
 
     const [openTransactionDialog, setOpenTransactionDialog] = useState(false);
     const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState(false);
     const [transactionId, setTransactionId] = useState(null);
     const [transactionDescription, setTransactionDescription] = useState(null);
 
+    useEffect(() => {
+        loadTransaction();
+    }, [sort]);
+
+    function loadTransaction() {
+        setLoading(true);
+
+        restApi.Transaction.List({ order: sort.toUrlString() })
+        .then(transactions => setTransactions(transactions))
+        .catch()
+        .finally(() => setLoading(false));
+    }
+
     function saveTransactionHandler() {
         setOpenTransactionDialog(false);
 
-        table.current.loadTransaction();
         graph.current.loadTransaction();
     }
 
     function deleteTransactionHandler() {
         setOpenTransactionDeleteDialog(false);
 
-        table.current.loadTransaction();
         graph.current.loadTransaction();
     }
 
@@ -45,7 +64,11 @@ export default function Page() {
                 <Box sx={{height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1}}>
                     <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
                     <TransactionTable 
-                        ref={table} 
+                        transactions={transactions}
+                        loading={loading}
+                        sort={sort}
+                        setSort={setSort}
+                        refreshTransactions={loadTransaction}
                         setOpenTransactionDialog={setOpenTransactionDialog}
                         setTransactionDialogId={setTransactionId} 
                         setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog} 

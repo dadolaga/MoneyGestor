@@ -74,6 +74,18 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         }
     }
 
+    public List<TransactionDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM TransactionDb WHERE userOfTransactionId = :userId AND " +
+                            "(transactionDestinationId IS NULL OR value > 0)"
+                            + SortGestor.toSql(sortString), TransactionDb.class)
+                    .setParameter("userId", userLogged.getId())
+                    .setFirstResult(page * limit)
+                    .setMaxResults(limit)
+                    .list();
+        }
+    }
+
     @Override
     protected Long insert(Session session, UserDb userLogged, TransactionDb transactionDb) {
         return insert(session, userLogged, transactionDb, true);
@@ -234,10 +246,11 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         transaction.setId(transactionDb.getId());
         transaction.setDescription(transactionDb.getDescription());
         transaction.setValue(transactionDb.getValue());
-        transaction.setWallet(transactionDb.getWallet());
-        transaction.setWalletDestination(transactionDb.getTransactionDestination() != null? transactionDb.getTransactionDestination().getWallet() : null);
+        transaction.setWallet(WalletGestor.convertToRest(transactionDb.getWallet()));
+        transaction.setWalletDestination(transactionDb.getTransactionDestination() != null?
+                WalletGestor.convertToRest(transactionDb.getTransactionDestination().getWallet()) : null);
         transaction.setDate(transactionDb.getDate().format(DateTimeFormatter.ISO_DATE));
-        transaction.setType(transactionDb.getType());
+        transaction.setType(TransactionTypeGestor.convertToRest(transactionDb.getType()));
 
         return transaction;
     }

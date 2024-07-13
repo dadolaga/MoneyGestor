@@ -48,25 +48,20 @@ public class TransactionRest extends BaseRest {
         return Response.sendId(idInserted);
     }
 
-    /*@GetMapping("/list")
-    public List<TransactionTableView> getTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
-        var user = userRepository.findFromToken(authorization);
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
+    @GetMapping("/list")
+    public Response getTransactionList(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                     @RequestParam(name = "sort", required = false) String sortParams,
+                                                     @RequestParam(name = "limit", required = false, defaultValue = "25") Integer limitParams,
+                                                     @RequestParam(name = "page", required = false, defaultValue = "0") Integer pageParams) {
+        UserDb userLogged = getUserLogged(authorization);
 
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
 
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
+        var listOfTransactions = transactionGestor.list(userLogged, sortParams, limitParams, pageParams);
 
-        TransactionTableView transactionExample = new TransactionTableView();
-        transactionExample.setUser(userGestor.getId());
-
-        Sort sort = SortGestor.decode(sortParams);
-
-        return transactionTableRepository.findAll(Example.of(transactionExample), sort);
+        return Response.create(TransactionGestor.convertToRest(listOfTransactions));
     }
-
+/*
     @GetMapping("/get/{id}")
     public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
         var user = userRepository.findFromToken(authorization);
