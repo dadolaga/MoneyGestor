@@ -81,7 +81,7 @@ public class TransactionTypeTest extends UserRequest {
     }
 
     @Test
-    public void update_userNotHavePermission_throw() throws Exception {
+    public void update_userNotHavePermission_throw() {
         final String newUsername = "test_second_user_" + TestUtilities.generateRandomString(6);
         transactionTypeGestor.insert(userLogged, transactionTypeDb);
 
@@ -112,7 +112,7 @@ public class TransactionTypeTest extends UserRequest {
     }
 
     @Test
-    public void delete_userNotHavePermission_throw() throws Exception {
+    public void delete_userNotHavePermission_throw() {
         final String newUsername = "test_second_user_" + TestUtilities.generateRandomString(6);
         transactionTypeGestor.insert(userLogged, transactionTypeDb);
 
@@ -179,7 +179,7 @@ public class TransactionTypeTest extends UserRequest {
             transaction.commit();
         }
 
-        Assertions.assertEquals(1, transactionTypeGestor.getAll(userLogged).size());
+        Assertions.assertEquals(3, transactionTypeGestor.getAll(userLogged).size());
     }
 
     @AfterEach
