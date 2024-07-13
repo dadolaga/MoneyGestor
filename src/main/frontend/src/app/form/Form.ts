@@ -38,8 +38,8 @@ export class Form {
         }
     }
 
-    public getValue(name: string): any {        
-        return this._values[name] as any;
+    public getValue(name: string): IFormMultiType {        
+        return this._values[name] as IFormMultiType;
     }
 
     public getError(name: string): string {

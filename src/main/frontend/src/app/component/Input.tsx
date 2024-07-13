@@ -2,9 +2,17 @@ import { FilledInputProps, FormControl, FormHelperText, InputLabel, InputProps, 
 import { Form } from "../form/Form";
 import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { IFormMultiType } from "../Utilities/Interfaces";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import dayjs, { Dayjs } from "dayjs";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import * as React from 'react';
+import 'dayjs/locale/it'
+import 'dayjs/locale/en'
 
 interface IInput {
-    type: "text" | "password" | "multi",
+    type: "text" | "password" | "multi" | "date",
     form: Form,
     setForm: Dispatch<SetStateAction<Form>>,
     name: string,
@@ -14,8 +22,11 @@ interface IInput {
     values?: IFormMultiType[],
 }
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export default function Input(props: IInput) {
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState<string>(undefined);
 
     useEffect(() => {
         let value = props.form.getStringValue(props.name);
@@ -35,6 +46,10 @@ export default function Input(props: IInput) {
         props.setForm(form => form.setValue(name, FormMultiTypeUtilities.findByKey(props.values, action.target.value)));
     }
 
+    const dateChangeHandler = (name: string):  (event: any) => void => (action: Dayjs) => {
+        props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
+    }
+
     switch(props.type) {
         case "text": element = (
             <TextField
@@ -48,6 +63,7 @@ export default function Input(props: IInput) {
                 InputProps={props.InputProps}
                 disabled={props.disabled} />
         ); break;
+
         case "password": element = (
             <TextField
                 fullWidth
@@ -61,17 +77,18 @@ export default function Input(props: IInput) {
                 InputProps={props.InputProps}
                 disabled={props.disabled} />
         ); break;
+
         case "multi": element = (
             <FormControl fullWidth error={props.form.haveError(props.name)}>
-                <InputLabel id="select-color" >Color</InputLabel>
+                <InputLabel id={`select-${props.name}`} >{props.label}</InputLabel>
                 <Select
                     sx={{
                         ".MuiSelect-select": {
                             display: 'inline-flex'
                         }
                     }}
-                    labelId="select-color"
-                    label="Colore"
+                    labelId={`select-${props.name}`}
+                    label={props.label}
                     name={props.name}
                     value={value}
                     onChange={selectChangeHandler(props.name)}
@@ -82,6 +99,25 @@ export default function Input(props: IInput) {
                 </Select>
                 <FormHelperText>{props.form.getError(props.name)}</FormHelperText>
             </FormControl>
+        ); break;
+
+        case "date": element = (
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
+                <DatePicker
+                    timezone="UTC"
+                    sx={{width: '100%'}}
+                    views={["year", "month", "day"]}
+                    label={props.label}
+                    slotProps={{
+                        textField: {
+                            error: props.form.haveError(props.name),
+                            helperText: props.form.getError(props.name),
+                        }
+                    }}
+                    value={dayjs.utc(value)}
+                    onChange={dateChangeHandler(props.name)}
+                    disabled={props.disabled} />
+            </LocalizationProvider>
         ); break;
     }
 
