@@ -1,4 +1,6 @@
+import { CSSProperties, JSX } from "react";
 import { IFormMultiType } from "./Interfaces";
+import { Box } from "@mui/material";
 
 export interface Response<T> {
     code: number,
@@ -31,6 +33,15 @@ export interface CreateWalletForm {
 export interface TransactionTypeForm {
     name: string,
 }
+
+export interface TransactionForm {
+    description: string;
+    date: string;
+    value: number;
+    wallet: number;
+    walletDestination: number;
+    typeId: number;
+}  
 
 // RECEIVE FROM SERVER
 export interface User {
@@ -70,5 +81,49 @@ export class Color implements IFormMultiType {
 
     getKey(): string {
         return this.color;
+    }
+}
+
+export class TransactionTypePrintable implements IFormMultiType {
+    private transactionType: TransactionType;
+
+    private constructor(transactionType: TransactionType) {
+        this.transactionType = transactionType;
+    }
+
+    print(): string | JSX.Element {
+        let style: CSSProperties = {};
+        if(this.transactionType.id == 1 || this.transactionType.id == 2)
+            style = {fontWeight: 'bold', textTransform: 'uppercase', fontStyle: "italic"}
+
+        return <Box component={"span"} style={style}>{this.transactionType.name}</Box>
+    }
+
+    getKey(): string | number {
+        return this.transactionType.id;
+    }
+    
+    public static convert(transactionTypes: TransactionType[]): TransactionTypePrintable[] {
+        return transactionTypes?.map(transactionType => new TransactionTypePrintable(transactionType));
+    }
+}
+
+export class WalletPrintable implements IFormMultiType {
+    private wallet: Wallet;
+
+    private constructor(wallet: Wallet) {
+        this.wallet = wallet;
+    }
+
+    print(): string | JSX.Element {
+        return this.wallet.name;
+    }
+
+    getKey(): string | number {
+        return this.wallet.id;
+    }
+    
+    public static convert(wallets: Wallet[]): WalletPrintable[] {
+        return wallets?.map(wallet => new WalletPrintable(wallet));
     }
 }

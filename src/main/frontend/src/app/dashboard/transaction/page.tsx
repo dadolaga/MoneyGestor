@@ -39,7 +39,7 @@ export default function Page() {
     
     return (
         <>
-            <TransactionDialog open={openTransactionDialog} onclose={() => setOpenTransactionDialog(false)} onSave={saveTransactionHandler} transactionId={transactionId} />
+            <TransactionDialog open={openTransactionDialog} onClose={() => setOpenTransactionDialog(false)} onSave={saveTransactionHandler} transactionId={transactionId} />
             <DeleteDialog open={openTransactionDeleteDialog} onClose={() => setOpenTransactionDeleteDialog(false)} transactionId={transactionId} transactionDescription={transactionDescription} onDelete={deleteTransactionHandler}/>
             <Box sx={{height: '100%', display: 'flex', flexDirection: 'column'}} >
                 <Box sx={{height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1}}>

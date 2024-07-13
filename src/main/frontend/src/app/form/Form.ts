@@ -6,7 +6,7 @@ export interface FormSettings {
 }
 
 export interface Check {
-    action: (value: string) => boolean,
+    action: (value: string, values: string[] | IFormMultiType[]) => boolean,
     text: string,
 }
 
@@ -19,6 +19,10 @@ export class Form {
         this._values = values ?? []; 
         this._errors = errors ?? []; 
         this._settings = settings;
+    }
+
+    public reset(): Form {
+        return new Form(this._settings);
     }
 
     public setValue(name: string, value: string | IFormMultiType): Form {
@@ -68,7 +72,7 @@ export class Form {
         this._settings.forEach(setting => {
             for(const check of setting.checks) {
                 this._errors[setting.name] = undefined;
-                if(check.action(this._values[setting.name])) {
+                if(check.action(this._values[setting.name], this._values)) {
                     this._errors[setting.name] = check.text;
                     break;
                 }

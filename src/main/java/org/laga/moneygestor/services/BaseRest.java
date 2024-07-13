@@ -7,8 +7,11 @@ import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.TokenExpiredException;
 import org.laga.moneygestor.services.exceptions.IllegalArgumentHttpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseRest {
+    protected static Logger logger = LoggerFactory.getLogger(BaseRest.class);
     protected SessionFactory sessionFactory;
 
     public BaseRest(EntityManagerFactory managerFactory) {

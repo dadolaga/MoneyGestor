@@ -1,27 +1,58 @@
-import { Box, Button, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, TextField, Typography } from "@mui/material";
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, LinearProgress, TextField, Typography } from "@mui/material";
 import Dialog from "@mui/material/Dialog/Dialog";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import axios from "../../axios/axios";
 import { useCookies } from "react-cookie";
 import { ITransaction } from "../../Utilities/Datatypes";
-import { ICheckForm, checkForm } from "../../Utilities/CheckForm";
+import { checkForm } from "../../Utilities/CheckForm";
 import { TransitionDialog } from "../base/transition";
 import dayjs from "dayjs";
-import { CSSProperties } from "@mui/material/styles/createTypography";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightLong, faL, faRightLong, fas } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightLong } from "@fortawesome/free-solid-svg-icons";
 import { Request, useRestApi } from "../../request/Request";
-import { TransactionType, Wallet } from "../../Utilities/BackEndTypes";
+import { TransactionForm, TransactionType, TransactionTypePrintable, Wallet, WalletPrintable } from "../../Utilities/BackEndTypes";
 import { enqueueSnackbar } from "notistack";
+import Input from "../../component/Input";
+import { BaseChecker, Form, FormSettings } from "../../form/Form";
+import { IFormMultiType } from "../../Utilities/Interfaces";
 
 const ID_EXCHANGE_TYPE = 1;
-const ID_TIE_TYPE = 2;
 
-export default function TransactionDialog({open, onclose, onSave, transactionId}) {
+const formSettings: FormSettings[] = [{
+    name: "description",
+    checks: [{
+        action: (value, values) => 
+            ((values["type"] as IFormMultiType)?.getKey() != ID_EXCHANGE_TYPE)? BaseChecker.isEmpty(value) : false,
+        text: "La descrizione non può essere vuota"
+    }]}, {
+    name: "value",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il valore non può essere vuoto"
+    }, {
+        action: BaseChecker.isNotNumber,
+        text: "Il valore deve essere un numero"
+    }]}, {
+    name: "type",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il tipo non può essere vuoto"
+    }]}, {
+    name: "wallet",
+    checks: [{
+        action: BaseChecker.isEmpty,
+        text: "Il portafoglio non può essere vuoto"
+    }]}, {
+        name: "wallet-destination",
+        checks: [{
+            action: (value, values) => 
+                ((values["type"] as IFormMultiType)?.getKey() == ID_EXCHANGE_TYPE)? BaseChecker.isEmpty(value) : false,                
+            text: "Il portafoglio di destinazione non può essere vuoto"
+        }]}
+];
+
+export default function TransactionDialog({open, onClose, onSave, transactionId}) {
     const [loading, setLoading] = useState(true);
     const [wallets, setWallets] = useState<Wallet[]>(null);
     const [types, setTypes] = useState<TransactionType[]>(null);
@@ -35,27 +66,17 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
 
     const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState(false);
 
-    const [descriptionError, setDescriptionError] = useState(null);
-    const [dateError, setDateError] = useState(null);
-    const [valueError, setValueError] = useState(null);
-    const [walletError, setWalletError] = useState(null);
-    const [walletDestinationError, setWalletDestinationError] = useState(null);
-    const [typeError, setTypeError] = useState(null);
-
     const [cookie, setCookie] = useCookies(['_token']);
 
     const restApi = useRestApi();
+
+    const [form, setForm] = useState<Form>(new Form(formSettings));
 
     useEffect(() => {
         if(!open)
             return;
 
-        setDescription("");
-        setDate(dayjs());
-        setValue("0");
-        setWallet("");
-        setWalletDestination("");
-        setType(undefined);
+        setForm(form => form.reset());
 
         setLoading(true);
 
@@ -72,13 +93,6 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
             setLoading(false);
         })
     }, [open]);
-
-    useEffect(() => {
-        if(type === 0) {
-            setOpenAddNewTypeDialog(true);
-        }
-
-    }, [type])
 
     function loadWallet(): Promise<void> {
         return restApi.Wallet.List({ order: "!favorite#name" })
@@ -109,89 +123,26 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
         })
     }
 
-    function myCheckForm() {
-        let data : ICheckForm[] = [{
-                value: description,
-                functionSetText: setDescriptionError,
-                check: (type != ID_EXCHANGE_TYPE && type != ID_TIE_TYPE) ? [{
-                    checkEmpty: true,
-                    errorText: "Non è possibile tenere la descrizione vuota"
-                }] : []
-            }, {
-                value: date,
-                functionSetText: setDateError,
-                check: [{
-                    checkEmpty: true,
-                    errorText: "Non è possibile tenere la data vuota"
-                }]
-            }, {
-                value: value,
-                functionSetText: setValueError,
-                check: [{
-                    checkFunction: (value) => value == "0",
-                    errorText: "Non è possibile tenere il valore vuoto"
-                }, {
-                    regex: type != ID_EXCHANGE_TYPE ? /^[+-]?[\d]+(?:[\.,][\d]+)?$/ : /^[\d]+(?:[\.,][\d]+)?$/,
-                    errorText: "Il valore deve esse numerico"
-                }]
-            }, {
-                value: wallet,
-                functionSetText: setWalletError,
-                check: [{
-                    checkEmpty: true,
-                    errorText: "Non è possibile tenere il portafoglio vuoto"
-                }]
-            }, {
-                value: type,
-                functionSetText: setTypeError,
-                check: [{
-                    checkEmpty: true,
-                    errorText: "Non è possibile tenere il tipo vuoto"
-                }, {
-                    checkFunction: (value) => value == 0,
-                    errorText: "Non è possibile selezionare questo tipo"
-                }]
-            }];
-
-        if(type == ID_EXCHANGE_TYPE) {
-            data.push({
-                value: walletDestination,
-                functionSetText: setWalletDestinationError,
-                check: [{
-                    checkEmpty: true,
-                    errorText: "Non è possibile tenere il portafoglio di destinazione vuoto",
-                }, {
-                    checkFunction: (value) => value == wallet,
-                    errorText: "Il portafoglio di destinazione deve essere diverso"
-                }]
-            });
-        }
-
-        return checkForm(data);
-    }
-
     function saveTransaction() {
         setLoading(true);
 
-        axios.post("/transaction/new", {
-            description: description,
-            date: printDate(date.$d),
-            value: value,
-            wallet: wallet,
-            walletDestination: walletDestination,
-            typeId: type,
-        }, {
-            headers: {
-                Authorization: cookie._token
-            }
-        }).finally(() => {
-            setLoading(false);
-            onSave();
-        });
-
-        function printDate(date: Date) {
-            return new Date(date.getTime() - (date.getTimezoneOffset()*60000)).toISOString();
+        let transactionForm: TransactionForm = {
+            description: form.getStringValue("description"),
+            date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
+            value: parseFloat(form.getStringValue("value")),
+            typeId: form.getValue("type")?.getKey() as number,
+            wallet: form.getValue("wallet")?.getKey() as number,
+            walletDestination: form.getValue("wallet-destination")?.getKey() as number
         }
+
+        restApi.Transaction.Create(transactionForm)
+        .then(() => {
+            onClose(true);
+        })
+        .catch(Request.ErrorGestor([]))
+        .finally(() => {
+            setLoading(false);
+        })
     }
 
     function editTransaction() {
@@ -220,7 +171,8 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
     }
 
     function saveHandler() {
-        if(myCheckForm())
+        setForm(form => form.check());
+        if(form.isCheckFail())
             return;
 
         if(transactionId == null)
@@ -239,6 +191,10 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
         setOpenAddNewTypeDialog(false);
     }
 
+    const addNewTypeClickHandler = () => {
+        setOpenAddNewTypeDialog(true);
+    }   
+
     return (
         <Dialog open={open} onClose={onclose} TransitionComponent={TransitionDialog}>
             <AddNewTypeDialog open={openAddNewTypeDialog} onCancel={() => setOpenAddNewTypeDialog(false)} onAdd={addNewTypeHandler}/>
@@ -250,114 +206,78 @@ export default function TransactionDialog({open, onclose, onSave, transactionId}
                 </DialogContentText>
                 <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
                     <Grid item xs={12}>
-                        <TextField 
-                            fullWidth
+                        <Input
+                            type="text"
+                            form={form}
+                            setForm={setForm}
                             name="description"
                             label="Descrizione"
-                            error={descriptionError != null}
-                            helperText={descriptionError}
-                            value={description}
-                            onChange={(el) => setDescription(el.target.value)}
                             disabled={loading} />
                     </Grid>
                     <Grid item xs={8}>
-                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it" >
-                            <DatePicker 
-                                sx={{width: '100%'}}
-                                views={["year", "month", "day"]}
-                                label="Data"
-                                slotProps={{
-                                    textField: {
-                                        error: dateError != null,
-                                        helperText: dateError,
-                                    }
-                                }}
-                                value={date}
-                                onChange={(value) => setDate(value)}
-                                disabled={loading} />
-                        </LocalizationProvider>
-                    </Grid>
-                    <Grid item xs={4}>
-                    <TextField
-                            fullWidth
-                            label="Valore"
-                            name="value"
-                            value={value}
-                            onChange={(el) => setValue(el.target.value)}
-                            error={valueError != null}
-                            helperText={valueError}
-                            InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }} 
+                        <Input
+                            type="date"
+                            form={form}
+                            setForm={setForm}
+                            name="date"
+                            label="Data"
                             disabled={loading} />
                     </Grid>
-                    <Grid item xs={type == ID_EXCHANGE_TYPE? 12 : 4}>
-                        <FormControl fullWidth error={typeError != null}>
-                            <InputLabel htmlFor="transaction_type">Tipo</InputLabel>
-                            <Select 
-                                fullWidth 
-                                id="transaction_type"
-                                disabled={loading || (transactionId != null && type == 1)} 
-                                value={type == null? '' : type}
-                                onChange={(el) => setType(parseInt(el.target.value.toString()))}
-                                label="Tipo">
-                                {types?.map((value, index) => {
-                                    let style: CSSProperties = {};
-                                    if(value.id == 1 || value.id == 2)
-                                        style = {fontWeight: 'bold', textTransform: 'uppercase'}
-
-                                    return <MenuItem key={value.id} value={value.id} style={style} disabled={transactionId != null && value.id == 1}>{value.name}</MenuItem>
-                                })}
-                                <MenuItem key={0} value={0} style={{fontStyle: 'italic'}}>Nuovo...</MenuItem>
-                            </Select>
-                            {typeError != null && <FormHelperText>{typeError}</FormHelperText>}
-                        </FormControl>
+                    <Grid item xs={4}>
+                    <Input
+                            type="text"
+                            form={form}
+                            setForm={setForm}
+                            name="value"
+                            label="Valore"
+                            disabled={loading} />
                     </Grid>
-                    <Grid item xs={type == ID_EXCHANGE_TYPE? 5 : 8}>
-                        <FormControl fullWidth error={walletError != null}>
-                            <InputLabel htmlFor="transaction_wallet">Portafoglio</InputLabel>
-                            <Select 
-                                fullWidth 
-                                id="transaction_wallet"
-                                disabled={loading} 
-                                value={wallet == null? '' : wallet}
-                                onChange={(el) => setWallet(el.target.value)}
-                                label="Portafoglio">
-                                {wallets?.map((value, index) => {
-                                    return (<MenuItem key={index} value={value.id.toString()}>{value.name}</MenuItem>);
-                                })}
-                            </Select>
-                            {walletError != null && <FormHelperText>{walletError}</FormHelperText>}
-                        </FormControl>
+                    <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 12 : 4}>
+                        <Input
+                            type="multi"
+                            form={form}
+                            setForm={setForm}
+                            name="type"
+                            label="Tipo"
+                            disabled={loading}
+                            values={TransactionTypePrintable.convert(types)} />
+                        <Typography 
+                            sx={{":hover": {textDecorationLine: "underline"}, fontSize: '.85em', pl: .5, cursor: "pointer", fontStyle: 'italic', color: "#219ebc"}}
+                            onClick={addNewTypeClickHandler} >
+                            Aggiungi nuovo tipo
+                        </Typography>
                     </Grid>
-                    {type == ID_EXCHANGE_TYPE && (
+                    <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 5 : 8}>
+                        <Input
+                            type="multi"
+                            form={form}
+                            setForm={setForm}
+                            name="wallet"
+                            label="Portafoglio"
+                            disabled={loading}
+                            values={WalletPrintable.convert(wallets)} />
+                    </Grid>
+                    {form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE && (
                         <>
                             <Grid item xs={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} >
                                 <FontAwesomeIcon icon={faArrowRightLong} size="2x"/>
                             </Grid>
-                            <Grid item xs={type == ID_EXCHANGE_TYPE? 5 : 8}>
-                                <FormControl fullWidth error={walletDestinationError != null}>
-                                    <InputLabel htmlFor="transaction_wallet">Portafoglio</InputLabel>
-                                    <Select 
-                                        fullWidth 
-                                        id="transaction_wallet"
-                                        disabled={loading} 
-                                        value={walletDestination == null? '' : walletDestination}
-                                        onChange={(el) => setWalletDestination(el.target.value)}
-                                        label="Portafoglio">
-                                        {wallets?.map((value, index) => {
-                                            return (
-                                                <MenuItem value={value.id.toString()} key={index}>{value.name}</MenuItem>
-                                            );
-                                        })}
-                                    </Select>
-                                    {walletDestinationError != null && <FormHelperText>{walletDestinationError}</FormHelperText>}
-                                </FormControl>
+                            <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 5 : 8}>
+                                <Input
+                                    type="multi"
+                                    form={form}
+                                    setForm={setForm}
+                                    name="wallet-destination"
+                                    label="Portafoglio destinazione"
+                                    disabled={loading}
+                                    values={WalletPrintable.convert(wallets)} />
                             </Grid>
                         </>
                     )}
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onclose} color="secondary" >Annulla</Button>
+                <Button onClick={onClose} color="secondary" >Annulla</Button>
                 <Button onClick={saveHandler} disabled={loading} >{transactionId == null? 'Salva' : 'Modifica'}</Button>
             </DialogActions>
         </Dialog>

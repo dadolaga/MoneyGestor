@@ -1,60 +1,54 @@
 package org.laga.moneygestor.services;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.persistence.EntityManagerFactory;
+import org.laga.moneygestor.db.DatabaseInitializer;
+import org.laga.moneygestor.db.entity.TransactionDb;
+import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.logic.DateUtilities;
+import org.laga.moneygestor.logic.TransactionGestor;
+import org.laga.moneygestor.services.models.Response;
+import org.laga.moneygestor.services.models.TransactionForm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/transaction")
-public class TransactionRest {
-/*
-    private static final int ID_EXCHANGE_TYPE = 1;
-
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    @PostMapping("/new")
-    public void addNewTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transactionForm) {
-        var user = userRepository.findFromToken(authorization);
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
-
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-
-        TransactionDb transactionDb = new TransactionDb();
-        transactionDb.setDescription(transactionForm.getDescription());
-        transactionDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
-        transactionDb.setValue(transactionForm.getTypeId() == ID_EXCHANGE_TYPE? transactionForm.getValue().negate() : transactionForm.getValue());
-        transactionDb.setWalletId(transactionForm.getWallet());
-        transactionDb.setUserId(userGestor.getId());
-        transactionDb.setTypeId(transactionForm.getTypeId());
-
-        TransactionDb transactionSaved = transactionRepository.save(transactionDb);
-
-        if(transactionForm.getTypeId() != ID_EXCHANGE_TYPE)
-            return;
-
-        TransactionDb transactionDestinationDb = new TransactionDb();
-        transactionDestinationDb.setDescription(transactionForm.getDescription());
-        transactionDestinationDb.setDate(LocalDate.parse(transactionForm.getDate(), formatter));
-        transactionDestinationDb.setValue(transactionForm.getValue());
-        transactionDestinationDb.setWalletId(transactionForm.getWalletDestination());
-        transactionDestinationDb.setTransactionDestinationId(transactionSaved.getId());
-        transactionDestinationDb.setUserId(userGestor.getId());
-        transactionDestinationDb.setTypeId(transactionForm.getTypeId());
-
-        TransactionDb transactionDestinationSaved = transactionRepository.save(transactionDestinationDb);
-
-        transactionSaved.setTransactionDestinationId(transactionDestinationSaved.getId());
-
-        transactionRepository.save(transactionSaved);
+public class TransactionRest extends BaseRest {
+    private static final String TAG = "TransactionRest";
+    @Autowired
+    public TransactionRest(EntityManagerFactory entityManagerFactory) {
+        super(entityManagerFactory);
     }
 
-    @GetMapping("/list")
+    @PostMapping("/new")
+    public Response addNewTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transactionForm) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
+
+        var transaction = new TransactionDb();
+
+        transaction.setDescription(transactionForm.getDescription());
+        transaction.setDate(DateUtilities.convertToLocalDate(transactionForm.getDate()));
+        transaction.setValue(transactionForm.getValue());
+        transaction.setTypeId(transactionForm.getTypeId());
+        transaction.setWalletId(transactionForm.getWallet());
+        transaction.setUserOfTransactionId(userLogged.getId());
+
+        Long idInserted;
+        if(Objects.equals(transactionForm.getTypeId(), DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId())) {
+            idInserted = transactionGestor.insertMoneyTransfer(userLogged, transaction, transactionForm.getWalletDestination());
+        } else {
+            idInserted = transactionGestor.insert(userLogged, transaction);
+        }
+
+        return Response.sendId(idInserted);
+    }
+
+    /*@GetMapping("/list")
     public List<TransactionTableView> getTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestParam(name = "sort", required = false) String sortParams) {
         var user = userRepository.findFromToken(authorization);
         if(user == null)
