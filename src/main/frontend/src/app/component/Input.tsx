@@ -114,7 +114,7 @@ export default function Input(props: IInput) {
                             helperText: props.form.getError(props.name),
                         }
                     }}
-                    value={dayjs.utc(value)}
+                    value={dayjs.utc(value === ""? undefined : value)}
                     onChange={dateChangeHandler(props.name)}
                     disabled={props.disabled} />
             </LocalizationProvider>
