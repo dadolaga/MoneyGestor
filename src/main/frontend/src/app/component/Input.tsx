@@ -26,11 +26,11 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function Input(props: IInput) {
-    const [value, setValue] = useState<string>(undefined);
+    const [value, setValue] = useState<string>("");
 
     useEffect(() => {
         let value = props.form.getStringValue(props.name);
-        if (value) {
+        if (value !== undefined) {
             console.log(value);
             setValue(value);
         }
