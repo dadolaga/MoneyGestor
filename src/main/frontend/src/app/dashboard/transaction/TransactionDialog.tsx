@@ -63,7 +63,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
         if(!open)
             return;
 
-        setForm(form => form.reset());
+        form.reset();
 
         setLoading(true);
 
@@ -72,7 +72,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
         promiseArray.push(loadWallet());
         promiseArray.push(loadType());
 
-        if(transactionId != null) {
+        if(transactionId) {
             promiseArray.push(loadTransaction());
         }
 

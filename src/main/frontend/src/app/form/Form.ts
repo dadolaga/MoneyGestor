@@ -22,6 +22,8 @@ export class Form {
     }
 
     public reset(): Form {
+        this._values = []; 
+        this._errors = []; 
         return new Form(this._settings);
     }
 
