@@ -249,6 +249,7 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         transaction.setWallet(WalletGestor.convertToRest(transactionDb.getWallet()));
         transaction.setWalletDestination(transactionDb.getTransactionDestination() != null?
                 WalletGestor.convertToRest(transactionDb.getTransactionDestination().getWallet()) : null);
+        transaction.setTransactionDestinationId(transactionDb.getTransactionDestinationId());
         transaction.setDate(transactionDb.getDate().format(DateTimeFormatter.ISO_DATE));
         transaction.setType(TransactionTypeGestor.convertToRest(transactionDb.getType()));
 

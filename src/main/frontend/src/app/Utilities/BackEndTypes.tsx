@@ -75,6 +75,7 @@ export interface Transaction {
     date: string;
     wallet: Wallet;
     walletDestination?: Wallet;
+    transactionDestinationId?: number;
     type: TransactionType;
 }
 
@@ -97,7 +98,7 @@ export class Color implements IFormMultiType {
 export class TransactionTypePrintable implements IFormMultiType {
     private transactionType: TransactionType;
 
-    private constructor(transactionType: TransactionType) {
+    public constructor(transactionType: TransactionType) {
         this.transactionType = transactionType;
     }
 
@@ -121,7 +122,7 @@ export class TransactionTypePrintable implements IFormMultiType {
 export class WalletPrintable implements IFormMultiType {
     private wallet: Wallet;
 
-    private constructor(wallet: Wallet) {
+    public constructor(wallet: Wallet) {
         this.wallet = wallet;
     }
 

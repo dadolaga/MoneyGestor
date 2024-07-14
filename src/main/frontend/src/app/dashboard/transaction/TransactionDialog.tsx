@@ -2,10 +2,6 @@ import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, G
 import Dialog from "@mui/material/Dialog/Dialog";
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
-import axios from "../../axios/axios";
-import { useCookies } from "react-cookie";
-import { ITransaction } from "../../Utilities/Datatypes";
-import { checkForm } from "../../Utilities/CheckForm";
 import { TransitionDialog } from "../base/transition";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -44,29 +40,20 @@ const formSettings: FormSettings[] = [{
         action: BaseChecker.isEmpty,
         text: "Il portafoglio non può essere vuoto"
     }]}, {
-        name: "wallet-destination",
-        checks: [{
-            action: (value, values) => 
-                ((values["type"] as IFormMultiType)?.getKey() == ID_EXCHANGE_TYPE)? BaseChecker.isEmpty(value) : false,                
-            text: "Il portafoglio di destinazione non può essere vuoto"
-        }]}
+    name: "wallet-destination",
+    checks: [{
+        action: (value, values) => 
+            ((values["type"] as IFormMultiType)?.getKey() == ID_EXCHANGE_TYPE)? BaseChecker.isEmpty(value) : false,                
+        text: "Il portafoglio di destinazione non può essere vuoto"
+    }]}
 ];
 
-export default function TransactionDialog({open, onClose, onSave, transactionId}) {
-    const [loading, setLoading] = useState(true);
+export default function TransactionDialog({open, onClose, transactionId}) {
+    const [loading, setLoading] = useState<boolean>(true);
     const [wallets, setWallets] = useState<Wallet[]>(null);
     const [types, setTypes] = useState<TransactionType[]>(null);
 
-    const [description, setDescription] = useState("");
-    const [date, setDate] = useState(null);
-    const [value, setValue] = useState("0");
-    const [wallet, setWallet] = useState("");
-    const [walletDestination, setWalletDestination] = useState("");
-    const [type, setType] = useState<number>();
-
-    const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState(false);
-
-    const [cookie, setCookie] = useCookies(['_token']);
+    const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState<boolean>(false);
 
     const restApi = useRestApi();
 
@@ -105,22 +92,15 @@ export default function TransactionDialog({open, onClose, onSave, transactionId}
     }
 
     function loadTransaction(): Promise<any> {
-        return axios.get("/transaction/get/" + transactionId, {
-            headers: {
-                Authorization: cookie._token
-            }
-        })
-        .then(message => {
-            console.log(message.data);
-            let value: ITransaction = message.data;
-
-            setDescription(value.description);
-            setDate(dayjs(new Date(value.date)));
-            setValue(((value.type.id == ID_EXCHANGE_TYPE? -1 : 1) * value.value).toString());
-            setWallet(value.wallet.id.toString());
-            setWalletDestination(value.walletDestination?.id.toString());
-            setType(value.type.id);
-        })
+        return restApi.Transaction.Get(transactionId)
+            .then(transaction => setForm(form => form.setValues({
+                ...transaction, 
+                type: new TransactionTypePrintable(transaction.type),
+                wallet: new WalletPrintable(transaction.wallet),
+                "wallet-destination": transaction.walletDestination? new WalletPrintable(transaction.walletDestination) : undefined,
+                value: transaction.walletDestination? Math.abs(transaction.value) : transaction.value,
+                date: dayjs.utc(transaction.date)
+            })));
     }
 
     function saveTransaction() {
@@ -148,29 +128,21 @@ export default function TransactionDialog({open, onClose, onSave, transactionId}
     function editTransaction() {
         setLoading(true);
 
-        axios.post("/transaction/edit/" + transactionId, {
-            id: transactionId,
-            description: description,
-            date: printDate(date.$d),
-            value: value,
-            wallet: wallet,
-            walletDestination: walletDestination,
-            typeId: type,
-        }, {
-            headers: {
-                Authorization: cookie._token
-            }
-        }).finally(() => {
-            setLoading(false);
-            onSave();
-        });
-
-        function printDate(date: Date) {
-            return new Date(date.getTime() - (date.getTimezoneOffset()*60000)).toISOString();
+        let transactionForm: TransactionForm = {
+            description: form.getStringValue("description"),
+            date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
+            value: parseFloat(form.getStringValue("value")),
+            typeId: form.getValue("type")?.getKey() as number,
+            wallet: form.getValue("wallet")?.getKey() as number,
+            walletDestination: form.getValue("wallet-destination")?.getKey() as number
         }
+
+        restApi.Transaction.Modify(transactionId, transactionForm)
+        .then(() => onClose(true))
+        .finally(() => setLoading(false));
     }
 
-    function saveHandler() {
+    const saveHandler = () => {
         setForm(form => form.check());
         if(form.isCheckFail())
             return;
@@ -181,23 +153,26 @@ export default function TransactionDialog({open, onClose, onSave, transactionId}
             editTransaction();
     }
 
-    const addNewTypeHandler = () => {
-        setLoading(true);
-
-        loadType().finally(() => {
-            setLoading(false);
-        });
-
-        setOpenAddNewTypeDialog(false);
+    const cancelHandler = () => {
+        onClose(false);
     }
 
     const addNewTypeClickHandler = () => {
         setOpenAddNewTypeDialog(true);
-    }   
+    }
+
+    const closeAddNewTypeHandler = (isToRefresh: boolean) => {
+        setOpenAddNewTypeDialog(false);
+
+        if(isToRefresh) {
+            setLoading(true);
+            loadType().finally(() => setLoading(false));
+        }
+    }
 
     return (
         <Dialog open={open} onClose={onclose} TransitionComponent={TransitionDialog}>
-            <AddNewTypeDialog open={openAddNewTypeDialog} onCancel={() => setOpenAddNewTypeDialog(false)} onAdd={addNewTypeHandler}/>
+            <AddNewTypeDialog open={openAddNewTypeDialog} onClose={closeAddNewTypeHandler} />
             {loading && <LinearProgress />}
             <DialogTitle>Crea nuova transazione</DialogTitle>
             <DialogContent>
@@ -277,48 +252,32 @@ export default function TransactionDialog({open, onClose, onSave, transactionId}
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="secondary" >Annulla</Button>
+                <Button onClick={cancelHandler} color="secondary" >Annulla</Button>
                 <Button onClick={saveHandler} disabled={loading} >{transactionId == null? 'Salva' : 'Modifica'}</Button>
             </DialogActions>
         </Dialog>
     );
 }
 
-function AddNewTypeDialog({open, onAdd, onCancel}) {
-    const [loading, setLoading] = useState(false);
+function AddNewTypeDialog({open, onClose}) {
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const [value, setValue] = useState(null);
+    const [value, setValue] = useState<string>("");
 
     const [typeError, setTypeError] = useState(null);
 
     const restApi = useRestApi();
 
-    const cancelHandler = (event) => {
-        onCancel();
-    }
-
-    const addHandler = (event) => {
-        addNewType();
-    }
-
     function addNewType() {
-        let check = checkForm([{
-            value: value,
-            functionSetText: setTypeError,
-            check: [{
-                errorText: "Il campo tipo è obbligatorio",
-                checkEmpty: true,
-            }]
-        }]);
-
-        if(check)
-            return;
+        if(value.trim().length <= 0) {
+            setTypeError("Inserire un valore per il tipo")
+        }
 
         setLoading(true);
 
         restApi.TransactionType.Create({ name: value })
         .then(_ => {
-            onAdd();
+            onClose(true);
         })
         .catch(Request.ErrorGestor([{
             code: 102,
@@ -327,6 +286,14 @@ function AddNewTypeDialog({open, onAdd, onCancel}) {
             }
         }]))
         .finally(() => setLoading(false));
+    }
+
+    const cancelHandler = () => {
+        onClose(false);
+    }
+
+    const addHandler = () => {
+        addNewType();
     }
 
     return (

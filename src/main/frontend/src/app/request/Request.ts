@@ -88,7 +88,17 @@ export class Request {
         Delete: async (id: number): Promise<void> => {
             return this.baseRequestPost("transaction/delete/" + id)
             .then(response => response as void)
-        }
+        },
+        
+        Get: async (id: number): Promise<Transaction> => {
+            return this.baseRequestGet("transaction/get/" + id)
+            .then(response => response as Transaction)
+        },
+
+        Modify: async (id: number, transaction: TransactionForm): Promise<void> => {
+            return this.baseRequestPost("transaction/edit/" + id, transaction)
+            .then(response => response as void)
+        },
     }
 
     public constructor(router: AppRouterInstance, 

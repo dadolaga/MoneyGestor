@@ -9,6 +9,7 @@ public class Transaction {
     private String date;
     private Wallet wallet;
     private Wallet walletDestination;
+    private Long transactionDestinationId;
     private TransactionType type;
 
     public Long getId() {
@@ -57,6 +58,14 @@ public class Transaction {
 
     public void setWalletDestination(Wallet walletDestination) {
         this.walletDestination = walletDestination;
+    }
+
+    public Long getTransactionDestinationId() {
+        return transactionDestinationId;
+    }
+
+    public void setTransactionDestinationId(Long transactionDestinationId) {
+        this.transactionDestinationId = transactionDestinationId;
     }
 
     public TransactionType getType() {

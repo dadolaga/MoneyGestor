@@ -57,9 +57,16 @@ export default function Page() {
         setOpenTransactionDeleteDialog(false);
     } 
     
+    const closeTransactionDialogHandler = (isToReload: boolean) => {
+        if(isToReload)
+            loadTransaction();
+
+        setOpenTransactionDialog(false);
+    } 
+
     return (
         <>
-            <TransactionDialog open={openTransactionDialog} onClose={() => setOpenTransactionDialog(false)} onSave={saveTransactionHandler} transactionId={transactionId} />
+            <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />
             <DeleteDialog 
                 open={openTransactionDeleteDialog} 
                 onClose={closeDeleteDialogHandler} 

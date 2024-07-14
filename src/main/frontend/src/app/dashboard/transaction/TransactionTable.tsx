@@ -97,7 +97,7 @@ export function TransactionTable(props: ITransactionTableProps) {
                                             </TableCell>
                                         <TableCell>
                                             <Box sx={{display: 'flex', gap: 2}} >
-                                                <FontAwesomeIcon style={{cursor: 'pointer'}} icon={faPen} onClick={editHandler(value.id)}/>
+                                                <FontAwesomeIcon style={{cursor: 'pointer'}} icon={faPen} onClick={editHandler(value.transactionDestinationId ?? value.id)}/>
                                                 <FontAwesomeIcon style={{cursor: 'pointer'}} icon={faTrash} onClick={deleteHandler(value.id, value.description)}/>
                                             </Box>
                                         </TableCell>

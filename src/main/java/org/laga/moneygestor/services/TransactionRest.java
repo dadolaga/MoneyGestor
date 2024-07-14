@@ -61,72 +61,35 @@ public class TransactionRest extends BaseRest {
 
         return Response.create(TransactionGestor.convertToRest(listOfTransactions));
     }
-/*
+
     @GetMapping("/get/{id}")
-    public Transaction getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable Long id) {
-        var user = userRepository.findFromToken(authorization);
-        if(user == null)
-            throw MoneyGestorErrorSample.mapOfError.get(2);
+    public Response getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
 
-        UserGestor userGestor = UserGestor.Builder.createFromDB(user);
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
 
-        if(!userGestor.tokenIsValid())
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-
-        TransactionDb transactionExample = new TransactionDb();
-        transactionExample.setUserId(userGestor.getId());
-        transactionExample.setId(id);
-
-        try {
-            return TransactionGestor.convertToRest(transactionRepository.findOne(Example.of(transactionExample)).get());
-        } catch (NoSuchElementException ignored) {
-            throw MoneyGestorErrorSample.mapOfError.get(4);
-        }
+        return Response.create(TransactionGestor.convertToRest(transactionGestor.getById(userLogged, id)));
     }
 
     @PostMapping("/edit/{id}")
-    public void editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transaction, @PathVariable Long id) {
-        if(authorization == null)
-            throw MoneyGestorErrorSample.mapOfError.get(3);
+    public Response editTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionForm transactionForm, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
 
-        try {
-            UserGestor userGestor = UserGestor.Builder.createFromDB(userRepository.findFromToken(authorization));
-            if(!userGestor.tokenIsValid())
-                throw MoneyGestorErrorSample.mapOfError.get(2);
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
 
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        var transaction = transactionGestor.getById(userLogged, id);
 
-            TransactionDb transactionSource = transactionRepository.findById(id).get();
+        transaction.setDescription(transactionForm.getDescription());
+        transaction.setDate(DateUtilities.convertToLocalDate(transactionForm.getDate()));
+        transaction.setValue(transactionForm.getValue());
+        transaction.setTypeId(transactionForm.getTypeId());
+        transaction.setWalletId(transactionForm.getWallet());
+        transaction.getTransactionDestination().setWalletId(transactionForm.getWalletDestination());
 
-            transactionSource.setDescription(transaction.getDescription());
-            transactionSource.setDate(LocalDate.parse(transaction.getDate(), formatter));
-            transactionSource.setValue(transaction.getTypeId() == ID_EXCHANGE_TYPE? transaction.getValue().negate() : transaction.getValue());
-            transactionSource.setTypeId(transaction.getTypeId());
-            transactionSource.setWalletId(transaction.getWallet());
+        transactionGestor.update(userLogged, id, transaction);
 
-            transactionRepository.save(transactionSource);
-
-            if(transaction.getTypeId() != ID_EXCHANGE_TYPE)
-                return;
-
-            TransactionDb transactionDestination = transactionRepository.findById(transactionSource.getTransactionDestinationId()).get();
-
-            transactionDestination.setDescription(transaction.getDescription());
-            transactionDestination.setDate(LocalDate.parse(transaction.getDate(), formatter));
-            transactionDestination.setValue(transaction.getValue());
-            transactionDestination.setTypeId(transaction.getTypeId());
-            transactionDestination.setWalletId(transaction.getWalletDestination());
-
-            transactionRepository.save(transactionDestination);
-
-            transactionRepository.flush();
-
-        } catch (IllegalArgumentException e) {
-            throw MoneyGestorErrorSample.mapOfError.get(2);
-        } catch (NoSuchElementException ignored) {
-            throw MoneyGestorErrorSample.mapOfError.get(0);
-        }
-    }*/
+        return Response.ok();
+    }
 
     @PostMapping("/delete/{id}")
     public Response deleteTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
