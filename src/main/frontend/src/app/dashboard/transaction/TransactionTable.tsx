@@ -10,22 +10,21 @@ const ID_EXCHANGE_TYPE = 1;
 interface ITransactionTableProps {
     transactions?: Transaction[],
     loading: boolean,
-    refreshTransactions: () => void,
     sort: Order,
     setSort: (_: Order) => void,
     setTransactionDialogId: (any) => void,
+    setTransactionDescription: (any) => void,
     setOpenTransactionDialog: (any) => void,
     setOpenTransactionDeleteDialog: (any) => void,
-    setTransactionDescription: (any) => void,
 }
 
 export function TransactionTable(props: ITransactionTableProps) {
-    const editHandler = (id) => (event) => {
+    const editHandler = (id) => () => {
         props.setTransactionDialogId(id);
         props.setOpenTransactionDialog(true);
     }
 
-    const deleteHandler = (id, description) => (event) => {
+    const deleteHandler = (id, description) => () => {
         props.setTransactionDialogId(id);
         props.setTransactionDescription(description);
         props.setOpenTransactionDeleteDialog(true);

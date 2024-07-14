@@ -21,16 +21,16 @@ export default function Page() {
 
     const restApi = useRestApi();
 
-    const [openTransactionDialog, setOpenTransactionDialog] = useState(false);
-    const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState(false);
-    const [transactionId, setTransactionId] = useState(null);
-    const [transactionDescription, setTransactionDescription] = useState(null);
+    const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
+    const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState<boolean>(false);
+    const [transactionId, setTransactionId] = useState<number>(undefined);
+    const [transactionDescription, setTransactionDescription] = useState<string>(undefined);
 
     useEffect(() => {
-        loadTransaction();
+        loadTransactions();
     }, [sort]);
 
-    function loadTransaction() {
+    function loadTransactions() {
         setLoading(true);
 
         restApi.Transaction.List({ order: sort.toUrlString() })
@@ -39,27 +39,21 @@ export default function Page() {
         .finally(() => setLoading(false));
     }
 
-    function saveTransactionHandler() {
-        setOpenTransactionDialog(false);
-
-        graph.current.loadTransaction();
-    }
-
     function openTransactionDialogHandler() {
-        setTransactionId(null);
+        setTransactionId(transactionId => undefined);
         setOpenTransactionDialog(true);
     }
 
     const closeDeleteDialogHandler = (isToReload: boolean) => {
         if(isToReload)
-            loadTransaction();
+            loadTransactions();
 
         setOpenTransactionDeleteDialog(false);
     } 
     
     const closeTransactionDialogHandler = (isToReload: boolean) => {
         if(isToReload)
-            loadTransaction();
+            loadTransactions();
 
         setOpenTransactionDialog(false);
     } 
@@ -80,7 +74,6 @@ export default function Page() {
                         loading={loading}
                         sort={sort}
                         setSort={setSort}
-                        refreshTransactions={loadTransaction}
                         setOpenTransactionDialog={setOpenTransactionDialog}
                         setTransactionDialogId={setTransactionId} 
                         setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog} 

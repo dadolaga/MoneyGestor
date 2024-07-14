@@ -50,8 +50,8 @@ const formSettings: FormSettings[] = [{
 
 export default function TransactionDialog({open, onClose, transactionId}) {
     const [loading, setLoading] = useState<boolean>(true);
-    const [wallets, setWallets] = useState<Wallet[]>(null);
-    const [types, setTypes] = useState<TransactionType[]>(null);
+    const [wallets, setWallets] = useState<Wallet[]>(undefined);
+    const [types, setTypes] = useState<TransactionType[]>(undefined);
 
     const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState<boolean>(false);
 
@@ -271,6 +271,7 @@ function AddNewTypeDialog({open, onClose}) {
     function addNewType() {
         if(value.trim().length <= 0) {
             setTypeError("Inserire un valore per il tipo")
+            return;
         }
 
         setLoading(true);
