@@ -54,10 +54,16 @@ input {
     font-size: 1em;
 }
 
-input:focus {
-    outline: solid #0fa3b1;
+
+.information[type="number"]::-webkit-inner-spin-button,
+.information[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+
 }
 
+input:focus {
+    outline: solid #4c0000;
+}
 .submit{
     display: flex;
     justify-content: center;
@@ -78,5 +84,11 @@ input:focus {
 
 .color_picker{
     margin-left: 40px;
-    background-color: #211f1f;
+    background-color: #2c2b2b;
+}
+
+.input-button{
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 40px;
 }

@@ -185,18 +185,19 @@ interface WalletDialogInterface {
                         
                         <label htmlFor="quantity" className='text' id="font">
                             Ammontare
-                            <input type="number" className="information " id="quantity" name="quantity" min="1" max="1000000" value={number}
-                            onChange={(e) => setNumber(e.target.value)}/>
+                                <input type="number" className="information custom-input " id="quantity" name="quantity" min="1" max="1000000" value={number}
+                                onChange={(e) => setNumber(e.target.value)}/>
                         </label>
                     </div>
 
-                    <label htmlFor="favcolor" className="popUp_text" id="font">
-                        Scegli un colore 
+                    <label htmlFor="favcolor" className="text" id="font">
+                        Scegli un colore :
                         <input className="color_picker" id="favcolor" name="favcolor" type="color" value={color} onChange={e => setColor(e.target.value)}/>
                     </label>
-
-                    <button type="submit" value="Submit" className="submit" id="font" onClick={() => setIsPopoverOpen(!isPopoverOpen)} disabled={loading}>Salva  </button>
-                    <button type="reset" value="Reset" className="submit" id="font" onClick={onClose}> Annulla </button>
+                    <div className="input-button">
+                        <button type="submit" value="Submit" className="submit" id="font" onClick={() => setIsPopoverOpen(!isPopoverOpen)} disabled={loading}>Salva  </button>
+                        <button type="reset" value="Reset" className="submit" id="font" onClick={onClose}> Annulla </button>
+                    </div>
                 </div>
                 
             </div>
