@@ -92,3 +92,22 @@ input:focus {
     flex-direction: row-reverse;
     gap: 40px;
 }
+.addButton{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: max-content;
+    border-color: #ee0a0a;
+    background-color: transparent;
+    color: #ee0a0a;
+    font-family: 'Kaisei HarunoUmi';
+}
+
+.add_image{
+    width: 30px;
+    height: 30px;
+}
+
+.addButton:hover{
+    background-color: transparent;
+}

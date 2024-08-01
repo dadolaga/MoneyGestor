@@ -79,7 +79,9 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
     return (
         <div>
             {isButtonVisible && (
-                <button onClick={handleOpen}>Add</button>
+                <button className="addButton" onClick={handleOpen}>
+                    <img src="/newProtafoglio.svg" alt="add_image" className="add_image" />
+                    AGGIUNGI NUOVO PORTAFOGLIO</button>
             )}
             {isOpen && (
                 <div className="popup-container">
