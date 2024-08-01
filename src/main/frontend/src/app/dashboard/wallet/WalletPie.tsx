@@ -8,6 +8,7 @@ interface IWalletPie {
     loading: boolean,
 }
 
+
 export function WalletPie({wallets, loading}: IWalletPie, ref) {
     return (
         <Box sx={{flex: 1}} width={'100%'} height={'400px'}>

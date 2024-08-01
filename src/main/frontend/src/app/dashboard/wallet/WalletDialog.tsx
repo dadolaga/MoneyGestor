@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { CreateWalletForm } from "../../Utilities/BackEndTypes";
 import axios from "../../axios/axios";
-import { Request, useRestApi } from "../../request/Request";
+import { useRestApi } from "../../request/Request";
+
 import './wallet.css';
 
 const WALLET_DEFAULT: CreateWalletForm = {
@@ -16,7 +17,9 @@ interface WalletDialogInterface {
     walletId?: number
 }
 
-export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
+
+  const WalletDialog = ({ onClose }) => {
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const form = useRef();
 
     const [nameError, setNameError] = useState<string>(undefined);
@@ -25,49 +28,51 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     const [loading, setLoading] = useState<boolean>(false);
     const [wallet, setWallet] = useState<CreateWalletForm>(WALLET_DEFAULT);
     const [colors, setColors] = useState([]);
-    const [name, setName] = useState("");
+    const [Name, setName] = useState("");
     const [number, setNumber] = useState("");
-
+    const [color, setColor] = useState(null);
+    
     const onClickResetHandler = () => {
         setName('');
         setNumber('');
+        setColor('black')
     }
 
     const restApi = useRestApi();
 
-    useEffect(() => {
-        if(!open)
-            return;
+    // useEffect(() => {
+    //     if(!open)
+    //         return;
 
-        setWallet({
-            name: "",
-            value: 0,
-            color: ""
-        });
+    //     setWallet({
+    //         name: "",
+    //         value: 0,
+    //         color: ""
+    //     });
 
-        setValueError(undefined);
-        setNameError(undefined);
-        setColorError(undefined);
+    //     setValueError(undefined);
+    //     setNameError(undefined);
+    //     setColorError(undefined);
 
-        setLoading(true);
+    //     setLoading(true);
 
-        let promiseList = [];
+    //     let promiseList = [];
 
-        promiseList.push(loadColor());
-        if (open && walletId != null) {
-            promiseList.push(loadWallet());
-        }
+    //     promiseList.push(loadColor());
+    //     if (open && walletId != null) {
+    //         promiseList.push(loadWallet());
+    //     }
 
-        Promise.all(promiseList).finally(() => {
-            setLoading(false);
-        })
+    //     Promise.all(promiseList).finally(() => {
+    //         setLoading(false);
+    //     })
 
-    }, [open]);
+    // }, [open]);
 
-    function loadWallet() {
-        restApi.Wallet.Get(walletId)
-        .then(wallet => setWallet(wallet));
-    }
+    // function loadWallet() {
+    //     restApi.Wallet.Get(walletId)
+    //     .then(wallet => setWallet(wallet));
+    // }
 
     const loadColor = () => {
         axios.get("/color/list")
@@ -81,92 +86,92 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
         })
     }
 
-    const saveOrModifyHandler = () => {
-        const formData = new FormData(form.current);
-        let myWallet: CreateWalletForm = WALLET_DEFAULT;
+    // const saveOrModifyHandler = () => {
+    //     const formData = new FormData(form.current);
+    //     let myWallet: CreateWalletForm = WALLET_DEFAULT;
 
-        setNameError(null);
-        setValueError(null);
+    //     setNameError(null);
+    //     setValueError(null);
 
-        const name = wallet.name;
-        const stringValue = wallet.value.toString().replaceAll(/\s+/g, "");
+    //     const name = wallet.name;
+    //     const stringValue = wallet.value.toString().replaceAll(/\s+/g, "");
 
-        if (checkError())
-            return;
+    //     if (checkError())
+    //         return;
 
-        myWallet.name = name;
-        myWallet.value = parseFloat(stringValue.replace(",", "."));
-        myWallet.color = wallet.color;
+    //     myWallet.name = name;
+    //     myWallet.value = parseFloat(stringValue.replace(",", "."));
+    //     myWallet.color = wallet.color;
 
-        if(walletId == null)
-            saveNewWallet();
-        else 
-            editWallet(myWallet, walletId);
+    //     if(walletId == null)
+    //         saveNewWallet();
+    //     else 
+    //         editWallet(myWallet, walletId);
 
-        function checkError() {
-            const valueRegex = /^[\d]+(?:[\.,][\d]+)?$/;
-            let thereIsError = false;
+    //     function checkError() {
+    //         const valueRegex = /^[\d]+(?:[\.,][\d]+)?$/;
+    //         let thereIsError = false;
 
-            if (name.trim().length == 0) {
-                setNameError("Il nome non può essere vuoto");
-                thereIsError = true;
-            }
+    //         if (name.trim().length == 0) {
+    //             setNameError("Il nome non può essere vuoto");
+    //             thereIsError = true;
+    //         }
 
-            if (!valueRegex.test(stringValue)) {
-                setValueError("Il valore deve essere un valore monetario valido");
-                thereIsError = true;
-            }
+    //         if (!valueRegex.test(stringValue)) {
+    //             setValueError("Il valore deve essere un valore monetario valido");
+    //             thereIsError = true;
+    //         }
 
-            if(wallet.color == "") {
-                setColorError("Il colore è un campo obbligatorio");
-                thereIsError = true;
-            }
+    //         if(wallet.color == "") {
+    //             setColorError("Il colore è un campo obbligatorio");
+    //             thereIsError = true;
+    //         }
 
-            return thereIsError;
-        }
+    //         return thereIsError;
+    //     }
 
-        function editWallet(wallet, walletId) {
-            setLoading(true);
+    //     function editWallet(wallet, walletId) {
+    //         setLoading(true);
 
-            restApi.Wallet.Modify(walletId, wallet)
-            .then(() => {
-                onClose(true);
-            })
-            .catch(Request.ErrorGestor([{
-                code: 102,
-                action: _ => {
-                    setNameError("Il nome è gia presente");
-                }
-            }]))
-            .finally(() => {
-                setLoading(false);
-            })
-        }
+    //         restApi.Wallet.Modify(walletId, wallet)
+    //         .then(() => {
+    //             onClose(true);
+    //         })
+    //         .catch(Request.ErrorGestor([{
+    //             code: 102,
+    //             action: _ => {
+    //                 setNameError("Il nome è gia presente");
+    //             }
+    //         }]))
+    //         .finally(() => {
+    //             setLoading(false);
+    //         })
+    //     }
 
-        function saveNewWallet() {
-            setLoading(true);
+    //     function saveNewWallet() {
+    //         setLoading(true);
 
-            restApi.Wallet.Create(wallet)
-            .then(id => {
-                onClose(true);
-            })
-            .catch(Request.ErrorGestor([{
-                code: 102,
-                action: _ => setNameError("Il nome esiste già"),
-            }]))
-            .finally(() => {
-                setLoading(false);
-            })
-        }
-    }
+    //         restApi.Wallet.Create(wallet)
+    //         .then(id => {
+    //             onClose(true);
+    //         })
+    //         .catch(Request.ErrorGestor([{
+    //             code: 102,
+    //             action: _ => setNameError("Il nome esiste già"),
+    //         }]))
+    //         .finally(() => {
+    //             setLoading(false);
+    //         })
+    //     }
+    // }
 
-    const onCloseHandler = () => {
-        onClose(false);
+    // const onCloseHandler = () => {
+    //     onClose(false);
         
-    }
+    // }
+    
 
     return (
-
         <div className="popUp_page" >
             <div className="popUp_page__container">
                 <div className="popUp_container">
@@ -174,7 +179,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                     <div className="input_text">
                         <label className='text' id="font" htmlFor="username">
                             Nome portafoglio
-                            <input type="text" className="information " id="username" name="username" value={name}
+                            <input type="text" className="information " id="username" name="username" value={Name}
                             onChange={(e) => setName(e.target.value)}/>
                         </label>
                         
@@ -187,11 +192,11 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
                     <label htmlFor="favcolor" className="popUp_text" id="font">
                         Scegli un colore 
-                        <input type="color" className="color_picker" id="favcolor" name="favcolor" value="#ff0000"/>
+                        <input className="color_picker" id="favcolor" name="favcolor" type="color" value={color} onChange={e => setColor(e.target.value)}/>
                     </label>
 
-                    <button type="submit" value="Submit" className="submit" id="font" onClick={saveOrModifyHandler} disabled={loading}>{walletId != null? "modifica" : "Salva"}  </button>
-                    <button type="reset" value="Reset" className="submit" id="font" onClick={onClickResetHandler}> Annulla </button>
+                    <button type="submit" value="Submit" className="submit" id="font" onClick={() => setIsPopoverOpen(!isPopoverOpen)} disabled={loading}>Salva  </button>
+                    <button type="reset" value="Reset" className="submit" id="font" onClick={onClose}> Annulla </button>
                 </div>
                 
             </div>
@@ -320,3 +325,4 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
         // </Dialog>
     );
 }
+export default WalletDialog;
