@@ -19,13 +19,16 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
     const [deleteWalletId, setDeleteWalletId] = useState<number>(undefined);
     const [isOpen, setIsOpen] = useState(false);
+    const [isButtonVisible, setIsButtonVisible] = useState(true);
 
     const handleOpen = () => {
     setIsOpen(true);
+    setIsButtonVisible(false);
     };
 
     const handleClose = () => {
     setIsOpen(false);
+    setIsButtonVisible(true);
     };
     const restApi = useRestApi();
     const router = useRouter();
@@ -75,7 +78,9 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
 
     return (
         <div>
-            <button onClick={handleOpen}>Add</button>
+            {isButtonVisible && (
+                <button onClick={handleOpen}>Add</button>
+            )}
             {isOpen && (
                 <div className="popup-container">
                 <div className="popup">
