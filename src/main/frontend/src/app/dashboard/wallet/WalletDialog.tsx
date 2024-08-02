@@ -23,6 +23,7 @@ interface IWalletDialog {
     };
   
     return (
+        
       <form onSubmit={handleSubmit}>
         <label>
           Name:

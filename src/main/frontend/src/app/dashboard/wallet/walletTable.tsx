@@ -24,29 +24,28 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
         name: '',
         value: 0,
         // Add any other properties that are required for a wallet object
-      });
-      
-      const closeWalletDialogHandler = (isSave: boolean, formData: any) => {
+    });
+    
+    const closeWalletDialogHandler = (isSave: boolean, formData: any) => {
         setOpenWalletDialog(false);
-      
+        
         if (isSave) {
-          const newWallet: Wallet = {
-            id: Math.random(), // Generate a random ID for the new wallet
-            name: formData.name,
-            value: formData.value,
-            favorite: formData.favorite,
-            color: formData.color,
-          };
-          setUpdatedWallets((prevWallets) => {
-            if (Array.isArray(prevWallets)) {
-              return [...prevWallets, newWallet];
-            } else {
-              return [newWallet];
-            }
-          });
-      
+            const newWallet: Wallet = {
+                id: Math.random(), // Generate a random ID for the new wallet
+                name: formData.name,
+                value: formData.value,
+                favorite: formData.favorite,
+                color: formData.color,
+            };
+            setUpdatedWallets((prevWallets) => {
+                if (Array.isArray(prevWallets)) {
+                    return [...prevWallets, newWallet];
+                } else {
+                    return [newWallet];
+                }
+            });
         }
-      };
+    };
 
     const handleOpen = () => {
     setIsOpen(true);
@@ -115,9 +114,9 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
                 )}
                 {isOpen && (
                     <div className="popup-container">
-                    <div className="popup">
-                        <WalletDialog onClose={(isSave, formData) => closeWalletDialogHandler(isSave, formData)}/>
-                    </div>
+                        <div className="popup">
+                            <WalletDialog onClose={(isSave, formData) => {handleClose(); closeWalletDialogHandler(isSave, formData);}}  />
+                        </div>
                     </div>
                 )}
             </div>
@@ -125,7 +124,8 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
                 {updatedWallets && Array.isArray(updatedWallets) && (
                     <div className="box_portfolio_grid">
                         {updatedWallets.map((wallet, index) => (
-                        <div key={index} className={`portfolio${index + 1}`}>
+                        <div id='portfolio' key={index} className={`portfolio${index + 1}`}>
+                            <div className="portfolio-name">{wallet.name}</div>
                             <img src="/walletWithoutBackground.png" alt={`portfolio_image${index + 1}`} />
                         </div>
                         ))}

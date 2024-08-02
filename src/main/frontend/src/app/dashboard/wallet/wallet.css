@@ -134,3 +134,15 @@ input:focus {
     flex-direction: column;
     align-items: flex-start;
 }
+
+#portfolio{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.portfolio-name{
+    font-family: 'Kaisei HarunoUmi';
+    color: white;
+    font-size: 2em;
+}
