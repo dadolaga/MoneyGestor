@@ -1,7 +1,5 @@
-import { useRouter } from 'next/navigation';
 import { forwardRef, useState } from 'react';
 import { Wallet } from "../../Utilities/BackEndTypes";
-import { useRestApi } from "../../request/Request";
 import { Order } from "../base/Order";
 import WalletDialog from "./WalletDialog";
 
@@ -13,13 +11,42 @@ interface IWalletTable {
     setSort: (_: Order) => void,
 }
 
-const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, ref) => {
+const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSort }: IWalletTable, ref) => {
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
     const [openDeleteWalletDialog, setOpenDeleteWalletDialog] = useState(false);
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
     const [deleteWalletId, setDeleteWalletId] = useState<number>(undefined);
     const [isOpen, setIsOpen] = useState(false);
     const [isButtonVisible, setIsButtonVisible] = useState(true);
+    const [updatedWallets, setUpdatedWallets] = useState(wallets);
+
+    const [newWalletFormData, setNewWalletFormData] = useState({
+        name: '',
+        value: 0,
+        // Add any other properties that are required for a wallet object
+      });
+      
+      const closeWalletDialogHandler = (isSave: boolean, formData: any) => {
+        setOpenWalletDialog(false);
+      
+        if (isSave) {
+          const newWallet: Wallet = {
+            id: Math.random(), // Generate a random ID for the new wallet
+            name: formData.name,
+            value: formData.value,
+            favorite: formData.favorite,
+            color: formData.color,
+          };
+          setUpdatedWallets((prevWallets) => {
+            if (Array.isArray(prevWallets)) {
+              return [...prevWallets, newWallet];
+            } else {
+              return [newWallet];
+            }
+          });
+      
+        }
+      };
 
     const handleOpen = () => {
     setIsOpen(true);
@@ -30,66 +57,81 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
     setIsOpen(false);
     setIsButtonVisible(true);
     };
-    const restApi = useRestApi();
-    const router = useRouter();
 
-    const favoriteHandler = (id) =>  async (event) => {
-        let wallet = await restApi.Wallet.Get(id);
 
-        restApi.Wallet.Modify(id, { favorite: !wallet.favorite })
-        .then(() => {
-            refreshWallets();
-        })
-    }
+    // const restApi = useRestApi();
+    // const router = useRouter();
 
-    const closeWalletDialogHandler = (isSave: boolean) => {
-        setOpenWalletDialog(false);
+    // const favoriteHandler = (id) =>  async (event) => {
+    //     let wallet = await restApi.Wallet.Get(id);
 
-        if(isSave)
-            refreshWallets();
-    }
+    //     restApi.Wallet.Modify(id, { favorite: !wallet.favorite })
+    //     .then(() => {
+    //         refreshWallets();
+    //     })
+    // }
 
-    const clickCreteNewWalletHandler = () => {
-        setEditWalletId(undefined);
-        setOpenWalletDialog(true);
-    }
+    // const closeWalletDialogHandler = (isSave: boolean) => {
+    //     setOpenWalletDialog(false);
 
-    const editWalletHandler = (id: number) => () => {
-        setEditWalletId(id);
-        setOpenWalletDialog(true);
-    }
+    //     if(isSave)
+    //         refreshWallets();
+    // }
 
-    const deleteWalletHandler = (id: number) => () => {
-        setDeleteWalletId(id);
-        setOpenDeleteWalletDialog(true);
-    }
+    // const clickCreteNewWalletHandler = () => {
+    //     setEditWalletId(undefined);
+    //     setOpenWalletDialog(true);
+    // }
 
-    const closeDeleteDialogHandler = (isDeleted: boolean) => {
-        setOpenDeleteWalletDialog(false);
+    // const editWalletHandler = (id: number) => () => {
+    //     setEditWalletId(id);
+    //     setOpenWalletDialog(true);
+    // }
 
-        if(isDeleted)
-            refreshWallets();
-    }
+    // const deleteWalletHandler = (id: number) => () => {
+    //     setDeleteWalletId(id);
+    //     setOpenDeleteWalletDialog(true);
+    // }
 
-    const clickOnOrderHandler = (nameOfElement: string) => () => {
-        setSort(sort.clickOnElement(nameOfElement));
+    // const closeDeleteDialogHandler = (isDeleted: boolean) => {
+    //     setOpenDeleteWalletDialog(false);
 
-    }
+    //     if(isDeleted)
+    //         refreshWallets();
+    // }
+
+    // const clickOnOrderHandler = (nameOfElement: string) => () => {
+    //     setSort(sort.clickOnElement(nameOfElement));
+
+    // }
 
     return (
-        <div>
-            {isButtonVisible && (
-                <button className="addButton" onClick={handleOpen}>
-                    <img src="/newProtafoglio.svg" alt="add_image" className="add_image" />
-                    AGGIUNGI NUOVO PORTAFOGLIO</button>
-            )}
-            {isOpen && (
-                <div className="popup-container">
-                <div className="popup">
-                    <WalletDialog onClose={handleClose} />
-                </div>
-                </div>
-            )}
+        <div className="portfolio_container">
+            <div className='app_container'>
+                {isButtonVisible && (
+                    <button className="addButton" onClick={handleOpen}>
+                        <img src="/newProtafoglio.svg" alt="add_image" className="add_image" />
+                        AGGIUNGI NUOVO PORTAFOGLIO</button>
+                )}
+                {isOpen && (
+                    <div className="popup-container">
+                    <div className="popup">
+                        <WalletDialog onClose={(isSave, formData) => closeWalletDialogHandler(isSave, formData)}/>
+                    </div>
+                    </div>
+                )}
+            </div>
+            <div className="box_portfolio">
+                {updatedWallets && Array.isArray(updatedWallets) && (
+                    <div className="box_portfolio_grid">
+                        {updatedWallets.map((wallet, index) => (
+                        <div key={index} className={`portfolio${index + 1}`}>
+                            <img src="/walletWithoutBackground.png" alt={`portfolio_image${index + 1}`} />
+                        </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
         // <Box sx={{height: '100%', flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
         //     <WalletDialog open={openWalletDialog} onClose={closeWalletDialogHandler} walletId={editWalletId} />

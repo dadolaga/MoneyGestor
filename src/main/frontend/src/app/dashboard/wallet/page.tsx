@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Wallet } from '../../Utilities/BackEndTypes'
 import { useRestApi } from '../../request/Request'
 import { Order } from '../base/Order'
-import { WalletPie } from './WalletPie'
 import WalletTable from './walletTable'
 
 export default function Page() {
@@ -34,9 +33,8 @@ export default function Page() {
     }
 
     return (
-        <Box sx={{height: '100%', display: 'flex', flexDirection: "row", alignItems: 'center'}}>
+        <Box>
             <WalletTable ref={tableWallet} refreshWallets={refreshWalletHandler} wallets={wallets} loading={loading} sort={sort} setSort={setSort}/>
-            <WalletPie wallets={wallets} loading={loading} />
         </Box>
     )
 }
