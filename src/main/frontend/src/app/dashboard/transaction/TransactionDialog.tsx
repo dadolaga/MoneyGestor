@@ -171,7 +171,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
     }
 
     return (
-        <Dialog open={open} onClose={onclose} TransitionComponent={TransitionDialog}>
+        <Dialog open={open} onClose={onClose} TransitionComponent={TransitionDialog}>
             <AddNewTypeDialog open={openAddNewTypeDialog} onClose={closeAddNewTypeHandler} />
             {loading && <LinearProgress />}
             <DialogTitle>Crea nuova transazione</DialogTitle>
