@@ -99,6 +99,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
             throw new TokenExpiredException();
     }
 
+    // TODO insert EntityNotFoundException check when user not found
     public UserDb getFromAuthorizationTokenAndCheckToken(String authorizationToken) {
         var user = getFromAuthorizationToken(authorizationToken);
         checkValidityOfUser(user);

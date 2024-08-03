@@ -43,6 +43,11 @@ export interface TransactionForm {
     typeId: number;
 }  
 
+export interface GraphDataSend {
+    start: string,
+    end: string,
+}
+
 // RECEIVE FROM SERVER
 export interface User {
     lastname: string,
@@ -77,6 +82,11 @@ export interface Transaction {
     walletDestination?: Wallet;
     transactionDestinationId?: number;
     type: TransactionType;
+}
+
+export interface LineGraph<LINE, VALUES> {
+    line: LINE,
+    values: VALUES[],
 }
 
 export class Color implements IFormMultiType {

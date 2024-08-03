@@ -1,13 +1,34 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import { ResponsiveLine } from '@nivo/line'
-import axios from '../../axios/axios'
-import { useCookies } from 'react-cookie';
+import { Datum, ResponsiveLine, Serie } from '@nivo/line'
 import { convertNumberToValue } from '../../Utilities/Utilities';
+import { useRestApi } from '../../request/Request';
+import { LineGraph, Transaction, Wallet } from '../../Utilities/BackEndTypes';
+import { ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { convertToReturnDate, sendDateToBackEnd } from '../../Utilities/BackEndUtilities';
 
 export const TransactionGraph = forwardRef((props, ref) => {
-    const [transactions, setTransactions] = useState([]);
+    const [graphData, setGraphData] = useState<LineGraph<Wallet, Transaction>[]>([]);
 
-    const [cookie, setCookie] = useCookies(['_token']);
+    const restApi = useRestApi();
+
+    const generateStartDate: () => Date = () => {
+        let date = new Date();
+        date.setMonth(date.getMonth() - 1);
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        return date;
+    }
+
+    const generateEndDate: () => Date = () => {
+        let date = new Date();
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        return date;
+    }
 
     useImperativeHandle(ref, () => ({
         loadTransaction,
@@ -18,84 +39,60 @@ export const TransactionGraph = forwardRef((props, ref) => {
     }, [])
 
     function loadTransaction() {
-        axios.get("/transaction/graph", {
-            headers: {
-                Authorization: cookie._token
-            }
+        restApi.Transaction.Graph({
+            start: sendDateToBackEnd(generateStartDate()),
+            end: sendDateToBackEnd(generateEndDate()),
         })
-        .then((message) => {
-            let newData = [];
+        .then(lineGraph => {setGraphData(lineGraph)});
+    }
 
-            message.data.forEach((value) => {
-                let data = {
-                    id: value.id,
-                    color: "#" + value.color,
-                    data: []
-                };
+    function convertToGraphData(data: LineGraph<Wallet, Transaction>[]): any[] {
+        const endDate = generateEndDate();
+        let progressiveDate = new Date(generateStartDate());
+        let graphArrayData: any[] = [];
 
-                value.data.forEach((value) => {
-                    data.data.push({
-                        x: new Date(value.x[0], value.x[1] - 1, value.x[2]),
-                        y: value.y
-                    });
-                });
+        let positions: number[] = [];
+        let previousValue: number[] = [];
+        while(progressiveDate <= endDate) {
+            let object = { name: new Date(progressiveDate) };
 
-                newData.push(data);
-            });
+            let index: number = 0;
+            for (const wallet of data) {
+                if(positions[index] === undefined)
+                    positions[index] = 0;
 
-            setTransactions(newData);
-        });
+                let dateString = convertToReturnDate(progressiveDate);
+                
+                object[wallet.line.name] = previousValue[index];
+
+                while (positions[index] < wallet.values.length && dateString === wallet.values[positions[index]].date) {
+                    object[wallet.line.name] = previousValue[index]? (previousValue[index] + wallet.values[positions[index]].value) : wallet.values[positions[index]].value;
+                    previousValue[index] = object[wallet.line.name];
+                    positions[index]++;
+                }
+
+                index++;
+            }
+            
+            graphArrayData.push(object);
+            progressiveDate.setDate(progressiveDate.getDate() + 1);
+        }
+
+        return graphArrayData;
     }
 
     return (
-        <ResponsiveLine
-            data={transactions}
-            isInteractive
-            useMesh
-            theme={{
-                grid: {
-                    line: {
-                        opacity: .4
-                    }
-                }, 
-                tooltip: {
-                    basic: {
-                        zIndex: 1200
-                    }
-                }
-            }}
-            margin={{
-                top: 10,
-                left: 100,
-                bottom: 50,
-                right: 200
-            }}
-            legends={[{
-                anchor: 'right',
-                direction: 'column',
-                itemWidth: -50,
-                itemHeight: 23,
-                itemDirection: 'left-to-right',
-                itemTextColor: '#fff',
-            }]}
-            xScale={{
-                type: "time",
-                format: "%Y-%m-%d"
-            }}
-            yScale={{
-                type: 'linear',
-                min: 'auto'
-            }}
-            xFormat={(d: Date) => d.toLocaleDateString('it-IT', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-            })}
-            yFormat={(d: number) => convertNumberToValue(d)}
-            axisBottom={{
-                format: "%d/%m/%Y"
-            }}
-            colors={d => d.color} />
+        <ResponsiveContainer>
+            <LineChart data={convertToGraphData(graphData)} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <XAxis dataKey="name" tickFormatter={value => (value as Date).toLocaleString()} />
+                <YAxis />
+                <Tooltip formatter={value => value + " €"}/>
+                <Legend layout='vertical' verticalAlign="middle" align="right" margin={{left: 100}}/>
+                {graphData.map((value, key) => (
+                    <Line key={key} type="linear" dataKey={value.line.name} stroke={"#" + value.line.color} dot={false} />
+                ))}
+            </LineChart>
+        </ResponsiveContainer>
     )
 });
 

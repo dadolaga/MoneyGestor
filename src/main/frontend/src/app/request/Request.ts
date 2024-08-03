@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, LineGraph, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -99,6 +99,11 @@ export class Request {
             return this.baseRequestPost("transaction/edit/" + id, transaction)
             .then(response => response as void)
         },
+
+        Graph: async (data: GraphDataSend) => {
+            return this.baseRequestGet("transaction/graph", data)
+            .then(response => response as LineGraph<Wallet, Transaction>[])
+        }
     }
 
     public constructor(router: AppRouterInstance, 
@@ -130,13 +135,14 @@ export class Request {
         return this.baseRequest(true, url, data);
     }
 
-    private async baseRequestGet(url: string): Promise<any> {
-        return this.baseRequest(false, url);
+    private async baseRequestGet(url: string, data?: any): Promise<any> {
+        return this.baseRequest(false, url, data);
     }
 
     private async baseRequest(isPost: boolean, url: string, data?: any): Promise<any> {
         let axiosPromise: Promise<AxiosResponse<any, any>>;
         let axiosConfig: AxiosRequestConfig<any> = {
+            params: !isPost? data : undefined,
             headers: this.cookie._token && {
                 Authorization: this.cookie._token
             }

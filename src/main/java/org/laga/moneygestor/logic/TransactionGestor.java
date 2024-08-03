@@ -11,11 +11,15 @@ import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
+import org.laga.moneygestor.services.models.LineGraphData;
 import org.laga.moneygestor.services.models.Transaction;
+import org.laga.moneygestor.services.models.Wallet;
 import org.laga.moneygestor.utils.CompareUtilities;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -84,6 +88,58 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
                     .setMaxResults(limit)
                     .list();
         }
+    }
+
+    public LineGraph<WalletDb, TransactionDb> graph(UserDb userLogged, LocalDate start, LocalDate end) {
+        try (Session session = sessionFactory.openSession()) {
+            var lineGraph = new LineGraph<WalletDb, TransactionDb>(Comparator.comparing(WalletDb::getId));
+
+            WalletGestor walletGestor = new WalletGestor(sessionFactory);
+
+            var listOfWallet = walletGestor.getAll(session, userLogged);
+
+            var queryOfTransactions = session.createQuery(
+                        "FROM TransactionDb WHERE walletId = :wallet AND userInsertTransaction = :user AND date BETWEEN :startDate AND :endDate ORDER BY date ASC",
+                            TransactionDb.class)
+                    .setParameter("user", userLogged)
+                    .setParameter("startDate", start)
+                    .setParameter("endDate", end.plusDays(1));
+
+            var queryOfStartDate = session.createQuery(
+                    "SELECT SUM(value) FROM TransactionDb WHERE walletId = :wallet AND date >= :startDate",
+                    BigDecimal.class)
+                    .setParameter("startDate", start);
+
+            for(var wallet : listOfWallet) {
+                queryOfTransactions.setParameter("wallet", wallet.getId());
+                queryOfStartDate.setParameter("wallet", wallet.getId());
+
+                var listOfTransaction = new LinkedList<TransactionDb>();
+
+                var startValueOfWallet = wallet.getValue();
+                var sumOfTransaction = queryOfStartDate.getSingleResultOrNull();
+                startValueOfWallet = startValueOfWallet.subtract(sumOfTransaction == null? BigDecimal.ZERO : sumOfTransaction);
+
+                listOfTransaction.add(createFakeTransaction("Wallet start value", startValueOfWallet, start, wallet));
+                listOfTransaction.addAll(queryOfTransactions.getResultList());
+
+                lineGraph.addNewLine(wallet, listOfTransaction);
+            }
+
+            return lineGraph;
+        }
+    }
+
+    private TransactionDb createFakeTransaction(String name, BigDecimal value, LocalDate date, WalletDb wallet) {
+        var transaction = new TransactionDb();
+
+        transaction.setDescription(name);
+        transaction.setValue(value);
+        transaction.setDate(date);
+        transaction.setWallet(wallet);
+        transaction.setType(DatabaseInitializer.TRANSACTION_TYPE_TIE);
+
+        return transaction;
     }
 
     @Override
@@ -263,5 +319,20 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
             transactions.add(convertToRest(transaction));
 
         return transactions;
+    }
+
+    public static List<LineGraphData<Wallet, Transaction>> convertGraphToDataGraph(LineGraph<WalletDb, TransactionDb> lineGraph) {
+        List<LineGraphData<Wallet, Transaction>> listLineGraphData = new LinkedList<>();
+
+        for (var lineAndValues : lineGraph.getValues().entrySet()) {
+            LineGraphData<Wallet, Transaction> data = new LineGraphData<>();
+
+            data.setLine(WalletGestor.convertToRest(lineAndValues.getKey()));
+            data.setValues(TransactionGestor.convertToRest(lineAndValues.getValue()));
+
+            listLineGraphData.add(data);
+        }
+
+        return listLineGraphData;
     }
 }
