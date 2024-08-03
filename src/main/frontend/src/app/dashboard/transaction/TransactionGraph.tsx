@@ -84,12 +84,12 @@ export const TransactionGraph = forwardRef((props, ref) => {
     return (
         <ResponsiveContainer>
             <LineChart data={convertToGraphData(graphData)} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <XAxis dataKey="name" tickFormatter={value => (value as Date).toLocaleString()} />
-                <YAxis />
-                <Tooltip formatter={value => value + " €"}/>
+                <XAxis dataKey="name" tickFormatter={value => (value as Date).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day:'2-digit' })} />
+                <YAxis tickFormatter={value => value + " €"} />
+                <Tooltip formatter={value => convertNumberToValue(value as number)} />
                 <Legend layout='vertical' verticalAlign="middle" align="right" margin={{left: 100}}/>
                 {graphData.map((value, key) => (
-                    <Line key={key} type="linear" dataKey={value.line.name} stroke={"#" + value.line.color} dot={false} />
+                    <Line key={key} type="linear" dataKey={value.line.name} stroke={"#" + value.line.color} dot={false}  />
                 ))}
             </LineChart>
         </ResponsiveContainer>
