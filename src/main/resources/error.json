@@ -32,6 +32,10 @@
       "code": 112,
       "httpStatusCode": 400,
       "message": "Login error"
+    }, {
+      "code": 201,
+      "httpStatusCode": 400,
+      "message": "User try to insert a transaction and wallet goes negative"
     }
   ]
 }

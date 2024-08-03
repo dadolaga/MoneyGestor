@@ -119,7 +119,10 @@ export default function TransactionDialog({open, onClose, transactionId}) {
         .then(() => {
             onClose(true);
         })
-        .catch(Request.ErrorGestor([]))
+        .catch(Request.ErrorGestor([{
+            code: 201,
+            action: () => setForm(form => form.setManualError("value", "Il portafoglio andrebbe in negativo"))
+        }]))
         .finally(() => {
             setLoading(false);
         })
@@ -139,6 +142,10 @@ export default function TransactionDialog({open, onClose, transactionId}) {
 
         restApi.Transaction.Modify(transactionId, transactionForm)
         .then(() => onClose(true))
+        .catch(Request.ErrorGestor([{
+            code: 201,
+            action: () => setForm(form => form.setManualError("value", "Il portafoglio andrebbe in negativo"))
+        }]))
         .finally(() => setLoading(false));
     }
 

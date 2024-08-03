@@ -6,10 +6,14 @@ import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.DateUtilities;
 import org.laga.moneygestor.logic.TransactionGestor;
+import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
+import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.TransactionForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -38,14 +42,18 @@ public class TransactionRest extends BaseRest {
         transaction.setWalletId(transactionForm.getWallet());
         transaction.setUserOfTransactionId(userLogged.getId());
 
-        Long idInserted;
-        if(Objects.equals(transactionForm.getTypeId(), DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId())) {
-            idInserted = transactionGestor.insertMoneyTransfer(userLogged, transaction, transactionForm.getWalletDestination());
-        } else {
-            idInserted = transactionGestor.insert(userLogged, transaction);
-        }
+        try {
+            Long idInserted;
+            if(Objects.equals(transactionForm.getTypeId(), DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId())) {
+                idInserted = transactionGestor.insertMoneyTransfer(userLogged, transaction, transactionForm.getWalletDestination());
+            } else {
+                idInserted = transactionGestor.insert(userLogged, transaction);
+            }
 
-        return Response.sendId(idInserted);
+            return Response.sendId(idInserted);
+        } catch (NegativeWalletException ignored) {
+            throw new HttpException(201, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/list")
@@ -87,9 +95,13 @@ public class TransactionRest extends BaseRest {
         if(transaction.getTypeId().equals(DatabaseInitializer.TRANSACTION_TYPE_SWITCH.getId()))
             transaction.getTransactionDestination().setWalletId(transactionForm.getWalletDestination());
 
-        transactionGestor.update(userLogged, id, transaction);
+        try {
+            transactionGestor.update(userLogged, id, transaction);
 
-        return Response.ok();
+            return Response.ok();
+        } catch (NegativeWalletException ignored) {
+            throw new HttpException(201, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/delete/{id}")

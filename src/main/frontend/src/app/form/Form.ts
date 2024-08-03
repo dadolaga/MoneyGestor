@@ -95,6 +95,6 @@ export const BaseChecker = {
     },
 
     isNotNumber: (value: string): boolean => {
-        return !/^[\d]+(?:[.,][\d]+)?$/gm.test(value);
+        return !/^-?[\d]+(?:[.,][\d]+)?$/gm.test(value);
     }
 }
