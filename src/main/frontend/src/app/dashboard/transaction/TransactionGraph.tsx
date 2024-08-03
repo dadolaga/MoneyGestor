@@ -1,9 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import { Datum, ResponsiveLine, Serie } from '@nivo/line'
 import { convertNumberToValue } from '../../Utilities/Utilities';
 import { useRestApi } from '../../request/Request';
 import { LineGraph, Transaction, Wallet } from '../../Utilities/BackEndTypes';
-import { ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { convertToReturnDate, sendDateToBackEnd } from '../../Utilities/BackEndUtilities';
 
 export const TransactionGraph = forwardRef((props, ref) => {

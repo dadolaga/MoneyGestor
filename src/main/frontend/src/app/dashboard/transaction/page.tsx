@@ -45,15 +45,19 @@ export default function Page() {
     }
 
     const closeDeleteDialogHandler = (isToReload: boolean) => {
-        if(isToReload)
+        if(isToReload) {
             loadTransactions();
+            graph.current.loadTransaction();
+        }
 
         setOpenTransactionDeleteDialog(false);
     } 
     
     const closeTransactionDialogHandler = (isToReload: boolean) => {
-        if(isToReload)
+        if(isToReload) {
             loadTransactions();
+            graph.current.loadTransaction();
+        }
 
         setOpenTransactionDialog(false);
     } 
