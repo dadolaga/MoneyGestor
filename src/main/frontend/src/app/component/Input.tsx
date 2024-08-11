@@ -1,7 +1,7 @@
 import { FilledInputProps, FormControl, FormHelperText, InputLabel, InputProps, MenuItem, OutlinedInputProps, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { Form } from "../form/Form";
 import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from "react";
-import { IFormMultiType } from "../Utilities/Interfaces";
+import { IFormMultiType } from "../utilities/Interfaces";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs, { Dayjs } from "dayjs";

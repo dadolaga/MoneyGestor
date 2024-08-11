@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, LinearProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useRestApi } from "../../request/Request";
-import { Wallet } from "../../Utilities/BackEndTypes";
+import { Wallet } from "../../utilities/BackEndTypes";
 
 export default function DeleteDialog({open, onClose, walletId}) {
     const [showLoading, setShowLoading] = useState(false);
