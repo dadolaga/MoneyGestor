@@ -1,7 +1,6 @@
 package org.laga.moneygestor.logic;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.temporal.TemporalAmount;
 import java.util.Base64;
 import java.util.Random;

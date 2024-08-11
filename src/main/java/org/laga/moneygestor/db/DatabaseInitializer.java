@@ -46,7 +46,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private void persistIfNotExist(Session session, Object value, Object id) {
         if(session.get(value.getClass(), id) == null) {
-            session.persist(value);
+            session.merge(value);
         }
     }
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class MoneyGestorErrorSample {
 
-    private static  Logger logger = LoggerFactory.getLogger(MoneyGestorErrorSample.class);
+    private static final Logger logger = LoggerFactory.getLogger(MoneyGestorErrorSample.class);
 
     public static final Map<Integer, HttpException> mapOfError;
 

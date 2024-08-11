@@ -9,10 +9,10 @@ import java.util.List;
 
 public class GestorBaseUtilitiesTest<ID, T> {
 
-    private Gestor<ID, T> gestor;
-    private UserDb userLogged;
-    private T object;
-    private ID id;
+    private final Gestor<ID, T> gestor;
+    private final UserDb userLogged;
+    private final T object;
+    private final ID id;
 
     public GestorBaseUtilitiesTest(Gestor<ID, T> gestor, UserDb userLogged, T object, ID id) {
         this.gestor = gestor;

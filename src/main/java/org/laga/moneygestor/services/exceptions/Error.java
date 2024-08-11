@@ -1,8 +1,8 @@
 package org.laga.moneygestor.services.exceptions;
 
 public class Error {
-    private Integer code;
-    private String message;
+    private final Integer code;
+    private final String message;
 
     public Integer getCode() {
         return code;

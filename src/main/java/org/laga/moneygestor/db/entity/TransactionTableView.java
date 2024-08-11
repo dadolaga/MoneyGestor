@@ -52,7 +52,7 @@ public class TransactionTableView {
     }
 
     public void setDescription(String description) {
-        description = description;
+        this.description = description;
     }
 
     public BigDecimal getValue() {

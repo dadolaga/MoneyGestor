@@ -1,7 +1,5 @@
 package org.laga.moneygestor.logic;
 
-import org.hibernate.result.UpdateCountOutput;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
