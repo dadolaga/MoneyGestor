@@ -19,6 +19,11 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
     const [isOpen, setIsOpen] = useState(false);
     const [isButtonVisible, setIsButtonVisible] = useState(true);
     const [updatedWallets, setUpdatedWallets] = useState(wallets);
+    const [portfolioColor, setPortfolioColor] = useState('');
+
+    const updatePortfolioColor = (color: string) => {
+        setPortfolioColor(color);
+      };
 
     const [newWalletFormData, setNewWalletFormData] = useState({
         name: '',
@@ -115,7 +120,7 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
                 {isOpen && (
                     <div className="popup-container">
                         <div className="popup">
-                            <WalletDialog onClose={(isSave, formData) => {handleClose(); closeWalletDialogHandler(isSave, formData);}}  />
+                        <WalletDialog onClose={(isSave, formData) => {handleClose(); closeWalletDialogHandler(isSave, formData); }} updatePortfolioColor={(color) => updatePortfolioColor(color)}  />
                         </div>
                     </div>
                 )}
@@ -125,7 +130,7 @@ const WalletTable = forwardRef(({ wallets, loading, refreshWallets, sort, setSor
                     <div className="box_portfolio_grid">
                         {updatedWallets.map((wallet, index) => (
                         <div id='portfolio' key={index} className={`portfolio${index + 1}`}>
-                            <div className="portfolio-name">{wallet.name}</div>
+                            <div className="portfolio-name" style={{ color: wallet.color }}>{wallet.name}</div>
                             <img src="/walletWithoutBackground.png" alt={`portfolio_image${index + 1}`} />
                         </div>
                         ))}

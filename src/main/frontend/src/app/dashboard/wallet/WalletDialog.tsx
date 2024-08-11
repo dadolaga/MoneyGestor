@@ -1,15 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import './wallet.css';
 
 interface IWalletDialog {
     onClose: (isSave: boolean, formData: any) => void;
+    updatePortfolioColor: (color: string) => void;
   }
   
-  const WalletDialog: React.FC<IWalletDialog> = ({ onClose }) => {
+  const WalletDialog: React.FC<IWalletDialog> = ({ onClose, updatePortfolioColor }) => {
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [selectedColor, setSelectedColor] = useState('');
+
     const [formData, setFormData] = React.useState({
       name: '',
-      value: 0,
+      value: 1,
+      color: '',
       // Add any other properties that are required for a wallet object
     });
   
@@ -19,21 +25,68 @@ interface IWalletDialog {
     };
   
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData({ ...formData, [event.target.name]: event.target.value });
-    };
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+    if (event.target.name === 'color') {
+      setSelectedColor(event.target.value);
+    }
+  };
+
+  const handleSave = () => {
+    onClose(true, formData);
+    updatePortfolioColor(selectedColor);
+  };
   
     return (
-        
+//        <div className="popUp_page" >
+//         //     <div className="popUp_page__container">
+//         //         <div className="popUp_container">
+//         //             <h1 className="popUp_text" id="font">Crea un nuovo portafoglio</h1>
+//         //             <div className="input_text">
+//         //                 <label className='text' id="font" htmlFor="username">
+//         //                     Nome portafoglio
+//         //                     <input type="text" className="information " id="username" name="username" value={Name}
+//         //                     onChange={(e) => setName(e.target.value)}/>
+//         //                 </label>
+                        
+//         //                 <label htmlFor="quantity" className='text' id="font">
+//         //                     Ammontare
+//         //                         <input type="number" className="information custom-input " id="quantity" name="quantity" min="1" max="1000000" value={number}
+//         //                         onChange={(e) => setNumber(e.target.value)}/>
+//         //                 </label>
+//         //             </div>
+
+//         //             <label htmlFor="favcolor" className="text" id="font">
+//         //                 Scegli un colore :
+//         //                 <input className="color_picker" id="favcolor" name="favcolor" type="color" value={color} onChange={e => setColor(e.target.value)}/>
+//         //             </label>
+//         //             <div className="input-button">
+//         //                 <button type="submit" value="Submit" className="submit" id="font" onClick={() => setIsPopoverOpen(!isPopoverOpen)} disabled={loading}>Salva  </button>
+//         //                 <button type="reset" value="Reset" className="submit" id="font" onClick={onClose}> Annulla </button>
+//         //             </div>
+//         //         </div>
+                
+//         //     </div>
+//         // </div>
       <form onSubmit={handleSubmit}>
-        <label>
-          Name:
-          <input type="text" name="name" value={formData.name} onChange={handleChange} />
+        <div className="input_text">
+            <label className='text' id="font" htmlFor="username">
+                Nome portafoglio
+                <input type="text" name="name" className="information " id="username" value={formData.name} onChange={handleChange} />
+            </label>
+            <label htmlFor="quantity" className='text' id="font">
+                Ammontare
+                <input type="number" name="value" className="information custom-input " id="quantity" min="1" max="1000000" value={formData.value} onChange={handleChange} />
+            </label>
+        </div>
+        <label htmlFor="favcolor" className="text" id="font">
+                Scegli un colore :
+                <input className="color_picker" id="favcolor" name="color" type="color" value={formData.color} onChange={handleChange}/>
         </label>
-        <label>
-          Value:
-          <input type="number" name="value" value={formData.value} onChange={handleChange} />
-        </label>
-        <button type="submit">Save</button>
+        
+        <div className="input-button">
+                <button type="submit" value="Submit" className="submit" id="font" onClick={() => setIsPopoverOpen(!isPopoverOpen)} disabled={loading}>Salva  </button>
+             <button type="reset" value="Reset" className="submit" id="font" onClick={() => onClose(false, formData)}> Annulla </button>
+         </div>
       </form>
     );
   };
@@ -386,3 +439,7 @@ interface IWalletDialog {
 //     );
 // }
 export default WalletDialog;
+
+function updatePortfolioColor(value: string) {
+    throw new Error("Function not implemented.");
+}

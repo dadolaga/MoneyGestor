@@ -115,6 +115,7 @@ input:focus {
 
 .box_portfolio{
     display: flex;
+    
 }
 
 .box_portfolio_grid{
@@ -132,7 +133,8 @@ input:focus {
     display: flex;
     row-gap: 30px;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    padding-top: 50px;
 }
 
 #portfolio{
@@ -146,3 +148,13 @@ input:focus {
     color: white;
     font-size: 2em;
 }
+
+.portfolio-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-image: url('/walletWithoutBackground.png'); /* replace with your image path */
+  }
+
