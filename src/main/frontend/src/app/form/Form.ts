@@ -1,4 +1,4 @@
-import { IFormMultiType } from "../Utilities/Interfaces";
+import { IFormMultiType } from "../utilities/Interfaces";
 
 export interface FormSettings {
     name: string,

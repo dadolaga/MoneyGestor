@@ -1,13 +1,10 @@
 "use client"
 
-import './style.css'
 import { useState, useRef, use, KeyboardEventHandler } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCookies } from 'react-cookie';
 import { Alert, Box, Button, Card, CardContent, LinearProgress, TextField, Typography } from '@mui/material';
-import { useDispatch } from 'react-redux'
-import { changeName } from '../../../redux/userSlice';
-import { LoginForm } from '../../../Utilities/BackEndTypes'
+import { LoginForm } from '../../../utilities/BackEndTypes'
 import { Request, useRestApi } from '../../../request/Request';
 
 export default function Page() {
@@ -19,7 +16,6 @@ export default function Page() {
     const form = useRef();
     const router = useRouter();
     const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
-    const dispatch = useDispatch();
 
     const restApi = useRestApi();
 
@@ -90,7 +86,7 @@ export default function Page() {
     }
 
     return(
-        <Box className="center">
+        <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
             <Card>
                 {loading && <LinearProgress sx={{width: "100%"}}/>}
                 <CardContent sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}>

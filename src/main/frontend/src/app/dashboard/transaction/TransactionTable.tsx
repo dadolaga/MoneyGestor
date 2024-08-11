@@ -1,8 +1,8 @@
 import { Box, Chip, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightLong, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { convertNumberToValue } from "../../Utilities/Utilities";
-import { Transaction } from "../../Utilities/BackEndTypes";
+import { convertNumberToValue } from "../../utilities/Utilities";
+import { Transaction } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
 
 const ID_EXCHANGE_TYPE = 1;

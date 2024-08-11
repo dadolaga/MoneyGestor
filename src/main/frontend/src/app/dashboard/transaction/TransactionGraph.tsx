@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
-import { convertNumberToValue } from '../../Utilities/Utilities';
+import { convertNumberToValue } from '../../utilities/Utilities';
 import { useRestApi } from '../../request/Request';
-import { LineGraph, Transaction, Wallet } from '../../Utilities/BackEndTypes';
+import { LineGraph, Transaction, Wallet } from '../../utilities/BackEndTypes';
 import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { convertToReturnDate, sendDateToBackEnd } from '../../Utilities/BackEndUtilities';
+import { convertToReturnDate, sendDateToBackEnd } from '../../utilities/BackEndUtilities';
 
 export const TransactionGraph = forwardRef((props, ref) => {
     const [graphData, setGraphData] = useState<LineGraph<Wallet, Transaction>[]>([]);

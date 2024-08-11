@@ -1,4 +1,3 @@
-import { Provider } from 'react-redux'
 import './globals.css'
 import './modal.css'
 import { Inter } from 'next/font/google'

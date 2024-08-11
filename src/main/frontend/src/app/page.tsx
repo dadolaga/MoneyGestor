@@ -1,16 +1,15 @@
 "use client"
 
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [])
   return (
-    <ul>
-      <li>
-        <Link href="/">Home</Link>
-      </li>
-      <li>
-        <Link href="/dashboard">Dashboard</Link>
-      </li>
-    </ul>
+    <> </>
   )
 }

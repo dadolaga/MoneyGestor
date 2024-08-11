@@ -8,7 +8,7 @@ import TransactionDialog from "./TransactionDialog";
 import { TransactionTable } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
 import { TransactionGraph } from './TransactionGraph';
-import { Transaction } from '../../Utilities/BackEndTypes';
+import { Transaction } from '../../utilities/BackEndTypes';
 import { useRestApi } from '../../request/Request';
 import { Order } from '../base/Order';
 
