@@ -1,7 +1,7 @@
 import { faPen, faPlus, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faStar as faStartEmpty} from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { Box, Button, LinearProgress, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel } from "@mui/material";
 import { useState, forwardRef } from 'react'
 import WalletDialog from "./WalletDialog";
 import DeleteDialog from "./DeleteDialog";
@@ -123,6 +123,21 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
                                 )
                             })}
                         </TableBody>
+                        <TableFooter>
+                            <TableRow>
+                                <TableCell sx={{textTransform: 'uppercase', fontWeight: 600, fontSize: '1em', fontStyle: 'italic'}}>
+                                    totale
+                                </TableCell>
+                                <TableCell sx={{textAlign: 'end', fontWeight: 600, fontSize: '1.1em'}}>
+                                    {wallets? (
+                                        convertNumberToValue(wallets
+                                        .map(wallet => wallet.value)
+                                        .reduce((value, currentValue) => value + currentValue, 0))
+                                    ) : (<Skeleton variant="text" />)}
+                                </TableCell>
+                                <TableCell colSpan={3} />
+                            </TableRow>
+                        </TableFooter>
                     </Table>
                 </TableContainer>
             </Paper>

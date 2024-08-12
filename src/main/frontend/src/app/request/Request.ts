@@ -45,6 +45,11 @@ export class Request {
             return this.baseRequestGet("wallet/list?sort=" + encodeURI(listData.order))
             .then(response => response as Wallet[])
         },
+
+        Total: async (): Promise<number> => {
+            return this.baseRequestGet("wallet/total")
+            .then(response => response as number)
+        },
         
         Get: async (id: number): Promise<Wallet> => {
             return this.baseRequestGet("wallet/get/" + id)
