@@ -1,8 +1,8 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
-import { useState, useEffect, ChangeEventHandler } from "react";
+import { useState, useEffect } from "react";
 import axios from "../../axios/axios";
 import { Request, useRestApi } from "../../request/Request";
-import { Color, CreateWalletForm, Wallet } from "../../Utilities/BackEndTypes";
+import { Color, CreateWalletForm } from "../../utilities/BackEndTypes";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import Input from "../../component/Input";
 

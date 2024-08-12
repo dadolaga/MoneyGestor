@@ -7,11 +7,11 @@ import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightLong } from "@fortawesome/free-solid-svg-icons";
 import { Request, useRestApi } from "../../request/Request";
-import { TransactionForm, TransactionType, TransactionTypePrintable, Wallet, WalletPrintable } from "../../Utilities/BackEndTypes";
+import { TransactionForm, TransactionType, TransactionTypePrintable, Wallet, WalletPrintable } from "../../utilities/BackEndTypes";
 import { enqueueSnackbar } from "notistack";
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
-import { IFormMultiType } from "../../Utilities/Interfaces";
+import { IFormMultiType } from "../../utilities/Interfaces";
 
 const ID_EXCHANGE_TYPE = 1;
 

@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, LineGraph, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../Utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, LineGraph, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";

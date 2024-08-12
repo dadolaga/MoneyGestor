@@ -5,8 +5,8 @@ import { Box, Button, LinearProgress, Paper, Table, TableBody, TableCell, TableC
 import { useState, forwardRef } from 'react'
 import WalletDialog from "./WalletDialog";
 import DeleteDialog from "./DeleteDialog";
-import { convertNumberToValue } from "../../Utilities/Utilities";
-import { Wallet } from "../../Utilities/BackEndTypes";
+import { convertNumberToValue } from "../../utilities/Utilities";
+import { Wallet } from "../../utilities/BackEndTypes";
 import { useRestApi } from "../../request/Request";
 import { Order } from "../base/Order";
 

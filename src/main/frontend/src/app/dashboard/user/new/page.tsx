@@ -2,11 +2,11 @@
 
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { useState, useRef } from 'react';
-import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton, Typography, Button, Alert, FormHelperText, LinearProgress, CardMedia, CardContent, Snackbar, Slide } from '@mui/material';
+import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton, Typography, Button, Alert, FormHelperText, LinearProgress, CardContent, Snackbar } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Request, useRestApi } from '../../../request/Request';
-import { UserRegistrationForm } from '../../../Utilities/BackEndTypes';
-import { useSnackbar } from 'notistack';
+import { UserRegistrationForm } from '../../../utilities/BackEndTypes';
+import { enqueueSnackbar, useSnackbar } from 'notistack';
 
 export default function Page() {
     const form = useRef(null);
@@ -25,8 +25,6 @@ export default function Page() {
 
     const [showLoading, setShowLoading] = useState(false);
     const [completeRegistration, setCompleteRegistration] = useState(false);
-
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
     const restApi = useRestApi();
 
