@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Gabarito&family=Graduate&display=swap');
+
+:root {
+    --text-color: #f0efeb;
+    --header-height: 90px;
+    --navigation-width: 200px;
+}
+
+body {
+    margin: 0px;
+    background-color: #0a0908;
+    overflow: hidden;
+}
+
+button {
+    border: none;
+
+    padding: .5rem 1rem;
+    border-radius: .35rem;
+    border-width: .1rem;
+    border-style: solid;
+
+    color: #fff8f0;
+    background-color: #621708;
+    border-color: #f6ae2d;
+
+    font-family: 'Gabarito';
+    font-size: 1rem;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #fff8f0aa;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - var(--header-height) - 2*2rem);
+    overflow-x: hidden;
+}
+
+.tooltip-container {
+    position: relative;
+}
+
+.tooltip-box {
+    position: absolute;
+
+    top: 50%;
+    left: 0px;
+
+    transform: translate(calc(-100% - 1rem), -50%);
+
+    background-color: #f5ebe0;
+    padding: .5rem;
+    border-radius: 5px;
+
+    border: #e3d5ca solid 1.5px;
+}
