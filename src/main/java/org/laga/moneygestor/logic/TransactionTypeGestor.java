@@ -129,4 +129,12 @@ public class TransactionTypeGestor extends Gestor<Integer, TransactionTypeDb> {
                 .setParameter("userId", userLogged.getId())
                 .list();
     }
+
+    public List<TransactionTypeDb> getUsersType(UserDb userLogged) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class)
+                    .setParameter("userId", userLogged.getId())
+                    .list();
+        }
+    }
 }

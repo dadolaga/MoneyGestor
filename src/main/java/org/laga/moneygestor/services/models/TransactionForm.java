@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public class TransactionForm {
     private String description;
+    private String longDescription;
     private String date;
     private BigDecimal value;
     private Integer wallet;
@@ -16,6 +17,14 @@ public class TransactionForm {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
+
+    public void setLongDescription(String longDescription) {
+        this.longDescription = longDescription;
     }
 
     public String getDate() {

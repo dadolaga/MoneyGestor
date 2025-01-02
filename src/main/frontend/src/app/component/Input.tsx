@@ -31,7 +31,6 @@ export default function Input(props: IInput) {
     useEffect(() => {
         let value = props.form.getStringValue(props.name);
         if (value !== undefined) {
-            console.log(value);
             setValue(value);
         }
     }, [props.form])

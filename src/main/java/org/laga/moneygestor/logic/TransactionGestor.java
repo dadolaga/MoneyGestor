@@ -19,10 +19,7 @@ import org.laga.moneygestor.utils.CompareUtilities;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
@@ -75,6 +72,39 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
             transaction.commit();
 
             return idPrimaryTransaction;
+        }
+    }
+
+    public List<Long> insertAll(UserDb userLogged, List<TransactionDb> transactionsDb) {
+        return insertAll(userLogged, transactionsDb, null);
+    }
+
+    public List<Long> insertAll(UserDb userLogged, List<TransactionDb> transactionsDb, Integer walletId) {
+        try (Session session = sessionFactory.openSession()) {
+
+            if (session == null || userLogged == null || transactionsDb == null) throw new IllegalArgumentException("one or more argument is null");
+
+            var ids = new ArrayList<Long>();
+
+            try {
+                var transaction = session.beginTransaction();
+
+                for (var transactionDb : transactionsDb) {
+                    transactionDb.setUserInsertTransactionId(userLogged.getId());
+
+                    if (walletId != null) transactionDb.setWalletId(walletId);
+
+                    insert(session, userLogged, transactionDb, false);
+                }
+
+                transaction.commit();
+
+                return ids;
+            } catch (ConstraintViolationException e) {
+                if (e.getMessage().contains("index_wallet_nameuser")) throw new DuplicateValueException("Duplicate value for wallet", e);
+            }
+
+            return transactionsDb.stream().map(TransactionDb::getId).toList();
         }
     }
 

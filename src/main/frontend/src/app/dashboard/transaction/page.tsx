@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { ChangeEventHandler, useEffect, useRef, useState } from 'react'
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Input } from "@mui/material";
 import TransactionDialog from "./TransactionDialog";
 import { TransactionTable } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
@@ -11,9 +11,11 @@ import { TransactionGraph } from './TransactionGraph';
 import { Transaction } from '../../utilities/BackEndTypes';
 import { useRestApi } from '../../request/Request';
 import { Order } from '../base/Order';
+import ImportFromCsvDialog from './ImportFromCsvDialog';
 
 export default function Page() {
     const graph = useRef(null);
+    const fileInput = useRef<HTMLInputElement>(null);
 
     const [transactions, setTransactions] = useState<Transaction[]>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
@@ -23,8 +25,10 @@ export default function Page() {
 
     const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
     const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState<boolean>(false);
+    const [openImportFromCsvDialog, setOpenImportFromCsvDialog] = useState<boolean>(false);
     const [transactionId, setTransactionId] = useState<number>(undefined);
     const [transactionDescription, setTransactionDescription] = useState<string>(undefined);
+    const [csvFile, setCsvFile] = useState<File>(undefined);
 
     useEffect(() => {
         loadTransactions();
@@ -42,6 +46,19 @@ export default function Page() {
     function openTransactionDialogHandler() {
         setTransactionId(transactionId => undefined);
         setOpenTransactionDialog(true);
+    }
+
+    const clickAddTransactionFromCSV = () => {
+        setCsvFile(undefined); 
+
+        fileInput.current.click();
+    }
+
+    const inputFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+        setOpenImportFromCsvDialog(true);
+
+        setCsvFile(event.target.files[0]);
+        event.target.value = "";
     }
 
     const closeDeleteDialogHandler = (isToReload: boolean) => {
@@ -62,9 +79,18 @@ export default function Page() {
         setOpenTransactionDialog(false);
     } 
 
+    const closeImportFromCsvDialog = (isToReload: boolean) => {
+        if(isToReload) {
+            loadTransactions();
+            graph.current.loadTransaction();
+        }
+        
+        setOpenImportFromCsvDialog(false);
+    } 
     return (
         <>
             <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />
+            <ImportFromCsvDialog open={openImportFromCsvDialog} onClose={closeImportFromCsvDialog} file={csvFile} />
             <DeleteDialog 
                 open={openTransactionDeleteDialog} 
                 onClose={closeDeleteDialogHandler} 
@@ -72,7 +98,11 @@ export default function Page() {
                 transactionDescription={transactionDescription} />
             <Box sx={{height: '100%', display: 'flex', flexDirection: 'column'}} >
                 <Box sx={{height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1}}>
-                    <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
+                    <Box display='flex' gap={2}>
+                        <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
+                        <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddTransactionFromCSV} aria-hidden>Importa da file csv</Button>
+                        <input ref={fileInput} type='file' style={{display: 'none'}} accept='text/csv' onChange={inputFileChange}/>
+                    </Box>
                     <TransactionTable 
                         transactions={transactions}
                         loading={loading}
