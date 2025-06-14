@@ -1,11 +1,12 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCookies } from "react-cookie";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { ITransaction } from "../utilities/Types";
 
 const ERROR_BASE_TYPE = "ERROR";
 
@@ -113,6 +114,13 @@ export class Request {
         Graph: async (data: GraphDataSend) => {
             return this.baseRequestGet("transaction/graph", data)
             .then(response => response as LineGraph<Wallet, Transaction>[])
+        }
+    }
+
+    public Dashboard = {
+        Transaction:async (data: ITransactionFilter): Promise<ITransaction[]> => {
+            return this.baseRequestGet("dashboard/transaction", data)
+            .then(response => response as ITransaction[])
         }
     }
 

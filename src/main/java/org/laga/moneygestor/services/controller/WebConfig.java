@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-//@EnableWebMvc // TODO Remove this comment to develop with "npm run dev"
+@EnableWebMvc // TODO Remove this comment to develop with "npm run dev"
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {

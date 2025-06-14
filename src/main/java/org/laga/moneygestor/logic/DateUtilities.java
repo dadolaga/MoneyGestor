@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
 public class DateUtilities {
     private final static DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
     public static LocalDate convertToLocalDate(String date) {
+        if (date == null)
+            return null;
+
         return LocalDate.parse(date, DATE_TIME_FORMATTER);
     }
 

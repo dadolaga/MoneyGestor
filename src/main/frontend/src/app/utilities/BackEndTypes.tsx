@@ -54,6 +54,12 @@ export interface GraphDataSend {
     end: string,
 }
 
+export interface ITransactionFilter {
+    start: string,
+    end: string,
+    moneyIn: boolean
+}
+
 // RECEIVE FROM SERVER
 export interface User {
     lastname: string,

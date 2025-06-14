@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 import "dayjs/plugin/utc";
 
+export const fullSize = {height: "100%", width:"100%"}
+
 export function convertNumberToValue(number: number): string {
     return new Intl.NumberFormat('it-IT', {
         style: "currency",

@@ -160,6 +160,82 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         }
     }
 
+    public List<TransactionDb> getTransactionByFilter(UserDb userLogged, LocalDate start, LocalDate end, boolean onlyMoneyIn, boolean onlyMoneyOut, List<Integer> typeFilter, List<Integer> walletFilter) {
+        if(userLogged == null)
+            throw new IllegalArgumentException("user must be passed");
+
+        if((start != null && end == null) || (start == null && end != null))
+            throw new IllegalArgumentException("start and end must be passed");
+
+        if(onlyMoneyIn && onlyMoneyOut)
+            throw new IllegalArgumentException("Select money in or out not both");
+
+        try (Session session = sessionFactory.openSession()) {
+            StringBuilder sql = new StringBuilder("FROM TransactionDb WHERE userInsertTransaction = :user AND transactionDestination IS NULL ")
+                    .append(start != null? "AND date BETWEEN :startDate AND :endDate " : "")
+                    .append(onlyMoneyIn ? "AND value > 0 " : "")
+                    .append(onlyMoneyOut ? "AND value < 0 " : "")
+                    .append((typeFilter != null && !typeFilter.isEmpty()) ? "AND typeId IN (:type) " : "")
+                    .append((walletFilter != null && !walletFilter.isEmpty()) ? "AND walletId IN (:wallet) " : "");
+
+            var query = session.createQuery(sql.toString(), TransactionDb.class)
+                    .setParameter("user", userLogged);
+
+            if(start != null) {
+                query.setParameter("startDate", start);
+                query.setParameter("endDate", end);
+            }
+
+            if(typeFilter != null && !typeFilter.isEmpty()) {
+                query.setParameterList("type", typeFilter);
+            }
+
+            if(walletFilter != null && !walletFilter.isEmpty()) {
+                query.setParameterList("wallet", walletFilter);
+            }
+
+            return query.list();
+        }
+    }
+
+    public Long getNumberTransaction(UserDb userLogged, LocalDate start, LocalDate end, boolean onlyMoneyIn, boolean onlyMoneyOut, List<Integer> typeFilter, List<Integer> walletFilter) {
+        if(userLogged == null)
+            throw new IllegalArgumentException("user must be passed");
+
+        if((start != null && end == null) || (start == null && end != null))
+            throw new IllegalArgumentException("start and end must be passed");
+
+        if(onlyMoneyIn && onlyMoneyOut)
+            throw new IllegalArgumentException("Select money in or out not both");
+
+        try (Session session = sessionFactory.openSession()) {
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM TransactionDb WHERE userInsertTransaction = :user ")
+                    .append(start != null? "AND date BETWEEN :startDate AND :endDate " : "")
+                    .append(onlyMoneyIn ? "AND value > 0 " : "")
+                    .append(onlyMoneyOut ? "AND value < 0 " : "")
+                    .append((typeFilter != null && !typeFilter.isEmpty()) ? "AND typeId IN (:type) " : "")
+                    .append((walletFilter != null && !walletFilter.isEmpty()) ? "AND walletId IN (:wallet) " : "");
+
+            var query = session.createQuery(sql.toString(), Long.class)
+                    .setParameter("user", userLogged);
+
+            if(start != null) {
+                query.setParameter("startDate", start);
+                query.setParameter("endDate", end);
+            }
+
+            if(typeFilter != null && !typeFilter.isEmpty()) {
+                query.setParameterList("type", typeFilter);
+            }
+
+            if(walletFilter != null && !walletFilter.isEmpty()) {
+                query.setParameterList("wallet", walletFilter);
+            }
+
+            return query.list().get(0);
+        }
+    }
+
     private TransactionDb createFakeTransaction(String name, BigDecimal value, LocalDate date, WalletDb wallet) {
         var transaction = new TransactionDb();
 
