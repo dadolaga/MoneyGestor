@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -30,9 +30,13 @@ export class Request {
             .then(response => response as ReceiveId)
         },
 
-        Login: async (loginForm: LoginForm): Promise<User> => {
+        Login: async (loginForm: LoginForm): Promise<ILoginData> => {
             return this.baseRequestPost("user/login", loginForm)
-            .then(response => response as User)
+            .then(response => response as ILoginData)
+        },
+
+        Logout: async (): Promise<void> => {
+            return this.baseRequestGet("user/logout")
         }
     }
 

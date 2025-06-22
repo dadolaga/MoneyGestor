@@ -5,18 +5,28 @@ import { useCookies } from 'react-cookie'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import AppBar from '@mui/material/AppBar'
-import { Avatar, Box, Toolbar } from '@mui/material'
+import { Avatar, Box, Menu, MenuItem, Toolbar } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import { useState } from 'react'
+import { useRestApi } from '../request/Request'
+import { useSnackbar } from 'notistack'
 
 
 export default function Header({
     openDrawerClick
-} : {
+}: {
     openDrawerClick: () => void
 }) {
     const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
+
+    const request = useRestApi();
+
+    const { enqueueSnackbar } = useSnackbar()
+
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
 
     const router = useRouter();
 
@@ -49,6 +59,28 @@ export default function Header({
         };
     }
 
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const logoutHandler = () => {
+        request.User.Logout()
+        .then(() => {
+            enqueueSnackbar("User logout", {variant: "info"});
+
+            setCookie("_displayName", null);
+            setCookie("_token", null);
+
+            router.push("dashboard/user/login");
+        }).finally(() => {
+            handleClose();
+        })
+    }
+
     return (
         <AppBar sx={{ zIndex: 1300 }}>
             <Toolbar>
@@ -65,11 +97,15 @@ export default function Header({
                 )}
 
                 {(cookies._displayName) && (
-                    <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Typography align='center'>{cookies._displayName}</Typography>
-                        <Avatar {... stringAvatar(cookies._displayName)} />
+                        <Avatar {...stringAvatar(cookies._displayName)} onClick={handleClick} />
                     </Box>
                 )}
+
+                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                    <MenuItem onClick={logoutHandler}>Logout</MenuItem>
+                </Menu>
 
             </Toolbar>
         </AppBar>

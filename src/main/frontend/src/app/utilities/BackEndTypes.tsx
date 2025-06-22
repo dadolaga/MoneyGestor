@@ -68,6 +68,12 @@ export interface User {
     expireToken: Array<number>,
 }
 
+export interface ILoginData {
+    name: string,
+    surname: string,
+    token: string,
+}
+
 export interface Wallet {
     id: number;
     name: string;

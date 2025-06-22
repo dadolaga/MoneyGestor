@@ -41,7 +41,7 @@ export default function Page() {
 
         restApi.User.Login(loginData)
         .then(user => {
-            setCookie('_displayName', user.lastname + " " + user.firstname, {path: '/'})
+            setCookie('_displayName', user.name + " " + user.surname, {path: '/'})
             setCookie('_token', user.token, {path: '/'});
             
             router.push("/dashboard");
