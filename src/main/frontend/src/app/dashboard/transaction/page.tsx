@@ -12,14 +12,17 @@ import { Transaction } from '../../utilities/BackEndTypes';
 import { useRestApi } from '../../request/Request';
 import { Order } from '../base/Order';
 import ImportFromCsvDialog from './ImportFromCsvDialog';
+import { useIsMobile } from '../../utilities/useMobile';
 
 export default function Page() {
     const graph = useRef(null);
     const fileInput = useRef<HTMLInputElement>(null);
 
+    const isMobile = useIsMobile();
+
     const [transactions, setTransactions] = useState<Transaction[]>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
-    const [sort, setSort] = useState<Order>(new Order());
+    const [sort, setSort] = useState<Order>(new Order([{name: "date", order: "desc"}]));
 
     const restApi = useRestApi();
 
@@ -38,9 +41,9 @@ export default function Page() {
         setLoading(true);
 
         restApi.Transaction.List({ order: sort.toUrlString() })
-        .then(transactions => setTransactions(transactions))
-        .catch()
-        .finally(() => setLoading(false));
+            .then(transactions => setTransactions(transactions))
+            .catch()
+            .finally(() => setLoading(false));
     }
 
     function openTransactionDialogHandler() {
@@ -49,7 +52,7 @@ export default function Page() {
     }
 
     const clickAddTransactionFromCSV = () => {
-        setCsvFile(undefined); 
+        setCsvFile(undefined);
 
         fileInput.current.click();
     }
@@ -62,60 +65,62 @@ export default function Page() {
     }
 
     const closeDeleteDialogHandler = (isToReload: boolean) => {
-        if(isToReload) {
+        if (isToReload) {
             loadTransactions();
             graph.current.loadTransaction();
         }
 
         setOpenTransactionDeleteDialog(false);
-    } 
-    
+    }
+
     const closeTransactionDialogHandler = (isToReload: boolean) => {
-        if(isToReload) {
+        if (isToReload) {
             loadTransactions();
             graph.current.loadTransaction();
         }
 
         setOpenTransactionDialog(false);
-    } 
+    }
 
     const closeImportFromCsvDialog = (isToReload: boolean) => {
-        if(isToReload) {
+        if (isToReload) {
             loadTransactions();
             graph.current.loadTransaction();
         }
-        
+
         setOpenImportFromCsvDialog(false);
-    } 
+    }
     return (
         <>
             <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />
             <ImportFromCsvDialog open={openImportFromCsvDialog} onClose={closeImportFromCsvDialog} file={csvFile} />
-            <DeleteDialog 
-                open={openTransactionDeleteDialog} 
-                onClose={closeDeleteDialogHandler} 
-                transactionId={transactionId} 
+            <DeleteDialog
+                open={openTransactionDeleteDialog}
+                onClose={closeDeleteDialogHandler}
+                transactionId={transactionId}
                 transactionDescription={transactionDescription} />
-            <Box sx={{height: '100%', display: 'flex', flexDirection: 'column'}} >
-                <Box sx={{height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1}}>
-                    <Box display='flex' gap={2}>
+            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }} >
+                <Box sx={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
+                    <Box display='flex' width={isMobile? "100%" : undefined} gap={2} flexDirection={isMobile? "column" : "row"}>
                         <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
                         <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddTransactionFromCSV} aria-hidden>Importa da file csv</Button>
-                        <input ref={fileInput} type='file' style={{display: 'none'}} accept='text/csv' onChange={inputFileChange}/>
+                        <input ref={fileInput} type='file' style={{ display: 'none' }} accept='text/csv' onChange={inputFileChange} />
                     </Box>
-                    <TransactionTable 
+                    <TransactionTable
                         transactions={transactions}
                         loading={loading}
                         sort={sort}
                         setSort={setSort}
                         setOpenTransactionDialog={setOpenTransactionDialog}
-                        setTransactionDialogId={setTransactionId} 
-                        setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog} 
-                        setTransactionDescription={setTransactionDescription}/>
+                        setTransactionDialogId={setTransactionId}
+                        setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog}
+                        setTransactionDescription={setTransactionDescription} />
                 </Box>
-                <Box sx={{height: '100%', overflow: 'hidden', p: 4}}>
-                    <TransactionGraph ref={graph} />
-                </Box>
+                {!isMobile && (
+                    <Box sx={{ height: '100%', overflow: 'hidden', p: 4 }}>
+                        <TransactionGraph ref={graph} />
+                    </Box>
+                )}
             </Box>
         </>
     )

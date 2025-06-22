@@ -1,17 +1,18 @@
-import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, LinearProgress, TextField, Typography } from "@mui/material";
+import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid2 as Grid, LinearProgress, TextField, Typography } from "@mui/material";
 import Dialog from "@mui/material/Dialog/Dialog";
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";
 import dayjs from "dayjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightLong } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightLong, faArrowDownLong } from "@fortawesome/free-solid-svg-icons";
 import { Request, useRestApi } from "../../request/Request";
 import { TransactionForm, TransactionType, TransactionTypePrintable, Wallet, WalletPrintable } from "../../utilities/BackEndTypes";
 import { enqueueSnackbar } from "notistack";
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import { IFormMultiType } from "../../utilities/Interfaces";
+import { useIsMobile } from "../../utilities/useMobile";
 
 const ID_EXCHANGE_TYPE = 1;
 
@@ -49,6 +50,8 @@ const formSettings: FormSettings[] = [{
 ];
 
 export default function TransactionDialog({open, onClose, transactionId}) {
+    const isMobile = useIsMobile();
+
     const [loading, setLoading] = useState<boolean>(true);
     const [wallets, setWallets] = useState<Wallet[]>(undefined);
     const [types, setTypes] = useState<TransactionType[]>(undefined);
@@ -187,7 +190,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                     Inserire i dati della nuova transizione
                 </DialogContentText>
                 <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
-                    <Grid item xs={12}>
+                    <Grid size={{xs: 12}}>
                         <Input
                             type="text"
                             form={form}
@@ -196,7 +199,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                             label="Descrizione"
                             disabled={loading} />
                     </Grid>
-                    <Grid item xs={8}>
+                    <Grid size={{xs: 12, sm: 8}}>
                         <Input
                             type="date"
                             form={form}
@@ -205,7 +208,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                             label="Data"
                             disabled={loading} />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid size={{xs: 12, sm: 4}}>
                     <Input
                             type="text"
                             form={form}
@@ -214,7 +217,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                             label="Valore"
                             disabled={loading} />
                     </Grid>
-                    <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 12 : 4}>
+                    <Grid size={{xs: 12, sm: form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 12 : 4}}>
                         <Input
                             type="multi"
                             form={form}
@@ -229,7 +232,7 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                             Aggiungi nuovo tipo
                         </Typography>
                     </Grid>
-                    <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 5 : 8}>
+                    <Grid size={{xs: 12, sm: form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 5 : 8}}>
                         <Input
                             type="multi"
                             form={form}
@@ -241,10 +244,10 @@ export default function TransactionDialog({open, onClose, transactionId}) {
                     </Grid>
                     {form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE && (
                         <>
-                            <Grid item xs={2} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} >
-                                <FontAwesomeIcon icon={faArrowRightLong} size="2x"/>
+                            <Grid size={{xs: 12, md: 2}} sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} >
+                                <FontAwesomeIcon icon={isMobile ? faArrowDownLong : faArrowRightLong} size="2x"/>
                             </Grid>
-                            <Grid item xs={form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE? 5 : 8}>
+                            <Grid size={{xs: 12, sm: 5}}>
                                 <Input
                                     type="multi"
                                     form={form}
