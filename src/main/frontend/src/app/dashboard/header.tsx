@@ -11,7 +11,11 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 
 
-export default function Header() {
+export default function Header({
+    openDrawerClick
+} : {
+    openDrawerClick: () => void
+}) {
     const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
 
     const router = useRouter();
@@ -48,7 +52,7 @@ export default function Header() {
     return (
         <AppBar sx={{ zIndex: 1300 }}>
             <Toolbar>
-                <IconButton sx={{ mr: 2 }} color='inherit'>
+                <IconButton sx={{ mr: 2 }} color='inherit' onClick={openDrawerClick}>
                     <FontAwesomeIcon icon={faBars} />
                 </IconButton>
                 <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
