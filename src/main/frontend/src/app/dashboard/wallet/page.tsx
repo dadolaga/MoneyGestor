@@ -7,9 +7,12 @@ import { Wallet } from '../../utilities/BackEndTypes'
 import { useRestApi } from '../../request/Request'
 import { WalletPie } from './WalletPie'
 import { Order } from '../base/Order'
+import { useIsMobile } from '../../utilities/useMobile'
 
 export default function Page() {
     const tableWallet = useRef();
+
+    const isMobile = useIsMobile();
 
     const [wallets, setWallets] = useState<Wallet[]>(undefined);
     const [sort, setSort] = useState<Order>(new Order());
@@ -36,7 +39,7 @@ export default function Page() {
     return (
         <Box sx={{height: '100%', display: 'flex', flexDirection: "row", alignItems: 'center'}}>
             <WalletTable ref={tableWallet} refreshWallets={refreshWalletHandler} wallets={wallets} loading={loading} sort={sort} setSort={setSort}/>
-            <WalletPie wallets={wallets} loading={loading} />
+            {!isMobile && (<WalletPie wallets={wallets} loading={loading} />)}
         </Box>
     )
 }

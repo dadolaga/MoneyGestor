@@ -5,16 +5,21 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useIsMobile } from "../utilities/useMobile";
 
-export default function Drawer({ width, open }) {
+export default function Drawer({ width, open, hide }) {
     const router = useRouter();
     const isMobile = useIsMobile();
 
+    const openPage = (link) => () => {
+        hide();
+        router.push(link);
+    }
+
     return (
-        <MaterialDrawer sx={{ flexShrink: 0, width: width + 'px', '& .MuiDrawer-paper': { width: width + 'px' } }} variant={isMobile? "temporary" : "permanent"} anchor="left" open={open}>
+        <MaterialDrawer sx={{ flexShrink: 0, width: width + 'px', '& .MuiDrawer-paper': { width: width + 'px' } }} variant={isMobile ? "temporary" : "permanent"} anchor="left" open={open}>
             <Toolbar />
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => router.push('/dashboard/wallet')}>
+                    <ListItemButton onClick={openPage('/dashboard/wallet')}>
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faWallet} />
                         </ListItemIcon>
@@ -22,7 +27,7 @@ export default function Drawer({ width, open }) {
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => router.push('/dashboard/transaction')}>
+                    <ListItemButton onClick={openPage('/dashboard/transaction')}>
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faArrowRightArrowLeft} />
                         </ListItemIcon>
