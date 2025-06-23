@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { useRestApi } from '../request/Request'
 import { useSnackbar } from 'notistack'
+import { useIsMobile } from '../utilities/useMobile'
 
 
 export default function Header({
@@ -19,9 +20,11 @@ export default function Header({
 }: {
     openDrawerClick: () => void
 }) {
-    const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
+    const [cookies, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
 
     const request = useRestApi();
+
+    const isMobile = useIsMobile();
 
     const { enqueueSnackbar } = useSnackbar()
 
@@ -72,8 +75,8 @@ export default function Header({
         .then(() => {
             enqueueSnackbar("User logout", {variant: "info"});
 
-            setCookie("_displayName", null);
-            setCookie("_token", null);
+            removeCookie("_displayName");
+            removeCookie("_token");
 
             router.push("dashboard/user/login");
         }).finally(() => {
@@ -98,7 +101,7 @@ export default function Header({
 
                 {(cookies._displayName) && (
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Typography align='center'>{cookies._displayName}</Typography>
+                        {!isMobile && (<Typography align='center'>{cookies._displayName}</Typography>)}
                         <Avatar {...stringAvatar(cookies._displayName)} onClick={handleClick} />
                     </Box>
                 )}

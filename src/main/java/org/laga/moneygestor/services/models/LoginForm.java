@@ -3,6 +3,7 @@ package org.laga.moneygestor.services.models;
 public class LoginForm {
     private String username;
     private String password;
+    private Boolean remember;
 
     public String getUsername() {
         return username;
@@ -18,5 +19,13 @@ public class LoginForm {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Boolean getRemember() {
+        return remember;
+    }
+
+    public void setRemember(Boolean remember) {
+        this.remember = remember;
     }
 }

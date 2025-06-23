@@ -112,7 +112,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         return user;
     }
 
-    public LoginData login(String usernameOrMail, String password) {
+    public LoginData login(String usernameOrMail, String password, boolean rememberUser) {
         try (Session session = sessionFactory.openSession()) {
             var loginData = new LoginData();
 
@@ -133,7 +133,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
                 login.setUserId(userLogged.getId());
                 login.setToken(TokenUtilities.generateNewToken());
-                login.setExpiratedToken(LocalDateTime.now().plus(TokenUtilities.TOKEN_DURATION));
+                login.setExpiratedToken(LocalDateTime.now().plus(rememberUser ? TokenUtilities.TOKEN_LONG_DURATION
+                        : TokenUtilities.TOKEN_DURATION));
 
                 session.persist(login);
 

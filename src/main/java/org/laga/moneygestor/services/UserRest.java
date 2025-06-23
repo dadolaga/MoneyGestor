@@ -50,7 +50,7 @@ public class UserRest extends BaseRest {
     @PostMapping("/login")
     public Response login(@RequestBody LoginForm loginForm) {
         try {
-            var loginData = userGestor.login(loginForm.getUsername(), loginForm.getPassword());
+            var loginData = userGestor.login(loginForm.getUsername(), loginForm.getPassword(), loginForm.getRemember());
 
             return Response.create(loginData);
         } catch (UserPasswordNotEqualsException | UserNotFoundException ex) {

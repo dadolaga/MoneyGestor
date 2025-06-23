@@ -1,12 +1,16 @@
 package org.laga.moneygestor.logic;
 
+import org.hibernate.query.sqm.TemporalUnit;
+
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAmount;
 import java.util.Base64;
 import java.util.Random;
 
 public class TokenUtilities {
     public static final TemporalAmount TOKEN_DURATION = Duration.ofHours(2);
+    public static final TemporalAmount TOKEN_LONG_DURATION = Duration.ofDays(60);
 
     public static String generateNewToken() {
         return generateRandomString(64);

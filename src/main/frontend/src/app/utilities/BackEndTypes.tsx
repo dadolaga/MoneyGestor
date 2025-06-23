@@ -12,6 +12,7 @@ export interface Response<T> {
 export interface LoginForm {
     username: string,
     password: string,
+    remember: boolean,
 }
 
 export interface UserRegistrationForm {

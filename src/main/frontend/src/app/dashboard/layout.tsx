@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }) {
                     <Header openDrawerClick={() => setOpenDrawer(!openDrawer)}/>
                     <Box sx={{ display: 'flex', height: '100%' }}>
                         <Drawer width={200} open={openDrawer} hide={() => setOpenDrawer(false)} />
-                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: "100%" }}>
                             <Toolbar />
                             <Box sx={{ margin: 2, flexGrow: 1, overflowY: 'hidden' }}>
                                 {children}
