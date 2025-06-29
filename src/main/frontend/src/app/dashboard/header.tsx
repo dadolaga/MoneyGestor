@@ -70,6 +70,10 @@ export default function Header({
         setAnchorEl(null);
     };
 
+    const titleClickHandler = () => {
+        router.push("/dashboard");
+    }
+
     const logoutHandler = () => {
         request.User.Logout()
         .then(() => {
@@ -90,7 +94,9 @@ export default function Header({
                 <IconButton sx={{ mr: 2 }} color='inherit' onClick={openDrawerClick}>
                     <FontAwesomeIcon icon={faBars} />
                 </IconButton>
-                <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
+                <Box sx={{flexGrow: 1}}>
+                    <Typography variant="h6" component={"span"} sx={{ cursor: "pointer" }} onClick={titleClickHandler}>Money Gestor</Typography>
+                </Box>
 
                 {(!cookies._displayName) && (
                     <>
