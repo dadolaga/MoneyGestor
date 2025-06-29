@@ -162,7 +162,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                             setForm={setForm}
                             label="Valore iniziale"
                             name="value"
-                            InputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
+                            inputProps={{ endAdornment: <InputAdornment position="start">€</InputAdornment> }}
                             disabled={loading || walletId != undefined}
                             />
                     </Grid>
