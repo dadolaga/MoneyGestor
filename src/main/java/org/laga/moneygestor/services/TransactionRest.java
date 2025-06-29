@@ -95,7 +95,7 @@ public class TransactionRest extends BaseRest {
 
         TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
 
-        var listOfTransactions = transactionGestor.list(userLogged, sortParams, limitParams, pageParams);
+        var listOfTransactions = transactionGestor.list(userLogged, sortParams + (Objects.requireNonNullElse(sortParams, "").length() > 0? "-" : "") + "!id", limitParams, pageParams);
 
         return Response.create(TransactionGestor.convertToRest(listOfTransactions));
     }

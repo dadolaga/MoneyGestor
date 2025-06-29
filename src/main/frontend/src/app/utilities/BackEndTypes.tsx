@@ -156,7 +156,7 @@ export class WalletPrintable implements IFormMultiType {
     }
 
     print(): string | JSX.Element {
-        return this.wallet.name;
+        return <Box component={"span"} style={{fontWeight: this.wallet.favorite ? "bold" : undefined}}>{this.wallet.name}</Box>;
     }
 
     getKey(): string | number {

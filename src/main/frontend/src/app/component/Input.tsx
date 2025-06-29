@@ -1,4 +1,4 @@
-import { FilledInputProps, FormControl, FormHelperText, InputLabel, InputProps, MenuItem, OutlinedInputProps, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, InputBaseProps, SlotProps, TextFieldOwnerState } from "@mui/material";
 import { Form } from "../form/Form";
 import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { IFormMultiType } from "../utilities/Interfaces";
@@ -18,7 +18,9 @@ interface IInput {
     name: string,
     label: string,
     disabled: boolean,
-    InputProps?: Partial<FilledInputProps> | Partial<OutlinedInputProps> | Partial<InputProps>,
+    inputProps?: SlotProps<React.ElementType<InputBaseProps['inputProps']>, {}, TextFieldOwnerState>,
+    startAdornment?: React.ReactNode,
+    endAdornment?: React.ReactNode,
     values?: IFormMultiType[],
 }
 
@@ -29,7 +31,7 @@ export default function Input(props: IInput) {
     const [value, setValue] = useState<string>("");
 
     useEffect(() => {
-        let value = props.form.getStringValue(props.name);
+        let value = props.form?.getStringValue(props.name);
         if (value !== undefined) {
             setValue(value);
         }
@@ -37,29 +39,30 @@ export default function Input(props: IInput) {
 
     let element = undefined;
 
-    const textChangeHandler = (name: string):  ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> => (action) => {
+    const textChangeHandler = (name: string): ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> => (action) => {
         props.setForm(form => form.setValue(name, action.target.value));
     }
 
-    const selectChangeHandler = (name: string):  (event: SelectChangeEvent<string>) => void => (action) => {
+    const selectChangeHandler = (name: string): (event: SelectChangeEvent<string>) => void => (action) => {
         props.setForm(form => form.setValue(name, FormMultiTypeUtilities.findByKey(props.values, action.target.value)));
     }
 
-    const dateChangeHandler = (name: string):  (event: any) => void => (action: Dayjs) => {
+    const dateChangeHandler = (name: string): (event: any) => void => (action: Dayjs) => {
         props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
     }
 
-    switch(props.type) {
+    switch (props.type) {
         case "text": element = (
             <TextField
                 fullWidth
+                type={props.type}
                 error={props.form.haveError(props.name)}
                 helperText={props.form.getError(props.name)}
                 label={props.label}
                 name={props.name}
                 value={value}
                 onChange={textChangeHandler(props.name)}
-                InputProps={props.InputProps}
+                slotProps={{ htmlInput: props.inputProps, input: {startAdornment: props.startAdornment, endAdornment: props.endAdornment } }}
                 disabled={props.disabled} />
         ); break;
 
@@ -73,7 +76,6 @@ export default function Input(props: IInput) {
                 name={props.name}
                 value={value}
                 onChange={textChangeHandler(props.name)}
-                InputProps={props.InputProps}
                 disabled={props.disabled} />
         ); break;
 
@@ -92,9 +94,9 @@ export default function Input(props: IInput) {
                     value={value}
                     onChange={selectChangeHandler(props.name)}
                     disabled={props.disabled} >
-                    { props.values?.map((value, index) => {
+                    {props.values?.map((value, index) => {
                         return (<MenuItem key={index} value={value.getKey()}>{value.print()}</MenuItem>)
-                    }) }
+                    })}
                 </Select>
                 <FormHelperText>{props.form.getError(props.name)}</FormHelperText>
             </FormControl>
@@ -104,7 +106,7 @@ export default function Input(props: IInput) {
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
                 <DatePicker
                     timezone="UTC"
-                    sx={{width: '100%'}}
+                    sx={{ width: '100%' }}
                     views={["year", "month", "day"]}
                     label={props.label}
                     slotProps={{
@@ -113,7 +115,7 @@ export default function Input(props: IInput) {
                             helperText: props.form.getError(props.name),
                         }
                     }}
-                    value={dayjs.utc(value === ""? undefined : value)}
+                    value={dayjs.utc(value === "" ? undefined : value)}
                     onChange={dateChangeHandler(props.name)}
                     disabled={props.disabled} />
             </LocalizationProvider>

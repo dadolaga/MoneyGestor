@@ -40,10 +40,10 @@ export function TransactionTable(props: ITransactionTableProps) {
     return (
         <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}>
             <TableContainer sx={{ height: '100%' }}>
-                <Table stickyHeader>
+                <Table stickyHeader size={isMobile? "small" : "medium"}>
                     <TableHead >
                         <TableRow>
-                            <TableCell style={{ width: '150px' }}>
+                            <TableCell style={{ width: isMobile? '75px' : '150px' }}>
                                 <TableSortLabel
                                     active={props.sort.haveElement('date')}
                                     direction={props.sort.getElement('date')?.order}
@@ -64,7 +64,7 @@ export function TransactionTable(props: ITransactionTableProps) {
                                     Tipo
                                 </TableSortLabel>
                             </TableCell>)}
-                            <TableCell style={{ width: '100px' }}>
+                            <TableCell style={{ width: '100px' }} align="right">
                                 <TableSortLabel
                                     active={props.sort.haveElement('value')}
                                     direction={props.sort.getElement('value')?.order}
@@ -72,12 +72,13 @@ export function TransactionTable(props: ITransactionTableProps) {
                                     Valore
                                 </TableSortLabel>
                             </TableCell>
-                            {!isMobile && (<TableCell style={{ width: '10px' }}>
+                            {!isMobile && (<><TableCell style={{ width: '10px' }}>
                                 <TableSortLabel  >
                                     Portafoglio
                                 </TableSortLabel>
-                            </TableCell>)}
-                            <TableCell style={{ width: '20px' }}>Azioni</TableCell>
+                            </TableCell>
+                            <TableCell style={{ width: '20px' }}>Azioni</TableCell></>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -88,8 +89,8 @@ export function TransactionTable(props: ITransactionTableProps) {
                                     <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell>
                                     <TableCell>{value.description}</TableCell>
                                     {!isMobile && (<TableCell>{value.type.name}</TableCell>)}
-                                    <TableCell>{convertNumberToValue(value.type.id == ID_EXCHANGE_TYPE ? Math.abs(value.value) : value.value)}</TableCell>
-                                    {!isMobile && (<TableCell sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                                    <TableCell align="right">{convertNumberToValue(value.type.id == ID_EXCHANGE_TYPE ? Math.abs(value.value) : value.value)}</TableCell>
+                                    {!isMobile && (<><TableCell sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
                                         {value.type.id == ID_EXCHANGE_TYPE && 
                                         <>
                                             <Chip label={value.walletDestination.name} size="small" variant="outlined" style={{ color: '#' + value.walletDestination.color, borderColor: '#' + value.walletDestination.color }} />
@@ -97,13 +98,13 @@ export function TransactionTable(props: ITransactionTableProps) {
                                         </>
                                         }
                                         <Chip label={value.wallet.name} size="small" variant="outlined" style={{ color: '#' + value.wallet.color, borderColor: '#' + value.wallet.color }} />
-                                    </TableCell>)}
+                                    </TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 2 }} >
                                             <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={editHandler(value.transactionDestinationId ?? value.id)} />
                                             <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={deleteHandler(value.id, value.description)} />
                                         </Box>
-                                    </TableCell>
+                                    </TableCell></>)}
                                 </TableRow>
                             )
                         })}

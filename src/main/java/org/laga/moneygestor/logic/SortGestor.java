@@ -4,7 +4,7 @@ import org.springframework.data.domain.Sort;
 
 public class SortGestor {
     private final static char DESCEND = '!';
-    private final static String MULTIPLE_SORT_REGEX = "#";
+    private final static String MULTIPLE_SORT_REGEX = "-";
 
 
     /**
