@@ -13,6 +13,7 @@ import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.Wallet;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +43,14 @@ public class WalletGestor extends Gestor<Integer, WalletDb> {
             wallets.add(convertToRest(wallet));
 
         return wallets;
+    }
+
+    public BigDecimal getTotalValue(UserDb userLogged) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM SUM(value) WHERE userId = :userId", BigDecimal.class)
+                    .setParameter("userId", userLogged.getId())
+                    .getSingleResultOrNull();
+        }
     }
 
     public List<WalletDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {

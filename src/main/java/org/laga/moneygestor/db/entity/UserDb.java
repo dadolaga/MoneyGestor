@@ -3,6 +3,7 @@ package org.laga.moneygestor.db.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "user", indexes = {
@@ -23,11 +24,8 @@ public class UserDb {
     private String username;
     @Column(nullable = false)
     private String password;
-    @Column(columnDefinition = "char(128)")
-    private String token;
-
-    @Column(name = "expiratedtoken")
-    private LocalDateTime expiratedToken;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<LoginDb> logins;
 
     public Integer getId() {
         return id;
@@ -77,20 +75,12 @@ public class UserDb {
         this.password = password;
     }
 
-    public String getToken() {
-        return token;
+    public Set<LoginDb> getLogins() {
+        return logins;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public LocalDateTime getExpiratedToken() {
-        return expiratedToken;
-    }
-
-    public void setExpiratedToken(LocalDateTime expiratedToken) {
-        this.expiratedToken = expiratedToken;
+    public void setLogins(Set<LoginDb> logins) {
+        this.logins = logins;
     }
 
     @Override
@@ -102,8 +92,6 @@ public class UserDb {
                 ", email='" + email + '\'' +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", token='" + token + '\'' +
-                ", expiratedToken=" + expiratedToken +
                 '}';
     }
 }

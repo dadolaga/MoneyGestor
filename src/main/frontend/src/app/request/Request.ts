@@ -1,11 +1,12 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, LineGraph, LoginForm, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCookies } from "react-cookie";
 import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { ITransaction } from "../utilities/Types";
 
 const ERROR_BASE_TYPE = "ERROR";
 
@@ -29,9 +30,13 @@ export class Request {
             .then(response => response as ReceiveId)
         },
 
-        Login: async (loginForm: LoginForm): Promise<User> => {
+        Login: async (loginForm: LoginForm): Promise<ILoginData> => {
             return this.baseRequestPost("user/login", loginForm)
-            .then(response => response as User)
+            .then(response => response as ILoginData)
+        },
+
+        Logout: async (): Promise<void> => {
+            return this.baseRequestGet("user/logout")
         }
     }
 
@@ -44,6 +49,11 @@ export class Request {
         List: async (listData: ListData): Promise<Wallet[]> => {
             return this.baseRequestGet("wallet/list?sort=" + encodeURI(listData.order))
             .then(response => response as Wallet[])
+        },
+
+        Total: async (): Promise<number> => {
+            return this.baseRequestGet("wallet/total")
+            .then(response => response as number)
         },
         
         Get: async (id: number): Promise<Wallet> => {
@@ -80,6 +90,11 @@ export class Request {
             .then(response => response as ReceiveId)
         },
 
+        AddAll: async (transactions: MultiTransactionInsert): Promise<void> => {
+            return this.baseRequestPost("transaction/newAll", transactions)
+            .then(response => response as void)
+        },
+
         List: async (listData: ListData): Promise<Transaction[]> => {
             return this.baseRequestGet("transaction/list?sort=" + encodeURI(listData.order))
             .then(response => response as Transaction[])
@@ -103,6 +118,13 @@ export class Request {
         Graph: async (data: GraphDataSend) => {
             return this.baseRequestGet("transaction/graph", data)
             .then(response => response as LineGraph<Wallet, Transaction>[])
+        }
+    }
+
+    public Dashboard = {
+        Transaction:async (data: ITransactionFilter): Promise<ITransaction[]> => {
+            return this.baseRequestGet("dashboard/transaction", data)
+            .then(response => response as ITransaction[])
         }
     }
 

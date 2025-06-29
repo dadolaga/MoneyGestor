@@ -125,8 +125,16 @@ public class TransactionTypeGestor extends Gestor<Integer, TransactionTypeDb> {
 
     @Override
     public List<TransactionTypeDb> getAll(Session session, UserDb userLogged) {
-        return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId OR userId IS NULL", TransactionTypeDb.class)
+        return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId OR userId IS NULL ORDER BY userId ASC, name ASC", TransactionTypeDb.class)
                 .setParameter("userId", userLogged.getId())
                 .list();
+    }
+
+    public List<TransactionTypeDb> getUsersType(UserDb userLogged) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM TransactionTypeDb WHERE userId = :userId", TransactionTypeDb.class)
+                    .setParameter("userId", userLogged.getId())
+                    .list();
+        }
     }
 }

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useRef, use, KeyboardEventHandler } from 'react';
+import { useState, useRef, use, KeyboardEventHandler, InputHTMLAttributes } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCookies } from 'react-cookie';
-import { Alert, Box, Button, Card, CardContent, LinearProgress, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, Checkbox, FormControlLabel, LinearProgress, TextField, Typography } from '@mui/material';
 import { LoginForm } from '../../../utilities/BackEndTypes'
 import { Request, useRestApi } from '../../../request/Request';
 
@@ -23,6 +23,7 @@ export default function Page() {
 
     const [message, setMessage] = useState(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [remember, setRemember] = useState<boolean>(false)
 
     function login() {
         const formData = new FormData(form.current);
@@ -36,13 +37,17 @@ export default function Page() {
 
         let loginData: LoginForm = {
             username: formData.get("username").toString(),
-            password: formData.get("password").toString()
+            password: formData.get("password").toString(), 
+            remember: remember
         };
 
         restApi.User.Login(loginData)
         .then(user => {
-            setCookie('_displayName', user.lastname + " " + user.firstname, {path: '/'})
-            setCookie('_token', user.token, {path: '/'});
+            let date = new Date();
+            date = new Date(date.getFullYear() + 1, date.getMonth(), date.getDate());
+
+            setCookie('_displayName', user.name + " " + user.surname, {path: '/', expires: date})
+            setCookie('_token', user.token, {path: '/', expires: date});
             
             router.push("/dashboard");
         })
@@ -100,6 +105,7 @@ export default function Page() {
                     <Box component={'form'} ref={form} sx={{width: '100%', display: 'flex', flexDirection: 'column', gap: 2}}>
                         <TextField error={formError.username != null} helperText={formError.username} fullWidth name='username' label='username o email' required/>
                         <TextField error={formError.password != null} helperText={formError.password} onKeyUp={keyPressedOnPasswordHandler} fullWidth name='password' type='password' label='password' required/>
+                        <FormControlLabel control={<Checkbox size='small' checked={remember}/>} label="Ricordami" onChange={(ev) => setRemember((ev.target as HTMLInputElement).checked)} />
                         <Button variant='contained' onClick={login}> Login </Button>
                     </Box>
                 </CardContent>

@@ -5,8 +5,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.laga.moneygestor.db.entity.LoginDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.*;
+import org.laga.moneygestor.services.models.LoginData;
 import org.laga.moneygestor.services.models.User;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 
@@ -63,20 +65,20 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         return matcher.matches();
     }
 
-    public static User convertToRest(UserDb userDb) {
+    public static User convertToRest(UserDb userDb, String token) {
         var user = new User();
 
         user.setLastname(userDb.getLastname());
         user.setFirstname(userDb.getFirstname());
-        user.setToken(userDb.getToken());
-        user.setExpireToken(userDb.getExpiratedToken());
+        user.setToken(token);
+        user.setExpireToken(LocalDateTime.now());
 
         return user;
     }
 
     public UserDb getFromAuthorizationToken(String authorizationToken) {
         try (Session session = sessionFactory.openSession()) {
-            var query = session.createQuery("FROM UserDb WHERE token = :token", UserDb.class);
+            var query = session.createQuery("FROM UserDb u INNER JOIN LoginDb l ON u.id = l.userId WHERE l.token = :token", UserDb.class);
             query.setParameter("token", authorizationToken);
 
             var listOfUser = query.list();
@@ -88,27 +90,32 @@ public class UserGestor extends Gestor<Integer, UserDb> {
                 throw new IllegalStateException("More user with token found");
 
             return listOfUser.get(0);
+        } catch (Exception ex) {
+            System.out.println(ex);
+            throw ex;
         }
     }
 
-    public void checkValidityOfUser(UserDb userDb) {
-        if(userDb == null || userDb.getToken() == null || userDb.getExpiratedToken() == null)
+    public void checkValidityOfUser(UserDb userDb, String authorizationToken) {
+        if(userDb == null || userDb.getLogins().size() == 0)
             throw new IllegalArgumentException();
 
-        if(userDb.getExpiratedToken().isBefore(LocalDateTime.now()))
+        if(userDb.getLogins().stream().anyMatch(l -> l.getToken().equals(authorizationToken) && l.getExpiratedToken().isBefore(LocalDateTime.now())))
             throw new TokenExpiredException();
     }
 
     // TODO insert EntityNotFoundException check when user not found
     public UserDb getFromAuthorizationTokenAndCheckToken(String authorizationToken) {
         var user = getFromAuthorizationToken(authorizationToken);
-        checkValidityOfUser(user);
+        checkValidityOfUser(user, authorizationToken);
 
         return user;
     }
 
-    public UserDb login(String usernameOrMail, String password) {
+    public LoginData login(String usernameOrMail, String password, boolean rememberUser) {
         try (Session session = sessionFactory.openSession()) {
+            var loginData = new LoginData();
+
             Transaction transaction = session.beginTransaction();
 
             var query = session.createQuery("FROM UserDb WHERE email LIKE :email OR username LIKE :username", UserDb.class);
@@ -122,19 +129,41 @@ public class UserGestor extends Gestor<Integer, UserDb> {
                 if(!PasswordUtilities.checkPassword(password, userLogged.getPassword()))
                     throw new UserPasswordNotEqualsException("Password is not correct");
 
-                userLogged.setToken(TokenUtilities.generateNewToken());
-                userLogged.setExpiratedToken(LocalDateTime.now().plus(TokenUtilities.TOKEN_DURATION));
+                var login = new LoginDb();
 
-                session.persist(userLogged);
+                login.setUserId(userLogged.getId());
+                login.setToken(TokenUtilities.generateNewToken());
+                login.setExpiratedToken(LocalDateTime.now().plus(rememberUser ? TokenUtilities.TOKEN_LONG_DURATION
+                        : TokenUtilities.TOKEN_DURATION));
+
+                session.persist(login);
 
                 transaction.commit();
 
-                return userLogged;
+                loginData.setName(userLogged.getFirstname());
+                loginData.setSurname(userLogged.getLastname());
+                loginData.setToken(login.getToken());
+
+                return loginData;
             } catch (IndexOutOfBoundsException e) {
                 throw new UserNotFoundException("User not found", e);
             } finally {
                 session.getTransaction().rollback();
             }
+        }
+    }
+
+    public int logout(String authorizationToken) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            int count = session.createMutationQuery("DELETE FROM LoginDb WHERE token = :token")
+                    .setParameter("token", authorizationToken)
+                    .executeUpdate();
+
+            transaction.commit();
+
+            return count;
         }
     }
 

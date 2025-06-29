@@ -14,6 +14,7 @@ import org.laga.moneygestor.services.models.LoginForm;
 import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.UserRegistrationForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,11 +50,18 @@ public class UserRest extends BaseRest {
     @PostMapping("/login")
     public Response login(@RequestBody LoginForm loginForm) {
         try {
-            var userDb = userGestor.login(loginForm.getUsername(), loginForm.getPassword());
+            var loginData = userGestor.login(loginForm.getUsername(), loginForm.getPassword(), loginForm.getRemember());
 
-            return Response.create(UserGestor.convertToRest(userDb));
+            return Response.create(loginData);
         } catch (UserPasswordNotEqualsException | UserNotFoundException ex) {
             throw new HttpException(HttpStatus.BAD_REQUEST, 112, ex.getMessage(), ex);
         }
+    }
+
+    @GetMapping("/logout")
+    public Response logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        userGestor.logout(authorization);
+
+        return Response.ok();
     }
 }

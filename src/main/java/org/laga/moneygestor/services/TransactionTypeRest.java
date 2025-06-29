@@ -29,6 +29,15 @@ public class TransactionTypeRest extends BaseRest {
         return Response.create(TransactionTypeGestor.convertToRest(gestor.getAll(loggedUser)));
     }
 
+    @GetMapping("/getUser")
+    public Response getListTransactionTypeOnlyUserInsert(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String authorization) {
+        UserDb loggedUser = getUserLogged(authorization);
+
+        TransactionTypeGestor gestor = new TransactionTypeGestor(sessionFactory);
+
+        return Response.create(TransactionTypeGestor.convertToRest(gestor.getUsersType(loggedUser)));
+    }
+
     @PostMapping("/new")
     public Response addNewTransactionType(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody TransactionTypeForm transactionTypeForm) {
         UserDb userLogged = getUserLogged(authorization);

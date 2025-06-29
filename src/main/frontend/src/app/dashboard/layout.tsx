@@ -6,38 +6,41 @@ import Drawer from "./drawer";
 import { ThemeOptions, createTheme } from '@mui/material/styles'
 import { ThemeProvider } from '@emotion/react'
 import { SnackbarProvider } from "notistack";
+import { useState } from "react";
 
 const themeOptions: ThemeOptions = {
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#ff0000',
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#ff0000',
+        },
+        secondary: {
+            main: '#f50057',
+        },
     },
-    secondary: {
-      main: '#f50057',
-    },
-  },
 };
 
 const theme = createTheme(themeOptions);
 
-export default function DashboardLayout({children}) {  
-  return (
-    <ThemeProvider theme={theme}>
-      <SnackbarProvider>
-        <Box sx={{position: 'relative', height: '100vh'}}>
-          <Header />
-          <Box sx={{display: 'flex', height: '100%'}}>
-            <Drawer width={200} />
-            <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
-                <Toolbar />
-                <Box sx={{margin: 2, flexGrow: 1, overflowY: 'hidden'}}>
-                  {children}
+export default function DashboardLayout({ children }) {
+    const [openDrawer, setOpenDrawer] = useState<boolean>();
+
+    return (
+        <ThemeProvider theme={theme}>
+            <SnackbarProvider>
+                <Box sx={{ position: 'relative', height: '100vh' }}>
+                    <Header openDrawerClick={() => setOpenDrawer(!openDrawer)}/>
+                    <Box sx={{ display: 'flex', height: '100%' }}>
+                        <Drawer width={200} open={openDrawer} hide={() => setOpenDrawer(false)} />
+                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: "100%" }}>
+                            <Toolbar />
+                            <Box sx={{ margin: 2, flexGrow: 1, overflowY: 'hidden' }}>
+                                {children}
+                            </Box>
+                        </Box>
+                    </Box>
                 </Box>
-            </Box>
-          </Box>
-        </Box>
-      </SnackbarProvider>
-    </ThemeProvider>
-  );
+            </SnackbarProvider>
+        </ThemeProvider>
+    );
 }

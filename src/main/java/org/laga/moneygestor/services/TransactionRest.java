@@ -8,6 +8,7 @@ import org.laga.moneygestor.logic.DateUtilities;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.services.exceptions.HttpException;
+import org.laga.moneygestor.services.models.MultiTransactionInsert;
 import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.TransactionForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedList;
 import java.util.Objects;
 
 @RestController
@@ -55,6 +57,35 @@ public class TransactionRest extends BaseRest {
         }
     }
 
+    @PostMapping("/newAll")
+    public Response addNewTransactions(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody MultiTransactionInsert multiTransaction) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
+
+        System.out.println(multiTransaction.getTransactions());
+
+        var transactionsDb = new LinkedList<TransactionDb>();
+
+        for(var transactionForm : multiTransaction.getTransactions()) {
+            var transactionDb = new TransactionDb();
+
+            transactionDb.setDescription(transactionForm.getDescription());
+            transactionDb.setLongDescription(transactionForm.getLongDescription());
+            transactionDb.setDate(DateUtilities.convertToLocalDate(transactionForm.getDate()));
+            transactionDb.setValue(transactionForm.getValue());
+            transactionDb.setTypeId(transactionForm.getTypeId());
+            transactionDb.setWalletId(transactionForm.getWallet());
+            transactionDb.setUserOfTransactionId(userLogged.getId());
+
+            transactionsDb.add(transactionDb);
+        }
+
+        transactionGestor.insertAll(userLogged, transactionsDb, multiTransaction.getWalletId());
+
+        return Response.ok();
+    }
+
     @GetMapping("/list")
     public Response getTransactionList(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
                                                      @RequestParam(name = "sort", required = false) String sortParams,
@@ -64,7 +95,7 @@ public class TransactionRest extends BaseRest {
 
         TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
 
-        var listOfTransactions = transactionGestor.list(userLogged, sortParams, limitParams, pageParams);
+        var listOfTransactions = transactionGestor.list(userLogged, sortParams + (Objects.requireNonNullElse(sortParams, "").length() > 0? "-" : "") + "!id", limitParams, pageParams);
 
         return Response.create(TransactionGestor.convertToRest(listOfTransactions));
     }

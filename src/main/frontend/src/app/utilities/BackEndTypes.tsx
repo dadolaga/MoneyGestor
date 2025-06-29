@@ -12,6 +12,7 @@ export interface Response<T> {
 export interface LoginForm {
     username: string,
     password: string,
+    remember: boolean,
 }
 
 export interface UserRegistrationForm {
@@ -36,16 +37,28 @@ export interface TransactionTypeForm {
 
 export interface TransactionForm {
     description: string;
+    longDescription?: string;
     date: string;
     value: number;
-    wallet: number;
-    walletDestination: number;
+    wallet?: number;
+    walletDestination?: number;
     typeId: number;
-}  
+}
+
+export interface MultiTransactionInsert {
+    walletId: number;
+    transactions: TransactionForm[];
+}
 
 export interface GraphDataSend {
     start: string,
     end: string,
+}
+
+export interface ITransactionFilter {
+    start: string,
+    end: string,
+    moneyIn: boolean
 }
 
 // RECEIVE FROM SERVER
@@ -54,6 +67,12 @@ export interface User {
     firstname: string,
     token: string,
     expireToken: Array<number>,
+}
+
+export interface ILoginData {
+    name: string,
+    surname: string,
+    token: string,
 }
 
 export interface Wallet {
@@ -137,7 +156,7 @@ export class WalletPrintable implements IFormMultiType {
     }
 
     print(): string | JSX.Element {
-        return this.wallet.name;
+        return <Box component={"span"} style={{fontWeight: this.wallet.favorite ? "bold" : undefined}}>{this.wallet.name}</Box>;
     }
 
     getKey(): string | number {

@@ -19,10 +19,7 @@ import org.laga.moneygestor.utils.CompareUtilities;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
@@ -78,6 +75,39 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         }
     }
 
+    public List<Long> insertAll(UserDb userLogged, List<TransactionDb> transactionsDb) {
+        return insertAll(userLogged, transactionsDb, null);
+    }
+
+    public List<Long> insertAll(UserDb userLogged, List<TransactionDb> transactionsDb, Integer walletId) {
+        try (Session session = sessionFactory.openSession()) {
+
+            if (session == null || userLogged == null || transactionsDb == null) throw new IllegalArgumentException("one or more argument is null");
+
+            var ids = new ArrayList<Long>();
+
+            try {
+                var transaction = session.beginTransaction();
+
+                for (var transactionDb : transactionsDb) {
+                    transactionDb.setUserInsertTransactionId(userLogged.getId());
+
+                    if (walletId != null) transactionDb.setWalletId(walletId);
+
+                    insert(session, userLogged, transactionDb, false);
+                }
+
+                transaction.commit();
+
+                return ids;
+            } catch (ConstraintViolationException e) {
+                if (e.getMessage().contains("index_wallet_nameuser")) throw new DuplicateValueException("Duplicate value for wallet", e);
+            }
+
+            return transactionsDb.stream().map(TransactionDb::getId).toList();
+        }
+    }
+
     public List<TransactionDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM TransactionDb WHERE userOfTransactionId = :userId AND " +
@@ -127,6 +157,82 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
             }
 
             return lineGraph;
+        }
+    }
+
+    public List<TransactionDb> getTransactionByFilter(UserDb userLogged, LocalDate start, LocalDate end, boolean onlyMoneyIn, boolean onlyMoneyOut, List<Integer> typeFilter, List<Integer> walletFilter) {
+        if(userLogged == null)
+            throw new IllegalArgumentException("user must be passed");
+
+        if((start != null && end == null) || (start == null && end != null))
+            throw new IllegalArgumentException("start and end must be passed");
+
+        if(onlyMoneyIn && onlyMoneyOut)
+            throw new IllegalArgumentException("Select money in or out not both");
+
+        try (Session session = sessionFactory.openSession()) {
+            StringBuilder sql = new StringBuilder("FROM TransactionDb WHERE userInsertTransaction = :user AND transactionDestination IS NULL ")
+                    .append(start != null? "AND date BETWEEN :startDate AND :endDate " : "")
+                    .append(onlyMoneyIn ? "AND value > 0 " : "")
+                    .append(onlyMoneyOut ? "AND value < 0 " : "")
+                    .append((typeFilter != null && !typeFilter.isEmpty()) ? "AND typeId IN (:type) " : "")
+                    .append((walletFilter != null && !walletFilter.isEmpty()) ? "AND walletId IN (:wallet) " : "");
+
+            var query = session.createQuery(sql.toString(), TransactionDb.class)
+                    .setParameter("user", userLogged);
+
+            if(start != null) {
+                query.setParameter("startDate", start);
+                query.setParameter("endDate", end);
+            }
+
+            if(typeFilter != null && !typeFilter.isEmpty()) {
+                query.setParameterList("type", typeFilter);
+            }
+
+            if(walletFilter != null && !walletFilter.isEmpty()) {
+                query.setParameterList("wallet", walletFilter);
+            }
+
+            return query.list();
+        }
+    }
+
+    public Long getNumberTransaction(UserDb userLogged, LocalDate start, LocalDate end, boolean onlyMoneyIn, boolean onlyMoneyOut, List<Integer> typeFilter, List<Integer> walletFilter) {
+        if(userLogged == null)
+            throw new IllegalArgumentException("user must be passed");
+
+        if((start != null && end == null) || (start == null && end != null))
+            throw new IllegalArgumentException("start and end must be passed");
+
+        if(onlyMoneyIn && onlyMoneyOut)
+            throw new IllegalArgumentException("Select money in or out not both");
+
+        try (Session session = sessionFactory.openSession()) {
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM TransactionDb WHERE userInsertTransaction = :user ")
+                    .append(start != null? "AND date BETWEEN :startDate AND :endDate " : "")
+                    .append(onlyMoneyIn ? "AND value > 0 " : "")
+                    .append(onlyMoneyOut ? "AND value < 0 " : "")
+                    .append((typeFilter != null && !typeFilter.isEmpty()) ? "AND typeId IN (:type) " : "")
+                    .append((walletFilter != null && !walletFilter.isEmpty()) ? "AND walletId IN (:wallet) " : "");
+
+            var query = session.createQuery(sql.toString(), Long.class)
+                    .setParameter("user", userLogged);
+
+            if(start != null) {
+                query.setParameter("startDate", start);
+                query.setParameter("endDate", end);
+            }
+
+            if(typeFilter != null && !typeFilter.isEmpty()) {
+                query.setParameterList("type", typeFilter);
+            }
+
+            if(walletFilter != null && !walletFilter.isEmpty()) {
+                query.setParameterList("wallet", walletFilter);
+            }
+
+            return query.list().get(0);
         }
     }
 

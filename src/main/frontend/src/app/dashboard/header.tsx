@@ -5,14 +5,31 @@ import { useCookies } from 'react-cookie'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import AppBar from '@mui/material/AppBar'
-import { Avatar, Box, Toolbar } from '@mui/material'
+import { Avatar, Box, Menu, MenuItem, Toolbar } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import { useState } from 'react'
+import { useRestApi } from '../request/Request'
+import { useSnackbar } from 'notistack'
+import { useIsMobile } from '../utilities/useMobile'
 
 
-export default function Header() {
-    const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
+export default function Header({
+    openDrawerClick
+}: {
+    openDrawerClick: () => void
+}) {
+    const [cookies, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
+
+    const request = useRestApi();
+
+    const isMobile = useIsMobile();
+
+    const { enqueueSnackbar } = useSnackbar()
+
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
 
     const router = useRouter();
 
@@ -45,13 +62,41 @@ export default function Header() {
         };
     }
 
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const titleClickHandler = () => {
+        router.push("/dashboard");
+    }
+
+    const logoutHandler = () => {
+        request.User.Logout()
+        .then(() => {
+            enqueueSnackbar("User logout", {variant: "info"});
+
+            removeCookie("_displayName");
+            removeCookie("_token");
+
+            router.push("dashboard/user/login");
+        }).finally(() => {
+            handleClose();
+        })
+    }
+
     return (
         <AppBar sx={{ zIndex: 1300 }}>
             <Toolbar>
-                <IconButton sx={{ mr: 2 }} color='inherit'>
+                <IconButton sx={{ mr: 2 }} color='inherit' onClick={openDrawerClick}>
                     <FontAwesomeIcon icon={faBars} />
                 </IconButton>
-                <Typography variant="h6" component={"div"} sx={{ flexGrow: 1 }}>Money Gestor</Typography>
+                <Box sx={{flexGrow: 1}}>
+                    <Typography variant="h6" component={"span"} sx={{ cursor: "pointer" }} onClick={titleClickHandler}>Money Gestor</Typography>
+                </Box>
 
                 {(!cookies._displayName) && (
                     <>
@@ -61,11 +106,15 @@ export default function Header() {
                 )}
 
                 {(cookies._displayName) && (
-                    <Box sx={{display: 'flex', gap: 2, alignItems: 'center'}}>
-                        <Typography align='center'>{cookies._displayName}</Typography>
-                        <Avatar {... stringAvatar(cookies._displayName)} />
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        {!isMobile && (<Typography align='center'>{cookies._displayName}</Typography>)}
+                        <Avatar {...stringAvatar(cookies._displayName)} onClick={handleClick} />
                     </Box>
                 )}
+
+                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                    <MenuItem onClick={logoutHandler}>Logout</MenuItem>
+                </Menu>
 
             </Toolbar>
         </AppBar>

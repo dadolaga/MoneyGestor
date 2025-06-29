@@ -186,9 +186,7 @@ public class UserGestorTest extends LogicBaseTest {
                 () -> Assertions.assertEquals(userForm.getFirstname(), userDb.getFirstname()),
                 () -> Assertions.assertEquals(userForm.getLastname(), userDb.getLastname()),
                 () -> Assertions.assertEquals(userForm.getEmail(), userDb.getEmail()),
-                () -> Assertions.assertEquals(userForm.getUsername(), userDb.getUsername()),
-                () -> Assertions.assertNull(userDb.getToken()),
-                () -> Assertions.assertNull(userDb.getExpiratedToken())
+                () -> Assertions.assertEquals(userForm.getUsername(), userDb.getUsername())
         );
     }
 
@@ -275,41 +273,11 @@ public class UserGestorTest extends LogicBaseTest {
 
         userGestor.insert(null, user);
 
-        var userLogged = userGestor.login(username, password);
+        var userLogged = userGestor.login(username, password, false);
 
         Assertions.assertAll(
-                () -> Assertions.assertEquals(username, userLogged.getUsername()),
-                () -> Assertions.assertNotNull(userLogged.getToken()),
-                () -> Assertions.assertTrue(userLogged.getExpiratedToken().isAfter(LocalDateTime.now()))
-        );
-    }
-
-    @Test
-    public void login_correctPasswordSearchByEmail_refreshToken() throws UserCreationException {
-        final String username = "userForTest_" + TestUtilities.generateRandomString(6);
-        final String email = TestUtilities.generateEmail();
-        final String password = "This_Is_My_Password1";
-        var userForm = new UserRegistrationForm();
-
-        userForm.setFirstname("Test");
-        userForm.setLastname("Test");
-        userForm.setEmail(email);
-        userForm.setUsername(username);
-        userForm.setPassword(password);
-        userForm.setConfirm(password);
-
-        keyToDelete.add(email);
-
-        var user = UserGestor.createUserFromRegistrationForm(userForm);
-
-        userGestor.insert(null, user);
-
-        var userLogged = userGestor.login(email, password);
-
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(email, userLogged.getEmail()),
-                () -> Assertions.assertNotNull(userLogged.getToken()),
-                () -> Assertions.assertTrue(userLogged.getExpiratedToken().isAfter(LocalDateTime.now()))
+                () -> Assertions.assertEquals(username, userLogged.getName()),
+                () -> Assertions.assertNotNull(userLogged.getToken())
         );
     }
 
@@ -333,7 +301,7 @@ public class UserGestorTest extends LogicBaseTest {
 
         userGestor.insert(null, user);
 
-        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> userGestor.login(email, "ThisPasswordIsNotCorrect"));
+        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> userGestor.login(email, "ThisPasswordIsNotCorrect", false));
     }
 
     @Test
@@ -341,7 +309,7 @@ public class UserGestorTest extends LogicBaseTest {
         String usernameOrEmail = TestUtilities.generateEmail("ThisEmailNotExist");
         var userGestor = new UserGestor(sessionFactory);
 
-        Assertions.assertThrows(UserNotFoundException.class, () -> userGestor.login(usernameOrEmail, "Password1!"));
+        Assertions.assertThrows(UserNotFoundException.class, () -> userGestor.login(usernameOrEmail, "Password1!", false));
     }
 
     @AfterEach

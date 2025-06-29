@@ -1,8 +1,8 @@
 export class Order {
     private _listOfElement: OrderElement[];
 
-    public constructor(order?: Order) {
-        this._listOfElement = order ? order._listOfElement : [];
+    public constructor(_listOfElement: OrderElement[] = []) {
+        this._listOfElement = _listOfElement;
     }
 
     public clickOnElement(nameOfElement: string): Order {        
@@ -19,7 +19,7 @@ export class Order {
             this._listOfElement.push({ name: nameOfElement, order: "asc" });
         }
 
-        return new Order(this);
+        return new Order(this._listOfElement);
     }
 
     public haveElement(nameOfElement: string): boolean {
@@ -37,7 +37,7 @@ export class Order {
         let urlString = "";
 
         this._listOfElement.forEach(el => {
-            urlString += (el.order == "desc"? "!" : "") + el.name + "#";
+            urlString += (el.order == "desc"? "!" : "") + el.name + "+";
         })
 
         return urlString.substring(0, urlString.length - 1);

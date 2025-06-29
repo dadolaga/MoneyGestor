@@ -1,7 +1,7 @@
 import { faPen, faPlus, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { faStar as faStartEmpty} from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { Box, Button, LinearProgress, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel } from "@mui/material";
 import { useState, forwardRef } from 'react'
 import WalletDialog from "./WalletDialog";
 import DeleteDialog from "./DeleteDialog";
@@ -9,6 +9,7 @@ import { convertNumberToValue } from "../../utilities/Utilities";
 import { Wallet } from "../../utilities/BackEndTypes";
 import { useRestApi } from "../../request/Request";
 import { Order } from "../base/Order";
+import { useIsMobile } from "../../utilities/useMobile";
 
 interface IWalletTable {
     wallets: Wallet[],
@@ -19,6 +20,8 @@ interface IWalletTable {
 }
 
 const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, ref) => {
+    const isMobile = useIsMobile();
+
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
     const [openDeleteWalletDialog, setOpenDeleteWalletDialog] = useState(false);
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
@@ -73,7 +76,7 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
         <Box sx={{height: '100%', flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
             <WalletDialog open={openWalletDialog} onClose={closeWalletDialogHandler} walletId={editWalletId} />
             <DeleteDialog open={openDeleteWalletDialog} walletId={deleteWalletId} onClose={closeDeleteDialogHandler} />
-            <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickCreteNewWalletHandler}>crea nuovo portafoglio</Button>
+            <Button fullWidth={isMobile} variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickCreteNewWalletHandler}>crea nuovo portafoglio</Button>
             <Paper sx={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'hidden'}}>
                 <TableContainer sx={{height: '100%'}}>
                     <Table stickyHeader>
@@ -123,6 +126,21 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
                                 )
                             })}
                         </TableBody>
+                        <TableFooter>
+                            <TableRow>
+                                <TableCell sx={{textTransform: 'uppercase', fontWeight: 600, fontSize: '1em', fontStyle: 'italic'}}>
+                                    totale
+                                </TableCell>
+                                <TableCell sx={{textAlign: 'end', fontWeight: 600, fontSize: '1.1em'}}>
+                                    {wallets? (
+                                        convertNumberToValue(wallets
+                                        .map(wallet => wallet.value)
+                                        .reduce((value, currentValue) => value + currentValue, 0))
+                                    ) : (<Skeleton variant="text" />)}
+                                </TableCell>
+                                <TableCell colSpan={3} />
+                            </TableRow>
+                        </TableFooter>
                     </Table>
                 </TableContainer>
             </Paper>
