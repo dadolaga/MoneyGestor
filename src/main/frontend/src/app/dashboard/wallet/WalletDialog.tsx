@@ -145,7 +145,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 <DialogContentText>
                 </DialogContentText>
                 <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
-                    <Grid item xs={8}>
+                    <Grid size={8}>
                         <Input
                             type="text"
                             form={form}
@@ -155,7 +155,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                             disabled={loading}
                             />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid size={4}>
                         <Input
                             type="text"
                             form={form}
@@ -166,7 +166,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                             disabled={loading || walletId != undefined}
                             />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                     <Input
                         type="multi"
                         form={form}
