@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Card, CardContent, Grid2, Typography } from "@mui/material";
+import { Box, Card, CardContent, Typography } from "@mui/material";
 import { DefaultRawDatum, PieTooltipProps, ResponsivePie } from "@nivo/pie";
 import { useEffect, useState } from "react";
 import { useRestApi } from "../request/Request";

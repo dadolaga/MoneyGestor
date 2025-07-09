@@ -117,19 +117,19 @@ export default function Page() {
                     </Box> 
                     <Box component={'form'} ref={form}>
                         <Grid container spacing={2}>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <TextField error={formError.lastname != null} helperText={formError.lastname} fullWidth label="Cognome" name='lastname' color='primary' required />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <TextField error={formError.firstname != null} helperText={formError.firstname} fullWidth label="Nome" name='firstname' color='primary' required />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField error={formError.username != null} helperText={formError.username} fullWidth label="Username" name='username' color='primary' required />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                                 <TextField error={formError.email != null} helperText={formError.email} fullWidth label="Email" name='email' color='primary' required />
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <FormControl variant="outlined" error={formError.password != null}>
                                     <InputLabel htmlFor="outlined-adornment-password">
                                         Password *
@@ -154,7 +154,7 @@ export default function Page() {
                                     )}
                                 </FormControl>
                             </Grid>
-                            <Grid item xs={6}>
+                            <Grid size={6}>
                                 <TextField error={formError.confirm != null} helperText={formError.confirm} fullWidth type='password' label="Conferma" name='confirm' color='primary' required />
                             </Grid>
                         </Grid>

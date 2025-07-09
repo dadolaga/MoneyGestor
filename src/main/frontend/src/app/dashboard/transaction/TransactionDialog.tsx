@@ -1,5 +1,4 @@
-import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid2 as Grid, InputBase, LinearProgress, TextField, Typography, Input as MuiInput, InputAdornment, IconButton } from "@mui/material";
-import Dialog from "@mui/material/Dialog/Dialog";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, InputBase, LinearProgress, TextField, Typography, Input as MuiInput, InputAdornment, IconButton } from "@mui/material";
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";

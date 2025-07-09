@@ -11,7 +11,6 @@ import { TransactionGraph } from './TransactionGraph';
 import { Transaction } from '../../utilities/BackEndTypes';
 import { useRestApi } from '../../request/Request';
 import { Order } from '../base/Order';
-import ImportFromCsvDialog from './ImportFromCsvDialog';
 import { useIsMobile } from '../../utilities/useMobile';
 
 export default function Page() {
@@ -93,7 +92,7 @@ export default function Page() {
     return (
         <>
             <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />
-            <ImportFromCsvDialog open={openImportFromCsvDialog} onClose={closeImportFromCsvDialog} file={csvFile} />
+            {/* <ImportFromCsvDialog open={openImportFromCsvDialog} onClose={closeImportFromCsvDialog} file={csvFile} /> */}
             <DeleteDialog
                 open={openTransactionDeleteDialog}
                 onClose={closeDeleteDialogHandler}
@@ -103,7 +102,7 @@ export default function Page() {
                 <Box sx={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
                     <Box display='flex' width={isMobile? "100%" : undefined} gap={2} flexDirection={isMobile? "column" : "row"}>
                         <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
-                        <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddTransactionFromCSV} aria-hidden>Importa da file csv</Button>
+                        {/* <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddTransactionFromCSV} aria-hidden>Importa da file csv</Button> */}
                         <input ref={fileInput} type='file' style={{ display: 'none' }} accept='text/csv' onChange={inputFileChange} />
                     </Box>
                     <TransactionTable
