@@ -1,8 +1,6 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,6 +19,8 @@ public class StockOperationDb {
     private LocalDate date;
     @Column(name = "bank_deposit", nullable = false)
     private Boolean bankDeposit;
+    @Column(name = "is_tfr", nullable = false)
+    private Boolean isTfr;
     @Column(name = "stock", nullable = false)
     private Integer stockId;
     @ManyToOne
@@ -65,6 +65,14 @@ public class StockOperationDb {
 
     public void setBankDeposit(Boolean bankDeposit) {
         this.bankDeposit = bankDeposit;
+    }
+
+    public Boolean getTfr() {
+        return isTfr;
+    }
+
+    public void setTfr(Boolean tfr) {
+        isTfr = tfr;
     }
 
     public Integer getStockId() {

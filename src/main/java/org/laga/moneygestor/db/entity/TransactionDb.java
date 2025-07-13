@@ -32,6 +32,12 @@ public class TransactionDb {
     private TransactionDb transactionDestination;
     @Column(name = "transaction_destination")
     private Long transactionDestinationId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "stock_operation", insertable = false, updatable = false)
+    private StockOperationDb stockOperationDb;
+    @Column(name = "stock_operation")
+    private Long stockOperationId;
     @ManyToOne
     @JoinColumn(name = "user_transaction", nullable = false, insertable = false, updatable = false)
     private UserDb userOfTransaction;
@@ -150,6 +156,22 @@ public class TransactionDb {
 
     public void setTransactionDestinationId(Long transactionDestinationId) {
         this.transactionDestinationId = transactionDestinationId;
+    }
+
+    public StockOperationDb getStockOperationDb() {
+        return stockOperationDb;
+    }
+
+    public void setStockOperationDb(StockOperationDb stockOperationDb) {
+        this.stockOperationDb = stockOperationDb;
+    }
+
+    public Long getStockOperationId() {
+        return stockOperationId;
+    }
+
+    public void setStockOperationId(Long stockOperationId) {
+        this.stockOperationId = stockOperationId;
     }
 
     public TransactionTypeDb getType() {
