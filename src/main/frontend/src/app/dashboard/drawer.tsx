@@ -1,4 +1,4 @@
-import { faArrowRightArrowLeft, faWallet } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Drawer as MaterialDrawer, useMediaQuery, useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -32,6 +32,14 @@ export default function Drawer({ width, open, hide }) {
                             <FontAwesomeIcon icon={faArrowRightArrowLeft} />
                         </ListItemIcon>
                         <ListItemText primary='Transazioni' />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={openPage('/dashboard/bank_stocks')}>
+                        <ListItemIcon>
+                            <FontAwesomeIcon icon={faMoneyBillTrendUp} />
+                        </ListItemIcon>
+                        <ListItemText primary='Azioni' />
                     </ListItemButton>
                 </ListItem>
             </List>

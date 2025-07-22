@@ -83,6 +83,30 @@ export interface Wallet {
     color: string;
 }
 
+export interface Stock {
+    id?: number
+    name?: string
+    subscriptionValue?: number
+    subscriptionDate?: string
+    currentValue?: number
+    resourcesInvested?: number
+}
+
+export interface StockMovement {
+    id?: number
+    description?: string
+    value?: number
+    current_yield: number
+    date?: string
+    is_bank_deposit?: boolean
+    is_tfr?: boolean
+    stock?: Stock
+}
+
+export type CreateStockMovement = StockMovement & {
+    wallet: number | null
+};
+
 export interface TransactionType {
     id: number,
     name: string,

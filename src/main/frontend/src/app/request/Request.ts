@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Stock, StockMovement, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -12,7 +12,7 @@ const ERROR_BASE_TYPE = "ERROR";
 
 export function useRestApi() {
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-    const router = useRouter();    
+    const router = useRouter();
     const [cookie, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
 
     return new Request(router, enqueueSnackbar, cookie, removeCookie);
@@ -21,18 +21,18 @@ export function useRestApi() {
 export class Request {
     public router: AppRouterInstance = null;
     public enqueueSnackbar: EnqueueSnackbar = null;
-    public cookie: {_token?: any} = null;
+    public cookie: { _token?: any } = null;
     public removeCookie: (name: "_displayName", any?) => void = null;
 
     public User = {
         Registration: async (registration: UserRegistrationForm): Promise<ReceiveId> => {
             return this.baseRequestPost("user/registration", registration)
-            .then(response => response as ReceiveId)
+                .then(response => response as ReceiveId)
         },
 
         Login: async (loginForm: LoginForm): Promise<ILoginData> => {
             return this.baseRequestPost("user/login", loginForm)
-            .then(response => response as ILoginData)
+                .then(response => response as ILoginData)
         },
 
         Logout: async (): Promise<void> => {
@@ -43,95 +43,120 @@ export class Request {
     public Wallet = {
         Create: async (wallet: CreateWalletForm): Promise<ReceiveId> => {
             return this.baseRequestPost("wallet/new", wallet)
-            .then(response => response as ReceiveId)
+                .then(response => response as ReceiveId)
         },
-        
+
         List: async (listData: ListData): Promise<Wallet[]> => {
             return this.baseRequestGet("wallet/list?sort=" + encodeURI(listData.order))
-            .then(response => response as Wallet[])
+                .then(response => response as Wallet[])
         },
 
         Total: async (): Promise<number> => {
             return this.baseRequestGet("wallet/total")
-            .then(response => response as number)
+                .then(response => response as number)
         },
-        
+
         Get: async (id: number): Promise<Wallet> => {
             return this.baseRequestGet("wallet/get/" + id)
-            .then(response => response as Wallet)
+                .then(response => response as Wallet)
         },
 
         Modify: async (id: number, wallet: CreateWalletForm): Promise<void> => {
             return this.baseRequestPost("wallet/edit/" + id, wallet)
-            .then(response => response as void)
+                .then(response => response as void)
         },
 
         Delete: async (id: number): Promise<void> => {
             return this.baseRequestPost("wallet/delete/" + id)
-            .then(response => response as void)
+                .then(response => response as void)
         }
     }
 
     public TransactionType = {
         Create: async (transactionType: TransactionTypeForm): Promise<ReceiveId> => {
             return this.baseRequestPost("transactionType/new", transactionType)
-            .then(response => response as ReceiveId)
+                .then(response => response as ReceiveId)
         },
 
         GetAll: async (): Promise<TransactionType[]> => {
             return this.baseRequestGet("transactionType/getAll")
-            .then(response => response as TransactionType[]);
+                .then(response => response as TransactionType[]);
         }
     }
 
     public Transaction = {
         Create: async (transaction: TransactionForm): Promise<ReceiveId> => {
             return this.baseRequestPost("transaction/new", transaction)
-            .then(response => response as ReceiveId)
+                .then(response => response as ReceiveId)
         },
 
         AddAll: async (transactions: MultiTransactionInsert): Promise<void> => {
             return this.baseRequestPost("transaction/newAll", transactions)
-            .then(response => response as void)
+                .then(response => response as void)
         },
 
         List: async (listData: ListData): Promise<Transaction[]> => {
             return this.baseRequestGet("transaction/list?sort=" + encodeURI(listData.order))
-            .then(response => response as Transaction[])
+                .then(response => response as Transaction[])
         },
 
         Delete: async (id: number): Promise<void> => {
             return this.baseRequestPost("transaction/delete/" + id)
-            .then(response => response as void)
+                .then(response => response as void)
         },
-        
+
         Get: async (id: number): Promise<Transaction> => {
             return this.baseRequestGet("transaction/get/" + id)
-            .then(response => response as Transaction)
+                .then(response => response as Transaction)
         },
 
         Modify: async (id: number, transaction: TransactionForm): Promise<void> => {
             return this.baseRequestPost("transaction/edit/" + id, transaction)
-            .then(response => response as void)
+                .then(response => response as void)
         },
 
         Graph: async (data: GraphDataSend) => {
             return this.baseRequestGet("transaction/graph", data)
-            .then(response => response as LineGraph<Wallet, Transaction>[])
+                .then(response => response as LineGraph<Wallet, Transaction>[])
         }
     }
 
     public Dashboard = {
-        Transaction:async (data: ITransactionFilter): Promise<ITransaction[]> => {
+        Transaction: async (data: ITransactionFilter): Promise<ITransaction[]> => {
             return this.baseRequestGet("dashboard/transaction", data)
-            .then(response => response as ITransaction[])
+                .then(response => response as ITransaction[])
         }
     }
 
-    public constructor(router: AppRouterInstance, 
-            enqueueSnackbar: EnqueueSnackbar, 
-            cookie: {_token?: any}, 
-            removeCookie: (name: "_displayName", any?) => void) {
+    public Stock = {
+        Create: async (stock: Stock): Promise<ReceiveId> => {
+            return this.baseRequestPost("stock/new", stock)
+                .then(response => response as ReceiveId)
+        },
+
+        List: async (listData: ListData): Promise<Stock[]> => {
+            return this.baseRequestGet("stock/list?sort=" + encodeURI(listData.order))
+                .then(response => response as Stock[])
+        },
+    }
+
+    public StockMovement = {
+        Create: async (stock: StockMovement): Promise<ReceiveId> => {
+            return this.baseRequestPost("stock_operation/new", stock)
+                .then(response => response as ReceiveId)
+        },
+
+        List: async (listData: ListData): Promise<StockMovement[]> => { 
+            return this.baseRequestGet("stock_operation/list?sort=" + encodeURI(listData.order))
+                .then(response => response as StockMovement[])
+        },
+
+    }
+
+    public constructor(router: AppRouterInstance,
+        enqueueSnackbar: EnqueueSnackbar,
+        cookie: { _token?: any },
+        removeCookie: (name: "_displayName", any?) => void) {
         this.router = router;
         this.enqueueSnackbar = enqueueSnackbar;
         this.cookie = cookie;
@@ -140,11 +165,11 @@ export class Request {
 
     public static ErrorGestor = (options?: CodeAction[]): (error: ResponseError) => void => {
         return (error) => {
-            if(error instanceof ResponseError) {                
-                if(options) {
+            if (error instanceof ResponseError) {
+                if (options) {
                     let codeAction = options.find(codeAction => codeAction.code == error.code);
 
-                    if(codeAction) {
+                    if (codeAction) {
                         codeAction.action(error);
                         return;
                     }
@@ -164,13 +189,13 @@ export class Request {
     private async baseRequest(isPost: boolean, url: string, data?: any): Promise<any> {
         let axiosPromise: Promise<AxiosResponse<any, any>>;
         let axiosConfig: AxiosRequestConfig<any> = {
-            params: !isPost? data : undefined,
+            params: !isPost ? data : undefined,
             headers: this.cookie._token && {
                 Authorization: this.cookie._token
             }
         };
 
-        if(isPost) {
+        if (isPost) {
             axiosPromise = axios.post(url, data, axiosConfig);
         } else {
             axiosPromise = axios.get(url, axiosConfig);
@@ -179,27 +204,27 @@ export class Request {
         return axiosPromise
             .then(axiosResponse => {
                 const myResponse = axiosResponse.data as any as Response<any>;
-    
-                if(myResponse.code && myResponse.code == 1) {
+
+                if (myResponse.code && myResponse.code == 1) {
                     return myResponse.content;
-                } else if(myResponse.type && myResponse.type != ERROR_BASE_TYPE) {
+                } else if (myResponse.type && myResponse.type != ERROR_BASE_TYPE) {
                     throw new ResponseError(myResponse.code, myResponse.content);
                 } else {
                     Request.printServerError("response is not a recognized response");
                 }
             })
             .catch(error => {
-                if(error.code == "ERR_NETWORK") {
+                if (error.code == "ERR_NETWORK") {
                     this.router.push("/dashboard/error/unavailable");
                 }
 
                 if (error.response.status == 500) {
                     Request.printServerError("Server return 500");
                 }
-                
+
                 const response = error.response.data as any as Response<any>;
-    
-                if(response.type == ERROR_BASE_TYPE) {
+
+                if (response.type == ERROR_BASE_TYPE) {
                     this.basicErrorGestor(response);
                     throw new ResponseError(response.code, response.content);
                 } else {
@@ -214,12 +239,12 @@ export class Request {
                 Request.printServerError("Illegal argument: " + errorResponse.content);
                 break;
             case 103:
-                this.removeCookie("_displayName", {path: '/'});
-                this.enqueueSnackbar("Sessione scaduta", {variant: "info"});
+                this.removeCookie("_displayName", { path: '/' });
+                this.enqueueSnackbar("Sessione scaduta", { variant: "info" });
                 this.router.push("/dashboard/user/login");
                 break;
             case 104:
-                this.enqueueSnackbar("L'utente non ha i permessi", {variant: "warning"});
+                this.enqueueSnackbar("L'utente non ha i permessi", { variant: "warning" });
                 break;
         }
     }
