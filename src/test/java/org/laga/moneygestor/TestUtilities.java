@@ -1,5 +1,8 @@
 package org.laga.moneygestor;
 
+import org.junit.jupiter.api.Assertions;
+
+import java.math.BigDecimal;
 import java.util.Random;
 
 public class TestUtilities {
@@ -21,5 +24,12 @@ public class TestUtilities {
 
     public static String generateEmail(String baseWord) {
         return baseWord + "." + generateRandomString(6) + "@test.ts";
+    }
+
+    public static void assertionsForFloatNumber(BigDecimal expected, BigDecimal actual, double margin) {
+        if(actual.compareTo(expected.subtract(new BigDecimal(margin))) < 0 ||
+                actual.compareTo(expected.add(new BigDecimal(margin))) > 0) {
+            Assertions.fail("\nExpected :" + expected + "\n" + "Actual   :" + actual + "\nMargin   :" + margin);
+        }
     }
 }

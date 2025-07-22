@@ -7,8 +7,13 @@ import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Query;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.laga.moneygestor.db.entity.LoginDb;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.UserGestor;
 import org.mockito.Mockito;
+
+import java.time.LocalDateTime;
+import java.util.Set;
 
 public abstract class BaseGestorTest<T> {
     protected SessionFactory sessionFactory;
@@ -16,7 +21,7 @@ public abstract class BaseGestorTest<T> {
     protected Transaction transaction;
     protected MutationQuery mutationQuery;
     protected Query selectQuery;
-    protected UserGestor gestor;
+    protected UserDb userLogged;
 
     @BeforeEach
     public void setup() {
@@ -25,8 +30,6 @@ public abstract class BaseGestorTest<T> {
         transaction = Mockito.mock(Transaction.class);
         mutationQuery = Mockito.mock(MutationQuery.class);
         selectQuery = Mockito.mock(Query.class);
-
-        gestor = new UserGestor(sessionFactory);
 
         Mockito.when(sessionFactory.openSession()).thenReturn(session);
         Mockito.when(sessionFactory.getCurrentSession()).thenReturn(session);
@@ -41,10 +44,34 @@ public abstract class BaseGestorTest<T> {
         Mockito.when(selectQuery.setMaxResults(Mockito.anyInt())).thenReturn(selectQuery);
     }
 
+    protected void populateUserLogged() {
+        var login = new LoginDb();
+
+        login.setUserId(1);
+        login.setToken("token");
+        login.setExpiratedToken(LocalDateTime.now().plusMinutes(120));
+
+        var user = new UserDb();
+
+        user.setId(1);
+        user.setFirstname("test");
+        user.setLastname("test");
+        user.setUsername("test");
+        user.setEmail("test@example.com");
+        user.setPassword("password");
+        user.setLogins(Set.of(login));
+
+        userLogged = user;
+    }
+
     protected void verifySaveEntity() {
+        verifySaveEntity(getInnerClass());
+    }
+
+    protected<Z> void verifySaveEntity(Class<Z> cls) {
         Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
         Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
-        Mockito.verify(session, Mockito.atLeastOnce()).persist(Mockito.any(getInnerClass()));
+        Mockito.verify(session, Mockito.atLeastOnce()).persist(Mockito.any(cls));
         Mockito.verify(transaction, Mockito.atLeastOnce()).commit();
     }
 

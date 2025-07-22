@@ -52,11 +52,6 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         return userDb;
     }
 
-    public static void checkUser(UserDb userDb) {
-        if(userDb == null)
-            throw new IllegalArgumentException();
-    }
-
     private static boolean isValidEmail(String email) {
         final String regexValidMail = "^(?![.])[A-Za-z0-9._%+-]+(?<![.])@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
@@ -84,7 +79,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
             var listOfUser = query.list();
 
             if(listOfUser.size() == 0)
-                throw new EntityNotFoundException("user not found");
+                throw new UserNotFoundException();
 
             if(listOfUser.size() > 1)
                 throw new IllegalStateException("More user with token found");
@@ -172,8 +167,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         if(object == null)
             throw new IllegalArgumentException();
 
+        Transaction transaction = session.getTransaction();
         try {
-            Transaction transaction = session.getTransaction();
 
             session.persist(object);
 
@@ -181,6 +176,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
             return object.getId();
         } catch (HibernateException e) {
+            transaction.rollback();
+
             if(e.getMessage().contains("unique_user_email"))
                 throw new DuplicateValueException("Try to insert duplicate email");
 
@@ -193,10 +190,12 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
     @Override
     public void deleteById(Session session, UserDb userLogged, Integer id, boolean forceDelete) {
-        if(!Objects.equals(userLogged.getId(), id))
-            throw new UserNotHavePermissionException();
-
         Transaction transaction = session.getTransaction();
+
+        if(!Objects.equals(userLogged.getId(), id)) {
+            transaction.rollback();
+            throw new UserNotHavePermissionException();
+        }
 
         session.createMutationQuery("DELETE UserDb WHERE id = :id")
                 .setParameter("id", id)
@@ -215,8 +214,12 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         if(newUser == null || id == null || userLogged == null)
             throw new IllegalArgumentException();
 
-        if(!Objects.equals(userLogged.getId(), id))
+        Transaction transaction = session.getTransaction();
+
+        if(!Objects.equals(userLogged.getId(), id)) {
+            transaction.rollback();
             throw new UserNotHavePermissionException();
+        }
 
         try {
             var user = getById(session, userLogged, id);
@@ -226,12 +229,11 @@ public class UserGestor extends Gestor<Integer, UserDb> {
             user.setUsername(newUser.getUsername());
             user.setEmail(newUser.getEmail());
 
-            Transaction transaction = session.getTransaction();
-
             session.persist(user);
 
             transaction.commit();
         } catch (IndexOutOfBoundsException e) {
+            transaction.rollback();
             throw new UserNotFoundException(e);
         }
     }

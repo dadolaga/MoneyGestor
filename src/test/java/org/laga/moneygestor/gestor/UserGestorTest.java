@@ -2,10 +2,12 @@ package org.laga.moneygestor.gestor;
 
 import org.hibernate.HibernateException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.laga.moneygestor.db.entity.LoginDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.PasswordUtilities;
+import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.*;
 import org.mockito.Mockito;
 
@@ -15,6 +17,15 @@ import java.util.List;
 import java.util.Set;
 
 public class UserGestorTest extends BaseGestorTest<UserDb>{
+
+    private UserGestor gestor;
+
+    @BeforeEach
+    public void setup() {
+        super.setup();
+        
+        gestor = new UserGestor(sessionFactory);
+    }
 
     @Test
     public void insert_userEffectiveInserted() {
