@@ -19,6 +19,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     public static final ColorDb COLOR_4 = CreateEntityValue.createColor("C1121F");
     public static final TransactionTypeDb TRANSACTION_TYPE_SWITCH = CreateEntityValue.createTransactionType(1, "Scambio");
     public static final TransactionTypeDb TRANSACTION_TYPE_TIE = CreateEntityValue.createTransactionType(2, "Pareggio");
+    public static final TransactionTypeDb TRANSACTION_TYPE_STOCK = CreateEntityValue.createTransactionType(3, "Azione");
 
     private final SessionFactory sessionFactory;
 
@@ -39,6 +40,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             persistIfNotExist(session, TRANSACTION_TYPE_SWITCH, TRANSACTION_TYPE_SWITCH.getId());
             persistIfNotExist(session, TRANSACTION_TYPE_TIE, TRANSACTION_TYPE_TIE.getId());
+            persistIfNotExist(session, TRANSACTION_TYPE_STOCK, TRANSACTION_TYPE_STOCK.getId());
 
             transaction.commit();
         }

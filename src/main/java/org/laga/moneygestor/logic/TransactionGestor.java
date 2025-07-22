@@ -253,7 +253,7 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         return insert(session, userLogged, transactionDb, true);
     }
 
-    private Long insert(Session session, UserDb userLogged, TransactionDb transactionDb, boolean commit) {
+    public Long insert(Session session, UserDb userLogged, TransactionDb transactionDb, boolean commit) {
         if(session == null || userLogged == null || transactionDb == null)
             throw new IllegalArgumentException("one or more argument is null");
 
