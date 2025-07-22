@@ -15,17 +15,27 @@ public class StockOperationDb {
     private String description;
     @Column(nullable = false)
     private BigDecimal value;
+    @Column(name = "current_yield", nullable = true, columnDefinition = "DECIMAL(10, 10)")
+    private BigDecimal currentYield;
     @Column(nullable = false)
     private LocalDate date;
-    @Column(name = "bank_deposit", nullable = false)
-    private Boolean bankDeposit;
     @Column(name = "is_tfr", nullable = false)
     private Boolean isTfr;
-    @Column(name = "stock", nullable = false)
-    private Integer stockId;
+    @Column(name = "bank_transaction", nullable = true)
+    private Long bankTransactionId;
     @ManyToOne
+    @JoinColumn(name = "bank_transaction", nullable = true, insertable = false, updatable = false)
+    private TransactionDb bankTransaction;
+    @Column(name = "stock")
+    private Integer stockId;
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "stock", nullable = false, insertable = false, updatable = false)
     private StockDb stock;
+    @ManyToOne
+    @JoinColumn(name = "user", nullable = false, insertable = false, updatable = false)
+    private UserDb user;
+    @Column(name = "user", nullable = false)
+    private Integer userId;
 
     public Long getId() {
         return id;
@@ -51,6 +61,14 @@ public class StockOperationDb {
         this.value = value;
     }
 
+    public BigDecimal getCurrentYield() {
+        return currentYield;
+    }
+
+    public void setCurrentYield(BigDecimal currentYield) {
+        this.currentYield = currentYield;
+    }
+
     public LocalDate getDate() {
         return date;
     }
@@ -59,20 +77,28 @@ public class StockOperationDb {
         this.date = date;
     }
 
-    public Boolean getBankDeposit() {
-        return bankDeposit;
-    }
-
-    public void setBankDeposit(Boolean bankDeposit) {
-        this.bankDeposit = bankDeposit;
-    }
-
     public Boolean getTfr() {
         return isTfr;
     }
 
     public void setTfr(Boolean tfr) {
         isTfr = tfr;
+    }
+
+    public Long getBankTransactionId() {
+        return bankTransactionId;
+    }
+
+    public void setBankTransactionId(Long bankTransactionId) {
+        this.bankTransactionId = bankTransactionId;
+    }
+
+    public TransactionDb getBankTransaction() {
+        return bankTransaction;
+    }
+
+    public void setBankTransaction(TransactionDb bankTransaction) {
+        this.bankTransaction = bankTransaction;
     }
 
     public Integer getStockId() {
@@ -89,5 +115,21 @@ public class StockOperationDb {
 
     public void setStock(StockDb stock) {
         this.stock = stock;
+    }
+
+    public UserDb getUser() {
+        return user;
+    }
+
+    public void setUser(UserDb user) {
+        this.user = user;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

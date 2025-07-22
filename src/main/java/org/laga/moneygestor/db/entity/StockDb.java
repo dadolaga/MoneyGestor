@@ -17,6 +17,8 @@ public class StockDb {
     private BigDecimal subscriptionValue;
     @Column(name = "current_value")
     private BigDecimal currentValue;
+    @Column(name = "resources_invested")
+    private BigDecimal resourcesInvested;
     @ManyToOne
     @JoinColumn(name = "user", nullable = false, insertable = false, updatable = false)
     private UserDb user;
@@ -61,6 +63,14 @@ public class StockDb {
 
     public void setCurrentValue(BigDecimal currentValue) {
         this.currentValue = currentValue;
+    }
+
+    public BigDecimal getResourcesInvested() {
+        return resourcesInvested;
+    }
+
+    public void setResourcesInvested(BigDecimal resourcesInvested) {
+        this.resourcesInvested = resourcesInvested;
     }
 
     public UserDb getUser() {
