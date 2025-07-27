@@ -23,8 +23,11 @@ import java.util.*;
 
 public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
+    private boolean checkWalletValue;
+
     public TransactionGestor(SessionFactory sessionFactory) {
         super(sessionFactory);
+        checkWalletValue = true;
     }
 
     public Long insertMoneyTransfer(UserDb userLogged, TransactionDb primaryTransaction, WalletDb walletDestination) {
@@ -236,6 +239,10 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         }
     }
 
+    public void setCheckWalletValue(boolean value) {
+        checkWalletValue = value;
+    }
+
     private TransactionDb createFakeTransaction(String name, BigDecimal value, LocalDate date, WalletDb wallet) {
         var transaction = new TransactionDb();
 
@@ -396,7 +403,7 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
         session.persist(wallet);
 
-        if(wallet.getValue().doubleValue() < 0) {
+        if(checkWalletValue && wallet.getValue().doubleValue() < 0) {
             session.getTransaction().rollback();
             throw new NegativeWalletException();
         }

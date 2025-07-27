@@ -6,6 +6,28 @@ import java.math.BigDecimal;
 import java.util.Random;
 
 public class TestUtilities {
+    public static class ObjectSetter<T> {
+        T object;
+
+        public ObjectSetter() {
+            this(null);
+        }
+        public ObjectSetter(T object) {
+            this.object = object;
+        }
+
+        public boolean hasValue() {
+            return object != null;
+        }
+
+        public T getValue() {
+            return object;
+        }
+
+        public void setValue(T object) {
+            this.object = object;
+        }
+    }
     public static String generateRandomString(int length) {
         final String letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         final Random random = new Random();

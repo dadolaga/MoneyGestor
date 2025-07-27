@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
+
     public StockOperationGestor(SessionFactory sessionFactory) {
         super(sessionFactory);
     }
@@ -35,10 +36,14 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
     }
 
     public Long insert(UserDb userLogged, StockOperationDb stockOperation, Integer walletId) {
+        return insert(userLogged, stockOperation, walletId, false);
+    }
+
+    public Long insert(UserDb userLogged, StockOperationDb stockOperation, Integer walletId, boolean forceWalletUpdate) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            var id = insert(session, userLogged, stockOperation, walletId);
+            var id = insert(session, userLogged, stockOperation, walletId, forceWalletUpdate);
 
             closeTransactionIfNecessary(transaction);
 
@@ -46,7 +51,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         }
     }
 
-    public Long insert(Session session, UserDb userLogged, StockOperationDb stockOperation, Integer walletId) {
+    public Long insert(Session session, UserDb userLogged, StockOperationDb stockOperation, Integer walletId, boolean forceWalletUpdate) {
         if(walletId == null) {
             return insert(session, userLogged, stockOperation, true);
         }
@@ -61,6 +66,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             Transaction transaction = session.getTransaction();
 
             var transactionGestor = new TransactionGestor(sessionFactory);
+            transactionGestor.setCheckWalletValue(!forceWalletUpdate);
 
             var transactionDb = new TransactionDb();
 
@@ -121,6 +127,10 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
     @Override
     protected void update(Session session, UserDb userLogged, Long id, StockOperationDb newStockOperation) {
+        update(session, userLogged, id, newStockOperation, null);
+    }
+
+    private void update(Session session, UserDb userLogged, Long id, StockOperationDb newStockOperation, Integer newWallet) {
         if(sessionFactory == null || id == null || newStockOperation == null || userLogged == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -130,25 +140,96 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         Transaction transaction;
         try {
             transaction = session.getTransaction();
+            StockDb stock = session.get(StockDb.class, newStockOperation.getStockId());
 
-            StockOperationDb stockOperation = getById(userLogged, id);
+            StockOperationDb oldStockOperation = getById(userLogged, id);
 
-            if(stockOperation == null)
+            if(oldStockOperation == null)
                 throw new UserNotHavePermissionException();
 
-            stockOperation.setDescription(newStockOperation.getDescription() == null? stockOperation.getDescription() : newStockOperation.getDescription());
-            stockOperation.setDate(newStockOperation.getDate() == null? stockOperation.getDate() : newStockOperation.getDate());
-            stockOperation.setStockId(newStockOperation.getStockId() == null? stockOperation.getStockId() : newStockOperation.getStockId());
-            stockOperation.setValue(newStockOperation.getValue() == null? stockOperation.getValue() : newStockOperation.getValue());
-            stockOperation.setBankTransactionId(newStockOperation.getBankTransactionId() == null? stockOperation.getBankTransactionId() : newStockOperation.getBankTransactionId());
-            stockOperation.setTfr(newStockOperation.getTfr() == null? stockOperation.getTfr() : newStockOperation.getTfr());
+            updateStockCurrentValue(session, stock, stock.getCurrentValue().subtract(oldStockOperation.getValue()).add(newStockOperation.getValue()));
 
-            session.merge(stockOperation);
+            if (oldStockOperation.getTfr() || oldStockOperation.getBankTransactionId() != null) {
+                updateStockResourcesInvested(session, stock, stock.getResourcesInvested().subtract(oldStockOperation.getValue()));
+            }
+
+            if (newStockOperation.getTfr() || newStockOperation.getBankTransactionId() != null) {
+                updateStockResourcesInvested(session, stock, stock.getResourcesInvested().add(newStockOperation.getValue()));
+            }
+
+            if(oldStockOperation.getBankTransactionId() != null) {
+                var transactionGestor = new TransactionGestor(sessionFactory);
+
+                var oldTransaction = transactionGestor.getById(session, userLogged, oldStockOperation.getBankTransactionId());
+                var newTransaction = new TransactionDb();
+
+                newTransaction.setDescription(oldTransaction.getDescription());
+                newTransaction.setLongDescription(oldTransaction.getLongDescription());
+                newTransaction.setDate(oldTransaction.getDate());
+                newTransaction.setValue(newStockOperation.getValue().negate());
+                newTransaction.setWalletId(newWallet != null? newWallet : oldTransaction.getWalletId());
+                newTransaction.setUserOfTransactionId(oldTransaction.getUserOfTransactionId());
+                newTransaction.setTypeId(oldTransaction.getTypeId());
+
+                if(newStockOperation.getBankTransactionId() != null) {
+                    transactionGestor.update(session, userLogged, oldStockOperation.getBankTransactionId(), newTransaction);
+                } else {
+                    transactionGestor.deleteById(session, userLogged, oldStockOperation.getId(), true);
+                }
+            }
+
+            oldStockOperation.setDescription(newStockOperation.getDescription() == null? oldStockOperation.getDescription() : newStockOperation.getDescription());
+            oldStockOperation.setDate(newStockOperation.getDate() == null? oldStockOperation.getDate() : newStockOperation.getDate());
+            oldStockOperation.setStockId(newStockOperation.getStockId() == null? oldStockOperation.getStockId() : newStockOperation.getStockId());
+            oldStockOperation.setValue(newStockOperation.getValue() == null? oldStockOperation.getValue() : newStockOperation.getValue());
+            oldStockOperation.setBankTransactionId(newStockOperation.getBankTransactionId() == null? oldStockOperation.getBankTransactionId() : newStockOperation.getBankTransactionId());
+            oldStockOperation.setTfr(newStockOperation.getTfr() == null? oldStockOperation.getTfr() : newStockOperation.getTfr());
+            oldStockOperation.setCurrentYield(newStockOperation.getTfr() || newStockOperation.getBankTransactionId() != null?
+                    null : (stock.getCurrentValue().divide(stock.getResourcesInvested(), 10, RoundingMode.HALF_DOWN).subtract(new BigDecimal(1))));
+
+            session.merge(oldStockOperation);
 
             transaction.commit();
         } catch (RollbackException e) {
             if(e.getCause().getMessage().contains("index_wallet_nameuser"))
                 throw new DuplicateValueException("Duplicate value for wallet", e);
+        }
+    }
+
+    public void update(UserDb userLogged, Long id, StockOperationDb newStockOperation, Integer newWalletId) {
+        if (newWalletId == null) {
+            update(userLogged, id, newStockOperation);
+            return;
+        }
+
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            var oldStockOperation = session.get(StockOperationDb.class, id);
+
+            if(oldStockOperation.getBankTransactionId() == null) {
+                var transactionGestor = new TransactionGestor(sessionFactory);
+
+                var newTransactionDb = new TransactionDb();
+
+                newTransactionDb.setDate(newStockOperation.getDate());
+                newTransactionDb.setTypeId(DatabaseInitializer.TRANSACTION_TYPE_STOCK.getId());
+                newTransactionDb.setWalletId(newWalletId);
+                newTransactionDb.setValue(newStockOperation.getValue().negate());
+                newTransactionDb.setUserInsertTransactionId(userLogged.getId());
+                newTransactionDb.setUserOfTransactionId(userLogged.getId());
+                newTransactionDb.setStockOperationId(id);
+
+                var transactionId = transactionGestor.insert(session, userLogged, newTransactionDb, false);
+
+                newStockOperation.setBankTransactionId(transactionId);
+            } else {
+                newStockOperation.setBankTransactionId(oldStockOperation.getBankTransactionId());
+            }
+
+            update(session, userLogged, id, newStockOperation, newWalletId); // commit is inside this
+
+            closeTransactionIfNecessary(transaction);
         }
     }
 
@@ -158,8 +239,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             return session.createQuery("FROM StockOperationDb WHERE id = :id AND userId = :userId ", StockOperationDb.class)
                     .setParameter("id", id)
                     .setParameter("userId", userLogged.getId())
-                    .setMaxResults(1)
-                    .list().get(0);
+                    .getSingleResultOrNull();
         } catch (IndexOutOfBoundsException ignored) {
             return null;
         }
@@ -191,10 +271,10 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             if(!stockOperationDb.getTfr() && stockOperationDb.getBankTransactionId() == null)
                 stockOperationDb.setCurrentYield(stock.getCurrentValue().add(stockOperationDb.getValue()).divide(stock.getCurrentValue(), 10, RoundingMode.HALF_DOWN).subtract(new BigDecimal(1)));
 
-            updateStockCurrentValue(session, stock, stockOperationDb.getValue());
+            updateStockCurrentValue(session, stock, stock.getCurrentValue().add(stockOperationDb.getValue()));
 
             if(stockOperationDb.getTfr() || stockOperationDb.getBankTransactionId() != null)
-                updateStockResourcesInvested(session, session.get(StockDb.class, stockOperationDb.getStockId()), stockOperationDb.getValue());
+                updateStockResourcesInvested(session, stock, stock.getResourcesInvested().add(stockOperationDb.getValue()));
 
             if (commit)
                 transaction.commit();
@@ -206,14 +286,14 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         return stockOperationDb.getId();
     }
 
-    private void updateStockCurrentValue(Session session, StockDb stock, BigDecimal value) {
-        stock.setCurrentValue(stock.getCurrentValue().add(value));
+    private void updateStockCurrentValue(Session session, StockDb stock, BigDecimal newValue) {
+        stock.setCurrentValue(newValue);
 
         session.persist(stock);
     }
 
-    private void updateStockResourcesInvested (Session session, StockDb stock, BigDecimal value) {
-        stock.setResourcesInvested(stock.getResourcesInvested().add(value));
+    private void updateStockResourcesInvested (Session session, StockDb stock, BigDecimal newValue) {
+        stock.setResourcesInvested(newValue);
 
         session.persist(stock);
     }

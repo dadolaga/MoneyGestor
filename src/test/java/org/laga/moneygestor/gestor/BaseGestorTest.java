@@ -64,13 +64,20 @@ public abstract class BaseGestorTest<T> {
         userLogged = user;
     }
 
+    protected void verifySingleTransaction() {
+        Mockito.verify(session, Mockito.times(1)).beginTransaction();
+    }
+
+    protected void verifyDoubleTransaction() {
+        Mockito.verify(session, Mockito.times(2)).beginTransaction();
+    }
+
     protected void verifySaveEntity() {
         verifySaveEntity(getInnerClass());
     }
 
     protected<Z> void verifySaveEntity(Class<Z> cls) {
         Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
-        Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
         Mockito.verify(session, Mockito.atLeastOnce()).persist(Mockito.any(cls));
         Mockito.verify(transaction, Mockito.atLeastOnce()).commit();
     }
@@ -82,7 +89,6 @@ public abstract class BaseGestorTest<T> {
 
     protected void verifyDeleteEntity() {
         Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
-        Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
         Mockito.verify(session, Mockito.atLeastOnce()).createMutationQuery(Mockito.contains("DELETE"));
         Mockito.verify(mutationQuery, Mockito.atLeastOnce()).executeUpdate();
         Mockito.verify(transaction, Mockito.atLeastOnce()).commit();
@@ -96,7 +102,6 @@ public abstract class BaseGestorTest<T> {
 
     protected void verifyRollbackEntity() {
         Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
-        Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
         Mockito.verify(transaction, Mockito.atLeastOnce()).rollback();
     }
 
