@@ -7,6 +7,7 @@ import { useRestApi } from "../request/Request";
 import { sendDateToBackEnd } from "../utilities/BackEndUtilities";
 import { ITransaction } from "../utilities/Types";
 import { convertNumberToValue, fullSize } from "../utilities/Utilities";
+import { useIsMobile } from "../utilities/useMobile";
 
 const data: DefaultRawDatum[] & {}[] = [
     {
@@ -42,6 +43,8 @@ const data: DefaultRawDatum[] & {}[] = [
 ]
 
 export default function Dashboard() {
+    const isMobile = useIsMobile();
+
     const [dateStart, setDateStart] = useState<Date>();
     const [dateEnd, setDateEnd] = useState<Date>();
     const [transaction, setTransaction] = useState<ITransaction[]>([]);
@@ -110,27 +113,34 @@ export default function Dashboard() {
 
     return (
         <Box sx={{ color: "text.primary", height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <Typography variant="h4" textAlign="center" sx={{ mb: 2 }}>
+            <Typography variant={isMobile? "h5": "h3"} textAlign="center" sx={{ mb: 2 }}>
                 Riepilogo {getDatePrint()}
             </Typography>
             <Box
                 flexGrow={1}
                 width="100%"
                 display="grid"
-                gridTemplateColumns="1fr 1fr 1fr"
-                gridTemplateRows="1fr 1fr"
+                gridTemplateColumns= {!isMobile? "1fr 1fr 1fr": "1fr"}
+                gridTemplateRows= {!isMobile? "1fr 1fr": ".5fr 1fr"}
                 gap={2}
                 sx={{
                     minHeight: 0,
                     minWidth: 0,
                 }}>
-                <Card>
-                    <CardContent sx={{ ...fullSize, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3 }}>
-                        <Typography sx={{ fontSize: "2em", color: "#008000" }}>Entrate: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value > 0 ? current.value + acc : acc, 0))}</Typography></Typography>
-                        <Typography sx={{ fontSize: "2em", color: "#c1121f" }}>Uscite: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value < 0 ? current.value + acc : acc, 0))}</Typography></Typography>
-                        <Typography sx={{ fontSize: "3em", color: "#dee2e6" }}>Bilancio: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value + acc, 0))}</Typography></Typography>
+                <Card >
+                    <CardContent sx={{ ...fullSize, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, boxSizing: "border-box"}}>
+                        <Typography sx={{ fontSize: `clamp(1rem, ${isMobile? 6 : 2}vw, 3rem)`, color: "#008000" }}>
+                            Entrate: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value > 0 ? current.value + acc : acc, 0))}</Typography>
+                        </Typography>
+                        <Typography sx={{ fontSize: `clamp(1rem, ${isMobile? 6 : 2}vw, 3rem)`, color: "#c1121f" }}>
+                            Uscite: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value < 0 ? current.value + acc : acc, 0))}</Typography>
+                        </Typography>
+                        <Typography sx={{ fontSize: `clamp(1.25rem, ${isMobile? 6.5 : 2.5}vw, 3.5rem)`, color: "#dee2e6" }}>
+                            Bilancio: <Typography component="span" sx={{ fontSize: "1.35em", fontWeight: "bold" }}>{convertNumberToValue(transaction.reduce((acc, current) => current.value + acc, 0))}</Typography>
+                        </Typography>
                     </CardContent>
-                </Card>
+                </Card>                
+                
                 <Card sx={{ display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{
                         flexGrow: 1,
@@ -140,7 +150,7 @@ export default function Dashboard() {
                         boxSizing: "border-box"
                     }}>
                         <Box height="100%" width="100%" display="flex" flexDirection="column" boxSizing="border-box" alignItems="center" gap={4}>
-                            <Typography >Riepilogo delle uscite divise per tipo</Typography>
+                            <Typography>Riepilogo delle uscite divise per tipo</Typography>
                             <Box flexGrow={1} sx={{ minHeight: 0, minWidth: 0, width: "100%" }}>
                                 <ResponsivePie
                                     data={typePieData}

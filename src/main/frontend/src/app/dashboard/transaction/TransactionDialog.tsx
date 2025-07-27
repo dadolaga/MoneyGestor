@@ -117,7 +117,8 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         let transactionForm: TransactionForm = {
             description: form.getStringValue("description"),
             date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
-            value: isMobile? (parseFloat(form.getStringValue("value")) * (sign? -1 : 1)) : parseFloat(form.getStringValue("value")),
+            value: isMobile? (parseFloat(form.getStringValue("value")) * 
+                ((form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && sign)? -1 : 1)) : parseFloat(form.getStringValue("value")),
             typeId: form.getValue("type")?.getKey() as number,
             wallet: form.getValue("wallet")?.getKey() as number,
             walletDestination: form.getValue("wallet-destination")?.getKey() as number
