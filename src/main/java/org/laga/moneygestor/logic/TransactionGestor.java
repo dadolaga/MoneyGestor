@@ -1,5 +1,6 @@
 package org.laga.moneygestor.logic;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
@@ -285,26 +286,28 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
 
     @Override
     protected void deleteById(Session session, UserDb userLogged, Long id, boolean forceDelete) {
-        if(userLogged == null || id == null)
-            throw new IllegalArgumentException("one or more argument is null");
-        if(sessionFactory == null)
-            throw new SessionException("Session is null");
+        deleteById(session, userLogged, id, forceDelete, true);
+    }
+
+    protected void deleteById(Session session, UserDb userLogged, Long id, boolean forceDelete, boolean commit) {
+        if (userLogged == null || id == null) throw new IllegalArgumentException("one or more argument is null");
+        if (sessionFactory == null) throw new SessionException("Session is null");
 
         org.hibernate.Transaction transaction = session.getTransaction();
         var transactionDb = getById(session, userLogged, id);
 
-        if(transactionDb == null)
-            throw new UserNotHavePermissionException();
+        if (transactionDb == null) throw new UserNotHavePermissionException();
 
         updateWalletValue(session, transactionDb.getWalletId(), transactionDb.getValue().negate());
-        if(transactionDb.getTransactionDestinationId() != null) {
+        if (transactionDb.getTransactionDestinationId() != null) {
             var secondaryTransaction = getById(session, userLogged, transactionDb.getTransactionDestinationId());
             updateWalletValue(session, secondaryTransaction.getWalletId(), secondaryTransaction.getValue().negate());
         }
 
         session.remove(transactionDb);
 
-        transaction.commit();
+        if(commit)
+            transaction.commit();
     }
 
     @Override
@@ -312,8 +315,13 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         update(userLogged, newObject.getId(), newObject);
     }
 
+
     @Override
     protected void update(Session session, UserDb userLogged, Long id, TransactionDb newTransaction) {
+        update(session, userLogged, id, newTransaction, true);
+    }
+
+    protected void update(Session session, UserDb userLogged, Long id, TransactionDb newTransaction, boolean commit) {
         if(sessionFactory == null || id == null || newTransaction == null || userLogged == null)
             throw new IllegalArgumentException("one or more argument is null");
 
@@ -375,17 +383,18 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
                 session.persist(secondaryTransaction);
             }
 
-            transaction.commit();
-        } finally {
-            closeTransactionIfNecessary(Objects.requireNonNull(transaction));
+            if(commit)
+                transaction.commit();
+        } catch (HibernateException ex) {
+            transaction.rollback();
         }
     }
 
     @Override
     protected TransactionDb getById(Session session, UserDb userLogged, Long id) {
-        return session.createQuery("FROM TransactionDb WHERE id = : id AND userInsertTransaction = :user", TransactionDb.class)
+        return session.createQuery("FROM TransactionDb WHERE id = : id AND userInsertTransactionId = :user", TransactionDb.class)
                 .setParameter("id", id)
-                .setParameter("user", userLogged)
+                .setParameter("user", userLogged.getId())
                 .getSingleResultOrNull();
     }
 

@@ -3,7 +3,7 @@ package org.laga.moneygestor.db.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 @Entity
 @Table(name = "stock")
 public class StockDb {
@@ -12,7 +12,7 @@ public class StockDb {
     private Integer id;
     private String name;
     @Column(name = "subscription_date")
-    private LocalDateTime subscriptionDate;
+    private LocalDate subscriptionDate;
     @Column(name = "subscription_value")
     private BigDecimal subscriptionValue;
     @Column(name = "current_value")
@@ -41,11 +41,11 @@ public class StockDb {
         this.name = name;
     }
 
-    public LocalDateTime getSubscriptionDate() {
+    public LocalDate getSubscriptionDate() {
         return subscriptionDate;
     }
 
-    public void setSubscriptionDate(LocalDateTime subscriptionDate) {
+    public void setSubscriptionDate(LocalDate subscriptionDate) {
         this.subscriptionDate = subscriptionDate;
     }
 

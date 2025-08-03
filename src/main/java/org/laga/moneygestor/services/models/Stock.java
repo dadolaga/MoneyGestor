@@ -1,13 +1,13 @@
 package org.laga.moneygestor.services.models;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class Stock {
     private Integer id;
     private String name;
     private BigDecimal subscriptionValue;
-    private LocalDateTime subscriptionDate;
+    private LocalDate subscriptionDate;
     private BigDecimal currentValue;
     private BigDecimal resourcesInvested;
 
@@ -35,11 +35,11 @@ public class Stock {
         this.subscriptionValue = subscriptionValue;
     }
 
-    public LocalDateTime getSubscriptionDate() {
+    public LocalDate getSubscriptionDate() {
         return subscriptionDate;
     }
 
-    public void setSubscriptionDate(LocalDateTime subscriptionDate) {
+    public void setSubscriptionDate(LocalDate subscriptionDate) {
         this.subscriptionDate = subscriptionDate;
     }
 

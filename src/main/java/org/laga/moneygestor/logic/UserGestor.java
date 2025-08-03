@@ -1,6 +1,5 @@
 package org.laga.moneygestor.logic;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -95,7 +94,7 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         if(userDb == null || userDb.getLogins().size() == 0)
             throw new IllegalArgumentException();
 
-        if(userDb.getLogins().stream().anyMatch(l -> l.getToken().equals(authorizationToken) && l.getExpiratedToken().isBefore(LocalDateTime.now())))
+        if(userDb.getLogins().stream().anyMatch(l -> l.getToken().trim().equals(authorizationToken) && l.getExpiratedToken().isBefore(LocalDateTime.now())))
             throw new TokenExpiredException();
     }
 
@@ -141,9 +140,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
                 return loginData;
             } catch (IndexOutOfBoundsException e) {
-                throw new UserNotFoundException("User not found", e);
-            } finally {
                 session.getTransaction().rollback();
+                throw new UserNotFoundException("User not found", e);
             }
         }
     }
@@ -178,10 +176,10 @@ public class UserGestor extends Gestor<Integer, UserDb> {
         } catch (HibernateException e) {
             transaction.rollback();
 
-            if(e.getMessage().contains("unique_user_email"))
+            if(e.getMessage().toLowerCase().contains("unique_user_email"))
                 throw new DuplicateValueException("Try to insert duplicate email");
 
-            if(e.getMessage().contains("unique_user_username"))
+            if(e.getMessage().toLowerCase().contains("unique_user_username"))
                 throw new DuplicateValueException("Try to insert duplicate username");
 
             throw e;
@@ -252,7 +250,8 @@ public class UserGestor extends Gestor<Integer, UserDb> {
 
     @Override
     public List<UserDb> getAll(Session session, UserDb userLogged) {
-        return session.createQuery("FROM UserDb", UserDb.class)
+        return session.createQuery("FROM UserDb WHERE id = :id", UserDb.class)
+                .setParameter("id", userLogged.getId())
                 .list();
     }
 }

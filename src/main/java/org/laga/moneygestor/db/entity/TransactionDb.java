@@ -23,7 +23,7 @@ public class TransactionDb {
     private LocalDate date;
     @Column(name = "wallet", nullable = false)
     private Integer walletId;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "wallet", nullable = false, insertable = false, updatable = false)
     private WalletDb wallet;
     @ManyToOne(fetch = FetchType.EAGER)

@@ -1,273 +1,284 @@
 package org.laga.moneygestor.gestor;
 
-import org.hibernate.HibernateException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.laga.moneygestor.db.entity.LoginDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.PasswordUtilities;
+import org.laga.moneygestor.logic.TokenUtilities;
 import org.laga.moneygestor.logic.UserGestor;
 import org.laga.moneygestor.logic.exceptions.*;
-import org.mockito.Mockito;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
-public class UserGestorTest extends BaseGestorTest<UserDb>{
+public class UserGestorTest extends BaseGestorTest {
 
     private UserGestor gestor;
 
     @BeforeEach
     public void setup() {
-        super.setup();
-        
         gestor = new UserGestor(sessionFactory);
     }
 
     @Test
     public void insert_userEffectiveInserted() {
-        final Integer EXPECTED_ID = 101;
-
-        var user = createCorrectUser(EXPECTED_ID);
+        var user = createCorrectUser();
 
         var returnedId = gestor.insert(null, user);
 
-        Assertions.assertEquals(EXPECTED_ID, returnedId);
+        Assertions.assertEquals(user.getId(), returnedId);
 
-        verifySaveEntity();
+        var userInserted = retrieveUser(user.getId());
+        checkUserEqual(user, userInserted);
     }
 
     @Test
     public void insert_userDuplicateEmail() {
-        var user = createCorrectUser();
+        final String email = "test@test.ts";
+        final String username_1 = "test_test_1";
+        final String username_2 = "test_test_2";
+        final String password = "testing+1";
 
-        Mockito.doThrow(new HibernateException("unique_user_email")).when(session).persist(Mockito.any());
+        var user = createCorrectUser(username_1, email, password);
+        var userDuplicate = createCorrectUser(username_2, email, password);
 
-        Assertions.assertThrows(DuplicateValueException.class, () -> {
-            gestor.insert(null, user);
-        });
+        gestor.insert(null, user);
 
-        verifyRollbackEntity();
+        Assertions.assertThrows(DuplicateValueException.class, () -> gestor.insert(null, userDuplicate));
     }
 
     @Test
     public void insert_userDuplicateUsername() {
-        var user = createCorrectUser();
+        final String email_1 = "test1@test.ts";
+        final String email_2 = "test2@test.ts";
+        final String username = "test_test";
+        final String password = "testing+1";
 
-        Mockito.doThrow(new HibernateException("unique_user_username")).when(session).persist(Mockito.any());
+        var user = createCorrectUser(username, email_1, password);
+        var userDuplicate = createCorrectUser(username, email_2, password);
 
-        Assertions.assertThrows(DuplicateValueException.class, () -> {
-            gestor.insert(null, user);
-        });
+        gestor.insert(null, user);
 
-        verifyRollbackEntity();
+        Assertions.assertThrows(DuplicateValueException.class, () -> gestor.insert(null, userDuplicate));
     }
 
     @Test
     public void deleteById_userDeleted() {
         var user = createCorrectUser();
 
+        gestor.insert(null, user);
+
         gestor.deleteById(user, user.getId());
 
-        verifyDeleteEntity();
+        var userInserted = retrieveUser(user.getId());
+        Assertions.assertNull(userInserted);
     }
 
     @Test
     public void deleteById_userNotHavePermission() {
-        final int ID = 1;
-        var user = createCorrectUser(ID);
+        final String email_1 = "test1@test.ts";
+        final String email_2 = "test2@test.ts";
+        final String username_1 = "test_test_1";
+        final String username_2 = "test_test_2";
+        final String password = "testing+1";
+        var user_1 = createCorrectUser(username_1, email_1, password);
+        var user_2 = createCorrectUser(username_2, email_2, password);
 
-        Assertions.assertThrows(UserNotHavePermissionException.class, () -> {
-            gestor.deleteById(user, 2);
-        });
+        gestor.insert(null, user_1);
 
-        verifyRollbackEntity();
+        gestor.insert(null, user_2);
+
+        Assertions.assertThrows(UserNotHavePermissionException.class, () -> gestor.deleteById(user_1, user_2.getId()));
     }
 
     @Test
     public void update_effectiveUpdateUser() {
-        final int ID = 1;
+        createUserLogged();
 
-        var user = createCorrectUser(ID);
+        var user = createCorrectUser();
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
+        gestor.update(userLogged, userLogged.getId(), user);
 
-        gestor.update(user, ID, user);
+        var userUpdated = retrieveUser(userLogged.getId());
 
-        verifyUpdateEntity();
+        checkUserEqual(user, userUpdated);
     }
 
     @Test
     public void update_userNotHavePermissionToEdit() {
-        final int ID = 1;
+        createUserLogged();
+        createOtherUserLogged();
 
-        var user = createCorrectUser(ID);
+        var user = createCorrectUser();
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
-
-        Assertions.assertThrows(UserNotHavePermissionException.class, () -> {
-            gestor.update(user, 2, user);
-        });
-
-        verifyRollbackEntity();
+        Assertions.assertThrows(UserNotHavePermissionException.class, () -> gestor.update(userLogged, otherUserLogged.getId(), user));
     }
 
     @Test
     public void getById_effectiveReturnUser() {
-        var user = createCorrectUser();
+        createUserLogged();
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
+        var userFound = gestor.getById(userLogged, userLogged.getId());
 
-        Assertions.assertEquals(user.getId(), gestor.getById(user, user.getId()).getId());
-
-        verifySelectEntity();
+        checkUserEqual(userLogged, userFound);
     }
 
     @Test
     public void getById_notFoundUser() {
-        final int ID = 1;
-        var user = createCorrectUser(ID);
+        createUserLogged();
+        createOtherUserLogged();
 
-        Mockito.when(selectQuery.list()).thenReturn(new LinkedList<UserDb>());
-
-        Assertions.assertThrows(UserNotHavePermissionException.class, () -> {
-            gestor.deleteById(user, 2);
-        });
+        Assertions.assertThrows(UserNotHavePermissionException.class, () -> gestor.deleteById(userLogged, otherUserLogged.getId()));
     }
 
     @Test
-    public void getAll_returnList() {
-        Mockito.when(selectQuery.list()).thenReturn(new LinkedList<UserDb>());
+    public void getAll_returnSingleUserLogged() {
+        createUserLogged();
+        createOtherUserLogged();
 
-        gestor.getAll(createCorrectUser());
+        var listOfUser = gestor.getAll(userLogged);
 
-        verifySelectEntity();
+        Assertions.assertEquals(1, listOfUser.size());
+        checkUserEqual(userLogged, listOfUser.get(0));
     }
 
     @Test
     public void getFromAuthorizationToken_authorizationCodeExist() {
-        final int ID = 1;
-        final var user = createCorrectUser();
+        final String token = "code_token";
+        final LocalDateTime expiatedTime = LocalDateTime.now().plusMinutes(120);
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
+        createUserLogged(token, expiatedTime);
 
-        var userLogged = gestor.getFromAuthorizationToken("any token is valid");
+        var user = gestor.getFromAuthorizationToken(token);
 
-        Assertions.assertEquals(ID, userLogged.getId());
-
-        verifySelectEntity();
+        checkUserEqual(userLogged, user);
     }
 
     @Test
     public void getFromAuthorizationToken_notUserFond() {
-        final int ID = 1;
-        final var user = createCorrectUser();
+        final String token = "code_token";
+        final String tokenNotExist = "token_not_exist";
+        final LocalDateTime expiatedTime = LocalDateTime.now().plusMinutes(120);
 
-        Mockito.when(selectQuery.list()).thenReturn(new LinkedList<UserDb>());
+        createUserLogged(token, expiatedTime);
 
-        Assertions.assertThrows(UserNotFoundException.class, () -> {
-            gestor.getFromAuthorizationToken("any token is valid");
-        });
+        Assertions.assertThrows(UserNotFoundException.class, () -> gestor.getFromAuthorizationToken(tokenNotExist));
     }
 
     @Test
     public void getFromAuthorizationTokenAndCheckToken_loginValid() {
-        final int ID = 1;
-        final String TOKEN = "MyToken";
-        final var user = createCorrectUser();
+        final String token = "code_token";
+        final LocalDateTime expiatedTime = LocalDateTime.now().plusMinutes(120);
 
-        user.setLogins(Set.of(createCorrectLogin(TOKEN)));
+        createUserLogged(token, expiatedTime);
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
+        var user = gestor.getFromAuthorizationTokenAndCheckToken(token);
 
-        var userLogged = gestor.getFromAuthorizationTokenAndCheckToken(TOKEN);
-
-        Assertions.assertEquals(ID, userLogged.getId());
-
-        verifySelectEntity();
+        checkUserEqual(userLogged, user);
     }
 
     @Test
     public void getFromAuthorizationTokenAndCheckToken_loginNotValid() {
-        final int ID = 1;
-        final String TOKEN = "MyToken";
-        final var user = createCorrectUser();
+        final String token = TokenUtilities.generateNewToken();
+        final LocalDateTime expiatedTime = LocalDateTime.now().minusMinutes(120);
 
-        user.setLogins(Set.of(createExpiredLogin(TOKEN)));
+        createUserLogged(token, expiatedTime);
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(user));
-
-        Assertions.assertThrows(TokenExpiredException.class, () -> {
-            gestor.getFromAuthorizationTokenAndCheckToken(TOKEN);
-        });
+        Assertions.assertThrows(TokenExpiredException.class, () -> gestor.getFromAuthorizationTokenAndCheckToken(token));
     }
 
     @Test
     public void login_correctUserLoggedForUsername() {
-        final int ID = 1;
-        final String PASSWORD = "password";
-        final String PASSWORD_ENCRYPTED = PasswordUtilities.passwordEncrypt(PASSWORD);
-        final String USERNAME = "test";
-        final UserDb USER = createCorrectUser(ID, USERNAME, null, PASSWORD_ENCRYPTED);
+        final String username = "username";
+        final String email = "test@email.com";
+        final String password = "password";
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(USER));
+        var user = new UserDb();
+        user.setFirstname("name");
+        user.setLastname("surname");
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(PasswordUtilities.passwordEncrypt(password));
 
-        gestor.login(USERNAME, PASSWORD, false);
+        addEntity(user);
 
-        Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
-        Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
-        Mockito.verify(session, Mockito.atLeastOnce()).persist(Mockito.any(LoginDb.class));
-        Mockito.verify(transaction, Mockito.atLeastOnce()).commit();
+        var loginData = gestor.login(username, password, false);
+        var userFromToken = gestor.getFromAuthorizationToken(loginData.getToken());
+
+        checkUserEqual(user, userFromToken);
     }
 
     @Test
     public void login_correctUserLoggedForEmail() {
-        final int ID = 1;
-        final String PASSWORD = "password";
-        final String PASSWORD_ENCRYPTED = PasswordUtilities.passwordEncrypt(PASSWORD);
-        final String USERNAME = "test";
-        final String EMAIL = "test@example.com";
-        final UserDb USER = createCorrectUser(ID, USERNAME, EMAIL, PASSWORD_ENCRYPTED);
+        final String username = "username";
+        final String email = "test@email.com";
+        final String password = "password";
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(USER));
+        var user = new UserDb();
+        user.setFirstname("name");
+        user.setLastname("surname");
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(PasswordUtilities.passwordEncrypt(password));
 
-        gestor.login(EMAIL, PASSWORD, false);
+        addEntity(user);
 
-        Mockito.verify(sessionFactory, Mockito.atLeastOnce()).openSession();
-        Mockito.verify(session, Mockito.atLeastOnce()).beginTransaction();
-        Mockito.verify(session, Mockito.atLeastOnce()).persist(Mockito.any(LoginDb.class));
-        Mockito.verify(transaction, Mockito.atLeastOnce()).commit();
+        var loginData = gestor.login(email, password, false);
+        var userFromToken = gestor.getFromAuthorizationToken(loginData.getToken());
+
+        checkUserEqual(user, userFromToken);
     }
 
     @Test
     public void login_failUserLoginWhenPasswordNotCorrect() {
-        final int ID = 1;
-        final String PASSWORD = "password";
-        final String PASSWORD_ENCRYPTED = PasswordUtilities.passwordEncrypt(PASSWORD);
-        final String USERNAME = "test";
-        final String EMAIL = "test@example.com";
-        final UserDb USER = createCorrectUser(ID, USERNAME, EMAIL, PASSWORD_ENCRYPTED);
+        final String username = "username";
+        final String email = "test@email.com";
+        final String password = "password";
+        final String passwordError = "not_correct";
 
-        Mockito.when(selectQuery.list()).thenReturn(List.of(USER));
+        var user = new UserDb();
+        user.setFirstname("name");
+        user.setLastname("surname");
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(PasswordUtilities.passwordEncrypt(password));
 
-        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> {
-            gestor.login(EMAIL, "Not_correct_password", false);
-        });
+        addEntity(user);
+
+        var loginData = gestor.login(username, password, false);
+        var userFromToken = gestor.getFromAuthorizationToken(loginData.getToken());
+
+        checkUserEqual(user, userFromToken);
+
+        Assertions.assertThrows(UserPasswordNotEqualsException.class, () -> gestor.login(email, passwordError, false));
+    }
+
+    private void checkUserEqual(UserDb expected, UserDb actual) {
+        Assertions.assertNotNull(actual);
+
+        Assertions.assertNotEquals(expected.hashCode(), actual.hashCode(), "The object are the same check not valid");
+
+        Assertions.assertEquals(expected.getFirstname(), actual.getFirstname());
+        Assertions.assertEquals(expected.getLastname(), actual.getLastname());
+        Assertions.assertEquals(expected.getEmail(), actual.getEmail());
+        Assertions.assertEquals(expected.getUsername(), actual.getUsername());
+        Assertions.assertEquals(expected.getPassword(), actual.getPassword());
+    }
+
+    private UserDb retrieveUser(Integer id) {
+        try (var session = sessionFactory.openSession()) {
+            return session.get(UserDb.class, id);
+        } catch (Exception ignored) { }
+
+        return null;
     }
 
     private static UserDb createCorrectUser() {
-        return createCorrectUser(1);
+        return createCorrectUser("test", "test@example.com", "password");
     }
-    private static UserDb createCorrectUser(Integer id) {
-        return createCorrectUser(id, "test", "test@example.com", "password");
-    }
-    private static UserDb createCorrectUser(Integer id, String username, String email, String password) {
+    private static UserDb createCorrectUser(String username, String email, String password) {
         var user = new UserDb();
 
-        user.setId(id);
         user.setFirstname("test");
         user.setLastname("test");
         user.setUsername(username);
@@ -275,28 +286,5 @@ public class UserGestorTest extends BaseGestorTest<UserDb>{
         user.setPassword(password);
 
         return user;
-    }
-
-    private static LoginDb createCorrectLogin(String token) {
-        var login = new LoginDb();
-
-        login.setToken(token);
-        login.setExpiratedToken(LocalDateTime.now().plusMinutes(60));
-
-        return login;
-    }
-
-    private static LoginDb createExpiredLogin(String token) {
-        var login = new LoginDb();
-
-        login.setToken(token);
-        login.setExpiratedToken(LocalDateTime.now().minusMinutes(60));
-
-        return login;
-    }
-
-    @Override
-    protected Class<UserDb> getInnerClass() {
-        return UserDb.class;
     }
 }

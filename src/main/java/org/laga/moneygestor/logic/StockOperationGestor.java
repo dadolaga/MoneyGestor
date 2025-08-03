@@ -63,8 +63,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             throw new SessionException("Session is null");
 
         try {
-            Transaction transaction = session.getTransaction();
-
             var transactionGestor = new TransactionGestor(sessionFactory);
             transactionGestor.setCheckWalletValue(!forceWalletUpdate);
 
@@ -171,21 +169,24 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
                 newTransaction.setUserOfTransactionId(oldTransaction.getUserOfTransactionId());
                 newTransaction.setTypeId(oldTransaction.getTypeId());
 
+                oldStockOperation.setBankTransactionId(newWallet != null? oldStockOperation.getBankTransactionId() : null);
+
                 if(newStockOperation.getBankTransactionId() != null) {
-                    transactionGestor.update(session, userLogged, oldStockOperation.getBankTransactionId(), newTransaction);
+                    transactionGestor.update(session, userLogged, oldStockOperation.getBankTransaction().getId(), newTransaction, false);
                 } else {
-                    transactionGestor.deleteById(session, userLogged, oldStockOperation.getId(), true);
+                    transactionGestor.deleteById(session, userLogged, oldTransaction.getId(), true, false);
                 }
-            }
+            } else
+                oldStockOperation.setBankTransactionId(newStockOperation.getBankTransactionId());
 
             oldStockOperation.setDescription(newStockOperation.getDescription() == null? oldStockOperation.getDescription() : newStockOperation.getDescription());
             oldStockOperation.setDate(newStockOperation.getDate() == null? oldStockOperation.getDate() : newStockOperation.getDate());
             oldStockOperation.setStockId(newStockOperation.getStockId() == null? oldStockOperation.getStockId() : newStockOperation.getStockId());
             oldStockOperation.setValue(newStockOperation.getValue() == null? oldStockOperation.getValue() : newStockOperation.getValue());
-            oldStockOperation.setBankTransactionId(newStockOperation.getBankTransactionId() == null? oldStockOperation.getBankTransactionId() : newStockOperation.getBankTransactionId());
             oldStockOperation.setTfr(newStockOperation.getTfr() == null? oldStockOperation.getTfr() : newStockOperation.getTfr());
+            oldStockOperation.setCurrentStockValue(stock.getCurrentValue());
             oldStockOperation.setCurrentYield(newStockOperation.getTfr() || newStockOperation.getBankTransactionId() != null?
-                    null : (stock.getCurrentValue().divide(stock.getResourcesInvested(), 10, RoundingMode.HALF_DOWN).subtract(new BigDecimal(1))));
+                    null : (newStockOperation.getValue().divide(stock.getCurrentValue().subtract(newStockOperation.getValue()), 10, RoundingMode.HALF_DOWN)));
 
             session.merge(oldStockOperation);
 
@@ -264,12 +265,13 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             var stock = session.get(StockDb.class, stockOperationDb.getStockId());
 
             stockOperationDb.setUserId(userLogged.getId());
+            stockOperationDb.setCurrentStockValue(stock.getCurrentValue().add(stockOperationDb.getValue()));
             stockOperationDb.setTfr(Objects.requireNonNullElse(stockOperationDb.getTfr(), false));
 
             session.persist(stockOperationDb);
 
             if(!stockOperationDb.getTfr() && stockOperationDb.getBankTransactionId() == null)
-                stockOperationDb.setCurrentYield(stock.getCurrentValue().add(stockOperationDb.getValue()).divide(stock.getCurrentValue(), 10, RoundingMode.HALF_DOWN).subtract(new BigDecimal(1)));
+                stockOperationDb.setCurrentYield(stockOperationDb.getValue().divide(stock.getCurrentValue(), 10, RoundingMode.HALF_DOWN));
 
             updateStockCurrentValue(session, stock, stock.getCurrentValue().add(stockOperationDb.getValue()));
 
@@ -301,13 +303,13 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
     public static StockOperation convertToRest(StockOperationDb stockOperationDb) {
         var stockOperation = new StockOperation();
 
-        stockOperation.setId(stockOperationDb.getId());
+        stockOperation.setId( stockOperationDb.getId());
         stockOperation.setDescription(stockOperationDb.getDescription());
         stockOperation.setDate(stockOperationDb.getDate());
         stockOperation.setValue(stockOperationDb.getValue());
         stockOperation.setCurrentYield(stockOperationDb.getCurrentYield());
         stockOperation.setTfr(stockOperationDb.getTfr());
-        stockOperation.setBankDeposit(stockOperationDb.getBankTransactionId() != null);
+        stockOperation.setBankDeposit(stockOperationDb.getBankTransaction() != null ? TransactionGestor.convertToRest(stockOperationDb.getBankTransaction()) : null);
 
         return stockOperation;
     }

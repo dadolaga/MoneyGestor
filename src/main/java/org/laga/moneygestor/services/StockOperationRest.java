@@ -5,11 +5,14 @@ import org.laga.moneygestor.db.entity.StockOperationDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
+import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
+import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.models.Response;
 import org.laga.moneygestor.services.models.StockOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -57,6 +60,36 @@ public class StockOperationRest extends BaseRest {
         var listOfStock = gestor.list(userLogged, sortParams + (Objects.requireNonNullElse(sortParams, "").length() > 0? "-" : "") + "!id", limitParams, pageParams);
 
         return Response.create(StockOperationGestor.convertToRest(listOfStock));
+    }
+
+    @GetMapping("/get/{id}")
+    public Response getStock(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        var gestor = new StockOperationGestor(sessionFactory);
+
+        return Response.create(StockOperationGestor.convertToRest(gestor.getById(userLogged, id)));
+    }
+
+    @PostMapping("/edit/{id}")
+    public Response editStockOperation(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @RequestBody StockOperationInsert transactionForm, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        var gestor = new StockOperationGestor(sessionFactory);
+
+        var stockOperation = gestor.getById(userLogged, id);
+
+        stockOperation.setDescription(transactionForm.getDescription());
+        stockOperation.setValue(transactionForm.getValue());
+        stockOperation.setTfr(transactionForm.isTfr());
+
+        try {
+            gestor.update(userLogged, id, stockOperation, transactionForm.getWallet());
+
+            return Response.ok();
+        } catch (NegativeWalletException ignored) {
+            throw new HttpException(201, HttpStatus.BAD_REQUEST);
+        }
     }
 
     private static class StockOperationInsert extends StockOperation {

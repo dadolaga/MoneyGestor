@@ -13,8 +13,10 @@ public class StockOperation {
     @JsonProperty("current_yield")
     private BigDecimal currentYield;
     private LocalDate date;
-    @JsonProperty("is_bank_deposit")
-    private Boolean isBankDeposit;
+    @JsonProperty("there_is_bank_deposit")
+    private Boolean thereIsBankTransaction;
+    @JsonProperty("bank_deposit")
+    private Transaction bankDeposit;
     @JsonProperty("is_tfr")
     private Boolean isTfr;
     private Stock stock;
@@ -59,12 +61,20 @@ public class StockOperation {
         this.date = date;
     }
 
-    public Boolean isBankDeposit() {
-        return isBankDeposit;
+    public Boolean getThereIsBankTransaction() {
+        return thereIsBankTransaction;
     }
 
-    public void setBankDeposit(Boolean bankDeposit) {
-        isBankDeposit = bankDeposit;
+    public void setThereIsBankTransaction(Boolean thereIsBankTransaction) {
+        this.thereIsBankTransaction = thereIsBankTransaction;
+    }
+
+    public Transaction getBankDeposit() {
+        return bankDeposit;
+    }
+
+    public void setBankDeposit(Transaction bankDeposit) {
+        this.bankDeposit = bankDeposit;
     }
 
     public Boolean isTfr() {
