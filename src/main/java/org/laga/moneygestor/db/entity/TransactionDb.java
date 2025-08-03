@@ -33,7 +33,7 @@ public class TransactionDb {
     @Column(name = "transaction_destination")
     private Long transactionDestinationId;
     @ManyToOne(fetch = FetchType.EAGER)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "stock_operation", insertable = false, updatable = false)
     private StockOperationDb stockOperationDb;
     @Column(name = "stock_operation")

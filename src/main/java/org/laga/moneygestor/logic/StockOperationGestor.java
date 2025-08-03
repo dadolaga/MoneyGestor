@@ -1,10 +1,7 @@
 package org.laga.moneygestor.logic;
 
 import jakarta.persistence.RollbackException;
-import org.hibernate.Session;
-import org.hibernate.SessionException;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.exception.ConstraintViolationException;
 import org.laga.moneygestor.db.DatabaseInitializer;
 import org.laga.moneygestor.db.entity.*;
@@ -106,16 +103,36 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         if(sessionFactory == null)
             throw new SessionException("Session is null");
 
-        Transaction transaction = session.getTransaction();
+        try {
+            Transaction transaction = session.getTransaction();
 
-        StockOperationDb stockOperation = getById(session, userLogged, id);
+            StockOperationDb stockOperation = getById(session, userLogged, id);
+            if(stockOperation == null)
+                throw new UserNotHavePermissionException();
 
-        if(stockOperation == null)
-            throw new UserNotHavePermissionException();
+            var stockGestor = new StockGestor(sessionFactory);
+            var stock = stockGestor.getById(session, userLogged, stockOperation.getStockId());
 
-        session.remove(session.contains(stockOperation) ? stockOperation : session.merge(stockOperation));
+            stock.setCurrentValue(stock.getCurrentValue().subtract(stockOperation.getValue()));
+            if(stockOperation.getTfr() || stockOperation.getBankTransactionId() != null) {
+                stock.setResourcesInvested(stock.getResourcesInvested().subtract(stockOperation.getValue()));
+            }
 
-        transaction.commit();
+            if(stockOperation.getBankTransactionId() != null) {
+                var transactionGestor = new TransactionGestor(sessionFactory);
+
+                transactionGestor.deleteById(session, userLogged, stockOperation.getBankTransactionId(), true, false);
+            }
+
+            session.persist(stock);
+
+            session.remove(stockOperation);
+
+            transaction.commit();
+        } catch (HibernateException ex) {
+            session.getTransaction().rollback();
+            throw ex;
+        }
     }
 
     @Override

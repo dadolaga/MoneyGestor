@@ -605,11 +605,65 @@ public class StockOperationGestorTest extends BaseGestorTest {
     })
     public void delete_market(BigDecimal initialValue, BigDecimal operationValue) {
         var stock = createStock(initialValue);
-        var stockOperationOld = createStockOperation(stock, oldOperationValue, StockType.DEPOSIT);
+        var stockOperationOld = createStockOperation(stock, operationValue, StockType.MARKET);
 
-        gestor.insert(userLogged, stockOperationOld, wallet.getId());
-        stockOperationNew.setBankTransactionId(stockOperationOld.getBankTransactionId());
-        Assertions.assertThrows(NegativeWalletException.class, () -> gestor.update(userLogged, stockOperationOld.getId(), stockOperationNew));
+        gestor.insert(userLogged, stockOperationOld);
+        
+        gestor.deleteById(userLogged, stockOperationOld.getId());
+        
+        stock = getEntity(StockDb.class, stock.getId());
+
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getCurrentValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000001);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
+    public void delete_Tfr(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperationOld = createStockOperation(stock, operationValue, StockType.TFR);
+
+        gestor.insert(userLogged, stockOperationOld);
+
+        gestor.deleteById(userLogged, stockOperationOld.getId());
+
+        stock = getEntity(StockDb.class, stock.getId());
+
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getCurrentValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000000);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
+    public void delete_deposit(BigDecimal initialValue, BigDecimal operationValue) {        
+        final var walletInit = new BigDecimal(1500);
+        var stock = createStock(initialValue);
+        var wallet = createWallet(walletInit);
+        var stockOperation = createStockOperation(stock, operationValue, StockType.DEPOSIT);
+
+        gestor.insert(userLogged, stockOperation, wallet.getId());
+
+        gestor.deleteById(userLogged, stockOperation.getId());
+
+        stock = getEntity(StockDb.class, stock.getId());
+
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getCurrentValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000001);
+        TestUtilities.assertionsForFloatNumber(initialValue, stock.getSubscriptionValue(), 0.000001);
+
+        try (var session = sessionFactory.openSession()) {
+            wallet = session.get(WalletDb.class, wallet.getId());
+            var transactionList = session.createQuery("FROM TransactionDb", TransactionDb.class).list();
+
+            TestUtilities.assertionsForFloatNumber(walletInit, wallet.getValue(), 0.000001);
+            Assertions.assertEquals(0, transactionList.size());
+        }
     }
 
     private void checkIfInserted(StockOperationDb expected) {

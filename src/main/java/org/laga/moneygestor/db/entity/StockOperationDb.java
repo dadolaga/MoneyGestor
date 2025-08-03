@@ -1,6 +1,8 @@
 package org.laga.moneygestor.db.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,6 +28,7 @@ public class StockOperationDb {
     @Column(name = "bank_transaction", nullable = true)
     private Long bankTransactionId;
     @ManyToOne(fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "bank_transaction", nullable = true, insertable = false, updatable = false)
     private TransactionDb bankTransaction;
     @Column(name = "stock")
