@@ -12,6 +12,7 @@ interface IProps {
     open: boolean
     onClose: (reload: boolean) => void
     stockId?: number
+    stockMovementId?: number
 }
 
 const formSettings: FormSettings[] = [{
@@ -32,11 +33,55 @@ export default function StockMovementDialog(props: IProps) {
 
     const [form, setForm] = useState<Form>(new Form(formSettings));
     const [movementType, setMovementType] = useState<string>("market");
+    const [stock, setStock] = useState<Stock>();
     const [loading, setLoading] = useState<boolean>(false);
-    
+
     useEffect(() => {
         loadWallet()
     }, []);
+
+    useEffect(() => {
+        if (props.stockId === undefined || props.stockId === null)
+            return;
+
+        setLoading(true);
+        
+        api.Stock.Get(props.stockId)
+        .then(v => {
+            setStock(v);
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+
+    }, [props.stockId]);
+
+    useEffect(() => {
+        if (props.stockMovementId === undefined || props.stockMovementId === null)
+            return;
+
+        setLoading(true);
+
+        api.StockMovement.Get(props.stockMovementId)
+            .then(stockMovement => {
+                console.log(stockMovement);
+
+                setForm(form => form.setValue("description", stockMovement.description || "")
+                    .setValue("date", stockMovement.date || "")
+                    .setValue("value", stockMovement.value.toString())
+                    .setValue("wallet", stockMovement.bank_deposit?.wallet && new WalletPrintable(stockMovement.bank_deposit.wallet)));
+
+                setMovementType(stockMovement.bank_deposit ? "deposit" : stockMovement.is_tfr ? "tfr" : "market");
+
+                if(stockMovement.bank_deposit) {
+                    form.setValue("wallet", stockMovement.bank_deposit.wallet.id.toString());
+                }
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+
+    }, [props.stockMovementId])
 
     function loadWallet(): Promise<void> {
         return api.Wallet.List({ order: "!favorite-name" })
@@ -48,24 +93,35 @@ export default function StockMovementDialog(props: IProps) {
         if (form.isCheckFail())
             return;
 
-        let stockMovement: CreateStockMovement  = {
+        let stockMovement: CreateStockMovement = {
             description: form.getStringValue("description"),
             date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
             value: parseFloat(form.getStringValue("value")),
-            is_bank_deposit: movementType === "deposit",
+            there_is_bank_deposit: movementType === "deposit",
             is_tfr: movementType === "tfr",
-            wallet: form.getStringValue("wallet") ? parseInt(form.getStringValue("wallet")) : null,
+            wallet: movementType === "deposit"? (form.getStringValue("wallet") ? parseInt(form.getStringValue("wallet")) : null) :  null,
             stock: {
                 id: props.stockId
-            }
+            },
         }
 
-        api.StockMovement.Create(stockMovement)
-        .finally(() => {
-            setLoading(false);
+        setLoading(true)
 
-            props.onClose(true);
-        });
+        if (props.stockMovementId) {
+            api.StockMovement.Modify(props.stockMovementId, stockMovement)
+                .finally(() => {
+                    setLoading(false);
+
+                    props.onClose(true);
+                });
+        } else {
+            api.StockMovement.Create(stockMovement)
+                .finally(() => {
+                    setLoading(false);
+
+                    props.onClose(true);
+                });
+        }
     }
 
     const cancelHandler = () => {
@@ -97,6 +153,7 @@ export default function StockMovementDialog(props: IProps) {
                             setForm={setForm}
                             name="date"
                             label="Data"
+                            dataMoreOption={{minDate: dayjs(stock?.subscriptionDate)}}
                             disabled={loading} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>
@@ -131,7 +188,7 @@ export default function StockMovementDialog(props: IProps) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={cancelHandler} color="secondary" >Annulla</Button>
-                <Button onClick={saveHandler} disabled={loading} >{props.stockId == null ? 'Salva' : 'Modifica'}</Button>
+                <Button onClick={saveHandler} disabled={loading} >{props.stockMovementId == null ? 'Salva' : 'Modifica'}</Button>
             </DialogActions>
         </Dialog>
     );

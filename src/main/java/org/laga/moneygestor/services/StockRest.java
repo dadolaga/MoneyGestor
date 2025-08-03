@@ -60,4 +60,14 @@ public class StockRest extends BaseRest {
 
         return Response.create(StockGestor.convertToRest(listOfStock));
     }
+
+    @GetMapping("/get/{id}")
+    public Response getStock(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Integer id) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        var gestor = new StockGestor(sessionFactory);
+
+        return Response.create(StockGestor.convertToRest(gestor.getById(userLogged, id)));
+    }
+
 }

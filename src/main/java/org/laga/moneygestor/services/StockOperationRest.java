@@ -82,6 +82,7 @@ public class StockOperationRest extends BaseRest {
         stockOperation.setDescription(transactionForm.getDescription());
         stockOperation.setValue(transactionForm.getValue());
         stockOperation.setTfr(transactionForm.isTfr());
+        stockOperation.setBankTransactionId(transactionForm.getWallet() == null? null : stockOperation.getBankTransactionId());
 
         try {
             gestor.update(userLogged, id, stockOperation, transactionForm.getWallet());

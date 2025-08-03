@@ -599,6 +599,19 @@ public class StockOperationGestorTest extends BaseGestorTest {
         Assertions.assertThrows(NegativeWalletException.class, () -> gestor.update(userLogged, stockOperationOld.getId(), stockOperationNew));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
+    public void delete_market(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperationOld = createStockOperation(stock, oldOperationValue, StockType.DEPOSIT);
+
+        gestor.insert(userLogged, stockOperationOld, wallet.getId());
+        stockOperationNew.setBankTransactionId(stockOperationOld.getBankTransactionId());
+        Assertions.assertThrows(NegativeWalletException.class, () -> gestor.update(userLogged, stockOperationOld.getId(), stockOperationNew));
+    }
+
     private void checkIfInserted(StockOperationDb expected) {
         try (var session = sessionFactory.openSession()) {
             var inserted = session.get(StockOperationDb.class, expected.getId());

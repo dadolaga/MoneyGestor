@@ -1,15 +1,11 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, LinearProgress, TextField, Typography, InputAdornment, CircularProgress } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, LinearProgress, InputAdornment } from "@mui/material";
 import 'dayjs/locale/it'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightLong, faArrowDownLong } from "@fortawesome/free-solid-svg-icons";
-import { Request, useRestApi } from "../../request/Request";
-import { Stock, TransactionType, TransactionTypePrintable, WalletPrintable } from "../../utilities/BackEndTypes";
-import { enqueueSnackbar } from "notistack";
+import { useRestApi } from "../../request/Request";
+import { Stock } from "../../utilities/BackEndTypes";
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
-import { IFormMultiType } from "../../utilities/Interfaces";
 import dayjs from "dayjs";
 
 interface IProps {
@@ -40,6 +36,24 @@ export default function StockDialog(props: IProps) {
 
     const [form, setForm] = useState<Form>(new Form(formSettings));
     const [loading, setLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (props.stockId === undefined || props.stockId === null)
+            return;
+        
+        setLoading(true);
+        
+        api.Stock.Get(props.stockId)
+        .then(stock => {
+            setForm(form => form.setValue("name", stock.name)
+                .setValue("date", stock.subscriptionDate)
+                .setValue("value", stock.subscriptionValue.toString()));
+        })
+        .finally(() => {
+            setLoading(false);
+        });
+
+    }, [props.stockId])
 
     const saveHandler = () => {
         setForm(form => form.check());
@@ -102,7 +116,7 @@ export default function StockDialog(props: IProps) {
                             name="value"
                             label="Valore iniziale"
                             endAdornment={<InputAdornment position="end">€</InputAdornment>}
-                            disabled={loading} />
+                            disabled={loading || props.stockId !== undefined} />
                     </Grid>
                 </Grid>
             </DialogContent>

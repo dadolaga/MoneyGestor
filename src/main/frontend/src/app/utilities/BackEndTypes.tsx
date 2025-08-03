@@ -96,9 +96,10 @@ export interface StockMovement {
     id?: number
     description?: string
     value?: number
-    current_yield: number
+    current_yield?: number
     date?: string
-    is_bank_deposit?: boolean
+    bank_deposit?: Transaction
+    there_is_bank_deposit?: boolean
     is_tfr?: boolean
     stock?: Stock
 }

@@ -2,7 +2,7 @@ import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChange
 import { Form } from "../form/Form";
 import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { IFormMultiType } from "../utilities/Interfaces";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker, DatePickerProps, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs, { Dayjs } from "dayjs";
 import utc from 'dayjs/plugin/utc';
@@ -22,6 +22,7 @@ interface IInput {
     startAdornment?: React.ReactNode,
     endAdornment?: React.ReactNode,
     values?: IFormMultiType[],
+    dataMoreOption?: DatePickerProps
 }
 
 dayjs.extend(utc);
@@ -117,7 +118,8 @@ export default function Input(props: IInput) {
                     }}
                     value={dayjs.utc(value === "" ? undefined : value)}
                     onChange={dateChangeHandler(props.name)}
-                    disabled={props.disabled} />
+                    disabled={props.disabled} 
+                    {...props.dataMoreOption} />
             </LocalizationProvider>
         ); break;
     }

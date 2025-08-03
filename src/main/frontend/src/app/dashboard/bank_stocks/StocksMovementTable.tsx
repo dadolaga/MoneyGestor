@@ -14,9 +14,10 @@ export interface StockMovementTableRef {
 
 interface IProps {
     ref: MutableRefObject<StockMovementTableRef>
-    loading: boolean
-    clickedStock: number,
-    setClickedStock: (value: number) => void
+    clickedStock: number
+    //: (value: number) => void
+    editStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
+    deleteStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
 }
 
 export function StockMovementTable(props: IProps) {
@@ -54,10 +55,6 @@ export function StockMovementTable(props: IProps) {
         refreshTable();
     }
 
-    const clickActiveStockHandler = (id: number): MouseEventHandler<SVGSVGElement> => () => {
-        props.setClickedStock(id);
-    }
-
     return (
         <Paper sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}>
             <TableContainer sx={{ height: '100%' }}>
@@ -90,7 +87,7 @@ export function StockMovementTable(props: IProps) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {props.loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
+                        {loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
                         {stockMovements?.map((value, index) => {
                             return (
                                 <TableRow key={index} sx={{backgroundColor: value.id === props.clickedStock? "#c1121f30" : undefined}}>
@@ -98,11 +95,11 @@ export function StockMovementTable(props: IProps) {
                                     <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell>
                                     <TableCell align="center">{convertNumberToValue(value.value)}</TableCell>
                                     <TableCell align="center">{convertNumberToPercentage(value.current_yield)}</TableCell>
-                                    <TableCell> {value.is_tfr? <TfrChip /> : value.is_bank_deposit? <BankDepositChip /> : <MarketChip />} </TableCell>
+                                    <TableCell> {value.is_tfr? <TfrChip /> : value.bank_deposit? <BankDepositChip /> : <MarketChip />} </TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 2 }} >
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={undefined} />
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={undefined} />
+                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
+                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
                                         </Box>
                                     </TableCell>
                                 </TableRow>

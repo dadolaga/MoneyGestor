@@ -15,6 +15,8 @@ public class StockOperationDb {
     private String description;
     @Column(nullable = false)
     private BigDecimal value;
+    @Column(nullable = false)
+    private BigDecimal currentStockValue;
     @Column(name = "current_yield", nullable = true, columnDefinition = "DECIMAL(10, 10)")
     private BigDecimal currentYield;
     @Column(nullable = false)
@@ -23,7 +25,7 @@ public class StockOperationDb {
     private Boolean isTfr;
     @Column(name = "bank_transaction", nullable = true)
     private Long bankTransactionId;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "bank_transaction", nullable = true, insertable = false, updatable = false)
     private TransactionDb bankTransaction;
     @Column(name = "stock")
@@ -59,6 +61,14 @@ public class StockOperationDb {
 
     public void setValue(BigDecimal value) {
         this.value = value;
+    }
+
+    public BigDecimal getCurrentStockValue() {
+        return currentStockValue;
+    }
+
+    public void setCurrentStockValue(BigDecimal currentStockValue) {
+        this.currentStockValue = currentStockValue;
     }
 
     public BigDecimal getCurrentYield() {

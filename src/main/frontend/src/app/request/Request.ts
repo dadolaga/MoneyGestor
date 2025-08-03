@@ -138,6 +138,11 @@ export class Request {
             return this.baseRequestGet("stock/list?sort=" + encodeURI(listData.order))
                 .then(response => response as Stock[])
         },
+
+        Get: async (id: number): Promise<Stock> => {
+            return this.baseRequestGet("stock/get/" + id)
+                .then(response => response as Stock)
+        },
     }
 
     public StockMovement = {
@@ -151,6 +156,15 @@ export class Request {
                 .then(response => response as StockMovement[])
         },
 
+        Get: async (id: number): Promise<StockMovement> => {
+            return this.baseRequestGet("stock_operation/get/" + id)
+                .then(response => response as StockMovement)
+        },
+
+        Modify: async (id: number, stockMovement: StockMovement): Promise<void> => {
+            return this.baseRequestPost("stock_operation/edit/" + id, stockMovement)
+                .then(response => response as void)
+        },
     }
 
     public constructor(router: AppRouterInstance,

@@ -16,6 +16,8 @@ export default function Page() {
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const [showMovementDialog, setShowMovementDialog] = useState<boolean>(false);
     const [activeStock, setActiveStock] = useState<number>(undefined);
+    const [stockEditId, setStockEditId] = useState<number>(undefined);
+    const [stockMovementEditId, setStockMovementEditId] = useState<number>(undefined);
 
     const hideDialog = (refreshTable: boolean) => {
         if (refreshTable && stockTableRef.current != null)
@@ -25,24 +27,51 @@ export default function Page() {
     }
 
     const hideMovementDialog = (refreshTable: boolean) => {
-        if (refreshTable && stockMovementTableRef.current != null)
+        if (refreshTable && stockMovementTableRef.current != null) {
             stockMovementTableRef.current.refreshTable();
+            stockTableRef.current.refreshTable();
+        }
+
 
         setShowMovementDialog(false);
     }
 
+    const clickOnEditStockHandler = (stockId: number) => () => {
+        setStockEditId(stockId);
+        setShowDialog(true);
+    }
+
+    const clickOnEditStockMovementHandler = (stockMovementId: number) => () => {
+        setStockMovementEditId(stockMovementId);
+        setShowMovementDialog(true);
+    }
+
+    const clickOnDeleteStockHandler = (stockId: number) => () => {
+        
+    }
+
+    const clickOnDeleteStockMovementHandler = (stockId: number) => () => {
+        
+    }
+
     const clickAddNewStockHandler = () => {
+        setStockEditId(undefined);
         setShowDialog(true);
     }
 
     const clickAddNewStockMovementHandler = () => {
+        setStockMovementEditId(undefined);
         setShowMovementDialog(true);
+    }
+
+    const openMovementTableHandler = (stockId: number) => {
+        setActiveStock(v => stockId);
     }
 
     return (
         <Box display="flex" flexDirection="column" gap={1} height="100%">
-            <StockDialog open={showDialog} onClose={hideDialog} />
-            <StockMovementDialog open={showMovementDialog} onClose={hideMovementDialog} stockId={activeStock} />
+            <StockDialog open={showDialog} onClose={hideDialog} stockId={stockEditId} />
+            <StockMovementDialog open={showMovementDialog} onClose={hideMovementDialog} stockId={activeStock} stockMovementId={stockMovementEditId}/>
             <Box display="flex" flexDirection="row" justifyContent="space-between">
                 <Box display="flex" flexDirection="row">
                     <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddNewStockHandler}>Aggiungi nuova azione</Button>
@@ -51,14 +80,14 @@ export default function Page() {
                     <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} disabled={activeStock === undefined} onClick={clickAddNewStockMovementHandler}>Aggiungi nuovo movimento</Button>
                 </Box>
             </Box>
-            <Box display="grid" gridTemplateColumns="3fr 1fr" height="100%" gap={1}>
-                <StocksTable ref={stockTableRef} loading={false} clickedStock={activeStock} setClickedStock={setActiveStock} />
+            <Box display="grid" gridTemplateColumns="1fr 550px" height="100%" gap={1}>
+                <StocksTable ref={stockTableRef} loading={false} clickedStock={activeStock} setClickedStock={openMovementTableHandler} editStockClick={clickOnEditStockHandler} deleteStockClick={clickOnDeleteStockHandler} />
                 {activeStock === undefined ? (
                     <Paper sx={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Typography fontSize="2em" fontStyle="italic">Seleziona un&apos;azione</Typography>
                     </Paper>
                 ) : (
-                    <StockMovementTable ref={stockMovementTableRef} />
+                    <StockMovementTable ref={stockMovementTableRef} clickedStock={activeStock} editStockClick={clickOnEditStockMovementHandler} deleteStockClick={clickOnDeleteStockMovementHandler} />
                 )}
             </Box>
             <Paper sx={{ height: "100%" }}></Paper>

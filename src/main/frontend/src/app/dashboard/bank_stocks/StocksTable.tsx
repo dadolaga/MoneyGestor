@@ -17,6 +17,8 @@ interface IProps {
     loading: boolean
     clickedStock: number,
     setClickedStock: (value: number) => void
+    editStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
+    deleteStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
 }
 
 export function StocksTable(props: IProps) {
@@ -103,8 +105,8 @@ export function StocksTable(props: IProps) {
                                     <TableCell sx={{ display: 'flex', gap: 1.5, justifyContent: "right" }}>{convertNumberToValue(value.currentValue)}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 2 }} >
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={undefined} />
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={undefined} />
+                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
+                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
                                             <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faArrowRight} onClick={clickActiveStockHandler(value.id)} />
                                         </Box>
                                     </TableCell>
