@@ -12,6 +12,8 @@ import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
+import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
+import org.mockito.internal.matchers.Same;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -166,6 +168,7 @@ public class StockOperationGestorTest extends BaseGestorTest {
         var stock = createStock(initialValue);
         var stockOperation_1 = createStockOperation(stock, firstOperationValue, StockType.MARKET);
         var stockOperation_2 = createStockOperation(stock, secondOperationValue, StockType.MARKET);
+        stockOperation_2.setDate(stockOperation_2.getDate().plusDays(1));
 
         gestor.insert(userLogged, stockOperation_1);
         gestor.insert(userLogged, stockOperation_2);
@@ -194,6 +197,7 @@ public class StockOperationGestorTest extends BaseGestorTest {
         var stock = createStock(initialValue);
         var stockOperation_1 = createStockOperation(stock, firstOperationValue, StockType.TFR);
         var stockOperation_2 = createStockOperation(stock, secondOperationValue, StockType.TFR);
+        stockOperation_2.setDate(stockOperation_2.getDate().plusDays(1));
 
         gestor.insert(userLogged, stockOperation_1);
         gestor.insert(userLogged, stockOperation_2);
@@ -230,6 +234,20 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
     @ParameterizedTest
     @CsvSource({
+            "147.23,36.12",
+    })
+    public void insert_sameDate_throw(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        var sameDateStockOperation = createStockOperation(stock, new BigDecimal(30), StockType.MARKET);
+
+        gestor.insert(userLogged, stockOperation);
+
+        Assertions.assertThrows(SameDateMovementException.class, () -> gestor.insert(userLogged, sameDateStockOperation));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "147.23,36.12,23.13",
             "145.74,-12.45,-45.86"
     })
@@ -239,6 +257,7 @@ public class StockOperationGestorTest extends BaseGestorTest {
         var wallet = createWallet(walletInit);
         var stockOperation_1 = createStockOperation(stock, firstOperationValue, StockType.MARKET);
         var stockOperation_2 = createStockOperation(stock, secondOperationValue, StockType.MARKET);
+        stockOperation_2.setDate(stockOperation_2.getDate().plusDays(1));
 
         gestor.insert(userLogged, stockOperation_1, wallet.getId());
         gestor.insert(userLogged, stockOperation_2, wallet.getId());

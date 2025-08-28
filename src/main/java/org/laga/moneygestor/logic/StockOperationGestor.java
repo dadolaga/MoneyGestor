@@ -8,12 +8,15 @@ import org.laga.moneygestor.db.DatabaseInitializer;
 import org.laga.moneygestor.db.entity.*;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
+import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.StockOperation;
 import org.springframework.jdbc.support.CustomSQLErrorCodesTranslation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +29,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
     public List<StockOperationDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM StockOperationDb WHERE userId = :userId"
+            return session.createQuery("FROM StockOperationDb WHERE userId = :userId "
                             + SortGestor.toSql(sortString), StockOperationDb.class)
                     .setParameter("userId", userLogged.getId())
                     .setFirstResult(page * limit)
@@ -306,6 +309,10 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
                 throw new NotNewerMovementException();
             }
 
+            if(thereIsSameDate(session, userLogged.getId(), stockOperationDb.getDate())) {
+                throw new SameDateMovementException();
+            }
+
             stockOperationDb.setUserId(userLogged.getId());
             stockOperationDb.setCurrentStockValue(stock.getCurrentValue().add(stockOperationDb.getValue()));
             stockOperationDb.setTfr(Objects.requireNonNullElse(stockOperationDb.getTfr(), false));
@@ -356,6 +363,14 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
                 .setParameter("stock", stockId)
                 .setMaxResults(1)
                 .getSingleResultOrNull();
+    }
+
+    private boolean thereIsSameDate(Session session, Integer userId, LocalDate date) {
+        return session.createQuery("SELECT COUNT(*) FROM StockOperationDb WHERE userId = :user AND date = :date", Long.class)
+                .setParameter("user", userId)
+                .setParameter("date", date)
+                .setMaxResults(1)
+                .getSingleResultOrNull() > 0;
     }
 
     public static StockOperation convertToRest(StockOperationDb stockOperationDb) {
