@@ -11,6 +11,7 @@ import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
+import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -210,6 +211,21 @@ public class StockOperationGestorTest extends BaseGestorTest {
         Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stock.getCurrentValue());
 
         checkIfInserted(stockOperation_2);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
+    public void insert_beforeLastMovement_throw(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        var oldStockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        oldStockOperation.setDate(LocalDate.now().minusDays(12));
+
+        gestor.insert(userLogged, stockOperation);
+
+        Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.insert(userLogged, oldStockOperation));
     }
 
     @ParameterizedTest
@@ -603,6 +619,25 @@ public class StockOperationGestorTest extends BaseGestorTest {
     @CsvSource({
             "147.23,36.12",
     })
+    public void update_beforeLastMovement_throw(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        var oldStockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        oldStockOperation.setDate(LocalDate.now().minusDays(12));
+
+        var newStockOperation = createStockOperation(stock, new BigDecimal(30), StockType.MARKET);
+        newStockOperation.setDate(LocalDate.now().minusDays(20));
+
+        gestor.insert(userLogged, oldStockOperation);
+        gestor.insert(userLogged, stockOperation);
+
+        Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.update(userLogged, oldStockOperation.getId(), newStockOperation));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
     public void delete_market(BigDecimal initialValue, BigDecimal operationValue) {
         var stock = createStock(initialValue);
         var stockOperationOld = createStockOperation(stock, operationValue, StockType.MARKET);
@@ -664,6 +699,22 @@ public class StockOperationGestorTest extends BaseGestorTest {
             TestUtilities.assertionsForFloatNumber(walletInit, wallet.getValue(), 0.000001);
             Assertions.assertEquals(0, transactionList.size());
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "147.23,36.12",
+    })
+    public void delete_beforeLastMovement_throw(BigDecimal initialValue, BigDecimal operationValue) {
+        var stock = createStock(initialValue);
+        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        var oldStockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
+        oldStockOperation.setDate(LocalDate.now().minusDays(12));
+
+        gestor.insert(userLogged, oldStockOperation);
+        gestor.insert(userLogged, stockOperation);
+
+        Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.deleteById(userLogged, oldStockOperation.getId()));
     }
 
     private void checkIfInserted(StockOperationDb expected) {

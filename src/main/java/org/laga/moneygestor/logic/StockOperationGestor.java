@@ -3,11 +3,14 @@ package org.laga.moneygestor.logic;
 import jakarta.persistence.RollbackException;
 import org.hibernate.*;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.laga.moneygestor.db.DatabaseInitializer;
 import org.laga.moneygestor.db.entity.*;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
+import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.StockOperation;
+import org.springframework.jdbc.support.CustomSQLErrorCodesTranslation;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,7 +26,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
     public List<StockOperationDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM StockOperationDb WHERE userId = :userId "
+            return session.createQuery("FROM StockOperationDb WHERE userId = :userId"
                             + SortGestor.toSql(sortString), StockOperationDb.class)
                     .setParameter("userId", userLogged.getId())
                     .setFirstResult(page * limit)
@@ -110,6 +113,12 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             if(stockOperation == null)
                 throw new UserNotHavePermissionException();
 
+            var lastOperation = getLastOperation(session, userLogged.getId(), stockOperation.getStockId());
+
+            if(lastOperation != null && !Objects.equals(lastOperation.getId(), id)) {
+                throw new NotNewerMovementException();
+            }
+
             var stockGestor = new StockGestor(sessionFactory);
             var stock = stockGestor.getById(session, userLogged, stockOperation.getStockId());
 
@@ -162,6 +171,12 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             if(oldStockOperation == null)
                 throw new UserNotHavePermissionException();
 
+            var lastOperation = getLastOperation(session, userLogged, stock);
+
+            if(lastOperation != null && lastOperation.getDate().isAfter(newStockOperation.getDate())) {
+                throw new NotNewerMovementException();
+            }
+
             updateStockCurrentValue(session, stock, stock.getCurrentValue().subtract(oldStockOperation.getValue()).add(newStockOperation.getValue()));
 
             if (oldStockOperation.getTfr() || oldStockOperation.getBankTransactionId() != null) {
@@ -211,7 +226,11 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         } catch (RollbackException e) {
             if(e.getCause().getMessage().contains("index_wallet_nameuser"))
                 throw new DuplicateValueException("Duplicate value for wallet", e);
+        } finally {
+        if(session.getTransaction().getStatus() == TransactionStatus.ACTIVE) {
+            session.getTransaction().rollback();
         }
+    }
     }
 
     public void update(UserDb userLogged, Long id, StockOperationDb newStockOperation, Integer newWalletId) {
@@ -281,6 +300,12 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             Transaction transaction = session.getTransaction();
             var stock = session.get(StockDb.class, stockOperationDb.getStockId());
 
+            var lastOperation = getLastOperation(session, userLogged, stock);
+
+            if(lastOperation != null && lastOperation.getDate().isAfter(stockOperationDb.getDate())) {
+                throw new NotNewerMovementException();
+            }
+
             stockOperationDb.setUserId(userLogged.getId());
             stockOperationDb.setCurrentStockValue(stock.getCurrentValue().add(stockOperationDb.getValue()));
             stockOperationDb.setTfr(Objects.requireNonNullElse(stockOperationDb.getTfr(), false));
@@ -300,6 +325,10 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         } catch (ConstraintViolationException e) {
             if(e.getMessage().contains("index_wallet_nameuser"))
                 throw new DuplicateValueException("Duplicate value for wallet", e);
+        } finally {
+            if(commit && session.getTransaction().getStatus() == TransactionStatus.ACTIVE) {
+                session.getTransaction().rollback();
+            }
         }
 
         return stockOperationDb.getId();
@@ -315,6 +344,18 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         stock.setResourcesInvested(newValue);
 
         session.persist(stock);
+    }
+
+
+    private StockOperationDb getLastOperation(Session session, UserDb userLogged, StockDb stock) {
+        return getLastOperation(session, userLogged.getId(), stock.getId());
+    }
+    private StockOperationDb getLastOperation(Session session, Integer userId, Integer stockId) {
+        return session.createQuery("FROM StockOperationDb WHERE userId = :user AND stockId = :stock ORDER BY date DESC LIMIT 1", StockOperationDb.class)
+                .setParameter("user", userId)
+                .setParameter("stock", stockId)
+                .setMaxResults(1)
+                .getSingleResultOrNull();
     }
 
     public static StockOperation convertToRest(StockOperationDb stockOperationDb) {
