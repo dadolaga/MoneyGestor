@@ -7,6 +7,7 @@ import { Order } from "../base/Order";
 import { useIsMobile } from "../../utilities/useMobile";
 import { MouseEventHandler, MutableRefObject, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
+import DeleteMovementDialog from "./DeleteMovementDialog";
 
 export interface StockMovementTableRef {
     refreshTable: () => void
@@ -25,13 +26,13 @@ export function StockMovementTable(props: IProps) {
 
     const api = useRestApi();
 
-    const [sort, setSort] = useState<Order>(new Order([{name: "date", order: "desc"}]));
+    const [sort, setSort] = useState<Order>(new Order([{ name: "date", order: "desc" }]));
     const [loading, setLoading] = useState<boolean>(false);
     const [stockMovements, setStockMovements] = useState<StockMovement[]>();
 
     useEffect(() => {
         refreshTable();
-    }, [])
+    }, [props.clickedStock])
 
     useImperativeHandle(props.ref, () => ({
         refreshTable: () => {
@@ -42,7 +43,7 @@ export function StockMovementTable(props: IProps) {
     function refreshTable() {
         setLoading(true);
 
-        api.StockMovement.List({ order: sort.toUrlString() }).then((stocks) => {
+        api.StockMovement.List({ stock: props.clickedStock, order: sort.toUrlString() }).then((stocks) => {
             setStockMovements(stocks);
         }).finally(() => {
             setLoading(false);
@@ -90,12 +91,12 @@ export function StockMovementTable(props: IProps) {
                         {loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
                         {stockMovements?.map((value, index) => {
                             return (
-                                <TableRow key={index} sx={{backgroundColor: value.id === props.clickedStock? "#c1121f30" : undefined}}>
+                                <TableRow key={index} sx={{ backgroundColor: value.id === props.clickedStock ? "#c1121f30" : undefined }}>
                                     {/* <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell> */}
                                     <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell>
                                     <TableCell align="center">{convertNumberToValue(value.value)}</TableCell>
                                     <TableCell align="center">{convertNumberToPercentage(value.current_yield)}</TableCell>
-                                    <TableCell> {value.is_tfr? <TfrChip /> : value.bank_deposit? <BankDepositChip /> : <MarketChip />} </TableCell>
+                                    <TableCell> {value.is_tfr ? <TfrChip /> : value.bank_deposit ? <BankDepositChip /> : <MarketChip />} </TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 2 }} >
                                             <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
@@ -114,18 +115,18 @@ export function StockMovementTable(props: IProps) {
 
 function MarketChip() {
     return (
-        <Chip label="Mercato" variant="outlined" size="small" style={{ color: "#fb8500", borderColor: "#fb8500"}}/>
+        <Chip label="Mercato" variant="outlined" size="small" style={{ color: "#fb8500", borderColor: "#fb8500" }} />
     )
 }
 
 function BankDepositChip() {
     return (
-        <Chip label="Deposito" variant="outlined" size="small"  style={{ color: "#ffff3f", borderColor: "#ffff3f"}}/>
+        <Chip label="Deposito" variant="outlined" size="small" style={{ color: "#ffff3f", borderColor: "#ffff3f" }} />
     )
 }
 
 function TfrChip() {
     return (
-        <Chip label="TFR" variant="outlined" size="small" style={{ color: "#70e000", borderColor: "#70e000"}}/>
+        <Chip label="TFR" variant="outlined" size="small" style={{ color: "#70e000", borderColor: "#70e000" }} />
     )
 }

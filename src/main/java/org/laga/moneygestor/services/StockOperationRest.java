@@ -4,8 +4,11 @@ import jakarta.persistence.EntityManagerFactory;
 import org.laga.moneygestor.db.entity.StockOperationDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.StockOperationGestor;
+import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
+import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
+import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
 import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.models.Response;
@@ -44,20 +47,25 @@ public class StockOperationRest extends BaseRest {
             var id = gestor.insert(loggedUser, stockOperationDb, stockOperation.getWallet());
 
             return Response.sendId(id);
-        } catch (DuplicateValueException ex) {
+        } catch (SameDateMovementException ex) {
+            throw new HttpException(301, HttpStatus.BAD_REQUEST);
+        } catch (NotNewerMovementException ex) {
+            throw new HttpException(302, HttpStatus.BAD_REQUEST);
+        }  catch (DuplicateValueException ex) {
             throw new DuplicateEntitiesHttpException("Stock already exist", ex);
         }
     }
     @GetMapping("/list")
     public Response getList(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                            @RequestParam(name = "sort", required = false) String sortParams,
+                            @RequestParam(name = "stock", required = false) Integer stockId,
+                            @RequestParam(name = "order", required = false) String sortParams,
                             @RequestParam(name = "limit", required = false, defaultValue = "25") Integer limitParams,
                             @RequestParam(name = "page", required = false, defaultValue = "0") Integer pageParams) {
         UserDb userLogged = getUserLogged(authorization);
 
         var gestor = new StockOperationGestor(sessionFactory);
 
-        var listOfStock = gestor.list(userLogged, sortParams + (Objects.requireNonNullElse(sortParams, "").length() > 0? "-" : "") + "!id", limitParams, pageParams);
+        var listOfStock = gestor.list(userLogged, stockId, (Objects.requireNonNullElse(sortParams, "").length() > 0? (sortParams + "-") : "") + "!id", limitParams, pageParams);
 
         return Response.create(StockOperationGestor.convertToRest(listOfStock));
     }
@@ -91,6 +99,21 @@ public class StockOperationRest extends BaseRest {
         } catch (NegativeWalletException ignored) {
             throw new HttpException(201, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping("/delete/{id}")
+    public Response deleteStockOperation(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        var gestor = new StockOperationGestor(sessionFactory);
+
+        try {
+            gestor.deleteById(userLogged, id);
+        } catch (NotNewerMovementException ex) {
+            throw new HttpException(302, HttpStatus.BAD_REQUEST);
+        }
+
+        return Response.ok();
     }
 
     private static class StockOperationInsert extends StockOperation {

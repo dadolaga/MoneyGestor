@@ -27,11 +27,12 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         super(sessionFactory);
     }
 
-    public List<StockOperationDb> list(UserDb userLogged, String sortString, Integer limit, Integer page) {
+    public List<StockOperationDb> list(UserDb userLogged, Integer stockId, String sortString, Integer limit, Integer page) {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM StockOperationDb WHERE userId = :userId "
+            return session.createQuery("FROM StockOperationDb WHERE userId = :userId AND stockId = :stock "
                             + SortGestor.toSql(sortString), StockOperationDb.class)
                     .setParameter("userId", userLogged.getId())
+                    .setParameter("stock", stockId)
                     .setFirstResult(page * limit)
                     .setMaxResults(limit)
                     .list();

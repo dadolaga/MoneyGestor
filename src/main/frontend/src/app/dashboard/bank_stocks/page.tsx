@@ -8,11 +8,15 @@ import StockDialog from "./StockDialog";
 import { useRef, useState } from "react";
 import { StockMovementTable } from "./StocksMovementTable";
 import StockMovementDialog from "./StockMovementDialog";
+import DeleteMovementDialog from "./DeleteMovementDialog";
 
 
 export default function Page() {
     const stockTableRef = useRef<StockTableRef>(null);
     const stockMovementTableRef = useRef<StockTableRef>(null);
+
+    const [movementDeleteId, setMovementDeleteId] = useState<number | undefined>(undefined);
+
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const [showMovementDialog, setShowMovementDialog] = useState<boolean>(false);
     const [activeStock, setActiveStock] = useState<number>(undefined);
@@ -32,8 +36,8 @@ export default function Page() {
             stockTableRef.current.refreshTable();
         }
 
-
         setShowMovementDialog(false);
+        setMovementDeleteId(undefined);
     }
 
     const clickOnEditStockHandler = (stockId: number) => () => {
@@ -51,7 +55,7 @@ export default function Page() {
     }
 
     const clickOnDeleteStockMovementHandler = (stockId: number) => () => {
-        
+        setMovementDeleteId(stockId);
     }
 
     const clickAddNewStockHandler = () => {
@@ -70,6 +74,8 @@ export default function Page() {
 
     return (
         <Box display="flex" flexDirection="column" gap={1} height="100%">
+            <DeleteMovementDialog open={movementDeleteId !== undefined} onClose={hideMovementDialog} movement={movementDeleteId} />
+
             <StockDialog open={showDialog} onClose={hideDialog} stockId={stockEditId} />
             <StockMovementDialog open={showMovementDialog} onClose={hideMovementDialog} stockId={activeStock} stockMovementId={stockMovementEditId}/>
             <Box display="flex" flexDirection="row" justifyContent="space-between">

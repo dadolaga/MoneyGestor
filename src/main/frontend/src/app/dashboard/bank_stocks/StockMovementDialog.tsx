@@ -7,6 +7,9 @@ import { CreateStockMovement, Stock, StockMovement, Wallet, WalletPrintable } fr
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import dayjs from "dayjs";
+import { ResponseError } from "../../request/ResponseError";
+import { useSnackbar } from "notistack";
+import DeleteMovementDialog from "./DeleteMovementDialog";
 
 interface IProps {
     open: boolean
@@ -28,6 +31,7 @@ const formSettings: FormSettings[] = [{
 
 export default function StockMovementDialog(props: IProps) {
     const api = useRestApi();
+    const { enqueueSnackbar } = useSnackbar();
 
     const [wallets, setWallets] = useState<Wallet[]>()
 
@@ -45,14 +49,14 @@ export default function StockMovementDialog(props: IProps) {
             return;
 
         setLoading(true);
-        
+
         api.Stock.Get(props.stockId)
-        .then(v => {
-            setStock(v);
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+            .then(v => {
+                setStock(v);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
 
     }, [props.stockId]);
 
@@ -73,7 +77,7 @@ export default function StockMovementDialog(props: IProps) {
 
                 setMovementType(stockMovement.bank_deposit ? "deposit" : stockMovement.is_tfr ? "tfr" : "market");
 
-                if(stockMovement.bank_deposit) {
+                if (stockMovement.bank_deposit) {
                     form.setValue("wallet", stockMovement.bank_deposit.wallet.id.toString());
                 }
             })
@@ -99,13 +103,13 @@ export default function StockMovementDialog(props: IProps) {
             value: parseFloat(form.getStringValue("value")),
             there_is_bank_deposit: movementType === "deposit",
             is_tfr: movementType === "tfr",
-            wallet: movementType === "deposit"? (form.getStringValue("wallet") ? parseInt(form.getStringValue("wallet")) : null) :  null,
+            wallet: movementType === "deposit" ? (form.getStringValue("wallet") ? parseInt(form.getStringValue("wallet")) : null) : null,
             stock: {
                 id: props.stockId
             },
         }
 
-        setLoading(true)
+        setLoading(true);
 
         if (props.stockMovementId) {
             api.StockMovement.Modify(props.stockMovementId, stockMovement)
@@ -116,6 +120,20 @@ export default function StockMovementDialog(props: IProps) {
                 });
         } else {
             api.StockMovement.Create(stockMovement)
+                .then(() => {
+                    enqueueSnackbar("Movimento inserito con successo", { variant: "success" });
+                })
+                .catch((err: ResponseError) => {
+                    switch (err.code) {
+                        case 301:
+                            enqueueSnackbar("Esiste già un movimento con la stessa data", { variant: "error" });
+                            break;
+
+                        case 302:
+                            enqueueSnackbar("Non puoi inserire un movimento con data antecedente all'ultimo movimento", { variant: "error" });
+                            break;
+                    }
+                })
                 .finally(() => {
                     setLoading(false);
 
@@ -153,7 +171,7 @@ export default function StockMovementDialog(props: IProps) {
                             setForm={setForm}
                             name="date"
                             label="Data"
-                            dataMoreOption={{minDate: dayjs(stock?.subscriptionDate)}}
+                            dataMoreOption={{ minDate: dayjs(stock?.subscriptionDate) }}
                             disabled={loading} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 4 }}>

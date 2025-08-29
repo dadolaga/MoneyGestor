@@ -151,8 +151,8 @@ export class Request {
                 .then(response => response as ReceiveId)
         },
 
-        List: async (listData: ListData): Promise<StockMovement[]> => { 
-            return this.baseRequestGet("stock_operation/list?sort=" + encodeURI(listData.order))
+        List: async (listData: StockMovementListData): Promise<StockMovement[]> => { 
+            return this.baseRequestGet("stock_operation/list", listData)
                 .then(response => response as StockMovement[])
         },
 
@@ -165,6 +165,11 @@ export class Request {
             return this.baseRequestPost("stock_operation/edit/" + id, stockMovement)
                 .then(response => response as void)
         },
+
+        Delete: async (id: number): Promise<void> => {
+            return this.baseRequestPost("stock_operation/delete/" + id)
+                .then(response => response as void)
+        }
     }
 
     public constructor(router: AppRouterInstance,
@@ -271,6 +276,10 @@ export class Request {
 
 export interface ListData {
     order: string,
+}
+
+export interface StockMovementListData extends ListData {
+    stock: number
 }
 
 interface CodeAction {
