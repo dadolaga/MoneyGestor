@@ -30,10 +30,11 @@ dayjs.extend(timezone);
 
 export default function Input(props: IInput) {
     const [value, setValue] = useState<string>("");
+    const [valueDate, setValueDate] = useState<dayjs.Dayjs>(dayjs.utc());
 
     useEffect(() => {
         let value = props.form?.getStringValue(props.name);
-        if (value !== undefined) {
+        if (value !== undefined && props.type !== "date") {
             setValue(value);
         }
     }, [props.form])
@@ -49,7 +50,10 @@ export default function Input(props: IInput) {
     }
 
     const dateChangeHandler = (name: string): (_event: any) => void => (action: Dayjs) => {
-        props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
+        if(action && action.isValid())
+            props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
+        
+        setValueDate(action);
     }
 
     switch (props.type) {
@@ -116,7 +120,7 @@ export default function Input(props: IInput) {
                             helperText: props.form.getError(props.name),
                         }
                     }}
-                    value={dayjs.utc(value === "" ? undefined : value)}
+                    value={valueDate}
                     onChange={dateChangeHandler(props.name)}
                     disabled={props.disabled} 
                     {...props.dataMoreOption} />
