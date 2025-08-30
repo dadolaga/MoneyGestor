@@ -89,23 +89,21 @@ export function StockMovementTable(props: IProps) {
                     </TableHead>
                     <TableBody>
                         {loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
-                        {stockMovements?.map((value, index) => {
-                            return (
-                                <TableRow key={index} sx={{ backgroundColor: value.id === props.clickedStock ? "#c1121f30" : undefined }}>
-                                    {/* <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell> */}
-                                    <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell>
-                                    <TableCell align="center">{convertNumberToValue(value.value)}</TableCell>
-                                    <TableCell align="center">{convertNumberToPercentage(value.current_yield)}</TableCell>
-                                    <TableCell> {value.is_tfr ? <TfrChip /> : value.bank_deposit ? <BankDepositChip /> : <MarketChip />} </TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 2 }} >
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
+                        {stockMovements?.map((value, index) => (
+                            <TableRow key={index} sx={{ backgroundColor: value.id === props.clickedStock ? "#c1121f30" : undefined }}>
+                                {/* <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell> */}
+                                <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell>
+                                <TableCell align="center">{convertNumberToValue(value.value)}</TableCell>
+                                <TableCell align="center">{convertNumberToPercentage(value.current_yield)}</TableCell>
+                                <TableCell> {value.is_tfr ? <TfrChip /> : value.bank_deposit ? <BankDepositChip /> : <MarketChip />} </TableCell>
+                                <TableCell>
+                                    <Box sx={{ display: 'flex', gap: 2 }} >
+                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
+                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>

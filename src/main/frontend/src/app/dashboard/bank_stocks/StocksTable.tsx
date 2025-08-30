@@ -1,4 +1,4 @@
-import { Box, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
+import { Box, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { convertNumberToPercentage, convertNumberToValue } from "../../utilities/Utilities";
@@ -39,7 +39,7 @@ export function StocksTable(props: IProps) {
             console.log("refreshTable");
 
             setLoading(true);
-            
+
             setTimeout(() => {
                 refreshTable();
             }, 100);
@@ -50,6 +50,7 @@ export function StocksTable(props: IProps) {
         setLoading(true);
 
         api.Stock.List({ order: sort.toUrlString() }).then((stocks) => {
+            console.log("Stock", stocks);
             setStocks(stocks);
         }).finally(() => {
             setLoading(false);
@@ -96,23 +97,28 @@ export function StocksTable(props: IProps) {
                     </TableHead>
                     <TableBody>
                         {props.loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
-                        {stocks?.map((value, index) => {
-                            return (
-                                <TableRow key={index} sx={{backgroundColor: value.id === props.clickedStock? "#c1121f30" : undefined}}>
-                                    {/* <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell> */}
-                                    <TableCell>{value.name}</TableCell>
-                                    <TableCell align="right">{convertNumberToPercentage(value.currentValue / value.resourcesInvested - 1)}</TableCell>
-                                    <TableCell sx={{ display: 'flex', gap: 1.5, justifyContent: "right" }}>{convertNumberToValue(value.currentValue)}</TableCell>
-                                    <TableCell>
-                                        <Box sx={{ display: 'flex', gap: 2 }} >
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
-                                            <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faArrowRight} onClick={clickActiveStockHandler(value.id)} />
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
+                        {(!stocks || stocks.length === 0) && (
+                            <TableRow>
+                                <TableCell colSpan={4}>
+                                    <Typography fontStyle="italic" color="textSecondary" align="center">Inserire la prima azione</Typography>    
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {stocks?.map((value, index) => (
+                            <TableRow key={index} sx={{ backgroundColor: value.id === props.clickedStock ? "#c1121f30" : undefined }}>
+                                {/* <TableCell>{new Date(value.date).toLocaleDateString('it-IT', { day: 'numeric', month: isMobile ? "numeric" : "long", year: 'numeric' })}</TableCell> */}
+                                <TableCell>{value.name}</TableCell>
+                                <TableCell align="right">{convertNumberToPercentage(value.currentValue / value.resourcesInvested - 1)}</TableCell>
+                                <TableCell sx={{ display: 'flex', gap: 1.5, justifyContent: "right" }}>{convertNumberToValue(value.currentValue)}</TableCell>
+                                <TableCell>
+                                    <Box sx={{ display: 'flex', gap: 2 }} >
+                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faPen} onClick={props.editStockClick(value.id)} />
+                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faTrash} onClick={props.deleteStockClick(value.id)} />
+                                        <FontAwesomeIcon style={{ cursor: 'pointer' }} icon={faArrowRight} onClick={clickActiveStockHandler(value.id)} />
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
