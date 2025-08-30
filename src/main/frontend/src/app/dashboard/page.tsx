@@ -1,46 +1,13 @@
 "use client"
 
 import { Box, Card, CardContent, Typography } from "@mui/material";
-import { DefaultRawDatum, PieTooltipProps, ResponsivePie } from "@nivo/pie";
+import { DefaultRawDatum, ResponsivePie } from "@nivo/pie";
 import { useEffect, useState } from "react";
 import { useRestApi } from "../request/Request";
 import { sendDateToBackEnd } from "../utilities/BackEndUtilities";
 import { ITransaction } from "../utilities/Types";
 import { convertNumberToValue, fullSize } from "../utilities/Utilities";
 import { useIsMobile } from "../utilities/useMobile";
-
-const data: DefaultRawDatum[] & {}[] = [
-    {
-        "id": "make",
-        "label": "make",
-        "value": 33,
-        "color": "hsl(337, 70%, 50%)"
-    },
-    {
-        "id": "rust",
-        "label": "rust",
-        "value": 262,
-        "color": "hsl(234, 70%, 50%)"
-    },
-    {
-        "id": "javascript",
-        "label": "javascript",
-        "value": 113,
-        "color": "hsl(30, 70%, 50%)"
-    },
-    {
-        "id": "hack",
-        "label": "hack",
-        "value": 86,
-        "color": "hsl(21, 70%, 50%)"
-    },
-    {
-        "id": "ruby",
-        "label": "ruby",
-        "value": 224,
-        "color": "hsl(122, 70%, 50%)"
-    }
-]
 
 export default function Dashboard() {
     const isMobile = useIsMobile();
@@ -171,12 +138,4 @@ export default function Dashboard() {
             </Box>
         </Box>
     )
-}
-
-function CustomTooltip({ datum }: PieTooltipProps<any>) {
-    useEffect(() => {
-        console.log(datum);
-    }, [datum]);
-
-    return (<></>) ;
 }

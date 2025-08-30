@@ -1,19 +1,18 @@
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, Grid, InputAdornment, Radio, RadioGroup, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, InputAdornment, Radio, RadioGroup, Typography } from "@mui/material";
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";
 import { useRestApi } from "../../request/Request";
-import { CreateStockMovement, Stock, StockMovement, Wallet, WalletPrintable } from "../../utilities/BackEndTypes";
+import { CreateStockMovement, Stock, Wallet, WalletPrintable } from "../../utilities/BackEndTypes";
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import dayjs from "dayjs";
 import { ResponseError } from "../../request/ResponseError";
 import { useSnackbar } from "notistack";
-import DeleteMovementDialog from "./DeleteMovementDialog";
 
 interface IProps {
     open: boolean
-    onClose: (reload: boolean) => void
+    onClose: (_reload: boolean) => void
     stockId?: number
     stockMovementId?: number
 }

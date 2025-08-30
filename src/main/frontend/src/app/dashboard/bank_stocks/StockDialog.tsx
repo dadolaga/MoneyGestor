@@ -12,7 +12,7 @@ import { ResponseError } from "../../request/ResponseError";
 
 interface IProps {
     open: boolean
-    onClose: (reload: boolean) => void
+    onClose: (_reload: boolean) => void
     stockId?: number
 }
 

@@ -6,7 +6,7 @@ import { Box, Card, Grid, TextField, FormControl, InputLabel, OutlinedInput, Inp
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Request, useRestApi } from '../../../request/Request';
 import { UserRegistrationForm } from '../../../utilities/BackEndTypes';
-import { enqueueSnackbar, useSnackbar } from 'notistack';
+import { enqueueSnackbar } from 'notistack';
 
 export default function Page() {
     const form = useRef(null);
@@ -48,7 +48,7 @@ export default function Page() {
         setShowLoading(true);
 
         restApi.User.Registration(userData)
-        .then(response => {
+        .then(_response => {
             enqueueSnackbar("Utente aggiunto con successo", {variant: 'success'});
         })
         .catch(Request.ErrorGestor([{
@@ -77,7 +77,7 @@ export default function Page() {
 
 
         function checkField() {
-            const regexUsername = /^[A-Za-z0-9_\-]+$/;
+            const regexUsername = /^[A-Za-z0-9_-]+$/;
 
             let valid = true;
 

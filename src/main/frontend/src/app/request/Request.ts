@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Stock, StockMovement, Transaction, TransactionForm, TransactionType, TransactionTypeForm, User, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
+import { CreateWalletForm, GraphDataSend, ILoginData, ITransactionFilter, LineGraph, LoginForm, MultiTransactionInsert, ReceiveId as ReceiveId, Response, Stock, StockMovement, Transaction, TransactionForm, TransactionType, TransactionTypeForm, UserRegistrationForm, Wallet } from "../utilities/BackEndTypes"
 import axios from "../axios/axios"
 import { ResponseError } from "./ResponseError";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -11,9 +11,9 @@ import { ITransaction } from "../utilities/Types";
 const ERROR_BASE_TYPE = "ERROR";
 
 export function useRestApi() {
-    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+    const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
-    const [cookie, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
+    const [cookie, , removeCookie] = useCookies(["_token", "_displayName"]);
 
     return new Request(router, enqueueSnackbar, cookie, removeCookie);
 }
@@ -22,7 +22,7 @@ export class Request {
     public router: AppRouterInstance = null;
     public enqueueSnackbar: EnqueueSnackbar = null;
     public cookie: { _token?: any } = null;
-    public removeCookie: (name: "_displayName", any?) => void = null;
+    public removeCookie: (_name: "_displayName", _value: any) => void = null;
 
     public User = {
         Registration: async (registration: UserRegistrationForm): Promise<ReceiveId> => {
@@ -185,14 +185,14 @@ export class Request {
     public constructor(router: AppRouterInstance,
         enqueueSnackbar: EnqueueSnackbar,
         cookie: { _token?: any },
-        removeCookie: (name: "_displayName", any?) => void) {
+        removeCookie: (_name: "_displayName", _value?: any) => void) {
         this.router = router;
         this.enqueueSnackbar = enqueueSnackbar;
         this.cookie = cookie;
         this.removeCookie = removeCookie;
     }
 
-    public static ErrorGestor = (options?: CodeAction[]): (error: ResponseError) => void => {
+    public static ErrorGestor = (options?: CodeAction[]): (_error: ResponseError) => void => {
         return (error) => {
             if (error instanceof ResponseError) {
                 if (options) {

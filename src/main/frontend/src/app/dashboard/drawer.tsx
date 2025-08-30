@@ -1,8 +1,7 @@
 import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Drawer as MaterialDrawer, useMediaQuery, useTheme } from "@mui/material";
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Drawer as MaterialDrawer } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useIsMobile } from "../utilities/useMobile";
 
 export default function Drawer({ width, open, hide }) {

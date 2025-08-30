@@ -2,12 +2,11 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import { useState } from "react";
 import { useRestApi } from "../../request/Request";
 import { useSnackbar } from "notistack";
-import { ResponseError } from "../../request/ResponseError";
 
-interface IProps {
-    open: boolean,
-    onClose: (success: boolean) => void,
-    stock: number
+type IProps = {
+    open: boolean;
+    onClose: (_success: boolean) => void;
+    stock: number;
 }
 
 export default function DeleteStockDialog({
@@ -28,7 +27,7 @@ export default function DeleteStockDialog({
                 enqueueSnackbar("Azione cancellata con successo", { variant: "success" });
                 onClose(true);
             })
-            .catch((err: ResponseError) => {
+            .catch(() => {
                 enqueueSnackbar("Errore nella cancellazione dell'azione", { variant: "error" });
                 onClose(false);
             })
@@ -39,11 +38,11 @@ export default function DeleteStockDialog({
         <Dialog open={open} onClose={onClose}>
             {showLoading && <LinearProgress />}
             <DialogTitle>
-                Confermi di voler cancellare l'azione
+                Confermi di voler cancellare l&apos;azione
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Sei sicuro di voler cancellare l'azione selezionata?
+                    Sei sicuro di voler cancellare l&apos;azione selezionata?
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

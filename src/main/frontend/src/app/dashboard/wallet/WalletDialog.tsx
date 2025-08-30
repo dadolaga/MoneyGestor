@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, InputAdornment, InputLabel, LinearProgress, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, InputAdornment, LinearProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 import axios from "../../axios/axios";
 import { Request, useRestApi } from "../../request/Request";
@@ -8,7 +8,7 @@ import Input from "../../component/Input";
 
 interface WalletDialogInterface {
     open: boolean,
-    onClose: (isSave: boolean) => void,
+    onClose: (_isSave: boolean) => void,
     walletId?: number
 }
 
@@ -37,7 +37,7 @@ const formSettings: FormSettings[] = [{
 
 export default function WalletDialog({ open, onClose, walletId }: WalletDialogInterface) {
     const [loading, setLoading] = useState<boolean>(false);
-    const [wallet, setWallet] = useState<CreateWalletForm>(undefined);
+    const [, setWallet] = useState<CreateWalletForm>(undefined);
     const [colors, setColors] = useState([]);
 
     const [form, setForm] = useState<Form>(new Form(formSettings))
@@ -120,7 +120,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
             setLoading(true);
 
             restApi.Wallet.Create(wallet)
-            .then(id => {
+            .then(_id => {
                 onClose(true);
             })
             .catch(Request.ErrorGestor([{

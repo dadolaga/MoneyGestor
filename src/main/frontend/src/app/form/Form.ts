@@ -6,7 +6,7 @@ export interface FormSettings {
 }
 
 export interface Check {
-    action: (value: string, values: string[] | IFormMultiType[]) => boolean,
+    action: (_value: string, _values: string[] | IFormMultiType[]) => boolean,
     text: string,
 }
 
@@ -39,7 +39,7 @@ export class Form {
 
         try {
             return this._values[name]?.getKey() ?? this._values[name];
-        } catch (Error) {
+        } catch {
             return this._values[name];
         }
     }

@@ -2,7 +2,7 @@
 
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, Card, Paper, Typography } from "@mui/material";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import { StocksTable, StockTableRef } from "./StocksTable";
 import StockDialog from "./StockDialog";
 import { useRef, useState } from "react";
@@ -72,7 +72,7 @@ export default function Page() {
     }
 
     const openMovementTableHandler = (stockId: number) => {
-        setActiveStock(v => stockId);
+        setActiveStock(stockId);
     }
 
     return (

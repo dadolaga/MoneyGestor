@@ -1,12 +1,12 @@
 import { Slide } from "@mui/material";
 import { TransitionProps } from "@mui/material/transitions";
-import { forwardRef } from "react";
+import { forwardRef, ReactElement, Ref } from "react";
 
 export const TransitionDialog = forwardRef((
     props: TransitionProps & {
-        children: React.ReactElement<any, any>;
+        children: ReactElement<any, any>;
     },
-    ref: React.Ref<unknown>,
+    ref: Ref<unknown>,
 ) => {
     return <Slide direction="down" ref={ref} {...props} />;
 });

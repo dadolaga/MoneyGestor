@@ -44,11 +44,11 @@ export default function Input(props: IInput) {
         props.setForm(form => form.setValue(name, action.target.value));
     }
 
-    const selectChangeHandler = (name: string): (event: SelectChangeEvent<string>) => void => (action) => {
+    const selectChangeHandler = (name: string): (_event: SelectChangeEvent<string>) => void => (action) => {
         props.setForm(form => form.setValue(name, FormMultiTypeUtilities.findByKey(props.values, action.target.value)));
     }
 
-    const dateChangeHandler = (name: string): (event: any) => void => (action: Dayjs) => {
+    const dateChangeHandler = (name: string): (_event: any) => void => (action: Dayjs) => {
         props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
     }
 

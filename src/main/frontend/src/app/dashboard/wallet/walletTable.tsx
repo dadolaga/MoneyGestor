@@ -19,7 +19,7 @@ interface IWalletTable {
     setSort: (_: Order) => void,
 }
 
-const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, ref) => {
+const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, _ref) => {
     const isMobile = useIsMobile();
 
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
@@ -29,7 +29,7 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
 
     const restApi = useRestApi();
 
-    const favoriteHandler = (id) =>  async (event) => {
+    const favoriteHandler = (id) =>  async (_event) => {
         let wallet = await restApi.Wallet.Get(id);
 
         restApi.Wallet.Modify(id, { favorite: !wallet.favorite })

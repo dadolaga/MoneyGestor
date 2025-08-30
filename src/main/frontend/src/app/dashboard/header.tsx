@@ -9,7 +9,7 @@ import { Avatar, Box, Menu, MenuItem, Toolbar } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import { useState } from 'react'
+import { useState, MouseEvent } from 'react'
 import { useRestApi } from '../request/Request'
 import { useSnackbar } from 'notistack'
 import { useIsMobile } from '../utilities/useMobile'
@@ -20,7 +20,7 @@ export default function Header({
 }: {
     openDrawerClick: () => void
 }) {
-    const [cookies, setCookie, removeCookie] = useCookies(["_token", "_displayName"]);
+    const [cookies, , removeCookie] = useCookies(["_token", "_displayName"]);
 
     const request = useRestApi();
 
@@ -62,7 +62,7 @@ export default function Header({
         };
     }
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = (event: MouseEvent<HTMLDivElement>) => {
         setAnchorEl(event.currentTarget);
     };
 

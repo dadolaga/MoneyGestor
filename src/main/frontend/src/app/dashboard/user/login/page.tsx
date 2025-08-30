@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, use, KeyboardEventHandler, InputHTMLAttributes } from 'react';
+import { useState, useRef, KeyboardEventHandler } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCookies } from 'react-cookie';
 import { Alert, Box, Button, Card, CardContent, Checkbox, FormControlLabel, LinearProgress, TextField, Typography } from '@mui/material';
@@ -13,9 +13,9 @@ export default function Page() {
         "password": null,
     };
 
-    const form = useRef();
+    const form = useRef(null);
     const router = useRouter();
-    const [cookies, setCookie] = useCookies(["_token", "_displayName"]);
+    const [, setCookie] = useCookies(["_token", "_displayName"]);
 
     const restApi = useRestApi();
 
@@ -53,7 +53,7 @@ export default function Page() {
         })
         .catch(Request.ErrorGestor([{
             code: 112, 
-            action: err => {
+            action: () => {
                 setMessage("Email/username o password errati");
             }
         }]))
@@ -62,7 +62,7 @@ export default function Page() {
         })
 
         function checkField() {
-            const regexUsername = /^[A-Za-z0-9_\-]+$/;
+            const regexUsername = /^[A-Za-z0-9_-]+$/;
 
             let valid = true;
 

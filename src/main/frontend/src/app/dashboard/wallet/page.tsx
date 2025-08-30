@@ -10,7 +10,7 @@ import { Order } from '../base/Order'
 import { useIsMobile } from '../../utilities/useMobile'
 
 export default function Page() {
-    const tableWallet = useRef();
+    const tableWallet = useRef(null);
 
     const isMobile = useIsMobile();
 

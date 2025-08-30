@@ -6,7 +6,7 @@ import { ResponseError } from "../../request/ResponseError";
 
 interface IProps {
     open: boolean,
-    onClose: (success: boolean) => void,
+    onClose: (_success: boolean) => void,
     movement: number
 }
 

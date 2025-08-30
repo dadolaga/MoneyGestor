@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 interface IUser {
     id: number;
     firstname: string;

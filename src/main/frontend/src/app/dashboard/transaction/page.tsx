@@ -3,7 +3,7 @@
 import { ChangeEventHandler, useEffect, useRef, useState } from 'react'
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, Input } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import TransactionDialog from "./TransactionDialog";
 import { TransactionTable } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
@@ -27,10 +27,10 @@ export default function Page() {
 
     const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
     const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState<boolean>(false);
-    const [openImportFromCsvDialog, setOpenImportFromCsvDialog] = useState<boolean>(false);
+    const [, setOpenImportFromCsvDialog] = useState<boolean>(false);
     const [transactionId, setTransactionId] = useState<number>(undefined);
     const [transactionDescription, setTransactionDescription] = useState<string>(undefined);
-    const [csvFile, setCsvFile] = useState<File>(undefined);
+    const [, setCsvFile] = useState<File>(undefined);
 
     useEffect(() => {
         loadTransactions();
@@ -46,15 +46,10 @@ export default function Page() {
     }
 
     function openTransactionDialogHandler() {
-        setTransactionId(transactionId => undefined);
+        setTransactionId(() => undefined);
         setOpenTransactionDialog(true);
     }
 
-    const clickAddTransactionFromCSV = () => {
-        setCsvFile(undefined);
-
-        fileInput.current.click();
-    }
 
     const inputFileChange: ChangeEventHandler<HTMLInputElement> = (event) => {
         setOpenImportFromCsvDialog(true);
@@ -81,14 +76,6 @@ export default function Page() {
         setOpenTransactionDialog(false);
     }
 
-    const closeImportFromCsvDialog = (isToReload: boolean) => {
-        if (isToReload) {
-            loadTransactions();
-            graph.current.loadTransaction();
-        }
-
-        setOpenImportFromCsvDialog(false);
-    }
     return (
         <>
             <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />

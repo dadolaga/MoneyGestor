@@ -1,13 +1,12 @@
 import { Box, Chip, LinearProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPen, faTrash, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { convertNumberToPercentage, convertNumberToValue } from "../../utilities/Utilities";
-import { Stock, StockMovement } from "../../utilities/BackEndTypes";
+import { StockMovement } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
 import { useIsMobile } from "../../utilities/useMobile";
 import { MouseEventHandler, MutableRefObject, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
-import DeleteMovementDialog from "./DeleteMovementDialog";
 
 export interface StockMovementTableRef {
     refreshTable: () => void
@@ -17,8 +16,8 @@ interface IProps {
     ref: MutableRefObject<StockMovementTableRef>
     clickedStock: number
     //: (value: number) => void
-    editStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
-    deleteStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
+    editStockClick: (_stockId: number) => MouseEventHandler<SVGSVGElement>
+    deleteStockClick: (_stockId: number) => MouseEventHandler<SVGSVGElement>
 }
 
 export function StockMovementTable(props: IProps) {

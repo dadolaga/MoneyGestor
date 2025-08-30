@@ -1,12 +1,12 @@
 export interface ICheckForm {
     value: string | number,
-    functionSetText: (any) => void,
+    functionSetText: (_value: any) => void,
     check: ICheck[],
 }
 
 interface ICheck {
     regex?: RegExp,
-    checkFunction?: ((string) => boolean) | ((number) => boolean),
+    checkFunction?: ((_string) => boolean) | ((_number) => boolean),
     checkEmpty?: boolean
     errorText: string,
 }

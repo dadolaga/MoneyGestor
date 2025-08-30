@@ -13,10 +13,10 @@ interface ITransactionTableProps {
     loading: boolean,
     sort: Order,
     setSort: (_: Order) => void,
-    setTransactionDialogId: (any) => void,
-    setTransactionDescription: (any) => void,
-    setOpenTransactionDialog: (any) => void,
-    setOpenTransactionDeleteDialog: (any) => void,
+    setTransactionDialogId: (_value: any) => void,
+    setTransactionDescription: (_value: any) => void,
+    setOpenTransactionDialog: (_value: any) => void,
+    setOpenTransactionDeleteDialog: (_value: any) => void,
 }
 
 export function TransactionTable(props: ITransactionTableProps) {

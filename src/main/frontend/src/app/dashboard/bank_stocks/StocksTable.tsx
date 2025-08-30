@@ -5,7 +5,7 @@ import { convertNumberToPercentage, convertNumberToValue } from "../../utilities
 import { Stock } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
 import { useIsMobile } from "../../utilities/useMobile";
-import { MouseEventHandler, MutableRefObject, Ref, useEffect, useImperativeHandle, useState } from "react";
+import { MouseEventHandler, Ref, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
 
 export interface StockTableRef {
@@ -16,9 +16,9 @@ interface IProps {
     ref: Ref<StockTableRef>
     loading: boolean
     clickedStock: number,
-    setClickedStock: (value: number) => void
-    editStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
-    deleteStockClick: (stockId: number) => MouseEventHandler<SVGSVGElement>
+    setClickedStock: (_value: number) => void
+    editStockClick: (_stockId: number) => MouseEventHandler<SVGSVGElement>
+    deleteStockClick: (_stockId: number) => MouseEventHandler<SVGSVGElement>
 }
 
 export function StocksTable(props: IProps) {
@@ -96,7 +96,7 @@ export function StocksTable(props: IProps) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {props.loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
+                        {loading ? <TableRow><TableCell sx={{ p: 0 }} colSpan={5}><LinearProgress /></TableCell></TableRow> : null}
                         {(!stocks || stocks.length === 0) && (
                             <TableRow>
                                 <TableCell colSpan={4}>
