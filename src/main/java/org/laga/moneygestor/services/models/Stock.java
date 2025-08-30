@@ -7,7 +7,7 @@ public class Stock {
     private Integer id;
     private String name;
     private BigDecimal subscriptionValue;
-    private LocalDate subscriptionDate;
+    private String subscriptionDate;
     private BigDecimal currentValue;
     private BigDecimal resourcesInvested;
 
@@ -35,11 +35,11 @@ public class Stock {
         this.subscriptionValue = subscriptionValue;
     }
 
-    public LocalDate getSubscriptionDate() {
+    public String getSubscriptionDate() {
         return subscriptionDate;
     }
 
-    public void setSubscriptionDate(LocalDate subscriptionDate) {
+    public void setSubscriptionDate(String subscriptionDate) {
         this.subscriptionDate = subscriptionDate;
     }
 

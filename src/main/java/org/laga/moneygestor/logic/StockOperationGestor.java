@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -177,7 +178,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
             var lastOperation = getLastOperation(session, userLogged, stock);
 
-            if(lastOperation != null && lastOperation.getDate().isAfter(newStockOperation.getDate())) {
+            if(lastOperation != null && lastOperation.getDate().isAfter(oldStockOperation.getDate())) {
                 throw new NotNewerMovementException();
             }
 
@@ -379,7 +380,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
         stockOperation.setId( stockOperationDb.getId());
         stockOperation.setDescription(stockOperationDb.getDescription());
-        stockOperation.setDate(stockOperationDb.getDate());
+        stockOperation.setDate(stockOperationDb.getDate().format(DateTimeFormatter.ISO_DATE));
         stockOperation.setValue(stockOperationDb.getValue());
         stockOperation.setCurrentYield(stockOperationDb.getCurrentYield());
         stockOperation.setTfr(stockOperationDb.getTfr());

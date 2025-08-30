@@ -12,7 +12,7 @@ public class StockOperation {
     private BigDecimal value;
     @JsonProperty("current_yield")
     private BigDecimal currentYield;
-    private LocalDate date;
+    private String date;
     @JsonProperty("there_is_bank_deposit")
     private Boolean thereIsBankTransaction;
     @JsonProperty("bank_deposit")
@@ -53,11 +53,11 @@ public class StockOperation {
         this.currentYield = currentYield;
     }
 
-    public LocalDate getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

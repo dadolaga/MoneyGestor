@@ -143,6 +143,16 @@ export class Request {
             return this.baseRequestGet("stock/get/" + id)
                 .then(response => response as Stock)
         },
+
+        Modify: async (id: number, stock: Stock): Promise<void> => {
+            return this.baseRequestPost("stock/edit/" + id, stock)
+                .then(response => response as void)
+        },
+
+        Delete: async (id: number): Promise<void> => {
+            return this.baseRequestPost("stock/delete/" + id)
+                .then(response => response as void)
+        }
     }
 
     public StockMovement = {
@@ -151,7 +161,7 @@ export class Request {
                 .then(response => response as ReceiveId)
         },
 
-        List: async (listData: StockMovementListData): Promise<StockMovement[]> => { 
+        List: async (listData: StockMovementListData): Promise<StockMovement[]> => {
             return this.baseRequestGet("stock_operation/list", listData)
                 .then(response => response as StockMovement[])
         },

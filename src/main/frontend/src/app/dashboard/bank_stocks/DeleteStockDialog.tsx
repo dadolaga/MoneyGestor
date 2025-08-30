@@ -7,13 +7,13 @@ import { ResponseError } from "../../request/ResponseError";
 interface IProps {
     open: boolean,
     onClose: (success: boolean) => void,
-    movement: number
+    stock: number
 }
 
-export default function DeleteMovementDialog({
+export default function DeleteStockDialog({
     open,
     onClose,
-    movement
+    stock
 }: IProps) {
     const { enqueueSnackbar } = useSnackbar();
     const [showLoading, setShowLoading] = useState(false);
@@ -23,20 +23,13 @@ export default function DeleteMovementDialog({
     function deleteWallet() {
         setShowLoading(true);
 
-        restApi.StockMovement.Delete(movement)
+        restApi.Stock.Delete(stock)
             .then(() => {
-                enqueueSnackbar("Transazione cancellata con successo", { variant: "success" });
+                enqueueSnackbar("Azione cancellata con successo", { variant: "success" });
                 onClose(true);
             })
             .catch((err: ResponseError) => {
-                switch (err.code) {
-                    case 302:
-                        enqueueSnackbar("Non puoi eliminare un movimento con data antecedente all'ultimo movimento", { variant: "error" });
-                        break;
-                    default:
-                        enqueueSnackbar("Errore nella cancellazione della transazione", { variant: "error" });
-                        break;
-                }
+                enqueueSnackbar("Errore nella cancellazione dell'azione", { variant: "error" });
                 onClose(false);
             })
             .finally(() => setShowLoading(false));
@@ -46,11 +39,11 @@ export default function DeleteMovementDialog({
         <Dialog open={open} onClose={onClose}>
             {showLoading && <LinearProgress />}
             <DialogTitle>
-                Confermi di voler cancellare la transazione
+                Confermi di voler cancellare l'azione
             </DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Sei sicuro di voler cancellare la transazione selezionata?
+                    Sei sicuro di voler cancellare l'azione selezionata?
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

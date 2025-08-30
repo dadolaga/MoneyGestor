@@ -144,7 +144,7 @@ public class StockGestor extends Gestor<Integer, StockDb> {
 
         stock.setId(stockDb.getId());
         stock.setName(stockDb.getName());
-        stock.setSubscriptionDate(stockDb.getSubscriptionDate());
+        stock.setSubscriptionDate(stockDb.getSubscriptionDate().format(DateTimeFormatter.ISO_DATE));
         stock.setSubscriptionValue(stockDb.getSubscriptionValue());
         stock.setCurrentValue(stockDb.getCurrentValue());
         stock.setResourcesInvested(stockDb.getResourcesInvested());

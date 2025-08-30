@@ -40,18 +40,20 @@ export default function StockDialog(props: IProps) {
     useEffect(() => {
         if (props.stockId === undefined || props.stockId === null)
             return;
-        
+
         setLoading(true);
-        
+
         api.Stock.Get(props.stockId)
-        .then(stock => {
-            setForm(form => form.setValue("name", stock.name)
-                .setValue("date", stock.subscriptionDate)
-                .setValue("value", stock.subscriptionValue.toString()));
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+            .then(stock => {
+                console.log(stock);
+                
+                setForm(form => form.setValue("name", stock.name)
+                    .setValue("date", stock.subscriptionDate)
+                    .setValue("value", stock.subscriptionValue.toString()));
+            })
+            .finally(() => {
+                setLoading(false);
+            });
 
     }, [props.stockId])
 
@@ -68,12 +70,22 @@ export default function StockDialog(props: IProps) {
             subscriptionValue: parseFloat(form.getStringValue("value")),
         }
 
-        api.Stock.Create(stock)
-        .finally(() => {
-            setLoading(false);
+        if (props.stockId !== undefined) {
+            api.Stock.Modify(props.stockId, stock)
+                .finally(() => {
+                    setLoading(false);
 
-            props.onClose(true);
-        })
+                    props.onClose(true);
+                })
+        } else {
+            api.Stock.Create(stock)
+                .finally(() => {
+                    setLoading(false);
+
+                    props.onClose(true);
+                })
+        }
+
     }
 
     const cancelHandler = () => {
@@ -82,7 +94,7 @@ export default function StockDialog(props: IProps) {
 
     return (
         <Dialog open={props.open} onClose={props.onClose} TransitionComponent={TransitionDialog}>
-            { loading && <LinearProgress />}
+            {loading && <LinearProgress />}
             <DialogTitle>Crea nuova azione</DialogTitle>
             <DialogContent>
                 <DialogContentText>

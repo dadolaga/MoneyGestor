@@ -3,6 +3,7 @@ package org.laga.moneygestor.services;
 import jakarta.persistence.EntityManagerFactory;
 import org.laga.moneygestor.db.entity.StockOperationDb;
 import org.laga.moneygestor.db.entity.UserDb;
+import org.laga.moneygestor.logic.DateUtilities;
 import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
@@ -38,7 +39,7 @@ public class StockOperationRest extends BaseRest {
         var stockOperationDb = new StockOperationDb();
 
         stockOperationDb.setDescription(stockOperation.getDescription());
-        stockOperationDb.setDate(stockOperation.getDate());
+        stockOperationDb.setDate(DateUtilities.convertToLocalDate(stockOperation.getDate()));
         stockOperationDb.setValue(stockOperation.getValue());
         stockOperationDb.setStockId(stockOperation.getStock().getId());
         stockOperationDb.setTfr(stockOperation.isTfr());
@@ -87,6 +88,7 @@ public class StockOperationRest extends BaseRest {
 
         var stockOperation = gestor.getById(userLogged, id);
 
+        stockOperation.setDate(DateUtilities.convertToLocalDate(transactionForm.getDate()));
         stockOperation.setDescription(transactionForm.getDescription());
         stockOperation.setValue(transactionForm.getValue());
         stockOperation.setTfr(transactionForm.isTfr());

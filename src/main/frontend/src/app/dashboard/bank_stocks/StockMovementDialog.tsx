@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, Grid, InputAdornment, Radio, RadioGroup } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormLabel, Grid, InputAdornment, Radio, RadioGroup, Typography } from "@mui/material";
 import 'dayjs/locale/it'
 import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";
@@ -40,9 +40,15 @@ export default function StockMovementDialog(props: IProps) {
     const [stock, setStock] = useState<Stock>();
     const [loading, setLoading] = useState<boolean>(false);
 
+    const [errorMessage, setErrorMessage] = useState<string>("");
+
     useEffect(() => {
         loadWallet()
     }, []);
+
+    useEffect(() => {
+        setErrorMessage("");
+    }, [form])
 
     useEffect(() => {
         if (props.stockId === undefined || props.stockId === null)
@@ -113,18 +119,33 @@ export default function StockMovementDialog(props: IProps) {
 
         if (props.stockMovementId) {
             api.StockMovement.Modify(props.stockMovementId, stockMovement)
+                .then(() => {
+                    props.onClose(true);
+                })
+                .catch((err: ResponseError) => {
+                    switch (err.code) {
+                        case 201:
+                            setErrorMessage("Il portafoglio andrebbe in negativo");
+                            break;
+
+                    }
+                })
                 .finally(() => {
                     setLoading(false);
-
-                    props.onClose(true);
                 });
         } else {
             api.StockMovement.Create(stockMovement)
                 .then(() => {
                     enqueueSnackbar("Movimento inserito con successo", { variant: "success" });
+
+                    props.onClose(true);
                 })
                 .catch((err: ResponseError) => {
                     switch (err.code) {
+                        case 201:
+                            setErrorMessage("Il portafoglio andrebbe in negativo");
+                            break;
+
                         case 301:
                             enqueueSnackbar("Esiste già un movimento con la stessa data", { variant: "error" });
                             break;
@@ -136,8 +157,6 @@ export default function StockMovementDialog(props: IProps) {
                 })
                 .finally(() => {
                     setLoading(false);
-
-                    props.onClose(true);
                 });
         }
     }
@@ -150,59 +169,60 @@ export default function StockMovementDialog(props: IProps) {
         <Dialog open={props.open} onClose={props.onClose} TransitionComponent={TransitionDialog}>
             <DialogTitle>Crea nuova movimento nell&apos;azione</DialogTitle>
             <DialogContent>
-                <DialogContentText>
-                    Inserire i dati del nuovo movimento dell&apos;azione bancaria
-                </DialogContentText>
-                <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
-                    <Grid size={{ xs: 12 }}>
-                        <Input
-                            type="text"
-                            form={form}
-                            setForm={setForm}
-                            name="description"
-                            label="Descrizione"
-                            disabled={loading} />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 8 }}>
+                <Box display="flex" flexDirection="column" gap={2}>
+                    <Typography>Inserire i dati del nuovo movimento dell&apos;azione bancaria</Typography>
+                    {errorMessage && <Alert variant="filled" severity="error" >{errorMessage}</Alert>}
+                    <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
+                        <Grid size={{ xs: 12 }}>
+                            <Input
+                                type="text"
+                                form={form}
+                                setForm={setForm}
+                                name="description"
+                                label="Descrizione"
+                                disabled={loading} />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 8 }}>
 
-                        <Input
-                            type="date"
-                            form={form}
-                            setForm={setForm}
-                            name="date"
-                            label="Data"
-                            dataMoreOption={{ minDate: dayjs(stock?.subscriptionDate) }}
-                            disabled={loading} />
+                            <Input
+                                type="date"
+                                form={form}
+                                setForm={setForm}
+                                name="date"
+                                label="Data"
+                                dataMoreOption={{ minDate: dayjs(stock?.subscriptionDate) }}
+                                disabled={loading} />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4 }}>
+                            <Input
+                                type={"text"}
+                                inputProps={{ inputMode: "numeric" }}
+                                form={form}
+                                setForm={setForm}
+                                name="value"
+                                label="Valore movimento"
+                                endAdornment={<InputAdornment position="end">€</InputAdornment>}
+                                disabled={loading} />
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                            <RadioGroup row sx={{ width: "100%", justifyContent: "space-between" }} defaultValue="female" onChange={(event) => setMovementType(event.target.value)} value={movementType}>
+                                <FormControlLabel value="market" control={<Radio />} label="Del mercato normale" />
+                                <FormControlLabel value="deposit" control={<Radio />} label="Da conto corrente" />
+                                <FormControlLabel value="tfr" control={<Radio />} label="Da TFR" />
+                            </RadioGroup>
+                        </Grid>
+                        {movementType === "deposit" && <Grid size={{ xs: 12 }}>
+                            <Input
+                                type="multi"
+                                form={form}
+                                setForm={setForm}
+                                name="wallet"
+                                label="Portafoglio"
+                                disabled={loading}
+                                values={WalletPrintable.convert(wallets)} />
+                        </Grid>}
                     </Grid>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                        <Input
-                            type={"text"}
-                            inputProps={{ inputMode: "numeric" }}
-                            form={form}
-                            setForm={setForm}
-                            name="value"
-                            label="Valore movimento"
-                            endAdornment={<InputAdornment position="end">€</InputAdornment>}
-                            disabled={loading} />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                        <RadioGroup row sx={{ width: "100%", justifyContent: "space-between" }} defaultValue="female" onChange={(event) => setMovementType(event.target.value)} value={movementType}>
-                            <FormControlLabel value="market" control={<Radio />} label="Del mercato normale" />
-                            <FormControlLabel value="deposit" control={<Radio />} label="Da conto corrente" />
-                            <FormControlLabel value="tfr" control={<Radio />} label="Da TFR" />
-                        </RadioGroup>
-                    </Grid>
-                    {movementType === "deposit" && <Grid size={{ xs: 12 }}>
-                        <Input
-                            type="multi"
-                            form={form}
-                            setForm={setForm}
-                            name="wallet"
-                            label="Portafoglio"
-                            disabled={loading}
-                            values={WalletPrintable.convert(wallets)} />
-                    </Grid>}
-                </Grid>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={cancelHandler} color="secondary" >Annulla</Button>
