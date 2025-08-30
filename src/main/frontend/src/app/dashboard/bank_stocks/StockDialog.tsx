@@ -7,6 +7,8 @@ import { Stock } from "../../utilities/BackEndTypes";
 import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import dayjs from "dayjs";
+import { useSnackbar } from "notistack";
+import { ResponseError } from "../../request/ResponseError";
 
 interface IProps {
     open: boolean
@@ -32,6 +34,8 @@ const formSettings: FormSettings[] = [{
 }];
 
 export default function StockDialog(props: IProps) {
+    const { enqueueSnackbar } = useSnackbar();
+
     const api = useRestApi();
 
     const [form, setForm] = useState<Form>(new Form(formSettings));
@@ -46,7 +50,7 @@ export default function StockDialog(props: IProps) {
         api.Stock.Get(props.stockId)
             .then(stock => {
                 console.log(stock);
-                
+
                 setForm(form => form.setValue("name", stock.name)
                     .setValue("date", stock.subscriptionDate)
                     .setValue("value", stock.subscriptionValue.toString()));
@@ -70,21 +74,28 @@ export default function StockDialog(props: IProps) {
             subscriptionValue: parseFloat(form.getStringValue("value")),
         }
 
+        let request;
         if (props.stockId !== undefined) {
-            api.Stock.Modify(props.stockId, stock)
-                .finally(() => {
-                    setLoading(false);
-
-                    props.onClose(true);
-                })
+            request = api.Stock.Modify(props.stockId, stock);
         } else {
-            api.Stock.Create(stock)
-                .finally(() => {
-                    setLoading(false);
-
-                    props.onClose(true);
-                })
+            request = api.Stock.Create(stock);
         }
+
+        request
+            .then(() => {
+                enqueueSnackbar("Azione effettuata con successo", {variant: "success"})
+                props.onClose(true);
+            })
+            .catch((err: ResponseError) => {
+                switch(err.code) {
+                    default:
+                        enqueueSnackbar("Errore nella creazione dell'azione", {variant: "error"});
+                        break;
+                }
+            })
+            .finally(() => {
+                setLoading(false);
+            })
 
     }
 
