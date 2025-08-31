@@ -311,7 +311,7 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
                 throw new NotNewerMovementException();
             }
 
-            if(thereIsSameDate(session, userLogged.getId(), stockOperationDb.getDate())) {
+            if(thereIsSameDate(session, userLogged.getId(), stockOperationDb.getStockId(), stockOperationDb.getDate())) {
                 throw new SameDateMovementException();
             }
 
@@ -367,9 +367,10 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
                 .getSingleResultOrNull();
     }
 
-    private boolean thereIsSameDate(Session session, Integer userId, LocalDate date) {
-        return session.createQuery("SELECT COUNT(*) FROM StockOperationDb WHERE userId = :user AND date = :date", Long.class)
+    private boolean thereIsSameDate(Session session, Integer userId, Integer stockId, LocalDate date) {
+        return session.createQuery("SELECT COUNT(*) FROM StockOperationDb WHERE userId = :user AND stockId = :stock AND date = :date", Long.class)
                 .setParameter("user", userId)
+                .setParameter("stock", stockId)
                 .setParameter("date", date)
                 .setMaxResults(1)
                 .getSingleResultOrNull() > 0;
