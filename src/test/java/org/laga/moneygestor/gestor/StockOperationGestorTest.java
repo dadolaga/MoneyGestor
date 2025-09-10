@@ -2,6 +2,7 @@ package org.laga.moneygestor.gestor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.laga.moneygestor.TestUtilities;
@@ -13,7 +14,6 @@ import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
 import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
-import org.mockito.internal.matchers.Same;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,8 +45,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperation.getTfr());
         Assertions.assertNull(stockOperation.getBankTransactionId());
-        Assertions.assertEquals(operationValue.divide(initialValue, 10, RoundingMode.HALF_DOWN), stockOperation.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(operationValue), stockOperation.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue, stock.getResourcesInvested());
@@ -71,8 +69,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertTrue(stockOperation.getTfr());
         Assertions.assertNull(stockOperation.getBankTransactionId());
-        Assertions.assertNull(stockOperation.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(operationValue), stockOperation.getCurrentStockValue());
 
         Assertions.assertEquals(stock.getSubscriptionValue(), initialValue);
         Assertions.assertEquals(stock.getResourcesInvested(), initialValue.add(operationValue));
@@ -99,8 +95,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperation.getTfr());
         Assertions.assertNotNull(stockOperation.getBankTransactionId());
-        Assertions.assertNull(stockOperation.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(operationValue), stockOperation.getCurrentStockValue());
 
         Assertions.assertEquals(stock.getSubscriptionValue(), initialValue);
         Assertions.assertEquals(stock.getResourcesInvested(), initialValue.add(operationValue));
@@ -144,8 +138,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperation.getTfr());
         Assertions.assertNotNull(stockOperation.getBankTransactionId());
-        Assertions.assertNull(stockOperation.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(operationValue), stockOperation.getCurrentStockValue());
 
         Assertions.assertEquals(stock.getSubscriptionValue(), initialValue);
         Assertions.assertEquals(stock.getResourcesInvested(), initialValue.add(operationValue));
@@ -178,8 +170,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperation_2.getTfr());
         Assertions.assertNull(stockOperation_2.getBankTransactionId());
-        Assertions.assertEquals(secondOperationValue.divide(initialValue.add(firstOperationValue), 10, RoundingMode.HALF_DOWN), stockOperation_2.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stockOperation_2.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue, stock.getResourcesInvested());
@@ -207,8 +197,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertTrue(stockOperation_2.getTfr());
         Assertions.assertNull(stockOperation_2.getBankTransactionId());
-        Assertions.assertNull(stockOperation_2.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stockOperation_2.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stock.getResourcesInvested());
@@ -217,6 +205,7 @@ public class StockOperationGestorTest extends BaseGestorTest {
         checkIfInserted(stockOperation_2);
     }
 
+    @Disabled("Function no longer implemented")
     @ParameterizedTest
     @CsvSource({
             "147.23,36.12",
@@ -232,6 +221,7 @@ public class StockOperationGestorTest extends BaseGestorTest {
         Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.insert(userLogged, oldStockOperation));
     }
 
+    @Disabled("Function no longer implemented")
     @ParameterizedTest
     @CsvSource({
             "147.23,36.12",
@@ -267,9 +257,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperation_2.getTfr());
         Assertions.assertNotNull(stockOperation_2.getBankTransactionId());
-        Assertions.assertNull(stockOperation_2.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stockOperation_2.getCurrentStockValue());
-
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stock.getResourcesInvested());
         Assertions.assertEquals(initialValue.add(firstOperationValue).add(secondOperationValue), stock.getCurrentValue());
@@ -300,8 +287,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertEquals(newOperationValue.divide(initialValue, 10, RoundingMode.HALF_DOWN), stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue, stock.getResourcesInvested());
@@ -328,8 +313,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertTrue(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -358,8 +341,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNotNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -391,8 +372,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertEquals(newOperationValue.divide(initialValue, 10, RoundingMode.HALF_DOWN), stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue, stock.getResourcesInvested());
@@ -419,8 +398,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertTrue(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -449,8 +426,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNotNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -484,8 +459,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertEquals(newOperationValue.divide(initialValue, 10, RoundingMode.HALF_DOWN), stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue, stock.getResourcesInvested());
@@ -522,8 +495,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertTrue(stockOperationNew.getTfr());
         Assertions.assertNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -560,8 +531,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNotNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -598,8 +567,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
 
         Assertions.assertFalse(stockOperationNew.getTfr());
         Assertions.assertNotNull(stockOperationNew.getBankTransactionId());
-        Assertions.assertNull(stockOperationNew.getCurrentYield());
-        Assertions.assertEquals(initialValue.add(newOperationValue), stockOperationNew.getCurrentStockValue());
 
         Assertions.assertEquals(initialValue, stock.getSubscriptionValue());
         Assertions.assertEquals(initialValue.add(newOperationValue), stock.getResourcesInvested());
@@ -751,8 +718,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
         Assertions.assertEquals(expected.getDate(), actual.getDate());
         Assertions.assertEquals(expected.getStockId(), actual.getStockId());
         Assertions.assertEquals(expected.getValue(), actual.getValue());
-        Assertions.assertEquals(expected.getCurrentStockValue(), actual.getCurrentStockValue());
-        Assertions.assertEquals(expected.getCurrentYield(), actual.getCurrentYield());
         Assertions.assertEquals(expected.getTfr(), actual.getTfr());
         Assertions.assertEquals(expected.getUserId(), actual.getUserId());
         Assertions.assertEquals(expected.getBankTransactionId(), actual.getBankTransactionId());

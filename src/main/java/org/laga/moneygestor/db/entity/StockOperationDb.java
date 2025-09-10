@@ -18,10 +18,6 @@ public class StockOperationDb {
     @Column(nullable = false)
     private BigDecimal value;
     @Column(nullable = false)
-    private BigDecimal currentStockValue;
-    @Column(name = "current_yield", nullable = true, columnDefinition = "DECIMAL(10, 10)")
-    private BigDecimal currentYield;
-    @Column(nullable = false)
     private LocalDate date;
     @Column(name = "is_tfr", nullable = false)
     private Boolean isTfr;
@@ -64,22 +60,6 @@ public class StockOperationDb {
 
     public void setValue(BigDecimal value) {
         this.value = value;
-    }
-
-    public BigDecimal getCurrentStockValue() {
-        return currentStockValue;
-    }
-
-    public void setCurrentStockValue(BigDecimal currentStockValue) {
-        this.currentStockValue = currentStockValue;
-    }
-
-    public BigDecimal getCurrentYield() {
-        return currentYield;
-    }
-
-    public void setCurrentYield(BigDecimal currentYield) {
-        this.currentYield = currentYield;
     }
 
     public LocalDate getDate() {

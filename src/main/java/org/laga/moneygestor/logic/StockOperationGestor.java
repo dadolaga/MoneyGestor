@@ -221,9 +221,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             oldStockOperation.setStockId(newStockOperation.getStockId() == null? oldStockOperation.getStockId() : newStockOperation.getStockId());
             oldStockOperation.setValue(newStockOperation.getValue() == null? oldStockOperation.getValue() : newStockOperation.getValue());
             oldStockOperation.setTfr(newStockOperation.getTfr() == null? oldStockOperation.getTfr() : newStockOperation.getTfr());
-            oldStockOperation.setCurrentStockValue(stock.getCurrentValue());
-            oldStockOperation.setCurrentYield(newStockOperation.getTfr() || newStockOperation.getBankTransactionId() != null?
-                    null : (newStockOperation.getValue().divide(stock.getCurrentValue().subtract(newStockOperation.getValue()), 10, RoundingMode.HALF_DOWN)));
 
             session.merge(oldStockOperation);
 
@@ -316,13 +313,9 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             }
 
             stockOperationDb.setUserId(userLogged.getId());
-            stockOperationDb.setCurrentStockValue(stock.getCurrentValue().add(stockOperationDb.getValue()));
             stockOperationDb.setTfr(Objects.requireNonNullElse(stockOperationDb.getTfr(), false));
 
             session.persist(stockOperationDb);
-
-            if(!stockOperationDb.getTfr() && stockOperationDb.getBankTransactionId() == null)
-                stockOperationDb.setCurrentYield(stockOperationDb.getValue().divide(stock.getCurrentValue(), 10, RoundingMode.HALF_DOWN));
 
             updateStockCurrentValue(session, stock, stock.getCurrentValue().add(stockOperationDb.getValue()));
 
@@ -383,7 +376,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         stockOperation.setDescription(stockOperationDb.getDescription());
         stockOperation.setDate(stockOperationDb.getDate().format(DateTimeFormatter.ISO_DATE));
         stockOperation.setValue(stockOperationDb.getValue());
-        stockOperation.setCurrentYield(stockOperationDb.getCurrentYield());
         stockOperation.setTfr(stockOperationDb.getTfr());
         stockOperation.setBankDeposit(stockOperationDb.getBankTransaction() != null ? TransactionGestor.convertToRest(stockOperationDb.getBankTransaction()) : null);
 
