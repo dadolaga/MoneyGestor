@@ -7,14 +7,13 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
 import org.laga.moneygestor.db.entity.StockDb;
-import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.UserDb;
-import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
-import org.laga.moneygestor.logic.exceptions.TableNotEmptyException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.Stock;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +32,23 @@ public class StockGestor extends Gestor<Integer, StockDb> {
                     .setFirstResult(page * limit)
                     .setMaxResults(limit)
                     .list();
+        }
+    }
+
+    public BigDecimal getStockValueAtDate(UserDb userLogged, Integer stockId, LocalDate date) {
+        try (Session session = sessionFactory.openSession()) {
+            var increment = session.createQuery("SELECT sum(value) FROM StockOperationDb WHERE userId = :user AND stockId = :stock AND date >= :date", BigDecimal.class)
+                    .setParameter("user", userLogged.getId())
+                    .setParameter("stock", stockId)
+                    .setParameter("date", date)
+                    .getSingleResultOrNull();
+
+            var stock = getById(session, userLogged, stockId);
+
+            if (increment != null)
+                return stock.getCurrentValue().subtract(increment);
+            else
+                return stock.getCurrentValue();
         }
     }
 

@@ -4,8 +4,8 @@ import jakarta.persistence.EntityManagerFactory;
 import org.laga.moneygestor.db.entity.StockOperationDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.DateUtilities;
+import org.laga.moneygestor.logic.StockGestor;
 import org.laga.moneygestor.logic.StockOperationGestor;
-import org.laga.moneygestor.logic.TransactionGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
@@ -19,7 +19,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Comparator;
 
 @RestController
 @RequestMapping("/api/stock_operation")
@@ -65,10 +67,22 @@ public class StockOperationRest extends BaseRest {
         UserDb userLogged = getUserLogged(authorization);
 
         var gestor = new StockOperationGestor(sessionFactory);
+        var stockGestor = new StockGestor(sessionFactory);
 
-        var listOfStock = gestor.list(userLogged, stockId, (Objects.requireNonNullElse(sortParams, "").length() > 0? (sortParams + "-") : "") + "!id", limitParams, pageParams);
+        var listOfStock = gestor.list(userLogged, stockId, "date", limitParams, pageParams);
 
-        return Response.create(StockOperationGestor.convertToRest(listOfStock));
+          var currentValue = stockGestor.getStockValueAtDate(userLogged, stockId, listOfStock.stream().findFirst().get().getDate());
+        var lambdaCurrentValue = new LambdaOperation<BigDecimal>(currentValue);
+
+        return Response.create(listOfStock.stream().sorted(Comparator.comparing(StockOperationDb::getDate)).map(s -> {
+            var stock = StockOperationGestor.convertToRest(s);
+
+            stock.setCurrentYield(lambdaCurrentValue.getValue().add(stock.getValue()).divide(lambdaCurrentValue.getValue(), 5, RoundingMode.HALF_UP).subtract(BigDecimal.ONE));
+
+            lambdaCurrentValue.setValue(lambdaCurrentValue.getValue().add(stock.getValue()));
+
+            return stock;
+        }).toList().stream().sorted((a, b) -> ((StockOperation) a).getDate().compareTo(((StockOperation) b).getDate()) * -1));
     }
 
     @GetMapping("/get/{id}")
@@ -127,6 +141,22 @@ public class StockOperationRest extends BaseRest {
 
         public void setWallet(Integer wallet) {
             this.wallet = wallet;
+        }
+    }
+
+    private static class LambdaOperation<T> {
+        private T value;
+
+        public LambdaOperation(T value) {
+            this.value = value;
+        }
+
+        public T getValue() {
+            return value;
+        }
+
+        public void setValue(T value) {
+            this.value = value;
         }
     }
 }

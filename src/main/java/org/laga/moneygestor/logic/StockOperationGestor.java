@@ -5,18 +5,18 @@ import org.hibernate.*;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 import org.laga.moneygestor.db.DatabaseInitializer;
-import org.laga.moneygestor.db.entity.*;
+import org.laga.moneygestor.db.entity.StockDb;
+import org.laga.moneygestor.db.entity.StockOperationDb;
+import org.laga.moneygestor.db.entity.TransactionDb;
+import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
 import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.StockOperation;
-import org.springframework.jdbc.support.CustomSQLErrorCodesTranslation;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
@@ -347,7 +347,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
 
         session.persist(stock);
     }
-
 
     private StockOperationDb getLastOperation(Session session, UserDb userLogged, StockDb stock) {
         return getLastOperation(session, userLogged.getId(), stock.getId());
