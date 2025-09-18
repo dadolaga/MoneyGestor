@@ -77,7 +77,8 @@ public class StockOperationRest extends BaseRest {
         return Response.create(listOfStock.stream().sorted(Comparator.comparing(StockOperationDb::getDate)).map(s -> {
             var stock = StockOperationGestor.convertToRest(s);
 
-            stock.setCurrentYield(lambdaCurrentValue.getValue().add(stock.getValue()).divide(lambdaCurrentValue.getValue(), 5, RoundingMode.HALF_UP).subtract(BigDecimal.ONE));
+            if(stock.getBankDeposit() == null && !stock.isTfr())
+                stock.setCurrentYield(lambdaCurrentValue.getValue().add(stock.getValue()).divide(lambdaCurrentValue.getValue(), 5, RoundingMode.HALF_UP).subtract(BigDecimal.ONE));
 
             lambdaCurrentValue.setValue(lambdaCurrentValue.getValue().add(stock.getValue()));
 

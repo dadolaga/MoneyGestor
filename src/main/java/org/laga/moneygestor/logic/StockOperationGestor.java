@@ -176,10 +176,8 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             if(oldStockOperation == null)
                 throw new UserNotHavePermissionException();
 
-            var lastOperation = getLastOperation(session, userLogged, stock);
-
-            if(lastOperation != null && lastOperation.getDate().isAfter(oldStockOperation.getDate())) {
-                throw new NotNewerMovementException();
+            if(thereIsSameDate(session, userLogged.getId(), newStockOperation.getStockId(), newStockOperation.getDate())) {
+                throw new SameDateMovementException();
             }
 
             updateStockCurrentValue(session, stock, stock.getCurrentValue().subtract(oldStockOperation.getValue()).add(newStockOperation.getValue()));
@@ -301,12 +299,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         try {
             Transaction transaction = session.getTransaction();
             var stock = session.get(StockDb.class, stockOperationDb.getStockId());
-
-            var lastOperation = getLastOperation(session, userLogged, stock);
-
-            if(lastOperation != null && lastOperation.getDate().isAfter(stockOperationDb.getDate())) {
-                throw new NotNewerMovementException();
-            }
 
             if(thereIsSameDate(session, userLogged.getId(), stockOperationDb.getStockId(), stockOperationDb.getDate())) {
                 throw new SameDateMovementException();
