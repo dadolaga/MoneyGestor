@@ -30,11 +30,15 @@ dayjs.extend(timezone);
 
 export default function Input(props: IInput) {
     const [value, setValue] = useState<string>("");
-    const [valueDate, setValueDate] = useState<dayjs.Dayjs>(dayjs.utc());
 
     useEffect(() => {
         let value = props.form?.getStringValue(props.name);
-        if (value !== undefined && props.type !== "date") {
+        if (value !== undefined) {
+            if (props.type == "date" && !/[\d]{4}-[\d]{2}-[\d]{2}/.test(value)) {
+                console.error("Date format error: ", value);
+                return;
+            }
+
             setValue(value);
         }
     }, [props.form])
@@ -50,10 +54,10 @@ export default function Input(props: IInput) {
     }
 
     const dateChangeHandler = (name: string): (_event: any) => void => (action: Dayjs) => {
-        if(action && action.isValid())
-            props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).toISOString()));
-        
-        setValueDate(action);
+        if (action && action.isValid())
+            props.setForm(form => form.setValue(name, action.hour(0).minute(0).second(0).utc(true).toISOString()));
+
+        setValue(action.format("YYYY-MM-DD"));
     }
 
     switch (props.type) {
@@ -67,7 +71,7 @@ export default function Input(props: IInput) {
                 name={props.name}
                 value={value}
                 onChange={textChangeHandler(props.name)}
-                slotProps={{ htmlInput: props.inputProps, input: {startAdornment: props.startAdornment, endAdornment: props.endAdornment } }}
+                slotProps={{ htmlInput: props.inputProps, input: { startAdornment: props.startAdornment, endAdornment: props.endAdornment } }}
                 disabled={props.disabled} />
         ); break;
 
@@ -110,7 +114,6 @@ export default function Input(props: IInput) {
         case "date": element = (
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
                 <DatePicker
-                    timezone="UTC"
                     sx={{ width: '100%' }}
                     views={["year", "month", "day"]}
                     label={props.label}
@@ -120,9 +123,9 @@ export default function Input(props: IInput) {
                             helperText: props.form.getError(props.name),
                         }
                     }}
-                    value={valueDate}
+                    value={dayjs(value, "YYYY-MM-DD", 'it')}
                     onChange={dateChangeHandler(props.name)}
-                    disabled={props.disabled} 
+                    disabled={props.disabled}
                     {...props.dataMoreOption} />
             </LocalizationProvider>
         ); break;

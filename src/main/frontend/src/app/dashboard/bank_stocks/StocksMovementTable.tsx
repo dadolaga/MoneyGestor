@@ -5,7 +5,7 @@ import { convertNumberToPercentage, convertNumberToValue } from "../../utilities
 import { StockMovement } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
 import { useIsMobile } from "../../utilities/useMobile";
-import { MouseEventHandler, MutableRefObject, useEffect, useImperativeHandle, useState } from "react";
+import { MouseEventHandler, MutableRefObject, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
 
 export interface StockMovementTableRef {
@@ -29,17 +29,8 @@ export function StockMovementTable(props: IProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [stockMovements, setStockMovements] = useState<StockMovement[]>();
 
-    useEffect(() => {
-        refreshTable();
-    }, [props.clickedStock])
 
-    useImperativeHandle(props.ref, () => ({
-        refreshTable: () => {
-            refreshTable();
-        }
-    }), []);
-
-    function refreshTable() {
+    const refreshTable = useCallback(() => {
         setLoading(true);
 
         api.StockMovement.List({ stock: props.clickedStock, order: sort.toUrlString() }).then((stocks) => {
@@ -47,7 +38,17 @@ export function StockMovementTable(props: IProps) {
         }).finally(() => {
             setLoading(false);
         })
-    }
+    }, [api.StockMovement, props.clickedStock, sort]);
+
+    useImperativeHandle(props.ref, () => ({
+        refreshTable: () => {
+            refreshTable();
+        }
+    }), [refreshTable]);
+
+    useEffect(() => {
+        refreshTable();
+    }, [props.clickedStock]);
 
     const clickOnOrderHandler = (nameOfElement: string) => () => {
         setSort(sort.clickOnElement(nameOfElement));
