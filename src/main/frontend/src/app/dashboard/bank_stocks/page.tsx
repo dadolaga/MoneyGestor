@@ -6,7 +6,7 @@ import { Box, Button, Paper, Typography } from "@mui/material";
 import { StocksTable, StockTableRef } from "./StocksTable";
 import StockDialog from "./StockDialog";
 import { useRef, useState } from "react";
-import { StockMovementTable } from "./StocksMovementTable";
+import { StockMovementTable, StockMovementTableRef } from "./StocksMovementTable";
 import StockMovementDialog from "./StockMovementDialog";
 import DeleteMovementDialog from "./DeleteMovementDialog";
 import DeleteStockDialog from "./DeleteStockDialog";
@@ -14,7 +14,7 @@ import DeleteStockDialog from "./DeleteStockDialog";
 
 export default function Page() {
     const stockTableRef = useRef<StockTableRef>(null);
-    const stockMovementTableRef = useRef<StockTableRef>(null);
+    const stockMovementTableRef = useRef<StockMovementTableRef>(null);
 
     const [movementDeleteId, setMovementDeleteId] = useState<number | undefined>(undefined);
     const [stockDeleteId, setStockDeleteId] = useState<number | undefined>(undefined);
