@@ -107,7 +107,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                 wallet: new WalletPrintable(transaction.wallet),
                 "wallet-destination": transaction.walletDestination ? new WalletPrintable(transaction.walletDestination) : undefined,
                 value: transaction.walletDestination ? Math.abs(transaction.value) : transaction.value,
-                date: dayjs.utc(transaction.date)
+                date: transaction.date || ""
             })));
     }
 
