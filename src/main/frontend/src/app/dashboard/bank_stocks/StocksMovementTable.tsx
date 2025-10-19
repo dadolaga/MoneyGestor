@@ -33,7 +33,7 @@ export function StockMovementTable(props: IProps) {
     const refreshTable = useCallback(() => {
         setLoading(true);
 
-        api.StockMovement.List({ stock: props.clickedStock, order: sort.toUrlString() }).then((stocks) => {
+        api.StockMovement.List({ stock: props.clickedStock, sort: sort.toUrlString() }).then((stocks) => {
             setStockMovements(stocks);
         }).finally(() => {
             setLoading(false);

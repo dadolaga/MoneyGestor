@@ -27,7 +27,7 @@ export default function Page() {
     function loadWallets() {
         setLoading(true);
 
-        restApi.Wallet.List({ order: sort.toUrlString() })
+        restApi.Wallet.List({ sort: sort.toUrlString() })
         .then(wallet => setWallets(wallet))
         .finally(() => setLoading(false))
     }

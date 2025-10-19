@@ -91,7 +91,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
     }, [open]);
 
     function loadWallet(): Promise<void> {
-        return restApi.Wallet.List({ order: "!favorite-name" })
+        return restApi.Wallet.List({ sort: "!favorite-name" })
             .then(wallets => setWallets(wallets));
     }
 

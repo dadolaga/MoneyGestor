@@ -49,7 +49,7 @@ export function StocksTable(props: IProps) {
     function refreshTable() {
         setLoading(true);
 
-        api.Stock.List({ order: sort.toUrlString() }).then((stocks) => {
+        api.Stock.List({ sort: sort.toUrlString() }).then((stocks) => {
             console.log("Stock", stocks);
             setStocks(stocks);
         }).finally(() => {

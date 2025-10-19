@@ -93,7 +93,7 @@ export default function StockMovementDialog(props: IProps) {
     }, [props.stockMovementId])
 
     function loadWallet(): Promise<void> {
-        return api.Wallet.List({ order: "!favorite-name" })
+        return api.Wallet.List({ sort: "!favorite-name" })
             .then(wallets => setWallets(wallets));
     }
 

@@ -47,7 +47,7 @@ export class Request {
         },
 
         List: async (listData: ListData): Promise<Wallet[]> => {
-            return this.baseRequestGet("wallet/list?sort=" + encodeURI(listData.order))
+            return this.baseRequestGet("wallet/list?sort=" + encodeURI(listData.sort))
                 .then(response => response as Wallet[])
         },
 
@@ -96,7 +96,7 @@ export class Request {
         },
 
         List: async (listData: ListData): Promise<Transaction[]> => {
-            return this.baseRequestGet("transaction/list?sort=" + encodeURI(listData.order))
+            return this.baseRequestGet("transaction/list", listData)
                 .then(response => response as Transaction[])
         },
 
@@ -118,6 +118,11 @@ export class Request {
         Graph: async (data: GraphDataSend) => {
             return this.baseRequestGet("transaction/graph", data)
                 .then(response => response as LineGraph<Wallet, Transaction>[])
+        },
+
+        NumberOfAll: async (): Promise<number> => {
+            return this.baseRequestGet("transaction/number")
+                .then(response => response as number)
         }
     }
 
@@ -135,7 +140,7 @@ export class Request {
         },
 
         List: async (listData: ListData): Promise<Stock[]> => {
-            return this.baseRequestGet("stock/list?sort=" + encodeURI(listData.order))
+            return this.baseRequestGet("stock/list?sort=" + encodeURI(listData.sort))
                 .then(response => response as Stock[])
         },
 
@@ -285,7 +290,9 @@ export class Request {
 }
 
 export interface ListData {
-    order: string,
+    sort: string,
+    page?: number,
+    limit?: number,
 }
 
 export interface StockMovementListData extends ListData {
