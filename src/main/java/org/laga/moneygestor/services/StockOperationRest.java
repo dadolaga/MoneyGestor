@@ -9,7 +9,6 @@ import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
-import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 import org.laga.moneygestor.services.exceptions.DuplicateEntitiesHttpException;
 import org.laga.moneygestor.services.exceptions.HttpException;
 import org.laga.moneygestor.services.models.Response;
@@ -50,8 +49,6 @@ public class StockOperationRest extends BaseRest {
             var id = gestor.insert(loggedUser, stockOperationDb, stockOperation.getWallet());
 
             return Response.sendId(id);
-        } catch (SameDateMovementException ex) {
-            throw new HttpException(301, HttpStatus.BAD_REQUEST);
         } catch (NotNewerMovementException ex) {
             throw new HttpException(302, HttpStatus.BAD_REQUEST);
         }  catch (DuplicateValueException ex) {

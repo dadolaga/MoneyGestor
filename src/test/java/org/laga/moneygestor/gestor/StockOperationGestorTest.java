@@ -13,10 +13,8 @@ import org.laga.moneygestor.db.entity.WalletDb;
 import org.laga.moneygestor.logic.StockOperationGestor;
 import org.laga.moneygestor.logic.exceptions.NegativeWalletException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
-import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 
 public class StockOperationGestorTest extends BaseGestorTest {
@@ -219,21 +217,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
         gestor.insert(userLogged, stockOperation);
 
         Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.insert(userLogged, oldStockOperation));
-    }
-
-    @Disabled("Function no longer implemented")
-    @ParameterizedTest
-    @CsvSource({
-            "147.23,36.12",
-    })
-    public void insert_sameDate_throw(BigDecimal initialValue, BigDecimal operationValue) {
-        var stock = createStock(initialValue);
-        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
-        var sameDateStockOperation = createStockOperation(stock, new BigDecimal(30), StockType.MARKET);
-
-        gestor.insert(userLogged, stockOperation);
-
-        Assertions.assertThrows(SameDateMovementException.class, () -> gestor.insert(userLogged, sameDateStockOperation));
     }
 
     @ParameterizedTest
@@ -599,25 +582,6 @@ public class StockOperationGestorTest extends BaseGestorTest {
         gestor.insert(userLogged, stockOperationOld, wallet.getId());
         stockOperationNew.setBankTransactionId(stockOperationOld.getBankTransactionId());
         Assertions.assertThrows(NegativeWalletException.class, () -> gestor.update(userLogged, stockOperationOld.getId(), stockOperationNew));
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "147.23,36.12",
-    })
-    public void update_beforeLastMovement_throw(BigDecimal initialValue, BigDecimal operationValue) {
-        var stock = createStock(initialValue);
-        var stockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
-        var oldStockOperation = createStockOperation(stock, operationValue, StockType.MARKET);
-        oldStockOperation.setDate(LocalDate.now().minusDays(12));
-
-        var newStockOperation = createStockOperation(stock, new BigDecimal(30), StockType.MARKET);
-        newStockOperation.setDate(LocalDate.now().minusDays(20));
-
-        gestor.insert(userLogged, oldStockOperation);
-        gestor.insert(userLogged, stockOperation);
-
-        Assertions.assertThrows(NotNewerMovementException.class, () -> gestor.update(userLogged, oldStockOperation.getId(), newStockOperation));
     }
 
     @ParameterizedTest

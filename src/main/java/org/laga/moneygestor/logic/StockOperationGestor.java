@@ -11,7 +11,6 @@ import org.laga.moneygestor.db.entity.TransactionDb;
 import org.laga.moneygestor.db.entity.UserDb;
 import org.laga.moneygestor.logic.exceptions.DuplicateValueException;
 import org.laga.moneygestor.logic.exceptions.NotNewerMovementException;
-import org.laga.moneygestor.logic.exceptions.SameDateMovementException;
 import org.laga.moneygestor.logic.exceptions.UserNotHavePermissionException;
 import org.laga.moneygestor.services.models.StockOperation;
 
@@ -176,10 +175,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
             if(oldStockOperation == null)
                 throw new UserNotHavePermissionException();
 
-            if(thereIsSameDate(session, userLogged.getId(), newStockOperation.getStockId(), newStockOperation.getDate())) {
-                throw new SameDateMovementException();
-            }
-
             updateStockCurrentValue(session, stock, stock.getCurrentValue().subtract(oldStockOperation.getValue()).add(newStockOperation.getValue()));
 
             if (oldStockOperation.getTfr() || oldStockOperation.getBankTransactionId() != null) {
@@ -299,10 +294,6 @@ public class StockOperationGestor extends Gestor<Long, StockOperationDb> {
         try {
             Transaction transaction = session.getTransaction();
             var stock = session.get(StockDb.class, stockOperationDb.getStockId());
-
-            if(thereIsSameDate(session, userLogged.getId(), stockOperationDb.getStockId(), stockOperationDb.getDate())) {
-                throw new SameDateMovementException();
-            }
 
             stockOperationDb.setUserId(userLogged.getId());
             stockOperationDb.setTfr(Objects.requireNonNullElse(stockOperationDb.getTfr(), false));
