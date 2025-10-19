@@ -14,6 +14,7 @@ import { IFormMultiType } from "../../utilities/Interfaces";
 import { useIsMobile } from "../../utilities/useMobile";
 
 const ID_EXCHANGE_TYPE = 1;
+const ID_STOCK_TYPE = 3;
 
 const formSettings: FormSettings[] = [{
     name: "description",
@@ -96,7 +97,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
 
     function loadType(): Promise<any> {
         return restApi.TransactionType.GetAll()
-            .then(transactionTypes => setTypes(transactionTypes));
+            .then(transactionTypes => setTypes(transactionTypes.filter(transactionType => transactionType.id != ID_STOCK_TYPE)));
     }
 
     function loadTransaction(): Promise<any> {
@@ -117,8 +118,8 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         let transactionForm: TransactionForm = {
             description: form.getStringValue("description"),
             date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
-            value: isMobile? (parseFloat(form.getStringValue("value")) * 
-                ((form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && sign)? -1 : 1)) : parseFloat(form.getStringValue("value")),
+            value: isMobile ? (parseFloat(form.getStringValue("value")) *
+                ((form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && sign) ? -1 : 1)) : parseFloat(form.getStringValue("value")),
             typeId: form.getValue("type")?.getKey() as number,
             wallet: form.getValue("wallet")?.getKey() as number,
             walletDestination: form.getValue("wallet-destination")?.getKey() as number
@@ -220,10 +221,10 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                     </Grid>
                     {isMobile && form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && (<Grid size={{ xs: 2 }} display="flex" alignItems="center" justifyContent="center">
                         <IconButton onClick={changeSignHandler}>
-                            <FontAwesomeIcon icon={sign? faMinus : faPlus} />
+                            <FontAwesomeIcon icon={sign ? faMinus : faPlus} />
                         </IconButton>
                     </Grid>)}
-                    <Grid size={{ xs: form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE? 10 : 12, sm: 4 }}>
+                    <Grid size={{ xs: form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE ? 10 : 12, sm: 4 }}>
                         <Input
                             type={"text"}
                             inputProps={{ inputMode: "numeric" }}
