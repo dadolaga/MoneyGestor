@@ -5,7 +5,7 @@ import { convertNumberToPercentage, convertNumberToValue } from "../../utilities
 import { StockMovement } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
 import { useIsMobile } from "../../utilities/useMobile";
-import { MouseEventHandler, MutableRefObject, useCallback, useEffect, useImperativeHandle, useState } from "react";
+import { MouseEventHandler, RefObject, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
 
 export interface StockMovementTableRef {
@@ -13,7 +13,7 @@ export interface StockMovementTableRef {
 }
 
 interface IProps {
-    ref: MutableRefObject<StockMovementTableRef>
+    ref: RefObject<StockMovementTableRef>
     clickedStock: number
     //: (value: number) => void
     editStockClick: (_stockId: number) => MouseEventHandler<SVGSVGElement>

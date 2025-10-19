@@ -240,6 +240,20 @@ public class TransactionGestor extends Gestor<Long, TransactionDb> {
         }
     }
 
+    public Long getNumberOfAllTransaction(UserDb userLogged) {
+        if(userLogged == null)
+            throw new IllegalArgumentException("user must be passed");
+
+        try (Session session = sessionFactory.openSession()) {
+            StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM TransactionDb WHERE userInsertTransaction = :user ");
+
+            var query = session.createQuery(sql.toString(), Long.class)
+                    .setParameter("user", userLogged);
+
+            return query.getSingleResultOrNull();
+        }
+    }
+
     public void setCheckWalletValue(boolean value) {
         checkWalletValue = value;
     }

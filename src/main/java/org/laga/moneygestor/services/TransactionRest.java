@@ -100,6 +100,17 @@ public class TransactionRest extends BaseRest {
         return Response.create(TransactionGestor.convertToRest(listOfTransactions));
     }
 
+    @GetMapping("/number")
+    public Response getTransactionList(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+        UserDb userLogged = getUserLogged(authorization);
+
+        TransactionGestor transactionGestor = new TransactionGestor(sessionFactory);
+
+        var numberOfTransaction = transactionGestor.getNumberOfAllTransaction(userLogged);
+
+        return Response.create(numberOfTransaction);
+    }
+
     @GetMapping("/get/{id}")
     public Response getAllTransaction(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization, @PathVariable(name = "id") Long id) {
         UserDb userLogged = getUserLogged(authorization);
