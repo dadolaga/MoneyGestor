@@ -18,7 +18,7 @@ export default function Dashboard() {
     const [typePieData, setTypePieData] = useState([]);
 
     const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
-    const [showDataPicker, setOpenDataPicker] = useState<boolean>(true);
+    const [showDataPicker, setOpenDataPicker] = useState<boolean>(false);
 
     const request = useRestApi();
 
