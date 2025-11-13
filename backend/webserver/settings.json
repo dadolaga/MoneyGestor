@@ -8,5 +8,10 @@
         "fileName": "backend"
       }
     }
+  },
+  "database": {
+    "name": "money_gestor",
+    "user": "USERNAME",
+    "password": "PASSWORD"
   }
 }
