@@ -11,7 +11,8 @@
   },
   "database": {
     "name": "money_gestor",
-    "user": "USERNAME",
-    "password": "PASSWORD"
+    "user": "USER",
+    "password": "PASSWORD",
+    "forceUpdate": false
   }
 }
