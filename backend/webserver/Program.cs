@@ -4,6 +4,8 @@ using Serilog;
 namespace webserver {
     public class Program {
         public static void Main(string[] args) {
+            Settings.Load();
+
             Log.Logger = LoggerFactory.Create(); 
 
             Log.Information("Start application with version {a}", "0.0.1-alpha");
