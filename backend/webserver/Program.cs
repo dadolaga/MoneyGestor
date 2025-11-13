@@ -1,4 +1,5 @@
 
+using database;
 using Serilog;
 
 namespace webserver {
@@ -8,7 +9,17 @@ namespace webserver {
 
             Log.Logger = LoggerFactory.Create(); 
 
+            MoneyGestorContext.Initialize(Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
+
             Log.Information("Start application with version {a}", "0.0.1-alpha");
+
+            Log.Information("Create DB");
+
+            using(var database = new MoneyGestorContext()) {
+                database.Database.EnsureCreated();
+            }
+
+            Log.Information("Database created");
 
             var builder = WebApplication.CreateBuilder(args);       
             

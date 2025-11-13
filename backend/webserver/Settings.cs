@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 namespace webserver {
     public class Settings {
         public static SettingsLog Log { private set; get; } = new SettingsLog();
+        public static SettingsDatabase Database { private set; get; } = new SettingsDatabase();
 
         public static void Load(string path = "./settings.json") {
             if (!File.Exists(path)) {
@@ -22,7 +23,8 @@ namespace webserver {
                 return;
             }
 
-            Log.Level = rootNode["log"]?["level"] != null ? 
+            // Load log settings
+            Log.Level = rootNode["log"]?["level"] != null ?
                 ((string)rootNode["log"]?["level"]!).ToLower() switch {
                     "critical" => Serilog.Events.LogEventLevel.Fatal,
                     "fatal" => Serilog.Events.LogEventLevel.Fatal,
@@ -35,14 +37,20 @@ namespace webserver {
                     _ => Serilog.Events.LogEventLevel.Information
                 } : Serilog.Events.LogEventLevel.Information;
 
-            Log.Output.Console = ((bool?) rootNode["log"]?["output"]?["console"]) ?? false;
+            Log.Output.Console = ((bool?)rootNode["log"]?["output"]?["console"]) ?? false;
 
             if (rootNode["log"]?["output"]?["file"] != null) {
                 JsonNode logConfigFile = rootNode["log"]!["output"]!["file"]!;
 
-                Log.Output.FolderPath = ((string?) logConfigFile["path"]) ?? ".";
-                Log.Output.LogName = ((string?) logConfigFile["fileName"]) ?? "log_file_";
+                Log.Output.FolderPath = ((string?)logConfigFile["path"]) ?? ".";
+                Log.Output.LogName = ((string?)logConfigFile["fileName"]) ?? "log_file_";
             }
+
+            // Load databases settings
+            Database.DatabaseName = ((string?)rootNode["database"]?["name"]) ?? "money_gestor";
+            Database.User = ((string?)rootNode["database"]?["user"]) ?? "root";
+            Database.Password = ((string?)rootNode["database"]?["password"]) ?? "root";
+            Database.ForceUpdate = ((bool?)rootNode["database"]?["forceUpdate"]) ?? false;
         }
 
         public class SettingsLog {
@@ -55,6 +63,13 @@ namespace webserver {
                 public string? FolderPath { internal set; get; }
                 public string? LogName { internal set; get; }
             }
+        }
+
+        public class SettingsDatabase {
+            public string DatabaseName { internal set; get; }
+            public string User { internal set; get; }
+            public string Password { internal set; get; }
+            public bool ForceUpdate { internal set; get; }
         }
     }
 }
