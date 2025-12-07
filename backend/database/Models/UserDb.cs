@@ -14,6 +14,7 @@ namespace database.Models {
         public string Lastname { get; set; }
         public string Email { get; set; }
         public string Username { get; set; }
+        public string Password { get; set; }
         public ICollection<LoginDb> Logins { get; set; }
         public ICollection<TransactionTypeDb> Types { get; set; }
         public ICollection<ColorDb> Colors { get; set; }

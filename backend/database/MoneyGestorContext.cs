@@ -20,9 +20,7 @@ namespace database {
         public DbSet<ColorDb> Colors { get; set; }
         public DbSet<WalletDb> Wallets { get; set; }
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
-        public DbSet<TransactionDb> Transactions{ get; set; }
-
-        public readonly bool inTest_;
+        public DbSet<TransactionDb> Transactions { get; set; }
 
         public static void Initialize(string name, string user, string password) {
             name_ = name;
@@ -30,9 +28,7 @@ namespace database {
             password_ = password;
         }
 
-        public MoneyGestorContext(DbContextOptions<MoneyGestorContext>? options = null) : base(options ?? new DbContextOptions<MoneyGestorContext>()) {
-            inTest_ = options != null;
-
+        public MoneyGestorContext() {
             if (name_ == null || user_ == null || password_ == null) {
                 Log.Fatal("Database must be initialize before use it");
                 Environment.Exit(1);
@@ -61,7 +57,7 @@ namespace database {
 
             modelBuilder.Entity<WalletDb>()
                 .HasIndex(w => w.Id);
-            
+
             modelBuilder.Entity<LoginDb>()
                 .HasIndex(l => l.Id);
 
@@ -78,15 +74,15 @@ namespace database {
                 .IsUnique();
 
             modelBuilder.Entity<TransactionTypeDb>()
-                .HasIndex(tt => new {tt.UserId, tt.Name})
+                .HasIndex(tt => new { tt.UserId, tt.Name })
                 .IsUnique();
 
             modelBuilder.Entity<ColorDb>()
-                .HasIndex(c => new {c.Name, c.Value, c.UserId})
+                .HasIndex(c => new { c.Name, c.Value, c.UserId })
                 .IsUnique();
 
             modelBuilder.Entity<WalletDb>()
-                .HasIndex(w => new {w.Name, w.UserId})
+                .HasIndex(w => new { w.Name, w.UserId })
                 .IsUnique();
 
             modelBuilder.Entity<LoginDb>()
