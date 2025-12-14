@@ -4,42 +4,11 @@ using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using logic.Managers;
 using logic.Clock;
+using TestProject.Base;
 
-namespace TestProject
-{
+namespace TestProject {
     [TestFixture]
-    public class UserTest {
-        const string default_username = "test_test";
-        const string default_email = "test@test.me";
-        const string default_password = "password";
-
-        TestClock clock_;
-
-        [SetUp]
-        public async Task SetUp() {
-            clock_ = new TestClock();
-
-            DatabaseFactory.InTest();
-            ClockFactory.Init(clock_);
-
-            using var database = DatabaseFactory.Create();
-
-            await database.Database.EnsureCreatedAsync();
-        }
-
-        [TearDown]
-        public async Task Teardown() {
-            using var database = DatabaseFactory.Create();
-
-            await database.Users.ExecuteDeleteAsync();
-        }
-
-        [OneTimeTearDown]
-        public async Task OneTimeTeardown() {
-            using var database = DatabaseFactory.Create();
-
-            await database.Database.EnsureDeletedAsync();
-        }
+    internal class UserTest : UserBase {
 
         [Test]
         public async Task AddNewUser_CreateNewUserAndReturnId() {
@@ -192,7 +161,7 @@ namespace TestProject
             var id = await CreateUser();
             var token = await UserManager.Login(default_email, default_password);
 
-            clock_.Now = clock_.Now.AddHours(3);
+            Clock.Now = Clock.Now.AddHours(3);
 
             Assert.ThrowsAsync<TokenExpiatedException>(async () => {
                 await UserManager.FindToken(token);
@@ -204,13 +173,13 @@ namespace TestProject
             var id = await CreateUser();
             var token = await UserManager.Login(default_email, default_password);
 
-            clock_.Now = clock_.Now.AddHours(1).AddMinutes(30);
+            Clock.Now = Clock.Now.AddHours(1).AddMinutes(30);
 
             var user_find = await UserManager.FindTokenAndUpdate(token);
 
             Assert.NotNull(user_find);
 
-            clock_.Now = clock_.Now.AddHours(1).AddMinutes(30);
+            Clock.Now = Clock.Now.AddHours(1).AddMinutes(30);
 
             user_find = await UserManager.FindTokenAndUpdate(token);
 
@@ -228,35 +197,6 @@ namespace TestProject
             var login = database.Logins.FirstOrDefault(l => l.UserId == user_id);
 
             Assert.Null(login);
-        }
-
-        private void CheckLogin(UInt64 user_id) {
-            using var database = DatabaseFactory.Create();
-
-            var login = database.Logins.FirstOrDefault(l => l.UserId == user_id);
-
-            Assert.NotNull(login);
-        }
-
-        private void CheckUserSize(int size) {
-            using var database = DatabaseFactory.Create();
-
-            Assert.That(database.Users.Count(), Is.EqualTo(size));
-        }
-
-        private async Task<ulong> CreateUser(string username = default_username, string email = default_email, string password = default_password) {
-            var userId = await UserManager.AddNewUser(
-                firstname: "Test",
-                lastname: "Test",
-                username: username,
-                email: email,
-                password: password);
-
-            Assert.NotNull(userId);
-
-            CheckUserSize(1);
-
-            return userId;
         }
     }
 }
