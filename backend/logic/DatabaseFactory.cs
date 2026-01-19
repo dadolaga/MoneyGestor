@@ -2,23 +2,35 @@
 
 namespace logic {
     public class DatabaseFactory {
-
+        private static bool databaseCreated_ = false;
         private static bool inTest_ = false;
 
         public static void InTest() {
             inTest_ = true;
         }
 
-        public static MoneyGestorContext Create() {
-            if (!inTest_) {
-                return new MoneyGestorContext();
+        public static MoneyGestorContext Use() {
+            if (!databaseCreated_) {
+                throw new InvalidOperationException("Database not already created");
             }
 
-            MoneyGestorContext.Initialize(
-                name: "UNIT_TEST_DB",
-                user: "UNIT_TEST_USER",
-                password: "UNIT_TEST_PASSWORD"
-            );
+            return new MoneyGestorContext();
+        }
+
+        public static MoneyGestorContext Create() {
+            if (databaseCreated_) {
+                throw new InvalidOperationException("Database already created");
+            }
+
+            if (inTest_) {
+                MoneyGestorContext.Initialize(
+                    name: "ut_money_gestor",
+                    user: "unit_test",
+                    password: "psw_ut"
+                );
+            }
+
+            databaseCreated_ = true;
 
             return new MoneyGestorContext();
         }

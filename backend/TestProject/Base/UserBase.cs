@@ -17,7 +17,7 @@ namespace TestProject.Base {
 
         [TearDown]
         public async Task UserDatabaseTeardown() {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             await database.Users.ExecuteDeleteAsync();
             await database.Logins.ExecuteDeleteAsync();
@@ -53,7 +53,7 @@ namespace TestProject.Base {
         }
 
         protected void CheckLogin(UInt64 user_id) {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             var login = database.Logins.FirstOrDefault(l => l.UserId == user_id);
 
@@ -61,7 +61,7 @@ namespace TestProject.Base {
         }
 
         protected void CheckUserSize(int size) {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             Assert.That(database.Users.Count(), Is.EqualTo(size));
         }

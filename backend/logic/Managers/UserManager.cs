@@ -20,7 +20,7 @@ namespace logic.Managers
                 throw new MandatoryParamException("All data must be passed");
             }
 
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             var userDb = new UserDb
             {
@@ -45,7 +45,7 @@ namespace logic.Managers
 
         public static async Task<string> Login(string username_email, string password)
         {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             var user = await database.Users.FirstOrDefaultAsync(u => u.Username == username_email || u.Email == username_email);
 
@@ -75,7 +75,7 @@ namespace logic.Managers
 
         public static async Task<User> FindToken(string token)
         {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             return await FindToken(token, database);
         }
@@ -96,7 +96,7 @@ namespace logic.Managers
 
 
         public static async Task<User> FindTokenAndUpdate(string token) {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             var user = await FindToken(token, database);
 

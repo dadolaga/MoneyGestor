@@ -73,7 +73,7 @@ namespace TestProject {
 
             CheckUserSize(1);
 
-            using (var database = DatabaseFactory.Create()) {
+            using (var database = DatabaseFactory.Use()) {
                 var user = database.Users.First();
 
                 Assert.IsFalse(password.Equals(user.Password), "Password is not crypted");
@@ -192,7 +192,7 @@ namespace TestProject {
         }
 
         private void CheckNotLogin(UInt64 user_id) {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             var login = database.Logins.FirstOrDefault(l => l.UserId == user_id);
 

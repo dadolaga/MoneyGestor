@@ -10,7 +10,6 @@ namespace TestProject.Base {
         [OneTimeSetUp]
         protected async Task DatabaseSetup() {
             DatabaseFactory.InTest();
-
             using var database = DatabaseFactory.Create();
 
             await database.Database.EnsureCreatedAsync();
@@ -18,7 +17,7 @@ namespace TestProject.Base {
 
         [OneTimeTearDown]
         protected async Task DatabaseTeardown() {
-            using var database = DatabaseFactory.Create();
+            using var database = DatabaseFactory.Use();
 
             await database.Database.EnsureDeletedAsync();
         }
