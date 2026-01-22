@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Exceptions {
-    public class ObjectNotFoundException : Exception {
+    public class ObjectNotFoundException : DatabaseException {
         public ObjectNotFoundException() {
         }
 

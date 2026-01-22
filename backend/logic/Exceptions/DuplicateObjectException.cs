@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Exceptions {
-    public class DuplicateObjectException : Exception {
+    public class DuplicateObjectException : DatabaseException {
         public DuplicateObjectException() {
         }
 
