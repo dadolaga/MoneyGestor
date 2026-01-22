@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TestProject.Base;
-using logic.Executors;
+using logic.Commands;
 using database;
 using TestProject.Samples;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +25,7 @@ namespace TestProject.Executor {
         public async Task AddNewUser_CreateNewUserAndReturnId() {
             string password = "Password";
 
-            AddNewUserExecutor executor = new AddNewUserExecutor(
+            AddNewUserCommand executor = new AddNewUserCommand(
                 firstname: "Test",
                 lastname: "Test",
                 email: "test@test.me",
@@ -53,7 +53,7 @@ namespace TestProject.Executor {
             string password = "Password";
 
             Assert.ThrowsAsync<MandatoryParamException>(async () => {
-                AddNewUserExecutor executor = new AddNewUserExecutor(
+                AddNewUserCommand executor = new AddNewUserCommand(
                     firstname: null!,
                     lastname: null!,
                     email: null!,
@@ -69,7 +69,7 @@ namespace TestProject.Executor {
 
             await ExecutorManager.Execute(userSample.AddNewUserExecutor);
 
-            var addDuplicateUserExecutor = new AddNewUserExecutor(
+            var addDuplicateUserExecutor = new AddNewUserCommand(
                 firstname: $"{userSample.FirstName}_1",
                 lastname: $"{userSample.LastName}_1",
                 email: userSample.Email,
@@ -93,7 +93,7 @@ namespace TestProject.Executor {
 
             await ExecutorManager.Execute(userSample.AddNewUserExecutor);
 
-            var addDuplicateUserExecutor = new AddNewUserExecutor(
+            var addDuplicateUserExecutor = new AddNewUserCommand(
                 firstname: $"{userSample.FirstName}_1",
                 lastname: $"{userSample.LastName}_1",
                 email: "unused.email@test.me",

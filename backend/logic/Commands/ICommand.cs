@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace logic.Executors {
-    public abstract class IExecutor<T> {
+namespace logic.Commands {
+    public abstract class ICommand<T> {
         public T? result_ { get; set; }
 
         internal abstract Task Execute(ExecutorManager executorManager);

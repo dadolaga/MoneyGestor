@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
-namespace logic.Executors {
-    public class AddNewUserExecutor : IExecutor<UInt64> {
+namespace logic.Commands {
+    public class AddNewUserCommand : ICommand<UInt64> {
         private string firstname_;
         private string lastname_;
         private string username_;
         private string email_;
         private string password_;
 
-        public AddNewUserExecutor(string firstname, string lastname, string username, string email, string password) {
+        public AddNewUserCommand(string firstname, string lastname, string username, string email, string password) {
             if (firstname == null || lastname == null || username == null || email == null || password == null) {
                 throw new MandatoryParamException("All data must be passed");
             }
@@ -44,7 +45,7 @@ namespace logic.Executors {
 
             await database.SaveChangesAsync();
 
-            result_ = userDb.Id;
+            result = userDb.Id;
         }
     }
 }

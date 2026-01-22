@@ -1,6 +1,6 @@
 ﻿using database;
 using logic.Exceptions;
-using logic.Executors;
+using logic.Commands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -35,7 +35,7 @@ namespace logic {
                 throw new ExecutorException("Try to destroy an execution manager when not commit or rollback edits");
         }
 
-        public async Task Execute<T>(IExecutor<T> executor) {
+        public async Task Execute<T>(ICommand<T> executor) {
             transaction = await DbContext.Database.BeginTransactionAsync();
 
             try {
