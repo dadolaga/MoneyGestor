@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace logic.Commands {
     public abstract class ICommand<T> {
-        public T? result_ { get; set; }
+        public T? result { get; set; }
 
         internal abstract Task Execute(ExecutorManager executorManager);
 
         public T GetResult() {
-            if (result_ == null) {
+            if (result == null) {
                 throw new InvalidOperationException("Executor not ended");
             }
 
-            return result_;
+            return result;
         }
     }
 }
