@@ -20,9 +20,4 @@
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
-  <Target Name="PreBuildScript" BeforeTargets="PreBuildEvent">
-    <Exec Command="echo Formatting code..." />
-    <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --include-generated" />
-  </Target>
-
 </Project>

@@ -10,9 +10,4 @@
     <ProjectReference Include="..\database\database.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuildScript" BeforeTargets="PreBuildEvent">
-    <Exec Command="echo Formatting code..." />
-    <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --include-generated" />
-  </Target>
-
 </Project>

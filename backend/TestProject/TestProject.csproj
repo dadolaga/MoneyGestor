@@ -28,10 +28,4 @@
     <Using Include="System.Text.RegularExpressions" />
     <Using Include="System.Threading.Tasks" />
   </ItemGroup>
-
-  <Target Name="PreBuildScript" BeforeTargets="PreBuildEvent">
-    <Exec Command="echo Formatting code..." />
-    <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --include-generated" />
-  </Target>
-
 </Project>
