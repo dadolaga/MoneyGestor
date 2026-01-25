@@ -12,7 +12,8 @@ using database;
 using TestProject.Samples;
 using Microsoft.EntityFrameworkCore;
 
-namespace TestProject.Executor {
+namespace TestProject.Commands {
+    [TestFixture]
     internal class AddNewUserTest : ExecutorBase {
         [TearDown]
         public void Clear() {

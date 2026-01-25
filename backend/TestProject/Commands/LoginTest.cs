@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 using TestProject.Base;
 using TestProject.Samples;
 
-namespace TestProject.Executor {
+namespace TestProject.Commands {
+    [TestFixture]
     internal class LoginTest : ExecutorBase {
         private UserSample user;
 
