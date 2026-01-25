@@ -11,6 +11,7 @@ namespace database.Models {
     public class LoginDb {
         public UInt64 Id { get; set; }
         public String Token { get; set; }
+        public Boolean IsLong { get; set; }
         public DateTime Expirated { get; set; }
         public UInt64 UserId { get; set; }
         public UserDb User { get; set; }

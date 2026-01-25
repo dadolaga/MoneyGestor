@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace TestProject.Samples {
     internal class UserSample {
-        private const String DefaultUsername = "TestTest";
-        private const String DefaultFirstName = "Test";
-        private const String DefaultLastName = "Test";
-        private const String DefaultEmail = "test@test.me";
-        private const String DefaultPassword = "Password123!";
+        private const String DEFAULT_USERNAME = "TestTest";
+        private const String DEFAULT_FIRST_NAME = "Test";
+        private const String DEFAULT_LAST_NAME = "Test";
+        private const String DEFAULT_EMAIL = "test@test.me";
+        private const String DEFAULT_PASSWORD = "Password123!";
 
         private AddNewUserCommand? addNewUserCommand;
 
@@ -29,11 +29,11 @@ namespace TestProject.Samples {
             }
         }
 
-        public UserSample(String username = DefaultUsername,
-                String firstName = DefaultFirstName,
-                String lastName = DefaultLastName,
-                String email = DefaultEmail,
-                String password = DefaultPassword) {
+        public UserSample(String username = DEFAULT_USERNAME,
+                String firstName = DEFAULT_FIRST_NAME,
+                String lastName = DEFAULT_LAST_NAME,
+                String email = DEFAULT_EMAIL,
+                String password = DEFAULT_PASSWORD) {
             Username = username;
             FirstName = firstName;
             LastName = lastName;

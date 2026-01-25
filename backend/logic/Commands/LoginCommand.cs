@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 namespace logic.Commands {
     public class LoginCommand : ICommand<String> {
         private static readonly UInt32 TOKEN_LENGTH = 16;
-        private static readonly TimeSpan EXPIRATED_SMALL = TimeSpan.FromHours(2);
-        private static readonly TimeSpan EXPIRATED_LONG = TimeSpan.FromDays(30); // 1 month
+        public static readonly TimeSpan EXPIRATED_SMALL = TimeSpan.FromHours(2);
+        public static readonly TimeSpan EXPIRATED_LONG = TimeSpan.FromDays(30); // 1 month
 
         private readonly String userOrEmail;
         private readonly String password;
@@ -36,6 +36,7 @@ namespace logic.Commands {
             var login = new LoginDb {
                 Token = TokenGenerator.GenerateRandomBase64Token(TOKEN_LENGTH),
                 Expirated = ClockFactory.Clock().Now.Add(remember ? EXPIRATED_LONG : EXPIRATED_SMALL),
+                IsLong = remember,
                 UserId = user.Id
             };
 

@@ -101,6 +101,7 @@ namespace TestProject.Commands {
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
+            Assert.That(login.IsLong, Is.False);
         }
 
         [Test]
@@ -113,6 +114,7 @@ namespace TestProject.Commands {
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddDays(30)).Within(TimeSpan.FromSeconds(5)));
+            Assert.That(login.IsLong, Is.True);
         }
     }
 }
