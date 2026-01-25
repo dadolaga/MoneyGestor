@@ -1,4 +1,5 @@
 ﻿using database;
+using Microsoft.EntityFrameworkCore;
 
 namespace logic {
     public class DatabaseFactory {
@@ -10,19 +11,18 @@ namespace logic {
         }
 
         public static MoneyGestorContext Use() {
-            if (!databaseCreated_) {
+            var dbContext = new MoneyGestorContext();
+
+            if (!dbContext.Database.CanConnect()) {
                 throw new InvalidOperationException("Database not already created");
             }
 
-            return new MoneyGestorContext();
+            return dbContext;
         }
 
         public static MoneyGestorContext Create() {
-            if (databaseCreated_) {
-                throw new InvalidOperationException("Database already created");
-            }
-
-            if (inTest_) {
+            if (inTest_)
+            {
                 MoneyGestorContext.Initialize(
                     name: "ut_money_gestor",
                     user: "unit_test",
@@ -30,9 +30,15 @@ namespace logic {
                 );
             }
 
+            var dbContext = new MoneyGestorContext();
+
+            if (dbContext.Database.CanConnect()) {
+                throw new InvalidOperationException("Database already created");
+            }
+
             databaseCreated_ = true;
 
-            return new MoneyGestorContext();
+            return dbContext;
         }
     }
 }

@@ -19,7 +19,9 @@ namespace TestProject.Base {
         protected async Task DatabaseTeardown() {
             using var database = DatabaseFactory.Use();
 
-            await database.Database.EnsureDeletedAsync();
+            var isDeleted = await database.Database.EnsureDeletedAsync();
+
+            Assert.That(isDeleted, Is.True);
         }
     }
 }
