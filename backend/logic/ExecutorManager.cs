@@ -1,6 +1,6 @@
 ﻿using database;
-using logic.Exceptions;
 using logic.Commands;
+using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -11,28 +11,22 @@ using System.Threading.Tasks;
 
 namespace logic {
     public class ExecutorManager {
-        public string? Token { get; private set; }
+        public String? Token { get; private set; }
         public MoneyGestorContext DbContext { get; private set; }
-        public IDbContextTransaction Transaction {
-            get {
-                if (transaction == null)
-                    throw new ExecutorException("Transaction was not open or already closed");
-
-                return transaction!;
-            }
-        }
+        public IDbContextTransaction Transaction => transaction == null ? throw new ExecutorException("Transaction was not open or already closed") : transaction!;
 
         private IDbContextTransaction? transaction;
 
-        public ExecutorManager(string? token = null) {
+        public ExecutorManager(String? token = null) {
             Token = token;
             DbContext = new MoneyGestorContext();
             transaction = null;
         }
 
         ~ExecutorManager() {
-            if(transaction != null) 
+            if (transaction != null) {
                 throw new ExecutorException("Try to destroy an execution manager when not commit or rollback edits");
+            }
         }
 
         public async Task Execute<T>(ICommand<T> executor) {
@@ -52,7 +46,7 @@ namespace logic {
             }
         }
 
-        public void SetToken(string token) {
+        public void SetToken(String token) {
             if (Token != null) {
                 throw new InvalidOperationException("Token is already set");
             }

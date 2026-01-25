@@ -1,9 +1,9 @@
 using logic;
-using logic.Models;
-using logic.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using logic.Managers;
 using logic.Clock;
+using logic.Exceptions;
+using logic.Managers;
+using logic.Models;
+using Microsoft.EntityFrameworkCore;
 using TestProject.Base;
 
 namespace TestProject {
@@ -12,7 +12,7 @@ namespace TestProject {
 
         [Test]
         public async Task AddNewUser_CreateNewUserAndReturnId() {
-            string password = "Password";
+            String password = "Password";
 
             var resultId = await UserManager.AddNewUser(
                     firstname: "Test",
@@ -29,37 +29,33 @@ namespace TestProject {
 
         [Test]
         public async Task AddNewUser_NullParamThrow() {
-            string password = "Password";
+            String password = "Password";
 
-            Assert.ThrowsAsync<MandatoryParamException>(async () => {
-                await UserManager.AddNewUser(
+            Assert.ThrowsAsync<MandatoryParamException>(async () => await UserManager.AddNewUser(
                     firstname: null!,
                     lastname: null!,
                     email: null!,
                     username: null!,
                     password: null!
-                );
-            });
+                ));
 
             CheckUserIsEmpty();
         }
 
         [Test]
         public async Task AddNewUser_DuplicateEmailThrow() {
-            string email = "test@test.com";
+            String email = "test@test.com";
 
             await CreateUser(email: email);
 
-            Assert.ThrowsAsync<DuplicateObjectException>(async () => {
-                await CreateUser(email: email);
-            });
+            Assert.ThrowsAsync<DuplicateObjectException>(async () => await CreateUser(email: email));
 
             CheckUserSize(1);
         }
 
         [Test]
         public async Task AddNewUser_CheckIsPasswordIsCrypted() {
-            string password = "Password";
+            String password = "Password";
 
             var resultId = await UserManager.AddNewUser(
                     firstname: "Test",
@@ -106,9 +102,7 @@ namespace TestProject {
         public async Task Login_UsernameNotExist() {
             var id = await CreateUser(username: $"{default_username}_edit");
 
-            Assert.ThrowsAsync<ObjectNotFoundException>(async () => {
-                await UserManager.Login(default_username, default_password);
-            });
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await UserManager.Login(default_username, default_password));
 
             CheckNotLogin(id);
         }
@@ -117,9 +111,7 @@ namespace TestProject {
         public async Task Login_EmailNotExist() {
             var id = await CreateUser(email: $"{default_email}_edit");
 
-            Assert.ThrowsAsync<ObjectNotFoundException>(async () => {
-                await UserManager.Login(default_email, default_password);
-            });
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await UserManager.Login(default_email, default_password));
 
             CheckNotLogin(id);
         }
@@ -128,9 +120,7 @@ namespace TestProject {
         public async Task Login_PasswordNotCorrect() {
             var id = await CreateUser(password: $"{default_password}_edit");
 
-            Assert.ThrowsAsync<ObjectNotFoundException>(async () => {
-                await UserManager.Login(default_email, default_password);
-            });
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await UserManager.Login(default_email, default_password));
 
             CheckNotLogin(id);
         }
@@ -151,9 +141,7 @@ namespace TestProject {
             var id = await CreateUser();
             var token = await UserManager.Login(default_email, default_password);
 
-            Assert.ThrowsAsync<ObjectNotFoundException>(async () => {
-                await UserManager.FindToken($"{token}_not_exist");
-            });
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await UserManager.FindToken($"{token}_not_exist"));
         }
 
         [Test]
@@ -163,9 +151,7 @@ namespace TestProject {
 
             Clock.Now = Clock.Now.AddHours(3);
 
-            Assert.ThrowsAsync<TokenExpiatedException>(async () => {
-                await UserManager.FindToken(token);
-            });
+            Assert.ThrowsAsync<TokenExpiatedException>(async () => await UserManager.FindToken(token));
         }
 
         [Test]
@@ -187,9 +173,7 @@ namespace TestProject {
             Assert.That(user_find.Email, Is.EqualTo(default_email));
         }
 
-        private void CheckUserIsEmpty() {
-            CheckUserSize(0);
-        }
+        private void CheckUserIsEmpty() => CheckUserSize(0);
 
         private void CheckNotLogin(UInt64 user_id) {
             using var database = DatabaseFactory.Use();

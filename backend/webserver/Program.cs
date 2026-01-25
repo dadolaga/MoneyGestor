@@ -4,10 +4,10 @@ using Serilog;
 
 namespace webserver {
     public class Program {
-        public static void Main(string[] args) {
+        public static void Main(String[] args) {
             Settings.Load();
 
-            Log.Logger = LoggerFactory.Create(); 
+            Log.Logger = LoggerFactory.Create();
 
             MoneyGestorContext.Initialize(Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
 
@@ -15,14 +15,14 @@ namespace webserver {
 
             Log.Information("Create DB");
 
-            using(var database = new MoneyGestorContext()) {
+            using (var database = new MoneyGestorContext()) {
                 database.Database.EnsureCreated();
             }
 
             Log.Information("Database created");
 
-            var builder = WebApplication.CreateBuilder(args);       
-            
+            var builder = WebApplication.CreateBuilder(args);
+
             builder.Host.UseSerilog();
 
             // Add services to the container.
@@ -43,7 +43,6 @@ namespace webserver {
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

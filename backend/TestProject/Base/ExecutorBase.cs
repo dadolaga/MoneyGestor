@@ -10,8 +10,6 @@ namespace TestProject.Base {
         protected ExecutorManager ExecutorManager { get; private set; }
 
         [SetUp]
-        public void ExecutorSetup() {
-            ExecutorManager = new ExecutorManager();
-        } 
+        public void ExecutorSetup() => ExecutorManager = new ExecutorManager();
     }
 }

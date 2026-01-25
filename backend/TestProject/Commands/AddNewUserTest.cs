@@ -1,16 +1,16 @@
-﻿using logic.Exceptions;
-using logic.Managers;
+﻿using database;
 using logic;
+using logic.Commands;
+using logic.Exceptions;
+using logic.Managers;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TestProject.Base;
-using logic.Commands;
-using database;
 using TestProject.Samples;
-using Microsoft.EntityFrameworkCore;
 
 namespace TestProject.Commands {
     [TestFixture]
@@ -24,9 +24,9 @@ namespace TestProject.Commands {
 
         [Test]
         public async Task AddNewUser_CreateNewUserAndReturnId() {
-            string password = "Password";
+            String password = "Password";
 
-            AddNewUserCommand executor = new AddNewUserCommand(
+            var executor = new AddNewUserCommand(
                 firstname: "Test",
                 lastname: "Test",
                 email: "test@test.me",
@@ -51,10 +51,10 @@ namespace TestProject.Commands {
 
         [Test]
         public async Task AddNewUser_NullParamThrow() {
-            string password = "Password";
+            String password = "Password";
 
             Assert.ThrowsAsync<MandatoryParamException>(async () => {
-                AddNewUserCommand executor = new AddNewUserCommand(
+                var executor = new AddNewUserCommand(
                     firstname: null!,
                     lastname: null!,
                     email: null!,
@@ -78,9 +78,7 @@ namespace TestProject.Commands {
                 password: userSample.Password
             );
 
-            Assert.ThrowsAsync<DuplicateObjectException>(async () => {
-                await ExecutorManager.Execute(addDuplicateUserExecutor);
-            });
+            Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(addDuplicateUserExecutor));
 
             using var db = new MoneyGestorContext();
             var numberOfUser = db.Users.Count();
@@ -102,9 +100,7 @@ namespace TestProject.Commands {
                 password: userSample.Password
             );
 
-            Assert.ThrowsAsync<DuplicateObjectException>(async () => {
-                await ExecutorManager.Execute(addDuplicateUserExecutor);
-            });
+            Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(addDuplicateUserExecutor));
 
             using var db = new MoneyGestorContext();
             var numberOfUser = db.Users.Count();

@@ -11,12 +11,6 @@ namespace logic.Commands {
 
         internal abstract Task Execute(ExecutorManager executorManager);
 
-        public T GetResult() {
-            if (result == null) {
-                throw new InvalidOperationException("Executor not ended");
-            }
-
-            return result;
-        }
+        public T GetResult() => result == null ? throw new InvalidOperationException("Executor not ended") : result;
     }
 }

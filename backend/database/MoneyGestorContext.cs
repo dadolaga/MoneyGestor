@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace database {
     public class MoneyGestorContext : DbContext {
-        private static string? name_;
-        private static string? user_;
-        private static string? password_;
+        private static String? name_;
+        private static String? user_;
+        private static String? password_;
 
         public DbSet<UserDb> Users { get; set; }
         public DbSet<LoginDb> Logins { get; set; }
@@ -22,7 +22,7 @@ namespace database {
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
 
-        public static void Initialize(string name, string user, string password) {
+        public static void Initialize(String name, String user, String password) {
             name_ = name;
             user_ = user;
             password_ = password;

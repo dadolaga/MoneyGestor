@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public DuplicateObjectException() {
         }
 
-        public DuplicateObjectException(string? message) : base(message) {
+        public DuplicateObjectException(String? message) : base(message) {
         }
 
-        public DuplicateObjectException(string? message, Exception? innerException) : base(message, innerException) {
+        public DuplicateObjectException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected DuplicateObjectException(SerializationInfo info, StreamingContext context) : base(info, context) {

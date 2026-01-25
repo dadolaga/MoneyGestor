@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public TokenExpiatedException() {
         }
 
-        public TokenExpiatedException(string? message) : base(message) {
+        public TokenExpiatedException(String? message) : base(message) {
         }
 
-        public TokenExpiatedException(string? message, Exception? innerException) : base(message, innerException) {
+        public TokenExpiatedException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected TokenExpiatedException(SerializationInfo info, StreamingContext context) : base(info, context) {

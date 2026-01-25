@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public MandatoryParamException() {
         }
 
-        public MandatoryParamException(string? message) : base(message) {
+        public MandatoryParamException(String? message) : base(message) {
         }
 
-        public MandatoryParamException(string? message, Exception? innerException) : base(message, innerException) {
+        public MandatoryParamException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected MandatoryParamException(SerializationInfo info, StreamingContext context) : base(info, context) {

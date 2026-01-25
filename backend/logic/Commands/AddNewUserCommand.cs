@@ -9,13 +9,13 @@ using System.Windows.Input;
 
 namespace logic.Commands {
     public class AddNewUserCommand : ICommand<UInt64> {
-        private string firstname_;
-        private string lastname_;
-        private string username_;
-        private string email_;
-        private string password_;
+        private readonly String firstname_;
+        private readonly String lastname_;
+        private readonly String username_;
+        private readonly String email_;
+        private readonly String password_;
 
-        public AddNewUserCommand(string firstname, string lastname, string username, string email, string password) {
+        public AddNewUserCommand(String firstname, String lastname, String username, String email, String password) {
             if (firstname == null || lastname == null || username == null || email == null || password == null) {
                 throw new MandatoryParamException("All data must be passed");
             }

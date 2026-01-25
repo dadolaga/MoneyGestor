@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public ObjectNotFoundException() {
         }
 
-        public ObjectNotFoundException(string? message) : base(message) {
+        public ObjectNotFoundException(String? message) : base(message) {
         }
 
-        public ObjectNotFoundException(string? message, Exception? innerException) : base(message, innerException) {
+        public ObjectNotFoundException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected ObjectNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context) {

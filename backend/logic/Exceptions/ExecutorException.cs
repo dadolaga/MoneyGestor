@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public ExecutorException() {
         }
 
-        public ExecutorException(string? message) : base(message) {
+        public ExecutorException(String? message) : base(message) {
         }
 
-        public ExecutorException(string? message, Exception? innerException) : base(message, innerException) {
+        public ExecutorException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected ExecutorException(SerializationInfo info, StreamingContext context) : base(info, context) {

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace TestProject.Base {
     internal class UserBase : DatabaseBase {
-        protected const string default_username = "test_test";
-        protected const string default_email = "test@test.me";
-        protected const string default_password = "password";
+        protected const String default_username = "test_test";
+        protected const String default_email = "test@test.me";
+        protected const String default_password = "password";
 
         protected UInt64? Id { get; private set; }
 
@@ -23,7 +23,7 @@ namespace TestProject.Base {
             await database.Logins.ExecuteDeleteAsync();
         }
 
-        protected async Task<ulong> CreateUser(string username = default_username, string email = default_email, string password = default_password) {
+        protected async Task<UInt64> CreateUser(String username = default_username, String email = default_email, String password = default_password) {
             var userId = await UserManager.AddNewUser(
                 firstname: "Test",
                 lastname: "Test",
@@ -39,9 +39,10 @@ namespace TestProject.Base {
             return userId;
         }
 
-        protected async Task<string> LoginUser() {
-            if (Id == null)
+        protected async Task<String> LoginUser() {
+            if (Id == null) {
                 Assert.Inconclusive("User not be created");
+            }
 
             var token = await UserManager.Login(default_email, default_password);
 
@@ -60,7 +61,7 @@ namespace TestProject.Base {
             Assert.NotNull(login);
         }
 
-        protected void CheckUserSize(int size) {
+        protected void CheckUserSize(Int32 size) {
             using var database = DatabaseFactory.Use();
 
             Assert.That(database.Users.Count(), Is.EqualTo(size));

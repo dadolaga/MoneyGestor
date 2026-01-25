@@ -10,7 +10,7 @@ namespace database.Models {
     [Table("transaction_type")]
     public class TransactionTypeDb {
         public UInt64 Id { get; set; }
-        public string Name { get; set; }
+        public String Name { get; set; }
         public UInt64? UserId { get; set; }
         public UserDb? User { get; set; }
         public ICollection<TransactionDb> Transactions { get; set; }

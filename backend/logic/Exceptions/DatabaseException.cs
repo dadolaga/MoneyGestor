@@ -10,10 +10,10 @@ namespace logic.Exceptions {
         public DatabaseException() {
         }
 
-        public DatabaseException(string? message) : base(message) {
+        public DatabaseException(String? message) : base(message) {
         }
 
-        public DatabaseException(string? message, Exception? innerException) : base(message, innerException) {
+        public DatabaseException(String? message, Exception? innerException) : base(message, innerException) {
         }
 
         protected DatabaseException(SerializationInfo info, StreamingContext context) : base(info, context) {

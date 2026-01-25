@@ -6,24 +6,19 @@ using logic.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.InteropServices.Marshalling;
 
-namespace logic.Managers
-{
-    public class UserManager
-    {
-        static readonly ushort TOKEN_LENGTH = 64;
+namespace logic.Managers {
+    public class UserManager {
+        static readonly UInt16 TOKEN_LENGTH = 64;
         static readonly TimeSpan EXPIRATED_SMALL = TimeSpan.FromHours(2);
 
-        public static async Task<ulong> AddNewUser(string firstname, string lastname, string username, string email, string password)
-        {
-            if (firstname == null || lastname == null || username == null || email == null || password == null)
-            {
+        public static async Task<UInt64> AddNewUser(String firstname, String lastname, String username, String email, String password) {
+            if (firstname == null || lastname == null || username == null || email == null || password == null) {
                 throw new MandatoryParamException("All data must be passed");
             }
 
             using var database = DatabaseFactory.Use();
 
-            var userDb = new UserDb
-            {
+            var userDb = new UserDb {
                 Firstname = firstname,
                 Lastname = lastname,
                 Username = username,
@@ -31,8 +26,7 @@ namespace logic.Managers
                 Password = PasswordHasher.Hash(password)
             };
 
-            if (database.Users.FirstOrDefault(u => u.Username == username || u.Email == email) != null)
-            {
+            if (database.Users.FirstOrDefault(u => u.Username == username || u.Email == email) != null) {
                 throw new DuplicateObjectException();
             }
 
@@ -43,24 +37,16 @@ namespace logic.Managers
             return userDb.Id;
         }
 
-        public static async Task<string> Login(string username_email, string password)
-        {
+        public static async Task<String> Login(String username_email, String password) {
             using var database = DatabaseFactory.Use();
 
-            var user = await database.Users.FirstOrDefaultAsync(u => u.Username == username_email || u.Email == username_email);
+            var user = await database.Users.FirstOrDefaultAsync(u => u.Username == username_email || u.Email == username_email) ?? throw new ObjectNotFoundException("User not found");
 
-            if (user == null)
-            {
-                throw new ObjectNotFoundException("User not found");
-            }
-
-            if (!PasswordHasher.Verify(password, user.Password))
-            {
+            if (!PasswordHasher.Verify(password, user.Password)) {
                 throw new ObjectNotFoundException("Password not is correct");
             }
 
-            LoginDb login = new LoginDb
-            {
+            var login = new LoginDb {
                 Token = TokenGenerator.GenerateRandomBase64Token(TOKEN_LENGTH),
                 Expirated = ClockFactory.Clock().Now.Add(EXPIRATED_SMALL),
                 UserId = user.Id
@@ -73,29 +59,21 @@ namespace logic.Managers
             return login.Token;
         }
 
-        public static async Task<User> FindToken(string token)
-        {
+        public static async Task<User> FindToken(String token) {
             using var database = DatabaseFactory.Use();
 
             return await FindToken(token, database);
         }
 
-        private static async Task<User> FindToken(string token, MoneyGestorContext database) {
-            var login = await database.Logins.Where(l => l.Token == token).Include(l => l.User).FirstOrDefaultAsync();
+        private static async Task<User> FindToken(String token, MoneyGestorContext database) {
+            var login = await database.Logins.Where(l => l.Token == token).Include(l => l.User).FirstOrDefaultAsync() ?? throw new ObjectNotFoundException("Token not found");
 
-            if (login == null) {
-                throw new ObjectNotFoundException("Token not found");
-            }
-
-            if (login.Expirated.CompareTo(ClockFactory.Clock().Now) < 0) {
-                throw new TokenExpiatedException("Token was expiated");
-            }
-
-            return login.User.Convert();
+            return login.Expirated.CompareTo(ClockFactory.Clock().Now) < 0
+                ? throw new TokenExpiatedException("Token was expiated")
+                : login.User.Convert();
         }
 
-
-        public static async Task<User> FindTokenAndUpdate(string token) {
+        public static async Task<User> FindTokenAndUpdate(String token) {
             using var database = DatabaseFactory.Use();
 
             var user = await FindToken(token, database);

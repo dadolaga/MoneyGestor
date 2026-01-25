@@ -103,8 +103,6 @@ namespace TestProject.Commands {
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
         }
 
-
-
         [Test]
         public async Task Login_ExpiredCorrectSetWithRemember() {
             var loginCommand = new LoginCommand(user.Email, user.Password, true);

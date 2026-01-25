@@ -9,15 +9,11 @@ namespace logic.Clock {
         private static IClock? clock_;
 
         internal static IClock Clock() {
-            if (clock_ == null) {
-                clock_ = new Clock();
-            }
+            clock_ ??= new Clock();
 
             return clock_;
         }
 
-        public static void Init(IClock clock) {
-            clock_ = clock;
-        }
+        public static void Init(IClock clock) => clock_ = clock;
     }
 }
