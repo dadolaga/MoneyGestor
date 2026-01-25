@@ -280,7 +280,7 @@ dotnet_naming_symbols.fileds.required_modifiers =
 
 dotnet_naming_symbols.7c2f0e05189947d1a10356a89fe8cb54.applicable_kinds = field
 dotnet_naming_symbols.7c2f0e05189947d1a10356a89fe8cb54.applicable_accessibilities = *
-dotnet_naming_symbols.7c2f0e05189947d1a10356a89fe8cb54.required_modifiers = const, readonly, static
+dotnet_naming_symbols.7c2f0e05189947d1a10356a89fe8cb54.required_modifiers = static
 
 dotnet_naming_symbols.local_function.applicable_kinds = local_function
 dotnet_naming_symbols.local_function.applicable_accessibilities = *
