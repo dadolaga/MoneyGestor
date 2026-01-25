@@ -11,4 +11,9 @@
     <PackageReference Include="Serilog" Version="4.3.0" />
   </ItemGroup>
 
+  <Target Name="PreBuildScript" BeforeTargets="PreBuildEvent">
+    <Exec Command="echo Formatting code..." />
+    <Exec Command="dotnet format &quot;$(ProjectPath)&quot; --include-generated" />
+  </Target>
+
 </Project>
