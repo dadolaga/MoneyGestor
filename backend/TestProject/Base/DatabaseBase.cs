@@ -20,6 +20,7 @@ namespace TestProject.Base {
             using var database = DatabaseFactory.Use();
 
             var isDeleted = await database.Database.EnsureDeletedAsync();
+            await DatabaseInitializer.Init();
 
             Assert.That(isDeleted, Is.True);
         }
