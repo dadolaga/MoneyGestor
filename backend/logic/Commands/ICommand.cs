@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace logic.Commands {
     public abstract class ICommand<T> {
-        public T? result { get; set; }
+        protected T? result;
+        public T Result => result == null ? throw new InvalidOperationException("Executor not ended") : result!;
 
         internal abstract Task Execute(ExecutorManager executorManager);
-
-        public T GetResult() => result == null ? throw new InvalidOperationException("Executor not ended") : result;
     }
 }

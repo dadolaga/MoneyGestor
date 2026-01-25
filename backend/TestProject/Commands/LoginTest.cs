@@ -38,7 +38,7 @@ namespace TestProject.Commands {
             await ExecutorManager.Execute(loginCommand);
 
             using var db = DatabaseFactory.Use();
-            var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.GetResult()).Count();
+            var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).Count();
 
             Assert.That(loginNumber, Is.EqualTo(1));
         }
@@ -50,7 +50,7 @@ namespace TestProject.Commands {
             await ExecutorManager.Execute(loginCommand);
 
             using var db = DatabaseFactory.Use();
-            var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.GetResult()).Count();
+            var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).Count();
 
             Assert.That(loginNumber, Is.EqualTo(1));
         }
@@ -98,7 +98,7 @@ namespace TestProject.Commands {
             await ExecutorManager.Execute(loginCommand);
 
             using var db = DatabaseFactory.Use();
-            var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.GetResult()).First();
+            var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
         }
@@ -110,7 +110,7 @@ namespace TestProject.Commands {
             await ExecutorManager.Execute(loginCommand);
 
             using var db = DatabaseFactory.Use();
-            var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.GetResult()).First();
+            var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddDays(30)).Within(TimeSpan.FromSeconds(5)));
         }

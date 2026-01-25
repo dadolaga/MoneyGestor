@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace logic {
     public class DatabaseFactory {
-        private static Boolean databaseCreated_ = false;
-        private static Boolean inTest_ = false;
+        private static Boolean DATABASE_CREATED = false;
+        private static Boolean IN_TEST = false;
 
-        public static void InTest() => inTest_ = true;
+        public static void InTest() => IN_TEST = true;
 
         public static MoneyGestorContext Use() {
             var dbContext = new MoneyGestorContext();
@@ -15,7 +15,7 @@ namespace logic {
         }
 
         public static MoneyGestorContext Create() {
-            if (inTest_) {
+            if (IN_TEST) {
                 MoneyGestorContext.Initialize(
                     name: "ut_money_gestor",
                     user: "unit_test",
@@ -25,11 +25,7 @@ namespace logic {
 
             var dbContext = new MoneyGestorContext();
 
-            if (dbContext.Database.CanConnect()) {
-                throw new InvalidOperationException("Database already created");
-            }
-
-            databaseCreated_ = true;
+            DATABASE_CREATED = true;
 
             return dbContext;
         }

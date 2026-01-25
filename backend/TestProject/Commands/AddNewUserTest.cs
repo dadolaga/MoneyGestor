@@ -36,12 +36,12 @@ namespace TestProject.Commands {
 
             await ExecutorManager.Execute(executor);
 
-            Assert.IsNotNull(executor.GetResult());
+            Assert.IsNotNull(executor.Result);
 
             using var db = new MoneyGestorContext();
-            var user = db.Users.First(u => u.Id == executor.GetResult());
+            var user = db.Users.First(u => u.Id == executor.Result);
 
-            Assert.That(user.Id, Is.EqualTo(executor.GetResult()));
+            Assert.That(user.Id, Is.EqualTo(executor.Result));
             Assert.That(user.Firstname, Is.EqualTo("Test"));
             Assert.That(user.Lastname, Is.EqualTo("Test"));
             Assert.That(user.Email, Is.EqualTo("test@test.me"));

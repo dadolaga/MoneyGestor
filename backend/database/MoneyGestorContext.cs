@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace database {
     public class MoneyGestorContext : DbContext {
-        private static String? name_;
-        private static String? user_;
-        private static String? password_;
+        private static String? NAME;
+        private static String? USER;
+        private static String? PASSWORD;
 
         public DbSet<UserDb> Users { get; set; }
         public DbSet<LoginDb> Logins { get; set; }
@@ -23,13 +23,13 @@ namespace database {
         public DbSet<TransactionDb> Transactions { get; set; }
 
         public static void Initialize(String name, String user, String password) {
-            name_ = name;
-            user_ = user;
-            password_ = password;
+            NAME = name;
+            USER = user;
+            PASSWORD = password;
         }
 
         public MoneyGestorContext() {
-            if (name_ == null || user_ == null || password_ == null) {
+            if (NAME == null || USER == null || PASSWORD == null) {
                 Log.Fatal("Database must be initialize before use it");
                 Environment.Exit(1);
             }
@@ -37,7 +37,7 @@ namespace database {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             try {
-                optionsBuilder.UseMySQL($"Server=localhost;Port=3306;Database={name_};Uid={user_};Pwd={password_};");
+                optionsBuilder.UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};");
             } catch (Exception ex) {
                 Log.Fatal(ex, "Fail connection to DB");
                 Environment.Exit(1);
