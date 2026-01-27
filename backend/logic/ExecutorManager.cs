@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace logic {
     public class ExecutorManager {
         public String? Token { get; private set; }
+        public UInt64? UserId { get; private set; }
         public MoneyGestorContext DbContext { get; private set; }
         public IDbContextTransaction Transaction => transaction == null ? throw new ExecutorException("Transaction was not open or already closed") : transaction!;
 
@@ -33,6 +34,14 @@ namespace logic {
             transaction = await DbContext.Database.BeginTransactionAsync();
 
             try {
+                if (Token != null) {
+                    var findUserCommand = new FindUserByTokenCommand();
+
+                    await findUserCommand.Execute(this);
+
+                    UserId = findUserCommand.Result;
+                }
+
                 await executor.Execute(this);
 
                 await transaction.CommitAsync();
@@ -52,6 +61,12 @@ namespace logic {
             }
 
             Token = token;
+        }
+
+        public void CheckUserLogged() {
+            if (UserId == null) {
+                throw new ExecutorException("User or token not setted");
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ namespace TestProject.Base {
             using var database = DatabaseFactory.Create();
 
             await database.Database.EnsureCreatedAsync();
+
+            await DatabaseInitializer.Init();
         }
 
         [OneTimeTearDown]
