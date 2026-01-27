@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace logic.Commands {
+namespace logic.Commands.User {
     public class LoginCommand : ICommand<String> {
         private static readonly UInt32 TOKEN_LENGTH = 16;
         public static readonly TimeSpan EXPIRATED_SMALL = TimeSpan.FromHours(2);

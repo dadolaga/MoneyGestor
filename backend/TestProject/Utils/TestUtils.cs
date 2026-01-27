@@ -1,5 +1,5 @@
 ﻿using logic;
-using logic.Commands;
+using logic.Commands.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;

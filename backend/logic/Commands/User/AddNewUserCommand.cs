@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace logic.Commands {
+namespace logic.Commands.User {
     public class AddNewUserCommand : ICommand<UInt64> {
         private readonly String firstname_;
         private readonly String lastname_;

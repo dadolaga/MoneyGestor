@@ -1,6 +1,6 @@
 ﻿using logic;
 using logic.Clock;
-using logic.Commands;
+using logic.Commands.User;
 using logic.Exceptions;
 using logic.Managers;
 using logic.Models;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using TestProject.Base;
 using TestProject.Samples;
 
-namespace TestProject.Commands {
+namespace TestProject.Commands.User {
     [TestFixture]
     internal class FindUserByTokenTest : ExecutorBase {
         private UserSample user;

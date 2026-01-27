@@ -1,6 +1,6 @@
 ﻿using database;
 using logic;
-using logic.Commands;
+using logic.Commands.User;
 using logic.Exceptions;
 using logic.Managers;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using TestProject.Base;
 using TestProject.Samples;
 
-namespace TestProject.Commands {
+namespace TestProject.Commands.User {
     [TestFixture]
     internal class AddNewUserTest : ExecutorBase {
         [TearDown]

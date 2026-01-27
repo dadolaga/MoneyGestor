@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace logic.Commands {
+namespace logic.Commands.User {
     public class FindUserByTokenCommand : ICommand<UInt64> {
 
         internal override async Task Execute(ExecutorManager executorManager) {

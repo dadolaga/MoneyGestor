@@ -11,7 +11,7 @@ using TestProject.Base;
 using TestProject.Samples;
 using TestProject.Utils;
 
-namespace TestProject.Commands {
+namespace TestProject.Commands.Wallets {
     internal class AddNewWalletTest : ExecutorBase {
         private UserSample user;
         private LoginSample login;
