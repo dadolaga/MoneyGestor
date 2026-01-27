@@ -1,5 +1,6 @@
 ﻿using logic;
 using logic.Commands.User;
+using logic.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,14 @@ namespace TestProject.Utils {
 
             return loginCommand.Result;
         }
+
+        public static async Task<ExecutorManager> CreateExecutorManagerForUser(UserSample user) {
+            var executorManager = new ExecutorManager();
+
+            await CreateAndLoginUser(executorManager, user);
+
+            return executorManager;
+        }
+
     }
 }
