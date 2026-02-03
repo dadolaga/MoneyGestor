@@ -18,6 +18,9 @@ namespace logic {
         public static readonly ColorDb PINK = new() { Id = 8, Name = "Pink", Value = UInt32.Parse("ffc6ff", System.Globalization.NumberStyles.HexNumber), UserId = null };
         public static readonly ColorDb WHITE = new() { Id = 9, Name = "White", Value = UInt32.Parse("fffffc", System.Globalization.NumberStyles.HexNumber), UserId = null };
 
+        public static readonly TransactionTypeDb TRANSFER = new() { Id = 1, Name = "Transfer", UserId = null };
+        public static readonly TransactionTypeDb ADJUSTMENT = new() { Id = 2, Name = "Adjustment", UserId = null };
+
         public static async Task Init() {
             using var database = new MoneyGestorContext();
             var transaction = database.Database.BeginTransaction();
@@ -32,6 +35,9 @@ namespace logic {
             await TryToInsertColor(database, PINK);
             await TryToInsertColor(database, WHITE);
 
+            await TryToInsertTransactionType(database, TRANSFER);
+            await TryToInsertTransactionType(database, ADJUSTMENT);
+
             await transaction.CommitAsync();
         }
 
@@ -39,6 +45,15 @@ namespace logic {
             try {
                 await dbContext.AddAsync(color);
                 dbContext.Entry(color).Property(c => c.Id).IsModified = true;
+                await dbContext.SaveChangesAsync();
+            } catch (Exception) {
+            }
+        }
+
+        private static async Task TryToInsertTransactionType(MoneyGestorContext dbContext, TransactionTypeDb transactionType) {
+            try {
+                await dbContext.AddAsync(transactionType);
+                dbContext.Entry(transactionType).Property(tt => tt.Id).IsModified = true;
                 await dbContext.SaveChangesAsync();
             } catch (Exception) {
             }

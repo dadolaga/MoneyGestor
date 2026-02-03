@@ -50,9 +50,9 @@ namespace TestProject {
             await DatabaseInitializer.Init();
 
             using var database = DatabaseFactory.Use();
-            var colorCount = database.Colors.Count();
 
-            Assert.That(colorCount, Is.EqualTo(9));
+            Assert.That(database.Colors.Count(), Is.EqualTo(9));
+            Assert.That(database.TransactionTypes.Count(), Is.EqualTo(2));
         }
     }
 }
