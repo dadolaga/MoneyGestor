@@ -11,6 +11,7 @@ namespace database.Models {
         public UInt64 Id { get; set; }
         public String Name { get; set; }
         public Double Value { get; set; }
+        public Double CurrentValue { get; set; }
         public Boolean Favorite { get; set; }
         public UInt64 ColorId { get; set; }
         public ColorDb Color { get; set; }

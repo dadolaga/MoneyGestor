@@ -31,6 +31,7 @@ namespace logic.Commands.Wallets {
             var wallet = new WalletDb() {
                 Name = name,
                 Value = value,
+                CurrentValue = value,
                 Favorite = false,
                 ColorId = colorId,
                 UserId = executorManager.UserId!.Value
