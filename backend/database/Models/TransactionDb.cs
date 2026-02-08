@@ -13,7 +13,7 @@ namespace database.Models {
         public UInt64 Id { get; set; }
         public String? Description { get; set; }
         public String? LongDescription { get; set; }
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
         public UInt64 TransactionTypeId { get; set; }
         public TransactionTypeDb TransactionType { get; set; }
         public UInt64? UserId { get; set; }
