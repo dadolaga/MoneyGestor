@@ -123,7 +123,7 @@ namespace database {
             modelBuilder.Entity<TransactionDb>()
                 .HasOne(t => t.TransactionType)
                 .WithMany(tt => tt.Transactions)
-                .HasForeignKey(t => t.TransactionDestinationId)
+                .HasForeignKey(t => t.TransactionTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<TransactionDb>()
