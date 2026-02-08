@@ -34,7 +34,7 @@ namespace logic.Commands.Wallets {
                 CurrentValue = value,
                 Favorite = false,
                 ColorId = colorId,
-                UserId = executorManager.UserId!.Value
+                UserId = executorManager.UserId
             };
 
             await database.AddAsync(wallet);

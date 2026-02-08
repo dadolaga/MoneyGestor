@@ -13,11 +13,13 @@ using System.Threading.Tasks;
 namespace logic {
     public class ExecutorManager {
         public String? Token { get; private set; }
-        public UInt64? UserId { get; private set; }
+        public UInt64 UserId => userId ?? throw new ExecutorException("User not already logged");
         public MoneyGestorContext DbContext { get; private set; }
         public IDbContextTransaction Transaction => transaction == null ? throw new ExecutorException("Transaction was not open or already closed") : transaction!;
 
         private IDbContextTransaction? transaction;
+
+        private UInt64? userId;
 
         public ExecutorManager(String? token = null) {
             Token = token;
@@ -32,15 +34,19 @@ namespace logic {
         }
 
         public async Task Execute<T>(ICommand<T> executor) {
+            if (transaction != null) {
+                throw new ExecutorException("Transaction already started");
+            }
+
             transaction = await DbContext.Database.BeginTransactionAsync();
 
             try {
-                if (Token != null) {
+                if (userId == null && Token != null) {
                     var findUserCommand = new FindUserByTokenCommand();
 
                     await findUserCommand.Execute(this);
 
-                    UserId = findUserCommand.Result;
+                    userId = findUserCommand.Result;
                 }
 
                 await executor.Execute(this);
