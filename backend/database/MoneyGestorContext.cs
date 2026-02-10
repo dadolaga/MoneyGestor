@@ -148,7 +148,7 @@ namespace database {
                 .HasOne(t => t.TransactionDestination)
                 .WithOne(t => t.TransactionDestinationBack)
                 .HasForeignKey<TransactionDb>(t => t.TransactionDestinationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
