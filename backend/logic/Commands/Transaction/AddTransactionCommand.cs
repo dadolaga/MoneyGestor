@@ -49,7 +49,7 @@ namespace logic.Commands.Transaction {
                 Date = date.ToDateTime(TimeOnly.MinValue),
                 WalletId = walletId,
                 TransactionTypeId = transactionTypeId,
-                UserId = userId,
+                UserId = userId ?? executorManager.UserId,
                 UserInsertId = executorManager.UserId,
                 Value = walletDestinationId == null? value : -Math.Abs(value),
             };
@@ -67,7 +67,7 @@ namespace logic.Commands.Transaction {
                     Date = date.ToDateTime(TimeOnly.MinValue),
                     WalletId = walletDestinationId.Value,
                     TransactionTypeId = transactionTypeId,
-                    UserId = userId,
+                    UserId = userId ?? executorManager.UserId,
                     UserInsertId = executorManager.UserId,
                     TransactionDestinationId = transaction.Id,
                     Value = Math.Abs(value),

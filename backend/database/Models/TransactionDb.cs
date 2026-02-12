@@ -16,8 +16,8 @@ namespace database.Models {
         public DateTime Date { get; set; }
         public UInt64 TransactionTypeId { get; set; }
         public TransactionTypeDb TransactionType { get; set; }
-        public UInt64? UserId { get; set; }
-        public UserDb? User { get; set; }
+        public UInt64 UserId { get; set; }
+        public UserDb User { get; set; }
         public UInt64 UserInsertId { get; set; }
         public UserDb UserInsert { get; set; }
         public UInt64 WalletId { get; set; }
