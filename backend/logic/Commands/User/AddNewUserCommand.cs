@@ -37,8 +37,12 @@ namespace logic.Commands.User {
                 Password = PasswordHasher.Hash(password_)
             };
 
-            if (database.Users.FirstOrDefault(u => u.Username == username_ || u.Email == email_) != null) {
-                throw new DuplicateObjectException();
+            if (database.Users.FirstOrDefault(u => u.Username == username_) != null) {
+                throw new DuplicateObjectException("username");
+            }
+
+            if (database.Users.FirstOrDefault(u => u.Email == email_) != null) {
+                throw new DuplicateObjectException("email");
             }
 
             await database.AddAsync(userDb);
