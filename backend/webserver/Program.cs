@@ -32,6 +32,8 @@ namespace webserver {
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy => policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod()));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -47,6 +49,8 @@ namespace webserver {
             app.MapControllers();
 
             app.UseSerilogRequestLogging();
+
+            app.UseCors();
 
             app.Run();
         }
