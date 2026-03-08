@@ -6,3 +6,9 @@ export interface User {
     username?: string,
     password?: string,
 }
+
+export class Login {
+    user: string;
+    password: string;
+    remember: boolean = false;
+}

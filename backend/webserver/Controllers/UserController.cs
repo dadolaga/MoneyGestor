@@ -4,6 +4,7 @@ using logic.Exceptions;
 using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using webserver.Models;
 
 namespace webserver.Controllers {
     [ApiController]
@@ -36,5 +37,22 @@ namespace webserver.Controllers {
                 throw;
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] Login login) {
+            var executor = new ExecutorManager();
+
+            var loginCommand = new LoginCommand(login.User, login.Password, login.Remember.GetValueOrDefault(false));
+
+            try {
+                await executor.Execute(loginCommand);
+
+                return LoginResponse(loginCommand.Result);
+            } catch (ObjectNotFoundException ex) {
+                return ErrorResponse(111, "Login fail");
+            }
+        }
+
+        private IActionResult LoginResponse(String token) => OkReponse(token, "Login correct");
     }
 }
