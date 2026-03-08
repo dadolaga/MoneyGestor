@@ -9,6 +9,8 @@ import {
     FormHelperText,
     SelectChangeEvent,
     MenuItem,
+    FormControlLabel,
+    Checkbox,
 } from '@mui/material';
 import { ChangeEventHandler } from 'react';
 import { DatePicker, DatePickerProps, LocalizationProvider } from '@mui/x-date-pickers';
@@ -18,7 +20,7 @@ import timezone from 'dayjs/plugin/timezone';
 import * as React from 'react';
 import 'dayjs/locale/it';
 import 'dayjs/locale/en';
-import { FormSettings, useForm } from '../context/FormContext';
+import { useForm } from '../context/FormContext';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 interface IValuesType {
@@ -27,7 +29,7 @@ interface IValuesType {
 }
 
 interface IInput {
-    type: 'text' | 'password' | 'multi' | 'date';
+    type: 'text' | 'password' | 'multi' | 'date' | 'check';
     name: string;
     label: string;
     disabled?: boolean;
@@ -65,6 +67,12 @@ export default function Input(props: IInput) {
             updateValue(name, props.values.find((value) => value.key === parseInt(action.target.value)).key);
         };
 
+    const checkChangeHandler =
+        (name: string): ((_event: any) => void) =>
+        (action) => {
+            updateValue(name, `${action.target.checked}`);
+        };
+
     switch (props.type) {
         case 'text':
         case 'password':
@@ -74,7 +82,7 @@ export default function Input(props: IInput) {
                     type={props.type}
                     error={form[props.name]?.error !== undefined}
                     helperText={form[props.name]?.error}
-                    label={`${props.label} ${false ? '*' : ''}`}
+                    label={`${props.label}`}
                     name={props.name}
                     value={form[props.name]?.value || ''}
                     onChange={textChangeHandler(props.name)}
@@ -93,7 +101,7 @@ export default function Input(props: IInput) {
                     <DatePicker
                         sx={{ width: '100%' }}
                         views={['year', 'month', 'day']}
-                        label={`${props.label} ${props.required ? '*' : ''}`}
+                        label={`${props.label}`}
                         slotProps={{
                             textField: {
                                 error: form[props.name]?.error !== undefined,
@@ -120,7 +128,7 @@ export default function Input(props: IInput) {
                             },
                         }}
                         labelId={`select-${props.name}`}
-                        label={`${props.label} ${props.required ? '*' : ''}`}
+                        label={`${props.label}`}
                         name={props.name}
                         value={form[props.name]?.value}
                         onChange={selectChangeHandler(props.name)}
@@ -136,6 +144,16 @@ export default function Input(props: IInput) {
                     </Select>
                     <FormHelperText>{form[props.name]?.error}</FormHelperText>
                 </FormControl>
+            );
+            break;
+
+        case 'check':
+            element = (
+                <FormControlLabel
+                    control={<Checkbox size="small" checked={form[props.name] !== undefined} />}
+                    label={props.label}
+                    onChange={checkChangeHandler(props.name)}
+                />
             );
             break;
     }
