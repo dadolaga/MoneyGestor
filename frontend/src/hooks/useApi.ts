@@ -1,73 +1,107 @@
 import { useCookies } from 'react-cookie';
 import axios from '../app/axios/axios';
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { User } from '../models/backend';
-import { useSnackbar } from 'notistack';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { Login, User } from '../models/backend';
+import { EnqueueSnackbar, useSnackbar } from 'notistack';
 
-export interface Response {
+export interface Response<T> {
     code: number;
     message: string;
-    data?: any;
+    data?: T;
 }
 
 export class ResponseError extends Error {
-    data: Response;
+    code: number;
 
-    constructor(data: Response) {
-        super(data.message);
-        this.data = data;
+    constructor(response: Response<any>) {
+        super(response.message);
+        this.code = response.code;
     }
 }
 
 export default function useApi() {
-    const [cookie] = useCookies(['_token']);
+    const [cookie] = useCookies(['token']);
     const { enqueueSnackbar } = useSnackbar();
 
-    function request<T>(type: 'POST' | 'GET', url: string, data?: any): Promise<T | void> {
-        let axiosPromise: Promise<AxiosResponse<any, any>>;
+    function request<T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>> {
         let axiosConfig: AxiosRequestConfig<any> = {
             data: data,
             headers: cookie && {
-                Authorization: cookie._token,
+                Authorization: cookie.token,
             },
         };
 
         switch (type) {
             case 'POST':
-                axiosPromise = axios.post(url, data, axiosConfig);
-                break;
+                return axios.post(url, data, axiosConfig);
             case 'GET':
-                axiosPromise = axios.get(url, axiosConfig);
-                break;
+                return axios.get(url, axiosConfig);
         }
-
-        return axiosPromise
-            .then((axiosResponse) => {
-                const response: Response = axiosResponse.data;
-                console.debug(response);
-
-                if (response.code === 0) {
-                    return response.data as T;
-                }
-            })
-            .catch((error: AxiosError) => {
-                if (error.response.data['code']) {
-                    console.debug(error.response.data);
-
-                    throw new ResponseError({
-                        code: error.response.data['code'],
-                        message: error.response.data['message'],
-                    });
-                }
-
-                enqueueSnackbar('Unknown error', { variant: 'error' });
-                console.error(error);
-            });
     }
 
     return {
         user: {
-            add: (user: User) => request<number>('POST', '/user/add', user),
+            add: (user: User) =>
+                new ApiRequest<number>(() => request<number>('POST', '/user/add', user), enqueueSnackbar),
+
+            login: (login: Login) =>
+                new ApiRequest<string>(() => request<string>('POST', '/user/login', login), enqueueSnackbar),
         },
     };
+}
+
+class ApiRequest<T_RETURN> {
+    private enqueueSnackbar: EnqueueSnackbar;
+    private actionFunction: () => Promise<AxiosResponse<Response<T_RETURN>>>;
+    private successFunction: (_data: T_RETURN) => void;
+    private errorFunction: (_error: ResponseError) => void;
+    private finishFunction: () => void;
+
+    constructor(action: () => Promise<AxiosResponse<Response<T_RETURN>>>, snakebar: EnqueueSnackbar) {
+        this.actionFunction = action;
+        this.enqueueSnackbar = snakebar;
+        this.successFunction = () => {};
+        this.errorFunction = () => {};
+        this.finishFunction = () => {};
+    }
+
+    onSuccess(callback: (_data: T_RETURN) => void) {
+        this.successFunction = callback;
+        return this;
+    }
+
+    onError(callback: (_error: ResponseError) => void) {
+        this.errorFunction = callback;
+        return this;
+    }
+
+    onFinish(callback: () => void) {
+        this.finishFunction = callback;
+        return this;
+    }
+
+    execute() {
+        this.actionFunction()
+            .then((axiosResponse) => {
+                const response: Response<T_RETURN> = axiosResponse.data;
+                console.debug(response);
+
+                if (response.code === 0) {
+                    this.successFunction(response.data);
+                }
+            })
+            .catch((error) => {
+                if (error?.response?.data['code']) {
+                    console.debug(error.response.data);
+
+                    this.errorFunction(new ResponseError(error.response.data));
+                } else {
+                    this.enqueueSnackbar('Unknown error', { variant: 'error' });
+                    console.error(error);
+                }
+            })
+            .finally(() => {
+                this.finishFunction();
+            });
+    }
 }

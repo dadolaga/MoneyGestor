@@ -66,9 +66,9 @@ export default function Page() {
 
             api.user
                 .add(user)
-                .then(() => enqueueSnackbar('Utente aggiunto con successo', { variant: 'success' }))
-                .catch((err: ResponseError) => {
-                    switch (err.data.code) {
+                .onSuccess(() => enqueueSnackbar('Utente aggiunto con successo', { variant: 'success' }))
+                .onError((err: ResponseError) => {
+                    switch (err.code) {
                         case 101:
                             reject({ username: "L'username è già stato inserito" });
                             break;
@@ -77,7 +77,8 @@ export default function Page() {
                             break;
                     }
                 })
-                .finally(() => setShowLoading(false));
+                .onFinish(() => setShowLoading(false))
+                .execute();
         });
     }
 
@@ -87,6 +88,7 @@ export default function Page() {
                 {showLoading && <LinearProgress sx={{ width: '100%' }} />}
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <Box>
+                        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
                         <img src="/logo.png" style={{ width: '300px' }} />
                     </Box>
                     <Box sx={{ width: '100%' }}>
