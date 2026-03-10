@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Exceptions {
-    public class TokenExpiatedException : Exception {
+    public class TokenExpiatedException : ExecutorException {
         public TokenExpiatedException() {
         }
 

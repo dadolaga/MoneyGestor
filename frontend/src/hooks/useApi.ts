@@ -46,6 +46,8 @@ export default function useApi() {
 
             login: (login: Login) =>
                 new ApiRequest<string>(() => request<string>('POST', '/user/login', login), enqueueSnackbar),
+
+            info: () => new ApiRequest<User>(() => request<User>('GET', '/user/info'), enqueueSnackbar),
         },
     };
 }
@@ -65,12 +67,12 @@ class ApiRequest<T_RETURN> {
         this.finishFunction = () => {};
     }
 
-    onSuccess(callback: (_data: T_RETURN) => void) {
+    onSuccess(callback: (data: T_RETURN) => void) {
         this.successFunction = callback;
         return this;
     }
 
-    onError(callback: (_error: ResponseError) => void) {
+    onError(callback: (error: ResponseError) => void) {
         this.errorFunction = callback;
         return this;
     }

@@ -1,37 +1,54 @@
-"use client"
+'use client';
 
-import { useRouter } from 'next/navigation'
-import { useCookies } from 'react-cookie'
-import { faBars } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import AppBar from '@mui/material/AppBar'
-import { Avatar, Box, Menu, MenuItem, Toolbar } from '@mui/material'
-import IconButton from '@mui/material/IconButton'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import { useState, MouseEvent } from 'react'
-import { useRestApi } from '../request/Request'
-import { useSnackbar } from 'notistack'
-import { useIsMobile } from '../utilities/useMobile'
+import { useRouter } from 'next/navigation';
+import { useCookies } from 'react-cookie';
+import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import AppBar from '@mui/material/AppBar';
+import { Avatar, Box, CircularProgress, Menu, MenuItem, Toolbar } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { useState, MouseEvent, useEffect } from 'react';
+import { useRestApi } from '../request/Request';
+import { useSnackbar } from 'notistack';
+import { useIsMobile } from '../utilities/useMobile';
+import useApi from '@/hooks/useApi';
 
-
-export default function Header({
-    openDrawerClick
-}: {
-    openDrawerClick: () => void
-}) {
-    const [cookies, , removeCookie] = useCookies(["_token", "_displayName"]);
-
+export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {
+    const api = useApi();
     const request = useRestApi();
 
     const isMobile = useIsMobile();
 
-    const { enqueueSnackbar } = useSnackbar()
+    const [userFullName, setUserFullName] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const { enqueueSnackbar } = useSnackbar();
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
     const router = useRouter();
+
+    useEffect(() => {
+        setLoading(true);
+
+        api.user
+            .info()
+            .onSuccess((user) => {
+                setUserFullName(`${user.firstname} ${user.lastname}`);
+            })
+            .onError(() => {
+                enqueueSnackbar('User login expired', { variant: 'error' });
+
+                router.push('/dashboard/user/login');
+            })
+            .onFinish(() => {
+                setLoading(false);
+            })
+            .execute();
+    }, []);
 
     function stringToColor(string) {
         let hash = 0;
@@ -71,52 +88,55 @@ export default function Header({
     };
 
     const titleClickHandler = () => {
-        router.push("/dashboard");
-    }
+        router.push('/dashboard');
+    };
 
     const logoutHandler = () => {
         request.User.Logout()
-        .then(() => {
-            enqueueSnackbar("User logout", {variant: "info"});
+            .then(() => {
+                enqueueSnackbar('User logout', { variant: 'info' });
 
-            removeCookie("_displayName");
-            removeCookie("_token");
-
-            router.push("dashboard/user/login");
-        }).finally(() => {
-            handleClose();
-        })
-    }
+                router.push('dashboard/user/login');
+            })
+            .finally(() => {
+                handleClose();
+            });
+    };
 
     return (
         <AppBar sx={{ zIndex: 1300 }}>
             <Toolbar>
-                <IconButton sx={{ mr: 2 }} color='inherit' onClick={openDrawerClick}>
+                <IconButton sx={{ mr: 2 }} color="inherit" onClick={openDrawerClick}>
                     <FontAwesomeIcon icon={faBars} />
                 </IconButton>
-                <Box sx={{flexGrow: 1}}>
-                    <Typography variant="h6" component={"span"} sx={{ cursor: "pointer" }} onClick={titleClickHandler}>Money Gestor</Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" component={'span'} sx={{ cursor: 'pointer' }} onClick={titleClickHandler}>
+                        Money Gestor
+                    </Typography>
                 </Box>
 
-                {(!cookies._displayName) && (
-                    <>
-                        <Button color='inherit' onClick={() => router.push('/dashboard/user/login')}>Login</Button>
-                        <Button color='inherit' onClick={() => router.push('/dashboard/user/new')}>Registrati</Button>
-                    </>
-                )}
-
-                {(cookies._displayName) && (
+                {loading ? (
+                    <CircularProgress />
+                ) : userFullName ? (
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        {!isMobile && (<Typography align='center'>{cookies._displayName}</Typography>)}
-                        <Avatar {...stringAvatar(cookies._displayName)} onClick={handleClick} />
+                        {!isMobile && <Typography align="center">{userFullName}</Typography>}
+                        <Avatar {...stringAvatar(userFullName)} onClick={handleClick} />
                     </Box>
+                ) : (
+                    <>
+                        <Button color="inherit" onClick={() => router.push('/dashboard/user/login')}>
+                            Login
+                        </Button>
+                        <Button color="inherit" onClick={() => router.push('/dashboard/user/new')}>
+                            Registrati
+                        </Button>
+                    </>
                 )}
 
                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                     <MenuItem onClick={logoutHandler}>Logout</MenuItem>
                 </Menu>
-
             </Toolbar>
         </AppBar>
-    )
+    );
 }

@@ -11,7 +11,13 @@ const eslintConfig = [
     ...compat.config({
         extends: ['eslint:recommended', 'next'],
         rules: {
-            "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+            "no-unused-vars": "off", 
+            // Usa la versione TypeScript
+            "@typescript-eslint/no-unused-vars": ["error", { 
+                "argsIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "caughtErrorsIgnorePattern": "^_"
+            }]
         }
     }),
 ]
