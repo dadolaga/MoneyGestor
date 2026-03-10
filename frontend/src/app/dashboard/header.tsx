@@ -14,14 +14,13 @@ import { useRestApi } from '../request/Request';
 import { useSnackbar } from 'notistack';
 import { useIsMobile } from '../utilities/useMobile';
 import useApi from '@/hooks/useApi';
+import { useLocation } from 'react-router-dom';
 
 export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {
-    const api = useApi();
-    const request = useRestApi();
-
-    const [cookies] = useCookies(['token']);
-
     const isMobile = useIsMobile();
+    const api = useApi();
+
+    const [cookies, _, removeCookie] = useCookies(['token']);
 
     const [userFullName, setUserFullName] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
@@ -36,15 +35,19 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
     useEffect(() => {
         setLoading(true);
 
+        console.log('location: ', window.location);
+
         api.user
             .info()
             .onSuccess((user) => {
                 setUserFullName(`${user.firstname} ${user.lastname}`);
             })
             .onError(() => {
-                enqueueSnackbar('User login expired', { variant: 'error' });
+                if (window.location.pathname !== '/dashboard/user/login') {
+                    enqueueSnackbar('User login expired', { variant: 'error' });
 
-                router.push('/dashboard/user/login');
+                    router.push('/dashboard/user/login');
+                }
             })
             .onFinish(() => {
                 setLoading(false);
@@ -94,15 +97,13 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
     };
 
     const logoutHandler = () => {
-        request.User.Logout()
-            .then(() => {
-                enqueueSnackbar('User logout', { variant: 'info' });
+        removeCookie('token', { path: '/' });
+        setUserFullName('');
+        handleClose();
 
-                router.push('dashboard/user/login');
-            })
-            .finally(() => {
-                handleClose();
-            });
+        if (window.location.pathname !== '/dashboard/user/login') {
+            router.push('/dashboard/user/login');
+        }
     };
 
     return (
