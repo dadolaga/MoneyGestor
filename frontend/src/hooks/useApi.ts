@@ -3,6 +3,7 @@ import axios from '../app/axios/axios';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Login, User } from '../models/backend';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
+import { useCallback } from 'react';
 
 export interface Response<T> {
     code: number;
@@ -23,7 +24,7 @@ export default function useApi() {
     const [cookie] = useCookies(['token']);
     const { enqueueSnackbar } = useSnackbar();
 
-    function request<T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>> {
+    const request = useCallback(<T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>>  => {
         let axiosConfig: AxiosRequestConfig<any> = {
             data: data,
             headers: cookie && {
@@ -37,7 +38,7 @@ export default function useApi() {
             case 'GET':
                 return axios.get(url, axiosConfig);
         }
-    }
+    }, [cookie]);
 
     return {
         user: {
@@ -93,7 +94,7 @@ class ApiRequest<T_RETURN> {
                 }
             })
             .catch((error) => {
-                if (error.code === "ERR_NETWORK") {
+                if (error.code === 'ERR_NETWORK') {
                     this.enqueueSnackbar('Server error', { variant: 'error' });
                     console.error(error);
                     return;

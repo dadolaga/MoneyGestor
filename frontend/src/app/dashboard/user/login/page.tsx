@@ -39,7 +39,7 @@ export default function Page() {
                 api.user
                     .login(loginData)
                     .onSuccess((data) => {
-                        setCookie('token', data);
+                        setCookie('token', data, { path: '/' });
 
                         resolve();
                     })

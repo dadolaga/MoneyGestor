@@ -19,6 +19,8 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
     const api = useApi();
     const request = useRestApi();
 
+    const [cookies] = useCookies(['token']);
+
     const isMobile = useIsMobile();
 
     const [userFullName, setUserFullName] = useState<string>('');
@@ -48,7 +50,7 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
                 setLoading(false);
             })
             .execute();
-    }, []);
+    }, [cookies.token]);
 
     function stringToColor(string) {
         let hash = 0;
