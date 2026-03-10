@@ -93,6 +93,12 @@ class ApiRequest<T_RETURN> {
                 }
             })
             .catch((error) => {
+                if (error.code === "ERR_NETWORK") {
+                    this.enqueueSnackbar('Server error', { variant: 'error' });
+                    console.error(error);
+                    return;
+                }
+
                 if (error?.response?.data['code']) {
                     console.debug(error.response.data);
 
