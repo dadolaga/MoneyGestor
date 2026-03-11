@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Box, Card, Grid, Typography, LinearProgress, CardContent } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
-import Input from '../../../../component/Input';
-import { checkIsEmail, checkPassword, FormProvider, FormSettings, FormType } from '../../../../context/FormContext';
-import Submit from '../../../../component/Submit';
-import useApi, { ResponseError } from '../../../../hooks/useApi';
-import { User } from '../../../../models/backend';
+import Input from '@/component/Input';
+import { checkIsEmail, checkPassword, FormProvider, FormSettings, FormType } from '@/context/FormContext';
+import Submit from '@/component/Submit';
+import useApi, { ResponseError } from '@/hooks/useApi';
+import { User } from '@/models/backend';
 
 export default function Page() {
     const [showLoading, setShowLoading] = useState(false);
@@ -47,7 +47,7 @@ export default function Page() {
         },
     };
 
-    function new_registrationUser(form: FormType) {
+    function newRegistrationUser(form: FormType) {
         return new Promise<void>((resolve, reject) => {
             if (form['password'].value !== form['confirm'].value) {
                 reject({ confirm: 'Le password devono conincidere' });
@@ -124,7 +124,7 @@ export default function Page() {
                                         variant="contained"
                                         label="Registrati"
                                         fullWidth
-                                        onValidate={new_registrationUser}
+                                        onValidate={newRegistrationUser}
                                     />
                                 </Grid>
                             </Grid>

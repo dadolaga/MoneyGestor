@@ -10,11 +10,9 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState, MouseEvent, useEffect } from 'react';
-import { useRestApi } from '../request/Request';
 import { useSnackbar } from 'notistack';
 import { useIsMobile } from '../utilities/useMobile';
 import useApi from '@/hooks/useApi';
-import { useLocation } from 'react-router-dom';
 
 export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {
     const isMobile = useIsMobile();

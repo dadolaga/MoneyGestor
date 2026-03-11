@@ -3,11 +3,11 @@
 import { useState, useCallback } from 'react';
 import { useCookies } from 'react-cookie';
 import { Box, Card, CardContent, LinearProgress, Typography } from '@mui/material';
-import { FormProvider, FormSettings, FormType } from '../../../../context/FormContext';
-import Input from '../../../../component/Input';
-import Submit from '../../../../component/Submit';
-import useApi, { ResponseError } from '../../../../hooks/useApi';
-import { Login } from '../../../../models/backend';
+import { FormProvider, FormSettings, FormType } from '@/context/FormContext';
+import Input from '@/component/Input';
+import Submit from '@/component/Submit';
+import useApi, { ResponseError } from '@/hooks/useApi';
+import { Login } from '@/models/backend';
 
 export default function Page() {
     const formSettings: FormSettings = {
