@@ -25,7 +25,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 interface IValuesType {
     key: number;
-    text: string;
+    text: string | React.ReactNode;
 }
 
 interface IInput {
@@ -130,7 +130,7 @@ export default function Input(props: IInput) {
                         labelId={`select-${props.name}`}
                         label={`${props.label}`}
                         name={props.name}
-                        value={form[props.name]?.value}
+                        value={form[props.name]?.value || ""}
                         onChange={selectChangeHandler(props.name)}
                         disabled={props.disabled}
                     >

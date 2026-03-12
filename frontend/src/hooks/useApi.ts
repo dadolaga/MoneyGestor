@@ -1,9 +1,10 @@
 import { useCookies } from 'react-cookie';
 import axios from '../app/axios/axios';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Login, User } from '../models/backend';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCallback } from 'react';
+import { get } from 'http';
+import { Color, Login, User, Wallet } from '@/models/backend';
 
 export interface Response<T> {
     code: number;
@@ -24,21 +25,24 @@ export default function useApi() {
     const [cookie] = useCookies(['token']);
     const { enqueueSnackbar } = useSnackbar();
 
-    const request = useCallback(<T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>>  => {
-        let axiosConfig: AxiosRequestConfig<any> = {
-            data: data,
-            headers: cookie && {
-                Authorization: cookie.token,
-            },
-        };
+    const request = useCallback(
+        <T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
+            let axiosConfig: AxiosRequestConfig<any> = {
+                data: data,
+                headers: cookie && {
+                    Authorization: cookie.token,
+                },
+            };
 
-        switch (type) {
-            case 'POST':
-                return axios.post(url, data, axiosConfig);
-            case 'GET':
-                return axios.get(url, axiosConfig);
-        }
-    }, [cookie]);
+            switch (type) {
+                case 'POST':
+                    return axios.post(url, data, axiosConfig);
+                case 'GET':
+                    return axios.get(url, axiosConfig);
+            }
+        },
+        [cookie],
+    );
 
     return {
         user: {
@@ -49,6 +53,15 @@ export default function useApi() {
                 new ApiRequest<string>(() => request<string>('POST', '/user/login', login), enqueueSnackbar),
 
             info: () => new ApiRequest<User>(() => request<User>('GET', '/user/info'), enqueueSnackbar),
+        },
+
+        color: {
+            get: () => new ApiRequest<Color[]>(() => request<Color[]>('GET', '/color'), enqueueSnackbar),
+        },
+
+        wallet: {
+            add: (wallet: Wallet) =>
+                new ApiRequest<number>(() => request<number>('POST', '/wallet', wallet), enqueueSnackbar),
         },
     };
 }
