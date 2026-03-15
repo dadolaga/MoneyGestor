@@ -43,8 +43,18 @@ namespace logic {
 
         private static async Task TryToInsertColor(MoneyGestorContext dbContext, ColorDb color) {
             try {
-                await dbContext.AddAsync(color);
-                dbContext.Entry(color).Property(c => c.Id).IsModified = true;
+                var dbColor = dbContext.Colors.FirstOrDefault(c => c.Id == color.Id);
+
+                if (dbColor != null) {
+                    dbColor.Name = color.Name;
+                    dbColor.Value = color.Value;
+
+                    dbContext.Update(dbColor);
+                } else {
+                    await dbContext.AddAsync(color);
+                    dbContext.Entry(color).Property(c => c.Id).IsModified = true;
+                }
+
                 await dbContext.SaveChangesAsync();
             } catch (Exception) {
             }
@@ -52,8 +62,17 @@ namespace logic {
 
         private static async Task TryToInsertTransactionType(MoneyGestorContext dbContext, TransactionTypeDb transactionType) {
             try {
-                await dbContext.AddAsync(transactionType);
-                dbContext.Entry(transactionType).Property(tt => tt.Id).IsModified = true;
+                var dbTransactionType = dbContext.TransactionTypes.FirstOrDefault(tt => tt.Id == transactionType.Id);
+
+                if (dbTransactionType != null) {
+                    dbTransactionType.Name = transactionType.Name;
+
+                    dbContext.Update(dbContext);
+                } else {
+                    await dbContext.AddAsync(transactionType);
+                    dbContext.Entry(transactionType).Property(tt => tt.Id).IsModified = true;
+                }
+
                 await dbContext.SaveChangesAsync();
             } catch (Exception) {
             }
