@@ -72,6 +72,21 @@ namespace TestProject.Commands.Wallets {
         }
 
         [Test]
+        public async Task EffectiveUpdateColorPassedTheSameName() {
+            UInt64 newColorId = DatabaseInitializer.GREEN.Id;
+            var updateWalletCommand = new EditWalletCommand(walletIdToUpdate: wallet.AddWalletCommand.Result, name: wallet.Name, colorId: newColorId);
+
+            await ExecutorManager.Execute(updateWalletCommand);
+
+            using var db = DatabaseFactory.Use();
+            var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == updateWalletCommand.Result);
+
+            Assert.That(walletUpdated.Name, Is.EqualTo(wallet.Name));
+            Assert.That(walletUpdated.ColorId, Is.EqualTo(newColorId));
+            Assert.That(walletUpdated.Value, Is.EqualTo(wallet.Value));
+        }
+
+        [Test]
         public async Task DuplicateWalletName() {
             String secondName = "my_second_wallet";
             var addSecondWallet = new WalletSample(name: secondName);

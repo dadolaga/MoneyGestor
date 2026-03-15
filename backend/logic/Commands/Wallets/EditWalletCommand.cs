@@ -24,7 +24,7 @@ namespace logic.Commands.Wallets {
 
             var wallet = database.Wallets.FirstOrDefault(w => w.Id == this.walletIdToUpdate) ?? throw new ObjectNotFoundException("Wallet not found");
 
-            if (await database.Wallets.Where(w => w.UserId == executorManager.UserId && w.Name == name).CountAsync() > 0) {
+            if (await database.Wallets.Where(w => w.Id != walletIdToUpdate && w.UserId == executorManager.UserId && w.Name == name).CountAsync() > 0) {
                 throw new DuplicateObjectException("Wallet already exist");
             }
 
