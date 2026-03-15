@@ -31,9 +31,10 @@ export interface WalletTableRef {
 
 interface Props {
     ref: Ref<WalletTableRef>;
+    refreshPage: () => void;
 }
 
-export default function WalletTable({ ref }: Props) {
+export default function WalletTable({ ref, refreshPage }: Props) {
     const isMobile = useIsMobile();
 
     const api = useApi();
@@ -90,6 +91,7 @@ export default function WalletTable({ ref }: Props) {
 
         if (edited) {
             reloadWallets();
+            refreshPage();
         }
     };
 
@@ -108,6 +110,7 @@ export default function WalletTable({ ref }: Props) {
             .onSuccess(() => {
                 enqueueSnackbar('Portafoglio eliminato con successo', { variant: 'success' });
                 reloadWallets();
+                refreshPage();
             })
             .onFinish(() => {
                 setDeleteWallet(undefined);

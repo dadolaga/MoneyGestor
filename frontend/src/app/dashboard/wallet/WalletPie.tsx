@@ -1,34 +1,77 @@
-import { Box } from "@mui/material";
-import { ResponsivePie } from "@nivo/pie";
-import { convertNumberToValue } from "../../utilities/Utilities";
-import { Wallet } from "../../utilities/BackEndTypes";
+import { Box } from '@mui/material';
+import { ResponsivePie } from '@nivo/pie';
+import { convertNumberToValue } from '../../utilities/Utilities';
+import { Ref, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import useApi from '@/hooks/useApi';
+import { Wallet } from '@/models/backend';
+import { convertColor } from '@/utilis/color';
 
-interface IWalletPie {
-    wallets: Wallet[],
-    loading: boolean,
+export interface WalletPieRef {
+    refresh: () => void;
 }
 
-export function WalletPie({wallets}: IWalletPie) {
+interface Props {
+    ref: Ref<WalletPieRef>;
+}
+
+export default function WalletPie(props: Props) {
+    const api = useApi();
+
+    const [loading, setLoading] = useState<boolean>(false);
+    const [wallets, setWallets] = useState<Wallet[]>(undefined);
+
+    useImperativeHandle(
+        props.ref,
+        () => ({
+            refresh: () => {
+                reloadWallets();
+            },
+        }),
+        [],
+    );
+
+    useEffect(() => {
+        reloadWallets();
+    }, []);
+
+    const reloadWallets = useCallback(() => {
+        setLoading(true);
+        setWallets(undefined);
+
+        api.wallet
+            .get()
+            .onSuccess((wallets) => {
+                setWallets(wallets);
+            })
+            .onFinish(() => {
+                setLoading(false);
+            })
+            .execute();
+    }, [api]);
+
     return (
-        <Box sx={{flex: 1}} width={'100%'} height={'400px'}>
-            <ResponsivePie 
-                data={wallets == null? [] : wallets}
+        <Box width="100%" height="400px">
+            <ResponsivePie
+                data={wallets || []}
                 id={'name'}
-                margin={{left: -100, top: 20, bottom: 20}}
+                value={'value'}
+                sortByValue={true}
+                margin={{ left: -100, top: 20, bottom: 20 }}
                 enableArcLinkLabels={false}
-                sortByValue
                 valueFormat={(number) => convertNumberToValue(number)}
                 activeOuterRadiusOffset={10}
-                colors={(data) => "#" + data.data.color}
-                legends={[{
-                    anchor: "right",
-                    direction: "column",
-                    itemHeight: 15,
-                    itemWidth: 100,
-                    itemsSpacing: 10,
-                    itemTextColor: "#fff",
-                }]}
+                colors={(data) => convertColor(data.data.color.value)}
+                legends={[
+                    {
+                        anchor: 'right',
+                        direction: 'column',
+                        itemHeight: 15,
+                        itemWidth: 100,
+                        itemsSpacing: 10,
+                        itemTextColor: '#fff',
+                    },
+                ]}
             />
         </Box>
-    )
-};
+    );
+}
