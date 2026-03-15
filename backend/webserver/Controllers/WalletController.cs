@@ -1,10 +1,14 @@
 ﻿using logic;
+using logic.Commands.User;
 using logic.Commands.Wallets;
 using logic.Exceptions;
 using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Mysqlx.Resultset;
+using System.Xml.Linq;
 
 namespace webserver.Controllers {
     [ApiController]
@@ -28,6 +32,57 @@ namespace webserver.Controllers {
             } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplica wallet name");
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
+            var executor = new ExecutorManager(authorization);
+            await executor.LoginUser();
+
+            using var database = DatabaseFactory.Use();
+
+            var walletList = (await database.Wallets.Where(w => w.UserId == executor.UserId).Include(w => w.Color).ToListAsync())
+                .Select(w => w.Convert());
+
+            return OkResponse(walletList, "List of wallets");
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+            await executor.LoginUser();
+
+            using var database = DatabaseFactory.Use();
+
+            var wallet =database.Wallets.Where(w => w.Id == id && w.UserId == executor.UserId).Include(w => w.Color).First();
+
+            return OkResponse(wallet.Convert(), "List of wallets");
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+
+            var updateCommand = new EditWalletCommand(id, wallet.Name, wallet.Color?.Id);
+
+            try {
+                await executor.Execute(updateCommand);
+
+                return OkResponse();
+            } catch (DuplicateObjectException ex) {
+                return ErrorResponse(201, "Duplicate wallet name");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+
+            var deleteCommand = new DeleteWalletCommand(id);
+
+            await executor.Execute(deleteCommand);
+
+            return OkResponse();
         }
     }
 }

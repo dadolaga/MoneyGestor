@@ -26,7 +26,7 @@ export default function useApi() {
     const { enqueueSnackbar } = useSnackbar();
 
     const request = useCallback(
-        <T>(type: 'POST' | 'GET', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
+        <T>(type: 'POST' | 'GET' | 'PUT' | 'DELETE', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
             let axiosConfig: AxiosRequestConfig<any> = {
                 data: data,
                 headers: cookie && {
@@ -39,6 +39,10 @@ export default function useApi() {
                     return axios.post(url, data, axiosConfig);
                 case 'GET':
                     return axios.get(url, axiosConfig);
+                case 'PUT':
+                    return axios.put(url, data, axiosConfig);
+                case 'DELETE':
+                    return axios.delete(url, axiosConfig);
             }
         },
         [cookie],
@@ -62,11 +66,22 @@ export default function useApi() {
         wallet: {
             add: (wallet: Wallet) =>
                 new ApiRequest<number>(() => request<number>('POST', '/wallet', wallet), enqueueSnackbar),
+
+            get: () => new ApiRequest<Wallet[]>(() => request<Wallet[]>('GET', '/wallet'), enqueueSnackbar),
+
+            getSingle: (id: number) =>
+                new ApiRequest<Wallet>(() => request<Wallet>('GET', `/wallet/${id}`), enqueueSnackbar),
+
+            modify: (id: number, wallet: Wallet) =>
+                new ApiRequest<number>(() => request<number>('PUT', `/wallet/${id}`, wallet), enqueueSnackbar),
+
+            delete: (id: number) =>
+                new ApiRequest<number>(() => request<number>('DELETE', `/wallet/${id}`), enqueueSnackbar),
         },
     };
 }
 
-class ApiRequest<T_RETURN> {
+export class ApiRequest<T_RETURN> {
     private enqueueSnackbar: EnqueueSnackbar;
     private actionFunction: () => Promise<AxiosResponse<Response<T_RETURN>>>;
     private successFunction: (_data: T_RETURN) => void;

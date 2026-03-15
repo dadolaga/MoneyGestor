@@ -1,142 +1,221 @@
-import { faPen, faPlus, faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { faStar as faStartEmpty} from '@fortawesome/free-regular-svg-icons'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button, LinearProgress, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TableSortLabel } from "@mui/material";
-import { useState, forwardRef } from 'react'
-import WalletDialog from "./WalletDialog";
-import DeleteDialog from "./DeleteDialog";
-import { convertNumberToValue } from "../../utilities/Utilities";
-import { Wallet } from "../../utilities/BackEndTypes";
-import { useRestApi } from "../../request/Request";
-import { Order } from "../base/Order";
-import { useIsMobile } from "../../utilities/useMobile";
+import { faPen, faStar, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faStar as faStartEmpty } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    Box,
+    LinearProgress,
+    Paper,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHead,
+    TableRow,
+    TableSortLabel,
+} from '@mui/material';
+import { useState, useEffect, useImperativeHandle, Ref, useCallback } from 'react';
+import WalletDialog from './WalletDialog';
+import { convertNumberToValue } from '../../utilities/Utilities';
+import { useRestApi } from '../../request/Request';
+import { useIsMobile } from '../../utilities/useMobile';
+import { Wallet } from '@/models/backend';
+import useApi from '@/hooks/useApi';
+import DeleteDialog from '@/component/DeleteDialog';
+import { enqueueSnackbar } from 'notistack';
 
-interface IWalletTable {
-    wallets: Wallet[],
-    loading: boolean,
-    refreshWallets: () => void,
-    sort: Order,
-    setSort: (_: Order) => void,
+export interface WalletTableRef {
+    refreshTable: () => void;
 }
 
-const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort}: IWalletTable, _ref) => {
+interface Props {
+    ref: Ref<WalletTableRef>;
+}
+
+export default function WalletTable({ ref }: Props) {
     const isMobile = useIsMobile();
 
+    const api = useApi();
+
+    const [loading, setLoading] = useState<boolean>(false);
+    const [wallets, setWallets] = useState<Wallet[]>(undefined);
+    const [sort, setSort] = useState<{ [key: string]: 'asc' | 'desc' }>({});
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
-    const [openDeleteWalletDialog, setOpenDeleteWalletDialog] = useState(false);
+    const [deleteWallet, setDeleteWallet] = useState<Wallet>(undefined);
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
-    const [deleteWalletId, setDeleteWalletId] = useState<number>(undefined);
 
     const restApi = useRestApi();
 
-    const favoriteHandler = (id) =>  async (_event) => {
-        let wallet = await restApi.Wallet.Get(id);
+    useEffect(() => {
+        reloadWallets();
+    }, []);
 
-        restApi.Wallet.Modify(id, { favorite: !wallet.favorite })
-        .then(() => {
-            refreshWallets();
-        })
-    }
+    useImperativeHandle<WalletTableRef, WalletTableRef>(
+        ref,
+        () => ({
+            refreshTable: () => {
+                reloadWallets();
+            },
+        }),
+        [],
+    );
 
-    const closeWalletDialogHandler = (isSave: boolean) => {
-        setOpenWalletDialog(false);
+    const reloadWallets = useCallback(() => {
+        setLoading(true);
+        setWallets(undefined);
 
-        if(isSave)
-            refreshWallets();
-    }
+        api.wallet
+            .get()
+            .onSuccess((wallets) => {
+                setWallets(wallets);
+            })
+            .onFinish(() => {
+                setLoading(false);
+            })
+            .execute();
+    }, [api]);
 
-    const clickCreteNewWalletHandler = () => {
-        setEditWalletId(undefined);
-        setOpenWalletDialog(true);
-    }
+    const clickFavoriteHandler = (id) => async (_event) => {
+        enqueueSnackbar('Not implemented yet', { variant: 'warning' });
+    };
 
-    const editWalletHandler = (id: number) => () => {
+    const clickEditWalletHandler = (id: number) => () => {
         setEditWalletId(id);
         setOpenWalletDialog(true);
-    }
+    };
 
-    const deleteWalletHandler = (id: number) => () => {
-        setDeleteWalletId(id);
-        setOpenDeleteWalletDialog(true);
-    }
+    const closeEditWalletHandler = (edited: boolean) => {
+        setOpenWalletDialog(false);
 
-    const closeDeleteDialogHandler = (isDeleted: boolean) => {
-        setOpenDeleteWalletDialog(false);
+        if (edited) {
+            reloadWallets();
+        }
+    };
 
-        if(isDeleted)
-            refreshWallets();
-    }
+    const clickDeleteWalletHandler = (wallet: Wallet) => () => {
+        setDeleteWallet(wallet);
+    };
+
+    const deleteWalletHandler = (wallet?: Wallet) => {
+        if (wallet === undefined) {
+            setDeleteWallet(undefined);
+            return;
+        }
+
+        api.wallet
+            .delete(wallet.id)
+            .onSuccess(() => {
+                enqueueSnackbar('Portafoglio eliminato con successo', { variant: 'success' });
+                reloadWallets();
+            })
+            .onFinish(() => {
+                setDeleteWallet(undefined);
+            })
+            .execute();
+    };
 
     const clickOnOrderHandler = (nameOfElement: string) => () => {
-        setSort(sort.clickOnElement(nameOfElement));
-
-    }
+        setSort({ ...sort, [nameOfElement]: sort[nameOfElement] === 'asc' ? 'desc' : 'asc' });
+    };
 
     return (
-        <Box sx={{height: '100%', flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
-            <WalletDialog open={openWalletDialog} onClose={closeWalletDialogHandler} walletId={editWalletId} />
-            <DeleteDialog open={openDeleteWalletDialog} walletId={deleteWalletId} onClose={closeDeleteDialogHandler} />
-            <Button fullWidth={isMobile} variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickCreteNewWalletHandler}>crea nuovo portafoglio</Button>
-            <Paper sx={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'hidden'}}>
-                <TableContainer sx={{height: '100%'}}>
+        <Box sx={{ height: '100%', flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
+            <WalletDialog open={openWalletDialog} onClose={closeEditWalletHandler} walletId={editWalletId} />
+            <DeleteDialog
+                data={deleteWallet}
+                deleteMessage={(wallet) => `Sei sicuro di voler cancellare il portafoglio "${wallet.name}"?`}
+                onDelete={deleteWalletHandler}
+            />
+            <Paper
+                sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}
+            >
+                <TableContainer sx={{ height: '100%' }}>
                     <Table stickyHeader>
-                        <TableHead >
+                        <TableHead>
                             <TableRow>
                                 <TableCell>
                                     <TableSortLabel
-                                        active={sort.haveElement('name')}
-                                        direction={sort.getElement('name')?.order}
+                                        active={sort['name'] !== undefined}
+                                        direction={sort['name']}
                                         onClick={clickOnOrderHandler('name')}
-                                        >
+                                    >
                                         Nome
                                     </TableSortLabel>
                                 </TableCell>
                                 <TableCell style={{ width: '100px' }}>
                                     <TableSortLabel
-                                        active={sort.haveElement('value')}
-                                        direction={sort.getElement('value')?.order}
+                                        active={sort['value'] !== undefined}
+                                        direction={sort['value']}
                                         onClick={clickOnOrderHandler('value')}
-                                        >
+                                    >
                                         Valore
                                     </TableSortLabel>
                                 </TableCell>
-                                <TableCell style={{width: '20px'}}>Azioni</TableCell>
-                                <TableCell style={{width: '15px'}}></TableCell>
+                                <TableCell style={{ width: '20px' }}>Azioni</TableCell>
+                                <TableCell style={{ width: '15px' }}></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(!wallets || loading) && (<TableRow>
-                                <TableCell sx={{p: 0}} colSpan={4}><LinearProgress /></TableCell>
-                            </TableRow>)}
+                            {(!wallets || loading) && (
+                                <TableRow>
+                                    <TableCell sx={{ p: 0 }} colSpan={4}>
+                                        <LinearProgress />
+                                    </TableCell>
+                                </TableRow>
+                            )}
                             {wallets?.map((value: Wallet, index) => {
                                 return (
-                                    <TableRow key={index} sx={{"*": {color: '#' + value.color + '!important'}}}>
+                                    <TableRow key={index} sx={{ '*': { color: '#' + value.color + '!important' } }}>
                                         <TableCell> {value.name} </TableCell>
                                         <TableCell align="right"> {convertNumberToValue(value.value)} </TableCell>
                                         <TableCell>
-                                            <Box sx={{display: 'flex', gap: 2}} >
-                                                <FontAwesomeIcon style={{cursor: 'pointer'}} icon={faPen} onClick={editWalletHandler(value.id)}/>
-                                                <FontAwesomeIcon style={{cursor: 'pointer'}} icon={faTrash} onClick={deleteWalletHandler(value.id)}/>
+                                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                                <FontAwesomeIcon
+                                                    style={{ cursor: 'pointer' }}
+                                                    icon={faPen}
+                                                    onClick={clickEditWalletHandler(value.id)}
+                                                />
+                                                <FontAwesomeIcon
+                                                    style={{ cursor: 'pointer' }}
+                                                    icon={faTrash}
+                                                    onClick={clickDeleteWalletHandler(value)}
+                                                />
                                             </Box>
                                         </TableCell>
                                         <TableCell>
-                                            <FontAwesomeIcon style={{cursor: 'pointer'}} onClick={favoriteHandler(value.id)} icon={value.favorite? faStar : faStartEmpty} />
+                                            <FontAwesomeIcon
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={clickFavoriteHandler(value.id)}
+                                                icon={value.favorite ? faStar : faStartEmpty}
+                                            />
                                         </TableCell>
                                     </TableRow>
-                                )
+                                );
                             })}
                         </TableBody>
                         <TableFooter>
                             <TableRow>
-                                <TableCell sx={{textTransform: 'uppercase', fontWeight: 600, fontSize: '1em', fontStyle: 'italic'}}>
+                                <TableCell
+                                    sx={{
+                                        textTransform: 'uppercase',
+                                        fontWeight: 600,
+                                        fontSize: '1em',
+                                        fontStyle: 'italic',
+                                    }}
+                                >
                                     totale
                                 </TableCell>
-                                <TableCell sx={{textAlign: 'end', fontWeight: 600, fontSize: '1.1em'}}>
-                                    {wallets? (
-                                        convertNumberToValue(wallets
-                                        .map(wallet => wallet.value)
-                                        .reduce((value, currentValue) => value + currentValue, 0))
-                                    ) : (<Skeleton variant="text" />)}
+                                <TableCell sx={{ textAlign: 'end', fontWeight: 600, fontSize: '1.1em' }}>
+                                    {wallets ? (
+                                        convertNumberToValue(
+                                            wallets
+                                                .map((wallet) => wallet.value)
+                                                .reduce((value, currentValue) => value + currentValue, 0),
+                                        )
+                                    ) : (
+                                        <Skeleton variant="text" />
+                                    )}
                                 </TableCell>
                                 <TableCell colSpan={3} />
                             </TableRow>
@@ -145,10 +224,5 @@ const WalletTable = forwardRef(({wallets, loading, refreshWallets, sort, setSort
                 </TableContainer>
             </Paper>
         </Box>
-
     );
-})
-
-WalletTable.displayName = "WalletTable";
-
-export default WalletTable;
+}

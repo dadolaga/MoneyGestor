@@ -11,9 +11,8 @@ export default function Submit(props: IProps) {
     const { form, validate, insertError } = useForm();
 
     const submitHandler = () => {
-        if(!validate())
-            return;
-        
+        if (!validate()) return;
+
         props.onValidate(form).catch((error) => {
             Object.keys(error).forEach((key) => {
                 insertError(key, error[key]);

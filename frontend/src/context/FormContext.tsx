@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
 interface FormInformation {
     value: string | number;
@@ -40,23 +40,23 @@ export function checkIsEmail(text: string) {
 
 export function checkPassword(text: string) {
     if (text.length < 8) {
-        return "La password deve essere lunga almeno 8 caratteri";
+        return 'La password deve essere lunga almeno 8 caratteri';
     }
 
     if (!/[a-z]/.test(text)) {
-        return "La password deve contenere almeno una lettera minuscola";
+        return 'La password deve contenere almeno una lettera minuscola';
     }
 
     if (!/[A-Z]/.test(text)) {
-        return "La password deve contenere almeno una lettera maiuscola";
+        return 'La password deve contenere almeno una lettera maiuscola';
     }
 
     if (!/[0-9]/.test(text)) {
-        return "La password deve contenere almeno un numero";
+        return 'La password deve contenere almeno un numero';
     }
 
     if (!/[!@#$%^&*()_+\-=]/gm.test(text)) {
-        return "La password deve contenere almeno un carattere speciale";
+        return 'La password deve contenere almeno un carattere speciale';
     }
 
     return true;
@@ -64,8 +64,23 @@ export function checkPassword(text: string) {
 
 export const useForm = () => useContext<FormContext>(FormContext);
 
-export function FormProvider(props: { settings: FormSettings; children: ReactNode }) {
+export function FormProvider(props: {
+    settings: FormSettings;
+    default?: { [key: string]: string | number };
+    children: ReactNode;
+}) {
     const [form, setForm] = useState<FormType>({});
+
+    useEffect(() => {
+        if (props.default && Object.keys(form).length == 0) {
+            setForm(
+                Object.keys(props.default).reduce((acc, key) => {
+                    acc[key] = { value: props.default[key], error: undefined };
+                    return acc;
+                }, {}),
+            );
+        }
+    }, [props.default]);
 
     const validate = useCallback(() => {
         const newForm = { ...form };
@@ -79,7 +94,7 @@ export function FormProvider(props: { settings: FormSettings; children: ReactNod
                 valid = false;
 
                 if (value === undefined || value === null) {
-                    newForm[key] = { value: null, error: "Il campo non può essere vuoto" };
+                    newForm[key] = { value: null, error: 'Il campo non può essere vuoto' };
                 } else {
                     newForm[key].error = 'Il campo non può essere vuoto';
                 }
@@ -101,13 +116,17 @@ export function FormProvider(props: { settings: FormSettings; children: ReactNod
         return valid;
     }, [form, props.settings]);
 
-    const updateValue = (key: string, value: string | number) => {
-        setForm({ ...form, [key]: { value: value, error: undefined } });
-    };
+    const updateValue = useCallback((key: string, value: string | number) => {
+        setForm(form => ({ ...form, [key]: { value: value, error: undefined } }));
+    }, []);
 
-    const insertError = (key: string, error: string) => {
-        setForm({ ...form, [key]: { value: form[key]?.value, error: error } });
-    }
+    const insertError = useCallback((key: string, error: string) => {
+        setForm(form => ({ ...form, [key]: { value: form[key]?.value, error: error } }));
+    }, []);
 
-    return <FormContext.Provider value={{ form, updateValue, insertError, validate }}>{props.children}</FormContext.Provider>;
+    return (
+        <FormContext.Provider value={{ form, updateValue, insertError, validate }}>
+            {props.children}
+        </FormContext.Provider>
+    );
 }

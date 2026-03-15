@@ -12,7 +12,7 @@ import {
 import { useState, useEffect } from 'react';
 import { FormProvider, FormSettings, FormType, checkIsDecimal } from '@/context/FormContext';
 import Input from '@/component/Input';
-import useApi, { ResponseError } from '@/hooks/useApi';
+import useApi, { ResponseError, ApiRequest } from '@/hooks/useApi';
 import { Color, Wallet } from '@/models/backend';
 import { convertColor } from '@/utilis/color';
 import Submit from '@/component/Submit';
@@ -29,8 +29,9 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
     const { enqueueSnackbar } = useSnackbar();
 
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<number>(0);
     const [colors, setColors] = useState<Color[]>(undefined);
+    const [wallet, setWallet] = useState<Wallet>(undefined);
 
     const formSettings: FormSettings = {
         name: {
@@ -55,11 +56,16 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     useEffect(() => {
         if (!open) return;
 
+        setWallet(undefined);
         loadColor();
-    }, [open]);
+
+        if (walletId) {
+            loadWallet();
+        }
+    }, [open, walletId]);
 
     const loadColor = () => {
-        setLoading(true);
+        setLoading((i) => i + 1);
 
         api.color
             .get()
@@ -68,7 +74,21 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 setColors(colors);
             })
             .onFinish(() => {
-                setLoading(false);
+                setLoading((i) => i - 1);
+            })
+            .execute();
+    };
+
+    const loadWallet = () => {
+        setLoading((i) => i + 1);
+
+        api.wallet
+            .getSingle(walletId)
+            .onSuccess((wallet) => {
+                setWallet(wallet);
+            })
+            .onFinish(() => {
+                setLoading((i) => i - 1);
             })
             .execute();
     };
@@ -83,12 +103,21 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 },
             };
 
-            setLoading(true);
+            setLoading((i) => i + 1);
 
-            api.wallet
-                .add(wallet)
+            var apiRequest: ApiRequest<number> = walletId
+                ? api.wallet.modify(walletId, wallet)
+                : api.wallet.add(wallet);
+
+            apiRequest
                 .onSuccess(() => {
-                    enqueueSnackbar('Portafoglio aggiunto con successo', { variant: 'success' });
+                    enqueueSnackbar(
+                        walletId ? 'Portafoglio modificato con successo' : 'Portafoglio aggiunto con successo',
+                        { variant: 'success' },
+                    );
+                    
+                    onClose(true);
+                    
                     resolve();
                 })
                 .onError((err: ResponseError) => {
@@ -99,7 +128,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                     }
                 })
                 .onFinish(() => {
-                    setLoading(false);
+                    setLoading((i) => i - 1);
                 })
                 .execute();
         });
@@ -111,16 +140,21 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
     return (
         <Dialog open={open} fullWidth maxWidth="sm" onClose={onClose} PaperProps={{}}>
-            <FormProvider settings={formSettings}>
-                {loading && <LinearProgress />}
-                <DialogTitle>Crea nuovo portafoglio</DialogTitle>
+            <FormProvider
+                settings={formSettings}
+                default={wallet ? { name: wallet.name, value: wallet.value, color: wallet.color.id } : undefined}
+            >
+                {loading > 0 && <LinearProgress />}
+                <DialogTitle>
+                    {walletId ? `Modifica portafoglio: ${wallet ? wallet.name : '...'}` : 'Crea nuovo portafoglio'}
+                </DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
                         <Grid size={8}>
                             <Input type="text" name="name" label="Nome" />
                         </Grid>
                         <Grid size={4}>
-                            <Input type="text" name="value" label="Valore" />
+                            <Input type="text" name="value" label="Valore" disabled={walletId !== undefined} />
                         </Grid>
                         <Grid size={12}>
                             <Input
@@ -150,7 +184,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                     <Button onClick={onCloseHandler} color="secondary">
                         Annulla
                     </Button>
-                    <Submit label="Salva" onValidate={saveHandler} />
+                    <Submit label={walletId ? 'Modifica' : 'Salva'} onValidate={saveHandler} />
                 </DialogActions>
             </FormProvider>
         </Dialog>

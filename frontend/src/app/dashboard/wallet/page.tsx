@@ -1,48 +1,38 @@
-"use client"
+'use client';
 
-import { Box } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
-import WalletTable from './WalletTable'
-import { Wallet } from '../../utilities/BackEndTypes'
-import { useRestApi } from '../../request/Request'
-import { WalletPie } from './WalletPie'
-import { Order } from '../base/Order'
-import { useIsMobile } from '../../utilities/useMobile'
-import WalletDialog from './WalletDialog'
+import { Box, Button } from '@mui/material';
+import { useRef, useState } from 'react';
+import WalletTable from './WalletTable';
+import WalletDialog from './WalletDialog';
 
 export default function Page() {
     const tableWallet = useRef(null);
 
-    const isMobile = useIsMobile();
+    const [showWalletDialog, setShowWalletDialog] = useState<boolean>(false);
 
-    const [showWalletDialog, setShowWalletDialog] = useState<boolean>(true);
-    const [wallets, setWallets] = useState<Wallet[]>(undefined);
-    const [sort, setSort] = useState<Order>(new Order());
-    const [loading, setLoading] = useState<boolean>(false);
+    const clickAddWalletHandler = () => {
+        setShowWalletDialog(true);
+    };
 
-    const restApi = useRestApi();
+    const closeWalletHandler = (added: boolean) => {
+        setShowWalletDialog(false);
 
-    useEffect(() => {
-        //loadWallets();
-    }, [sort]);
-
-    function loadWallets() {
-        setLoading(true);
-
-        restApi.Wallet.List({ sort: sort.toUrlString() })
-        .then(wallet => setWallets(wallet))
-        .finally(() => setLoading(false))
-    }
-    
-    const refreshWalletHandler = () => {
-        loadWallets();
-    }
+        if(added) {
+            tableWallet.current.refreshTable();
+        }
+    };
 
     return (
-        <Box sx={{height: '100%', display: 'flex', flexDirection: "row", alignItems: 'center'}}>
-            <WalletDialog open={showWalletDialog} onClose={_ => setShowWalletDialog(false)} />
-            {/* <WalletTable ref={tableWallet} refreshWallets={refreshWalletHandler} wallets={wallets} loading={loading} sort={sort} setSort={setSort}/>
-            {!isMobile && (<WalletPie wallets={wallets} loading={loading} />)} */}
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <WalletDialog open={showWalletDialog} onClose={closeWalletHandler} />
+            <Box height="100%" width="100%" display="flex" flexDirection="column" gap={2}>
+                <Box width="100%" display="flex" flexDirection="row" justifyContent="end">
+                    <Button variant='contained' onClick={clickAddWalletHandler}> Aggiungi portafoglio </Button>
+                </Box>
+                <WalletTable ref={tableWallet} />
+            </Box>
+
+            {/*{!isMobile && (<WalletPie wallets={wallets} loading={loading} />)} */}
         </Box>
-    )
+    );
 }
