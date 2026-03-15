@@ -34,6 +34,9 @@ namespace webserver {
 
             builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy => policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod()));
 
+            builder.Services.AddExceptionHandler<MoneyGestorExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -51,6 +54,8 @@ namespace webserver {
             app.UseSerilogRequestLogging();
 
             app.UseCors();
+
+            app.UseExceptionHandler();
 
             app.Run();
         }
