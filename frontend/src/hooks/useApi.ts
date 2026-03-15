@@ -77,6 +77,9 @@ export default function useApi() {
 
             delete: (id: number) =>
                 new ApiRequest<number>(() => request<number>('DELETE', `/wallet/${id}`), enqueueSnackbar),
+
+            favorite: (id: number) =>
+                new ApiRequest<number>(() => request<number>('PUT', `/wallet/favorite/${id}`), enqueueSnackbar),
         },
     };
 }

@@ -46,8 +46,6 @@ export default function WalletTable({ ref, refreshPage }: Props) {
     const [deleteWallet, setDeleteWallet] = useState<Wallet>(undefined);
     const [editWalletId, setEditWalletId] = useState<number>(undefined);
 
-    const restApi = useRestApi();
-
     useEffect(() => {
         reloadWallets();
     }, []);
@@ -77,8 +75,14 @@ export default function WalletTable({ ref, refreshPage }: Props) {
             .execute();
     }, [api]);
 
-    const clickFavoriteHandler = (id) => async (_event) => {
-        enqueueSnackbar('Not implemented yet', { variant: 'warning' });
+    const clickFavoriteHandler = (id) => () => {
+        api.wallet
+            .favorite(id)
+            .onSuccess(() => {
+                enqueueSnackbar('Portafoglio aggiunto ai preferiti', { variant: 'success' });
+                reloadWallets();
+            })
+            .execute();
     };
 
     const clickEditWalletHandler = (id: number) => () => {
