@@ -70,12 +70,12 @@ namespace webserver.Controllers {
 
                 user.Password = "";
 
-                return OkReponse(user, "User information");
+                return OkResponse(user, "User information");
             } catch (ExecutorException ex) {
                 return ErrorResponse(121, "User not found or token exirated");
             }
         }
 
-        private IActionResult LoginResponse(String token) => OkReponse(token, "Login correct");
+        private IActionResult LoginResponse(String token) => OkResponse(token, "Login correct");
     }
 }

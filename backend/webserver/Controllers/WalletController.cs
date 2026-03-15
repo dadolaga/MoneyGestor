@@ -24,7 +24,7 @@ namespace webserver.Controllers {
             try {
                 await executor.Execute(addWalletCommand);
 
-                return CreateResponse(addWalletCommand.Result, "wallet");
+                return OkResponse();
             } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplica wallet name");
             }
