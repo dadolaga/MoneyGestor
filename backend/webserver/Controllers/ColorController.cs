@@ -14,16 +14,13 @@ namespace webserver.Controllers {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String? authorization) {
             var executor = new ExecutorManager(authorization);
-
-            var findUserComand = new FindUserByTokenCommand();
-
-            await executor.Execute(findUserComand);
+            await executor.LoginUser();
 
             using var database = DatabaseFactory.Use();
 
             var colorList = database
                 .Colors
-                .Where(c => c.UserId == null || c.UserId == findUserComand.Result)
+                .Where(c => c.UserId == null || c.UserId == executor.UserId)
                 .ToList()
                 .Select(c => new Color {
                     Id = c.Id,
@@ -32,7 +29,7 @@ namespace webserver.Controllers {
                     UserId = c.UserId
                 });
 
-            return OkReponse(colorList, "Color list");
+            return OkResponse(colorList, "Color list");
         }
     }
 }

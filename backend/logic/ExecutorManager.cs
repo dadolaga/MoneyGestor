@@ -2,13 +2,7 @@
 using logic.Commands;
 using logic.Commands.User;
 using logic.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace logic {
     public class ExecutorManager {
@@ -41,13 +35,7 @@ namespace logic {
             transaction = await DbContext.Database.BeginTransactionAsync();
 
             try {
-                if (userId == null && Token != null) {
-                    var findUserCommand = new FindUserByTokenCommand();
-
-                    await findUserCommand.Execute(this);
-
-                    userId = findUserCommand.Result;
-                }
+                await LoginUser();
 
                 await executor.Execute(this);
 
@@ -71,9 +59,27 @@ namespace logic {
         }
 
         public void CheckUserLogged() {
-            if (UserId == null) {
+            if (userId == null) {
                 throw new ExecutorException("User or token not setted");
             }
+        }
+
+        public async Task<Boolean> LoginUser() {
+            if (Token == null) {
+                return false;
+            }
+
+            if (userId != null) {
+                return true;
+            }
+
+            var findUserCommand = new FindUserByTokenCommand();
+
+            await findUserCommand.Execute(this);
+
+            userId = findUserCommand.Result;
+
+            return true;
         }
     }
 }
