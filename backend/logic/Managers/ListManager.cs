@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace logic.Managers {
     public static class ListManager {
-        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, String propertyName, Boolean descending) {
+        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, String propertyName, Boolean descending, Boolean first = true) {
             var type = typeof(T);
             var property = type.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
@@ -21,7 +21,7 @@ namespace logic.Managers {
             var propertyAccess = Expression.MakeMemberAccess(parameter, property);
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
 
-            String methodName = descending ? "OrderByDescending" : "OrderBy";
+            String methodName = first ? (descending ? "OrderByDescending" : "OrderBy") : (descending ? "ThenByDescending" : "ThenBy");
             var resultExp = Expression.Call(typeof(Queryable), methodName,
                                 new System.Type[] { type, property.PropertyType },
                                 source.Expression, Expression.Quote(orderByExp));
@@ -29,12 +29,25 @@ namespace logic.Managers {
             return (IOrderedQueryable<T>) source.Provider.CreateQuery<T>(resultExp);
         }
 
-        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order) => source.OrderByPropertyName(order.Name, order.Descendent);
+        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) => source.OrderByPropertyName(order.Name, order.Descendent, first);
+
+        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, IList<Order> orders) {
+            Boolean first = true;
+            var newSource = (IOrderedQueryable<T>) source;
+
+            foreach (var order in orders) {
+                newSource = newSource.OrderByPropertyName(order, first);
+                first = false;
+            }
+
+            return newSource;
+        }
+
 
         public static IOrderedQueryable<T> ApplyFilter<T>(this IQueryable<T> source, ListFilter filter) {
-            source = source.Skip(filter.Offset * filter.Limit).Take(filter.Limit);
+            source = source.Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit);
 
-            return filter.Orders.Count > 0 ? source.OrderByPropertyName(filter.Orders.First()) : (IOrderedQueryable<T>) source;
+            return source.OrderByPropertyName(filter.Orders);
         }
     }
 }
