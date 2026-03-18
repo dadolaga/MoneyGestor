@@ -18,7 +18,7 @@ export type FormSettings = {
     [key: string]: {
         mandatory?: boolean;
         checkers?: {
-            action: (_value: string | number) => boolean | string;
+            action: (_value: string | number, form: FormType) => boolean | string;
             message: string;
         }[];
     };
@@ -88,22 +88,26 @@ export function FormProvider(props: {
 
         Object.keys(props.settings).forEach((key) => {
             const value = form[key]?.value;
+            const isMandatory = props.settings[key]?.mandatory || false;
             const checkers = props.settings[key]?.checkers || [];
 
-            if (value === undefined || value === null || value.toString().length === 0) {
+            // Reset error value
+            if (newForm[key] === undefined) {
+                newForm[key] = { value: null, error: undefined };
+            } else {
+                newForm[key].error = undefined;
+            }
+
+            if (isMandatory && (value === undefined || value === null || value.toString().length === 0)) {
                 valid = false;
 
-                if (value === undefined || value === null) {
-                    newForm[key] = { value: null, error: 'Il campo non può essere vuoto' };
-                } else {
-                    newForm[key].error = 'Il campo non può essere vuoto';
-                }
+                newForm[key].error = 'Il campo non può essere vuoto';
 
                 return;
             }
 
             checkers.forEach((checker) => {
-                const checkResult = checker.action(value);
+                const checkResult = checker.action(value, newForm);
                 if (checkResult === false || (typeof checkResult === 'string' && checkResult.length > 0)) {
                     newForm[key].error = typeof checkResult === 'string' ? checkResult : checker.message;
                     valid = false;
@@ -117,11 +121,11 @@ export function FormProvider(props: {
     }, [form, props.settings]);
 
     const updateValue = useCallback((key: string, value: string | number) => {
-        setForm(form => ({ ...form, [key]: { value: value, error: undefined } }));
+        setForm((form) => ({ ...form, [key]: { value: value, error: undefined } }));
     }, []);
 
     const insertError = useCallback((key: string, error: string) => {
-        setForm(form => ({ ...form, [key]: { value: form[key]?.value, error: error } }));
+        setForm((form) => ({ ...form, [key]: { value: form[key]?.value, error: error } }));
     }, []);
 
     return (

@@ -11,6 +11,7 @@ import {
     MenuItem,
     FormControlLabel,
     Checkbox,
+    StandardTextFieldProps,
 } from '@mui/material';
 import { ChangeEventHandler } from 'react';
 import { DatePicker, DatePickerProps, LocalizationProvider } from '@mui/x-date-pickers';
@@ -38,6 +39,7 @@ interface IInput {
     endAdornment?: React.ReactNode;
     values?: IValuesType[];
     dataMoreOption?: DatePickerProps;
+    onChange?: (action: any) => void;
 }
 
 dayjs.extend(utc);
@@ -52,6 +54,10 @@ export default function Input(props: IInput) {
         (name: string): ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> =>
         (action) => {
             updateValue(name, action.target.value);
+
+            if (props.onChange) {
+                props.onChange(action);
+            }
         };
 
     const dateChangeHandler =
@@ -59,18 +65,30 @@ export default function Input(props: IInput) {
         (action: Dayjs) => {
             if (action && action.isValid())
                 updateValue(name, action.hour(0).minute(0).second(0).utc(true).toISOString());
+
+            if (props.onChange) {
+                props.onChange(action);
+            }
         };
 
     const selectChangeHandler =
         (name: string): ((_event: SelectChangeEvent<string>) => void) =>
         (action) => {
             updateValue(name, props.values.find((value) => value.key === parseInt(action.target.value)).key);
+
+            if (props.onChange) {
+                props.onChange(action);
+            }
         };
 
     const checkChangeHandler =
         (name: string): ((_event: any) => void) =>
         (action) => {
             updateValue(name, `${action.target.checked}`);
+
+            if (props.onChange) {
+                props.onChange(action);
+            }
         };
 
     switch (props.type) {
@@ -108,7 +126,11 @@ export default function Input(props: IInput) {
                                 helperText: form[props.name]?.error,
                             },
                         }}
-                        value={dayjs(form[props.name].value, 'YYYY-MM-DD', 'it')}
+                        value={
+                            form[props.name]?.value !== undefined
+                                ? dayjs(form[props.name].value, 'YYYY-MM-DD', 'it')
+                                : null
+                        }
                         onChange={dateChangeHandler(props.name)}
                         disabled={props.disabled}
                         {...props.dataMoreOption}
@@ -130,7 +152,7 @@ export default function Input(props: IInput) {
                         labelId={`select-${props.name}`}
                         label={`${props.label}`}
                         name={props.name}
-                        value={form[props.name]?.value || ""}
+                        value={form[props.name]?.value || ''}
                         onChange={selectChangeHandler(props.name)}
                         disabled={props.disabled}
                     >

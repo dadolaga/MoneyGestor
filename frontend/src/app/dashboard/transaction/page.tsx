@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { ChangeEventHandler, useRef, useState } from 'react'
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Box, Button } from "@mui/material";
-import TransactionDialog from "./TransactionDialog";
+import { ChangeEventHandler, useRef, useState } from 'react';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Box, Button } from '@mui/material';
+import TransactionDialog from './TransactionDialog';
 import { TransactionTable, TransactionTableRef } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
 import { TransactionGraph } from './TransactionGraph';
@@ -17,7 +17,7 @@ export default function Page() {
 
     const isMobile = useIsMobile();
 
-    const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
+    const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(true);
     const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState<boolean>(false);
     const [, setOpenImportFromCsvDialog] = useState<boolean>(false);
     const [transactionId, setTransactionId] = useState<number>(undefined);
@@ -33,17 +33,8 @@ export default function Page() {
         setOpenImportFromCsvDialog(true);
 
         setCsvFile(event.target.files[0]);
-        event.target.value = "";
-    }
-
-    const closeDeleteDialogHandler = (isToReload: boolean) => {
-        if (isToReload) {
-            tableRef.current.refreshTable();
-            graph.current.loadTransaction();
-        }
-
-        setOpenTransactionDeleteDialog(false);
-    }
+        event.target.value = '';
+    };
 
     const closeTransactionDialogHandler = (isToReload: boolean) => {
         if (isToReload) {
@@ -52,37 +43,59 @@ export default function Page() {
         }
 
         setOpenTransactionDialog(false);
-    }
+    };
 
     return (
-        <>
-            <TransactionDialog open={openTransactionDialog} onClose={closeTransactionDialogHandler} transactionId={transactionId} />
-            {/* <ImportFromCsvDialog open={openImportFromCsvDialog} onClose={closeImportFromCsvDialog} file={csvFile} /> */}
-            <DeleteDialog
-                open={openTransactionDeleteDialog}
-                onClose={closeDeleteDialogHandler}
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <TransactionDialog
+                open={openTransactionDialog}
+                onClose={closeTransactionDialogHandler}
                 transactionId={transactionId}
-                transactionDescription={transactionDescription} />
-            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }} >
-                <Box sx={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 1 }}>
-                    <Box display='flex' width={isMobile ? "100%" : undefined} gap={2} flexDirection={isMobile ? "column" : "row"}>
-                        <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={openTransactionDialogHandler}>Aggiungi nuova transazione</Button>
-                        {/* <Button variant="outlined" startIcon={<FontAwesomeIcon icon={faPlus} />} onClick={clickAddTransactionFromCSV} aria-hidden>Importa da file csv</Button> */}
-                        <input ref={fileInput} type='file' style={{ display: 'none' }} accept='text/csv' onChange={inputFileChange} />
-                    </Box>
-                    <TransactionTable
-                        ref={tableRef}
-                        setOpenTransactionDialog={setOpenTransactionDialog}
-                        setTransactionDialogId={setTransactionId}
-                        setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog}
-                        setTransactionDescription={setTransactionDescription} />
+            />
+            {/* <Box
+                sx={{
+                    height: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'start',
+                    gap: 1,
+                }}
+            >
+                <Box
+                    display="flex"
+                    width={isMobile ? '100%' : undefined}
+                    gap={2}
+                    flexDirection={isMobile ? 'column' : 'row'}
+                >
+                    <Button
+                        variant="outlined"
+                        startIcon={<FontAwesomeIcon icon={faPlus} />}
+                        onClick={openTransactionDialogHandler}
+                    >
+                        Aggiungi nuova transazione
+                    </Button>
+                    <input
+                        ref={fileInput}
+                        type="file"
+                        style={{ display: 'none' }}
+                        accept="text/csv"
+                        onChange={inputFileChange}
+                    />
                 </Box>
-                {!isMobile && (
-                    <Box sx={{ height: '100%', overflow: 'hidden', p: 4 }}>
-                        <TransactionGraph ref={graph} />
-                    </Box>
-                )}
+                <TransactionTable
+                    ref={tableRef}
+                    setOpenTransactionDialog={setOpenTransactionDialog}
+                    setTransactionDialogId={setTransactionId}
+                    setOpenTransactionDeleteDialog={setOpenTransactionDeleteDialog}
+                    setTransactionDescription={setTransactionDescription}
+                />
             </Box>
-        </>
-    )
+            {!isMobile && (
+                <Box sx={{ height: '100%', overflow: 'hidden', p: 4 }}>
+                    <TransactionGraph ref={graph} />
+                </Box>
+            )} */}
+        </Box>
+    );
 }

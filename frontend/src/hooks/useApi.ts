@@ -4,7 +4,7 @@ import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCallback } from 'react';
 import { get } from 'http';
-import { Color, Login, User, Wallet } from '@/models/backend';
+import { Color, Login, Transaction, Type, User, Wallet } from '@/models/backend';
 
 export interface Response<T> {
     code: number;
@@ -80,6 +80,15 @@ export default function useApi() {
 
             favorite: (id: number) =>
                 new ApiRequest<number>(() => request<number>('PUT', `/wallet/favorite/${id}`), enqueueSnackbar),
+        },
+
+        type: {
+            get: () => new ApiRequest<Type[]>(() => request<Type[]>('GET', '/type'), enqueueSnackbar),
+        },
+
+        transaction: {
+            add: (transaction: Transaction) =>
+                new ApiRequest<number>(() => request<number>('POST', '/transaction', transaction), enqueueSnackbar),
         },
     };
 }

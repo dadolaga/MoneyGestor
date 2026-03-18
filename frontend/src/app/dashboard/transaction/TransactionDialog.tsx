@@ -1,288 +1,291 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, LinearProgress, TextField, Typography, InputAdornment, IconButton } from "@mui/material";
-import 'dayjs/locale/it'
-import { useEffect, useState } from "react";
-import { TransitionDialog } from "../base/transition";
-import dayjs from "dayjs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
-import { Request, useRestApi } from "../../request/Request";
-import { TransactionForm, TransactionType, TransactionTypePrintable, Wallet, WalletPrintable } from "../../utilities/BackEndTypes";
-import { enqueueSnackbar } from "notistack";
-import Input from "../../component/Input";
-import { BaseChecker, Form, FormSettings } from "../../form/Form";
-import { IFormMultiType } from "../../utilities/Interfaces";
-import { useIsMobile } from "../../utilities/useMobile";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Grid,
+    LinearProgress,
+    TextField,
+    Typography,
+    InputAdornment,
+    IconButton,
+    SelectChangeEvent,
+} from '@mui/material';
+import 'dayjs/locale/it';
+import { useCallback, useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { Request, useRestApi } from '../../request/Request';
+import { enqueueSnackbar } from 'notistack';
+import { useIsMobile } from '../../utilities/useMobile';
+import { FormProvider, FormSettings, FormType } from '@/context/FormContext';
+import Input from '@/component/Input';
+import Submit from '@/component/Submit';
+import useApi from '@/hooks/useApi';
+import { Transaction, Type, Wallet } from '@/models/backend';
 
-const ID_EXCHANGE_TYPE = 1;
-const ID_STOCK_TYPE = 3;
+const ID_TRANSFER_TYPE = 1;
+const ID_ADJUST_TYPE = 2;
 
-const formSettings: FormSettings[] = [{
-    name: "description",
-    checks: [{
-        action: (value, values) =>
-            ((values["type"] as IFormMultiType)?.getKey() != ID_EXCHANGE_TYPE) ? BaseChecker.isEmpty(value) : false,
-        text: "La descrizione non può essere vuota"
-    }]
-}, {
-    name: "value",
-    checks: [{
-        action: BaseChecker.isEmpty,
-        text: "Il valore non può essere vuoto"
-    }, {
-        action: BaseChecker.isNotNumber,
-        text: "Il valore deve essere un numero"
-    }]
-}, {
-    name: "type",
-    checks: [{
-        action: BaseChecker.isEmpty,
-        text: "Il tipo non può essere vuoto"
-    }]
-}, {
-    name: "wallet",
-    checks: [{
-        action: BaseChecker.isEmpty,
-        text: "Il portafoglio non può essere vuoto"
-    }]
-}, {
-    name: "wallet-destination",
-    checks: [{
-        action: (value, values) =>
-            ((values["type"] as IFormMultiType)?.getKey() == ID_EXCHANGE_TYPE) ? BaseChecker.isEmpty(value) : false,
-        text: "Il portafoglio di destinazione non può essere vuoto"
-    }]
-}
-];
+const formSettings: FormSettings = {
+    description: {
+        mandatory: false,
+        checkers: [
+            {
+                action: (value: string, form) =>
+                    (form['type'] !== undefined &&
+                        form['type'].value !== null &&
+                        form['type'].value == ID_TRANSFER_TYPE) ||
+                    (value !== undefined && value !== null && value.length > 0),
+                message: 'La descrizione non può essere vuota',
+            },
+        ],
+    },
+    date: {
+        mandatory: true,
+    },
+    value: {
+        mandatory: true,
+    },
+    type: {
+        mandatory: true,
+    },
+    wallet: {
+        mandatory: true,
+        checkers: [
+            {
+                action: (value, form) =>
+                    form['type']?.value !== ID_TRANSFER_TYPE ||
+                    form['wallet']?.value !== form['wallet-destination']?.value,
+                message: 'Il portafoglio di origine deve essere diverso dal portafoglio di destinazione',
+            },
+        ],
+    },
+    'wallet-destination': {
+        mandatory: false,
+        checkers: [
+            {
+                action: (value, form) =>
+                    form['type']?.value !== ID_TRANSFER_TYPE || (value !== undefined && value !== null),
+                message: 'Il portafoglio di destinazione non può essere vuoto',
+            },
+            {
+                action: (value, form) =>
+                    value === undefined ||
+                    value === null ||
+                    form['type']?.value !== ID_TRANSFER_TYPE ||
+                    form['wallet']?.value !== form['wallet-destination']?.value,
+                message: 'Il portafoglio di destinazione deve essere diverso dal portafoglio di origine',
+            },
+        ],
+    },
+};
 
 export default function TransactionDialog({ open, onClose, transactionId }) {
     const isMobile = useIsMobile();
 
-    const [loading, setLoading] = useState<boolean>(true);
+    const api = useApi();
+
+    const [loading, setLoading] = useState<number>(0);
     const [wallets, setWallets] = useState<Wallet[]>(undefined);
-    const [types, setTypes] = useState<TransactionType[]>(undefined);
+    const [types, setTypes] = useState<Type[]>(undefined);
+
+    const [typeSelectedId, setTypeSelectedId] = useState<number>(undefined);
 
     const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState<boolean>(false);
 
-    const restApi = useRestApi();
-
-    const [form, setForm] = useState<Form>(new Form(formSettings));
     const [sign, setSign] = useState<boolean>(true); // false: plus - true: minus
 
     useEffect(() => {
-        if (!open)
-            return;
+        loadTransactionType();
+        loadWallet();
+    }, []);
 
-        form.reset();
+    const loadTransactionType = useCallback(() => {
+        setLoading((i) => i + 1);
 
-        setLoading(true);
-
-        let promiseArray: Promise<any>[] = [];
-
-        promiseArray.push(loadWallet());
-        promiseArray.push(loadType());
-
-        if (transactionId) {
-            promiseArray.push(loadTransaction());
-        }
-
-        Promise.all(promiseArray).finally(() => {
-            setLoading(false);
-        })
-    }, [open]);
-
-    function loadWallet(): Promise<void> {
-        return restApi.Wallet.List({ sort: "!favorite-name" })
-            .then(wallets => setWallets(wallets));
-    }
-
-    function loadType(): Promise<any> {
-        return restApi.TransactionType.GetAll()
-            .then(transactionTypes => setTypes(transactionTypes.filter(transactionType => transactionType.id != ID_STOCK_TYPE)));
-    }
-
-    function loadTransaction(): Promise<any> {
-        return restApi.Transaction.Get(transactionId)
-            .then(transaction => setForm(form => form.setValues({
-                ...transaction,
-                type: new TransactionTypePrintable(transaction.type),
-                wallet: new WalletPrintable(transaction.wallet),
-                "wallet-destination": transaction.walletDestination ? new WalletPrintable(transaction.walletDestination) : undefined,
-                value: transaction.walletDestination ? Math.abs(transaction.value) : transaction.value,
-                date: transaction.date || ""
-            })));
-    }
-
-    function saveTransaction() {
-        setLoading(true);
-
-        let transactionForm: TransactionForm = {
-            description: form.getStringValue("description"),
-            date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
-            value: isMobile ? (parseFloat(form.getStringValue("value")) *
-                ((form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && sign) ? -1 : 1)) : parseFloat(form.getStringValue("value")),
-            typeId: form.getValue("type")?.getKey() as number,
-            wallet: form.getValue("wallet")?.getKey() as number,
-            walletDestination: form.getValue("wallet-destination")?.getKey() as number
-        }
-
-        restApi.Transaction.Create(transactionForm)
-            .then(() => {
-                onClose(true);
+        api.type
+            .get()
+            .onSuccess((types) => {
+                setTypes(types);
             })
-            .catch(Request.ErrorGestor([{
-                code: 201,
-                action: () => setForm(form => form.setManualError("value", "Il portafoglio andrebbe in negativo"))
-            }]))
-            .finally(() => {
-                setLoading(false);
+            .onFinish(() => {
+                setLoading((i) => i - 1);
             })
-    }
+            .execute();
+    }, []);
 
-    function editTransaction() {
-        setLoading(true);
+    const loadWallet = useCallback(() => {
+        setLoading((i) => i + 1);
 
-        let transactionForm: TransactionForm = {
-            description: form.getStringValue("description"),
-            date: form.getStringValue("date") ?? dayjs.utc().hour(0).minute(0).second(0).millisecond(0).toISOString(),
-            value: parseFloat(form.getStringValue("value")),
-            typeId: form.getValue("type")?.getKey() as number,
-            wallet: form.getValue("wallet")?.getKey() as number,
-            walletDestination: form.getValue("wallet-destination")?.getKey() as number
-        }
+        api.wallet
+            .get()
+            .onSuccess((wallets) => {
+                setWallets(wallets);
+            })
+            .onFinish(() => {
+                setLoading((i) => i - 1);
+            })
+            .execute();
+    }, []);
 
-        restApi.Transaction.Modify(transactionId, transactionForm)
-            .then(() => onClose(true))
-            .catch(Request.ErrorGestor([{
-                code: 201,
-                action: () => setForm(form => form.setManualError("value", "Il portafoglio andrebbe in negativo"))
-            }]))
-            .finally(() => setLoading(false));
-    }
+    const typeChangeHandler = useCallback((action: SelectChangeEvent<string>) => {
+        setTypeSelectedId(parseInt(action.target.value));
+    }, []);
 
-    const saveHandler = () => {
-        setForm(form => form.check());
-        if (form.isCheckFail())
-            return;
+    const saveTransactionHandler = useCallback(
+        (form: FormType) => {
+            return new Promise<void>((resolve, reject) => {
+                var transaction: Transaction = {
+                    description: form['description'].value as string,
+                    date: form['date'].value as string,
+                    value: form['value'].value as number,
+                    transactionType: {
+                        id: form['type'].value as number,
+                    },
+                    wallet: {
+                        id: form['wallet'].value as number,
+                    },
+                    walletDestination: {
+                        id: form['wallet-destination'].value as number,
+                    },
+                };
 
-        if (transactionId == null)
-            saveTransaction();
-        else
-            editTransaction();
-    }
+                console.log(transaction);
 
-    const cancelHandler = () => {
-        onClose(false);
-    }
+                api.transaction
+                    .add(transaction)
+                    .onSuccess(() => {
+                        onClose(true);
+                    })
+                    .onError((error) => {
+                        switch (error.code) {
+                            case 301:
+                                reject({ wallet: 'Il portafoglio andrebbe in negativo' });
+                                break;
+                        }
+                    })
+                    .execute();
 
-    const addNewTypeClickHandler = () => {
-        setOpenAddNewTypeDialog(true);
-    }
-
-    const closeAddNewTypeHandler = (isToRefresh: boolean) => {
-        setOpenAddNewTypeDialog(false);
-
-        if (isToRefresh) {
-            setLoading(true);
-            loadType().finally(() => setLoading(false));
-        }
-    }
-
-    const changeSignHandler = () => {
-        setSign(!sign);
-    }
+                resolve();
+            });
+        },
+        [api.user],
+    );
 
     return (
-        <Dialog open={open} onClose={onClose} TransitionComponent={TransitionDialog}>
-            <AddNewTypeDialog open={openAddNewTypeDialog} onClose={closeAddNewTypeHandler} />
-            {loading && <LinearProgress />}
-            <DialogTitle>Crea nuova transazione</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Inserire i dati della nuova transizione
-                </DialogContentText>
-                <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
-                    <Grid size={{ xs: 12 }}>
-                        <Input
-                            type="text"
-                            form={form}
-                            setForm={setForm}
-                            name="description"
-                            label="Descrizione"
-                            disabled={loading} />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 8 }}>
-                        <Input
-                            type="date"
-                            form={form}
-                            setForm={setForm}
-                            name="date"
-                            label="Data"
-                            disabled={loading} />
-                    </Grid>
-                    {isMobile && form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE && (<Grid size={{ xs: 2 }} display="flex" alignItems="center" justifyContent="center">
-                        <IconButton onClick={changeSignHandler}>
-                            <FontAwesomeIcon icon={sign ? faMinus : faPlus} />
-                        </IconButton>
-                    </Grid>)}
-                    <Grid size={{ xs: form.getValue("type")?.getKey() != ID_EXCHANGE_TYPE ? 10 : 12, sm: 4 }}>
-                        <Input
-                            type={"text"}
-                            inputProps={{ inputMode: "numeric" }}
-                            form={form}
-                            setForm={setForm}
-                            name="value"
-                            label="Valore"
-                            endAdornment={<InputAdornment position="end">€</InputAdornment>}
-                            disabled={loading} />
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE ? 12 : 4 }}>
-                        <Input
-                            type="multi"
-                            form={form}
-                            setForm={setForm}
-                            name="type"
-                            label="Tipo"
-                            disabled={loading}
-                            values={TransactionTypePrintable.convert(types)} />
-                        <Typography
-                            sx={{ ":hover": { textDecorationLine: "underline" }, fontSize: '.85em', pl: .5, cursor: "pointer", fontStyle: 'italic', color: "#219ebc" }}
-                            onClick={addNewTypeClickHandler} >
-                            Aggiungi nuovo tipo
-                        </Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE ? 5 : 8 }}>
-                        <Input
-                            type="multi"
-                            form={form}
-                            setForm={setForm}
-                            name="wallet"
-                            label="Portafoglio"
-                            disabled={loading}
-                            values={WalletPrintable.convert(wallets)} />
-                    </Grid>
-                    {form.getValue("type")?.getKey() == ID_EXCHANGE_TYPE && (
-                        <>
-                            <Grid size={{ xs: 12, md: 2 }} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }} >
-                                <FontAwesomeIcon icon={isMobile ? faArrowDownLong : faArrowRightLong} size="2x" />
+        <Dialog open={open} onClose={onClose}>
+            <AddNewTypeDialog open={openAddNewTypeDialog} onClose={() => {}} />
+            {loading !== 0 && <LinearProgress />}
+            <FormProvider settings={formSettings}>
+                <DialogTitle>Crea nuova transazione</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Inserire i dati della nuova transizione</DialogContentText>
+                    <Grid container spacing={2} sx={{ marginTop: 1 }} component="form">
+                        <Grid size={{ xs: 12 }}>
+                            <Input type="text" name="description" label="Descrizione" disabled={loading !== 0} />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 8 }}>
+                            <Input type="date" name="date" label="Data" disabled={loading !== 0} />
+                        </Grid>
+                        {isMobile && typeSelectedId != ID_TRANSFER_TYPE && (
+                            <Grid size={{ xs: 2 }} display="flex" alignItems="center" justifyContent="center">
+                                <IconButton onClick={() => {}}>
+                                    <FontAwesomeIcon icon={sign ? faMinus : faPlus} />
+                                </IconButton>
                             </Grid>
-                            <Grid size={{ xs: 12, sm: 5 }}>
-                                <Input
-                                    type="multi"
-                                    form={form}
-                                    setForm={setForm}
-                                    name="wallet-destination"
-                                    label="Portafoglio destinazione"
-                                    disabled={loading}
-                                    values={WalletPrintable.convert(wallets)} />
-                            </Grid>
-                        </>
-                    )}
-                </Grid>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={cancelHandler} color="secondary" >Annulla</Button>
-                <Button onClick={saveHandler} disabled={loading} >{transactionId == null ? 'Salva' : 'Modifica'}</Button>
-            </DialogActions>
+                        )}
+                        <Grid size={{ xs: typeSelectedId != ID_TRANSFER_TYPE ? 10 : 12, sm: 4 }}>
+                            <Input
+                                type={'text'}
+                                inputProps={{ inputMode: 'numeric' }}
+                                name="value"
+                                label="Valore"
+                                endAdornment={<InputAdornment position="end">€</InputAdornment>}
+                                disabled={loading !== 0}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: typeSelectedId == ID_TRANSFER_TYPE ? 12 : 4 }}>
+                            <Input
+                                type="multi"
+                                name="type"
+                                label="Tipo"
+                                disabled={loading !== 0}
+                                values={types?.map((value) => ({
+                                    key: value.id,
+                                    text: (
+                                        <Typography
+                                            fontStyle={
+                                                value.id == ID_ADJUST_TYPE || value.id == ID_TRANSFER_TYPE
+                                                    ? 'italic'
+                                                    : undefined
+                                            }
+                                        >
+                                            {value.name}
+                                        </Typography>
+                                    ),
+                                }))}
+                                onChange={typeChangeHandler}
+                            />
+                            <Typography
+                                sx={{
+                                    ':hover': { textDecorationLine: 'underline' },
+                                    fontSize: '.85em',
+                                    pl: 0.5,
+                                    cursor: 'pointer',
+                                    fontStyle: 'italic',
+                                    color: '#219ebc',
+                                }}
+                                onClick={() => {}}
+                            >
+                                Aggiungi nuovo tipo
+                            </Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: typeSelectedId == ID_TRANSFER_TYPE ? 5 : 8 }}>
+                            <Input
+                                type="multi"
+                                name="wallet"
+                                label="Portafoglio"
+                                disabled={loading !== 0}
+                                values={wallets?.map((value) => ({
+                                    key: value.id,
+                                    text: value.name,
+                                }))}
+                            />
+                        </Grid>
+                        {typeSelectedId == ID_TRANSFER_TYPE && (
+                            <>
+                                <Grid
+                                    size={{ xs: 12, md: 2 }}
+                                    sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <FontAwesomeIcon icon={isMobile ? faArrowDownLong : faArrowRightLong} size="2x" />
+                                </Grid>
+                                <Grid size={{ xs: 12, sm: 5 }}>
+                                    <Input
+                                        type="multi"
+                                        name="wallet-destination"
+                                        label="Portafoglio destinazione"
+                                        disabled={loading !== 0}
+                                        values={wallets?.map((value) => ({
+                                            key: value.id,
+                                            text: value.name,
+                                        }))}
+                                    />
+                                </Grid>
+                            </>
+                        )}
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => {}} color="secondary">
+                        Annulla
+                    </Button>
+                    <Submit label="Salva" onValidate={saveTransactionHandler} />
+                </DialogActions>
+            </FormProvider>
         </Dialog>
     );
 }
@@ -290,7 +293,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
 function AddNewTypeDialog({ open, onClose }) {
     const [loading, setLoading] = useState<boolean>(false);
 
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState<string>('');
 
     const [typeError, setTypeError] = useState(null);
 
@@ -298,32 +301,36 @@ function AddNewTypeDialog({ open, onClose }) {
 
     function addNewType() {
         if (value.trim().length <= 0) {
-            setTypeError("Inserire un valore per il tipo")
+            setTypeError('Inserire un valore per il tipo');
             return;
         }
 
         setLoading(true);
 
         restApi.TransactionType.Create({ name: value })
-            .then(_ => {
+            .then((_) => {
                 onClose(true);
             })
-            .catch(Request.ErrorGestor([{
-                code: 102,
-                action: () => {
-                    enqueueSnackbar("Il tipo esiste gia", { variant: "error" });
-                }
-            }]))
+            .catch(
+                Request.ErrorGestor([
+                    {
+                        code: 102,
+                        action: () => {
+                            enqueueSnackbar('Il tipo esiste gia', { variant: 'error' });
+                        },
+                    },
+                ]),
+            )
             .finally(() => setLoading(false));
     }
 
     const cancelHandler = () => {
         onClose(false);
-    }
+    };
 
     const addHandler = () => {
         addNewType();
-    }
+    };
 
     return (
         <Dialog open={open}>
@@ -345,8 +352,12 @@ function AddNewTypeDialog({ open, onClose }) {
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={cancelHandler} color="secondary" >Annulla</Button>
-                <Button onClick={addHandler} disabled={loading} >Aggiungi</Button>
+                <Button onClick={cancelHandler} color="secondary">
+                    Annulla
+                </Button>
+                <Button onClick={addHandler} disabled={loading}>
+                    Aggiungi
+                </Button>
             </DialogActions>
         </Dialog>
     );

@@ -36,5 +36,28 @@ namespace logic.Models {
                 Color = walletDb.Color.Convert()
             };
         }
+
+        public static Type Convert(this TransactionTypeDb transactionTypeDb) {
+            return new Type {
+                Id = transactionTypeDb.Id,
+                Name = transactionTypeDb.Name,
+                UserId = transactionTypeDb.UserId,
+            };
+        }
+
+        public static Transaction Convert(this TransactionDb transactionDb) {
+            return new Transaction {
+                Id = transactionDb.Id,
+                Description = transactionDb.Description,
+                LongDescription = transactionDb.LongDescription,
+                Date = transactionDb.Date,
+                Value = transactionDb.Value,
+                Wallet = transactionDb.Wallet.Convert(),
+                WalletDestination = transactionDb.TransactionDestination?.Wallet.Convert(),
+                TransactionType = transactionDb.TransactionType.Convert(),
+                User = transactionDb.User.Convert(),
+                UserInsert = transactionDb.UserInsert.Convert(),
+            };
+        }
     }
 }
