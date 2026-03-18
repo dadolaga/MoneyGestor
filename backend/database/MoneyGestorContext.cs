@@ -37,7 +37,11 @@ namespace database {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             try {
-                optionsBuilder.UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};");
+                optionsBuilder
+                    .UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};")
+                    .LogTo(Log.Information, Microsoft.Extensions.Logging.LogLevel.Information)
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors();
             } catch (Exception ex) {
                 Log.Fatal(ex, "Fail connection to DB");
                 Environment.Exit(1);
