@@ -12,6 +12,7 @@ import {
     InputAdornment,
     IconButton,
     SelectChangeEvent,
+    Box,
 } from '@mui/material';
 import 'dayjs/locale/it';
 import { useCallback, useEffect, useState } from 'react';
@@ -25,6 +26,7 @@ import Input from '@/component/Input';
 import Submit from '@/component/Submit';
 import useApi from '@/hooks/useApi';
 import { Transaction, Type, Wallet } from '@/models/backend';
+import { ApiError } from 'next/dist/server/api-utils';
 
 const ID_TRANSFER_TYPE = 1;
 const ID_ADJUST_TYPE = 2;
@@ -83,6 +85,12 @@ const formSettings: FormSettings = {
     },
 };
 
+const formAddNewTypeSettings: FormSettings = {
+    name: {
+        mandatory: true,
+    },
+};
+
 export default function TransactionDialog({ open, onClose, transactionId }) {
     const isMobile = useIsMobile();
 
@@ -135,6 +143,22 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         setTypeSelectedId(parseInt(action.target.value));
     }, []);
 
+    const clickAddNewTypeHandler = useCallback(() => {
+        setOpenAddNewTypeDialog(true);
+    }, []);
+
+    const closeAddNewTypeDialogHandler = useCallback((isToReload: boolean) => {
+        if (isToReload) {
+            loadTransactionType();
+        }
+
+        setOpenAddNewTypeDialog(false);
+    }, []);
+
+    const closeTransactionDialogHandler = useCallback(() => {
+        onClose(false);
+    }, []);
+
     const saveTransactionHandler = useCallback(
         (form: FormType) => {
             return new Promise<void>((resolve, reject) => {
@@ -177,7 +201,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
 
     return (
         <Dialog open={open} onClose={onClose}>
-            <AddNewTypeDialog open={openAddNewTypeDialog} onClose={() => {}} />
+            <AddNewTypeDialog open={openAddNewTypeDialog} onClose={closeAddNewTypeDialogHandler} />
             {loading !== 0 && <LinearProgress />}
             <FormProvider settings={formSettings}>
                 <DialogTitle>Crea nuova transazione</DialogTitle>
@@ -238,7 +262,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                                     fontStyle: 'italic',
                                     color: '#219ebc',
                                 }}
-                                onClick={() => {}}
+                                onClick={clickAddNewTypeHandler}
                             >
                                 Aggiungi nuovo tipo
                             </Typography>
@@ -280,7 +304,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => {}} color="secondary">
+                    <Button onClick={closeTransactionDialogHandler} color="secondary">
                         Annulla
                     </Button>
                     <Submit label="Salva" onValidate={saveTransactionHandler} />
@@ -291,74 +315,60 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
 }
 
 function AddNewTypeDialog({ open, onClose }) {
+    const api = useApi();
+
     const [loading, setLoading] = useState<boolean>(false);
-
-    const [value, setValue] = useState<string>('');
-
-    const [typeError, setTypeError] = useState(null);
-
-    const restApi = useRestApi();
-
-    function addNewType() {
-        if (value.trim().length <= 0) {
-            setTypeError('Inserire un valore per il tipo');
-            return;
-        }
-
-        setLoading(true);
-
-        restApi.TransactionType.Create({ name: value })
-            .then((_) => {
-                onClose(true);
-            })
-            .catch(
-                Request.ErrorGestor([
-                    {
-                        code: 102,
-                        action: () => {
-                            enqueueSnackbar('Il tipo esiste gia', { variant: 'error' });
-                        },
-                    },
-                ]),
-            )
-            .finally(() => setLoading(false));
-    }
 
     const cancelHandler = () => {
         onClose(false);
     };
 
-    const addHandler = () => {
-        addNewType();
-    };
+    const validateHandler = useCallback((form: FormType) => {
+        return new Promise<void>((resolve, reject) => {
+            var type: Type = {
+                name: form['name'].value as string,
+            };
+
+            setLoading(true);
+
+            api.type
+                .add(type)
+                .onSuccess(() => {
+                    resolve();
+                    onClose(true);
+                })
+                .onError((error) => {
+                    switch (error.code) {
+                        case 401:
+                            reject({ name: 'Il tipo esiste gia' });
+                            break;
+                    }
+                })
+                .onFinish(() => {
+                    setLoading(false);
+                })
+                .execute();
+        });
+    }, []);
 
     return (
         <Dialog open={open}>
             {loading && <LinearProgress />}
             <DialogTitle>Agguingi nuovo tipo</DialogTitle>
-            <DialogContent>
-                <DialogContentText>Inserisci il nome del nuovo tipo</DialogContentText>
-                <TextField
-                    error={typeError != null}
-                    helperText={typeError}
-                    autoFocus
-                    disabled={loading}
-                    margin="dense"
-                    label="Tipo"
-                    fullWidth
-                    value={value}
-                    onChange={(el) => setValue(el.target.value)}
-                    variant="standard"
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={cancelHandler} color="secondary">
-                    Annulla
-                </Button>
-                <Button onClick={addHandler} disabled={loading}>
-                    Aggiungi
-                </Button>
-            </DialogActions>
+            <FormProvider settings={formAddNewTypeSettings}>
+                <DialogContent>
+                    <Box display="flex" flexDirection={'column'} gap={1}>
+                        <DialogContentText>Inserisci il nome del nuovo tipo</DialogContentText>
+                        <Input type="text" name="name" label="Nome" disabled={loading} />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={cancelHandler} color="secondary">
+                        Annulla
+                    </Button>
+                    <Submit label="Aggiungi" onValidate={validateHandler} />
+                </DialogActions>
+            </FormProvider>
         </Dialog>
     );
 }

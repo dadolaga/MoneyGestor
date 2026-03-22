@@ -3,8 +3,7 @@ import axios from '../app/axios/axios';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCallback } from 'react';
-import { get } from 'http';
-import { Color, Login, Transaction, Type, User, Wallet } from '@/models/backend';
+import { ApiList, Color, Login, Transaction, Type, User, Wallet } from '@/models/backend';
 
 export interface Response<T> {
     code: number;
@@ -84,11 +83,16 @@ export default function useApi() {
 
         type: {
             get: () => new ApiRequest<Type[]>(() => request<Type[]>('GET', '/type'), enqueueSnackbar),
+
+            add: (type: Type) => new ApiRequest<number>(() => request<number>('POST', '/type', type), enqueueSnackbar),
         },
 
         transaction: {
             add: (transaction: Transaction) =>
                 new ApiRequest<number>(() => request<number>('POST', '/transaction', transaction), enqueueSnackbar),
+
+            list: () =>
+                new ApiRequest<ApiList<Transaction>>(() => request<ApiList<Transaction>>('GET', '/transaction'), enqueueSnackbar),
         },
     };
 }
