@@ -53,7 +53,7 @@ namespace logic.Models {
                 Date = transactionDb.Date,
                 Value = transactionDb.Value,
                 Wallet = transactionDb.Wallet.Convert(),
-                WalletDestination = transactionDb.TransactionDestination?.Wallet.Convert(),
+                WalletDestination = transactionDb.TransactionDestination?.Wallet?.Convert(),
                 TransactionType = transactionDb.TransactionType.Convert(),
                 User = transactionDb.User.Convert(),
                 UserInsert = transactionDb.UserInsert.Convert(),

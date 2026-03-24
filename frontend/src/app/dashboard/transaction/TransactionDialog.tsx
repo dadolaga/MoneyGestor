@@ -7,7 +7,6 @@ import {
     DialogTitle,
     Grid,
     LinearProgress,
-    TextField,
     Typography,
     InputAdornment,
     IconButton,
@@ -18,7 +17,6 @@ import 'dayjs/locale/it';
 import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
-import { Request, useRestApi } from '../../request/Request';
 import { enqueueSnackbar } from 'notistack';
 import { useIsMobile } from '../../utilities/useMobile';
 import { FormProvider, FormSettings, FormType } from '@/context/FormContext';
@@ -26,7 +24,6 @@ import Input from '@/component/Input';
 import Submit from '@/component/Submit';
 import useApi from '@/hooks/useApi';
 import { Transaction, Type, Wallet } from '@/models/backend';
-import { ApiError } from 'next/dist/server/api-utils';
 
 const ID_TRANSFER_TYPE = 1;
 const ID_ADJUST_TYPE = 2;
@@ -159,45 +156,47 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         onClose(false);
     }, []);
 
-    const saveTransactionHandler = useCallback(
-        (form: FormType) => {
-            return new Promise<void>((resolve, reject) => {
-                var transaction: Transaction = {
-                    description: form['description'].value as string,
-                    date: form['date'].value as string,
-                    value: form['value'].value as number,
-                    transactionType: {
-                        id: form['type'].value as number,
-                    },
-                    wallet: {
-                        id: form['wallet'].value as number,
-                    },
-                    walletDestination: {
-                        id: form['wallet-destination'].value as number,
-                    },
-                };
+    const saveTransactionHandler = (form: FormType) => {
+        return new Promise<void>((resolve, reject) => {
+            setLoading((i) => i + 1);
 
-                console.log(transaction);
+            var transaction: Transaction = {
+                description: form['description'].value as string,
+                date: form['date'].value as string,
+                value: form['value'].value as number,
+                transactionType: {
+                    id: form['type'].value as number,
+                },
+                wallet: {
+                    id: form['wallet'].value as number,
+                },
+                walletDestination: {
+                    id: form['wallet-destination']?.value as number,
+                },
+            };
 
-                api.transaction
-                    .add(transaction)
-                    .onSuccess(() => {
-                        onClose(true);
-                    })
-                    .onError((error) => {
-                        switch (error.code) {
-                            case 301:
-                                reject({ wallet: 'Il portafoglio andrebbe in negativo' });
-                                break;
-                        }
-                    })
-                    .execute();
+            api.transaction
+                .add(transaction)
+                .onSuccess(() => {
+                    enqueueSnackbar('Transazione creata', { variant: 'success' });
 
-                resolve();
-            });
-        },
-        [api.user],
-    );
+                    onClose(true);
+
+                    resolve();
+                })
+                .onError((error) => {
+                    switch (error.code) {
+                        case 301:
+                            reject({ wallet: 'Il portafoglio andrebbe in negativo' });
+                            break;
+                    }
+                })
+                .onFinish(() => {
+                    setLoading((i) => i - 1);
+                })
+                .execute();
+        });
+    };
 
     return (
         <Dialog open={open} onClose={onClose}>

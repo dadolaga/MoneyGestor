@@ -3,7 +3,7 @@ import axios from '../app/axios/axios';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCallback } from 'react';
-import { ApiList, Color, Login, Transaction, Type, User, Wallet } from '@/models/backend';
+import { ApiList, Color, ListFilter, Login, Transaction, Type, User, Wallet } from '@/models/backend';
 
 export interface Response<T> {
     code: number;
@@ -27,6 +27,7 @@ export default function useApi() {
     const request = useCallback(
         <T>(type: 'POST' | 'GET' | 'PUT' | 'DELETE', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
             let axiosConfig: AxiosRequestConfig<any> = {
+                params: type === "GET" ? data : undefined,
                 data: data,
                 headers: cookie && {
                     Authorization: cookie.token,
@@ -91,8 +92,11 @@ export default function useApi() {
             add: (transaction: Transaction) =>
                 new ApiRequest<number>(() => request<number>('POST', '/transaction', transaction), enqueueSnackbar),
 
-            list: () =>
-                new ApiRequest<ApiList<Transaction>>(() => request<ApiList<Transaction>>('GET', '/transaction'), enqueueSnackbar),
+            list: (filter: ListFilter) =>
+                new ApiRequest<ApiList<Transaction>>(
+                    () => request<ApiList<Transaction>>('GET', '/transaction', filter),
+                    enqueueSnackbar,
+                ),
         },
     };
 }
@@ -138,9 +142,10 @@ export class ApiRequest<T_RETURN> {
                 }
             })
             .catch((error) => {
+                console.log(error);
+
                 if (error.code === 'ERR_NETWORK') {
                     this.enqueueSnackbar('Server error', { variant: 'error' });
-                    console.error(error);
                     return;
                 }
 

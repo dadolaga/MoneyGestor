@@ -17,7 +17,7 @@ export default function Page() {
 
     const isMobile = useIsMobile();
 
-    const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(true);
+    const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
     const [openTransactionDeleteDialog, setOpenTransactionDeleteDialog] = useState<boolean>(false);
     const [, setOpenImportFromCsvDialog] = useState<boolean>(false);
     const [transactionId, setTransactionId] = useState<number>(undefined);
@@ -39,7 +39,6 @@ export default function Page() {
     const closeTransactionDialogHandler = (isToReload: boolean) => {
         if (isToReload) {
             tableRef.current.refreshTable();
-            graph.current.loadTransaction();
         }
 
         setOpenTransactionDialog(false);
@@ -52,6 +51,14 @@ export default function Page() {
                 onClose={closeTransactionDialogHandler}
                 transactionId={transactionId}
             />
+            <Box height={"100%"} display="flex" flexDirection={'column'} gap={1}>
+                <Box display="flex">
+                    <Button variant="contained" onClick={openTransactionDialogHandler}>
+                        Aggiungi nuova transazione
+                    </Button>
+                </Box>
+                <TransactionTable ref={tableRef} />
+            </Box>
             {/* <Box
                 sx={{
                     height: '100%',

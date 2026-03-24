@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using webserver.Models;
 
 namespace webserver.Controllers {
     public class MoneyMenagerController : ControllerBase {
         protected IActionResult CreateResponse(UInt64 id, String objectName = "") => OkResponse(id, objectName);
+
+        protected IActionResult ListResponse<T>(IList<T> list, Int32 length, String tableName = "") => OkResponse(new ListOutput<T> { Length = length, Data = list }, $"List of {tableName}");
 
         protected IActionResult ErrorResponse(UInt32 code, String message) => Response(code, message, statusCode: 400);
 

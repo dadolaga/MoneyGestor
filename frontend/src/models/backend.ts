@@ -1,3 +1,14 @@
+export interface ApiList<T> {
+    length: number;
+    data: T[];
+}
+
+export interface ListFilter {
+    order?: string,
+    offset?: number,
+    limit?: number, 
+}
+
 export interface User {
     id?: number;
     firstname?: string;
