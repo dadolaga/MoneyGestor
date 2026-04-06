@@ -6,7 +6,8 @@ export interface ApiList<T> {
 export interface ListFilter {
     order?: string,
     offset?: number,
-    limit?: number, 
+    limit?: number,
+    where?: string,
 }
 
 export interface User {

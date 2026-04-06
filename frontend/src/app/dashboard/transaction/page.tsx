@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEventHandler, useRef, useState } from 'react';
+import { ChangeEventHandler, useEffect, useRef, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Box, Button } from '@mui/material';
@@ -9,6 +9,7 @@ import { TransactionTable, TransactionTableRef } from './TransactionTable';
 import DeleteDialog from './DeleteDialog';
 import { TransactionGraph } from './TransactionGraph';
 import { useIsMobile } from '../../utilities/useMobile';
+import TransactionTableFilter, { FilterData } from './TransactionTableFilter';
 
 export default function Page() {
     const graph = useRef(null);
@@ -23,6 +24,8 @@ export default function Page() {
     const [transactionId, setTransactionId] = useState<number>(undefined);
     const [transactionDescription, setTransactionDescription] = useState<string>(undefined);
     const [, setCsvFile] = useState<File>(undefined);
+
+    const [filter, setFilter] = useState<FilterData>({});
 
     function openTransactionDialogHandler() {
         setTransactionId(() => undefined);
@@ -51,13 +54,14 @@ export default function Page() {
                 onClose={closeTransactionDialogHandler}
                 transactionId={transactionId}
             />
-            <Box height={"100%"} display="flex" flexDirection={'column'} gap={1}>
-                <Box display="flex">
+            <Box height={'100%'} display="flex" flexDirection={'column'} gap={0.5}>
+                <Box display="flex" justifyContent="space-between" p={1}>
                     <Button variant="contained" onClick={openTransactionDialogHandler}>
                         Aggiungi nuova transazione
                     </Button>
+                    <TransactionTableFilter setData={setFilter} />
                 </Box>
-                <TransactionTable ref={tableRef} />
+                <TransactionTable ref={tableRef} filter={filter} />
             </Box>
             {/* <Box
                 sx={{

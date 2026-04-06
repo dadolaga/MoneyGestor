@@ -38,8 +38,10 @@ interface IInput {
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
     values?: IValuesType[];
+    emptySelect?: boolean;
     dataMoreOption?: DatePickerProps;
     onChange?: (action: any) => void;
+    size?: 'small' | 'medium';
 }
 
 dayjs.extend(utc);
@@ -74,7 +76,8 @@ export default function Input(props: IInput) {
     const selectChangeHandler =
         (name: string): ((_event: SelectChangeEvent<string>) => void) =>
         (action) => {
-            updateValue(name, props.values.find((value) => value.key === parseInt(action.target.value)).key);
+            const findResult = props.values.find((value) => value.key === parseInt(action.target.value));
+            updateValue(name, findResult?.key);
 
             if (props.onChange) {
                 props.onChange(action);
@@ -109,6 +112,7 @@ export default function Input(props: IInput) {
                         input: { startAdornment: props.startAdornment, endAdornment: props.endAdornment },
                     }}
                     disabled={props.disabled}
+                    size={props.size}
                 />
             );
             break;
@@ -124,6 +128,7 @@ export default function Input(props: IInput) {
                             textField: {
                                 error: form[props.name]?.error !== undefined,
                                 helperText: form[props.name]?.error,
+                                size: props.size,
                             },
                         }}
                         value={
@@ -142,7 +147,9 @@ export default function Input(props: IInput) {
         case 'multi':
             element = (
                 <FormControl fullWidth error={form[props.name]?.error !== undefined}>
-                    <InputLabel id={`select-${props.name}`}>{props.label}</InputLabel>
+                    <InputLabel id={`select-${props.name}`} size={props.size}>
+                        {props.label}
+                    </InputLabel>
                     <Select
                         sx={{
                             '.MuiSelect-select': {
@@ -155,7 +162,9 @@ export default function Input(props: IInput) {
                         value={form[props.name]?.value || ''}
                         onChange={selectChangeHandler(props.name)}
                         disabled={props.disabled}
+                        size={props.size}
                     >
+                        {props.values !== undefined && props.emptySelect === true && <MenuItem key={0}>&nbsp;</MenuItem>}
                         {props.values?.map((value, index) => {
                             return (
                                 <MenuItem key={index} value={value.key}>

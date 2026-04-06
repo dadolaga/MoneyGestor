@@ -14,6 +14,13 @@ interface FormContext {
     validate: () => boolean;
 }
 
+export interface FormProvideProps {
+    settings: FormSettings;
+    default?: { [key: string]: string | number };
+    onUpdate?: (values: FormType, keyUpdated: string) => void;
+    children: ReactNode;
+}
+
 export type FormSettings = {
     [key: string]: {
         mandatory?: boolean;
@@ -64,11 +71,7 @@ export function checkPassword(text: string) {
 
 export const useForm = () => useContext<FormContext>(FormContext);
 
-export function FormProvider(props: {
-    settings: FormSettings;
-    default?: { [key: string]: string | number };
-    children: ReactNode;
-}) {
+export function FormProvider(props: FormProvideProps) {
     const [form, setForm] = useState<FormType>({});
 
     useEffect(() => {
@@ -121,7 +124,15 @@ export function FormProvider(props: {
     }, [form, props.settings]);
 
     const updateValue = useCallback((key: string, value: string | number) => {
-        setForm((form) => ({ ...form, [key]: { value: value, error: undefined } }));
+        setForm((form) => {
+            const newValue = { ...form, [key]: { value: value, error: undefined } };
+
+            if (props.onUpdate != undefined) {
+                props.onUpdate(newValue, key);
+            }
+
+            return newValue;
+        });
     }, []);
 
     const insertError = useCallback((key: string, error: string) => {

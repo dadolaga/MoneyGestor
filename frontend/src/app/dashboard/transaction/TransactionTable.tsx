@@ -23,7 +23,8 @@ import { Transaction } from '@/models/backend';
 import { convertColor } from '@/utilis/color';
 import TableCellSort from '@/component/TableCellSort';
 import { SortProvider, SortType } from '@/context/SortTableContext';
-import { convertToApi } from '@/utilis/sort';
+import { convertSortToApi, convertFilterToApi } from '@/utilis/backend';
+import { FilterData } from './TransactionTableFilter';
 
 const ID_EXCHANGE_TYPE = 1;
 
@@ -33,6 +34,7 @@ export interface TransactionTableRef {
 
 interface ITransactionTableProps {
     ref: RefObject<TransactionTableRef>;
+    filter?: FilterData;
     setTransactionDialogId: (_value: any) => void;
     setTransactionDescription: (_value: any) => void;
     setOpenTransactionDialog: (_value: any) => void;
@@ -58,7 +60,10 @@ export function TransactionTable(props: ITransactionTableProps) {
         setLoading(true);
 
         api.transaction
-            .list({ order: convertToApi(sort) })
+            .list({
+                order: convertSortToApi(sort),
+                where: convertFilterToApi(props.filter),
+            })
             .onSuccess((data) => {
                 setPage(0);
 
@@ -69,7 +74,7 @@ export function TransactionTable(props: ITransactionTableProps) {
                 setLoading(false);
             })
             .execute();
-    }, [sort, page]);
+    }, [sort, page, props.filter]);
 
     useImperativeHandle(
         props.ref,
@@ -87,7 +92,7 @@ export function TransactionTable(props: ITransactionTableProps) {
 
     useEffect(() => {
         loadTransactions();
-    }, [sort, page]);
+    }, [sort, page, props.filter]);
 
     const editHandler = (id) => () => {
         props.setTransactionDialogId(id);
@@ -167,7 +172,7 @@ export function TransactionTable(props: ITransactionTableProps) {
                                         {!isMobile && (
                                             <>
                                                 <TableCell sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                                                    {value.transactionType.id == ID_EXCHANGE_TYPE && (
+                                                    {value.transactionType.id == ID_EXCHANGE_TYPE && value.walletDestination && (
                                                         <>
                                                             <Chip
                                                                 label={value.walletDestination.name}

@@ -8,7 +8,7 @@ import { sendDateToBackEnd } from "../utilities/BackEndUtilities";
 import { ITransaction } from "../utilities/Types";
 import { convertNumberToValue, fullSize } from "../utilities/Utilities";
 import { useIsMobile } from "../utilities/useMobile";
-import { DataPickerDialog, DateRange } from "../component/DataPicker";
+import { DataPickerDialog, DateRange } from "../../component/DataPicker";
 import dayjs from "dayjs";
 
 export default function Dashboard() {
@@ -103,7 +103,7 @@ export default function Dashboard() {
                             onClick={clickDateHandler}>
                             {getDatePrint()}
                         </Typography>
-                        <DataPickerDialog dateRange={dateRange} setDateRange={setDateRange} show={showDataPicker} hide={() => setOpenDataPicker(false)} />
+                        {/* <DataPickerDialog dateRange={dateRange} setDateRange={setDateRange} show={showDataPicker} hide={() => setOpenDataPicker(false)} /> */}
                     </Box>
                 </Typography>
             </Box>

@@ -21,17 +21,22 @@ namespace webserver.Controllers {
 
             using var database = DatabaseFactory.Use();
 
-            var listFilter = filter.Convert();
+            var listFilter = ListFilterUtils.Convert(filter.Order, filter.Limit, filter.Offset, filter.Where);
+
+            // TODO Add more complex filter, add and and or check with parenthesis
 
             var transactionList = await database.Transactions
-                .Where(t => t.UserInsertId == executor.UserId && (t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0))
+                .Where(t => t.UserInsertId == executor.UserId)
                 .Include(t => t.TransactionType)
                 .Include(t => t.Wallet)
                 .Include(t => t.Wallet.Color)
-                .Include(t => t.TransactionDestination)
+                .Include(t => t.TransactionDestination) 
+                .Include(t => t.TransactionDestination.Wallet)
+                .Include(t => t.TransactionDestination.Wallet.Color)
                 .Include(t => t.User)
                 .Include(t => t.UserInsert)
                 .ApplyFilter(listFilter)
+                .Where(t => t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0)
                 .ToListAsync();
 
             var quantity = await database.Transactions

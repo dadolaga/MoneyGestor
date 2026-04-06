@@ -1,4 +1,4 @@
-import { convertToApi } from '@/utilis/sort';
+import { convertSortToApi } from '@/utilis/backend';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 
 export type SortType = { [key: string]: 'asc' | 'desc' };
@@ -35,7 +35,7 @@ export function SortProvider(props: { onSort: SortHandler; default?: SortType; c
                 [key]: value[key] !== undefined ? (value[key] === 'asc' ? 'desc' : undefined) : 'asc',
             };
 
-            props.onSort(newValue, convertToApi(newValue));
+            props.onSort(newValue, convertSortToApi(newValue));
 
             return newValue;
         });
