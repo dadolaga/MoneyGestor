@@ -175,7 +175,7 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                 return (
                                     <TableRow key={index} sx={{ '*': { color: '#' + value.color + '!important' } }}>
                                         <TableCell> {value.name} </TableCell>
-                                        <TableCell align="right"> {convertNumberToValue(value.value)} </TableCell>
+                                        <TableCell align="right"> {convertNumberToValue(value.currentValue)} </TableCell>
                                         <TableCell>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <FontAwesomeIcon
@@ -217,7 +217,7 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                     {wallets ? (
                                         convertNumberToValue(
                                             wallets
-                                                .map((wallet) => wallet.value)
+                                                .map((wallet) => wallet.currentValue)
                                                 .reduce((value, currentValue) => value + currentValue, 0),
                                         )
                                     ) : (

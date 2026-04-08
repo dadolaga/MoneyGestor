@@ -54,7 +54,7 @@ export default function WalletPie(props: Props) {
             <ResponsivePie
                 data={wallets || []}
                 id={'name'}
-                value={'value'}
+                value={'currentValue'}
                 sortByValue={true}
                 margin={{ left: -100, top: 20, bottom: 20 }}
                 enableArcLinkLabels={false}
