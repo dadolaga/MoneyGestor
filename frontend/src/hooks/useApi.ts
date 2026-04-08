@@ -27,7 +27,7 @@ export default function useApi() {
     const request = useCallback(
         <T>(type: 'POST' | 'GET' | 'PUT' | 'DELETE', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
             let axiosConfig: AxiosRequestConfig<any> = {
-                params: type === "GET" ? data : undefined,
+                params: type === 'GET' ? data : undefined,
                 data: data,
                 headers: cookie && {
                     Authorization: cookie.token,
@@ -97,6 +97,12 @@ export default function useApi() {
                     () => request<ApiList<Transaction>>('GET', '/transaction', filter),
                     enqueueSnackbar,
                 ),
+
+            modify: (id: number, transaction: Transaction) =>
+                new ApiRequest<number>(() => request<number>('PUT', `/transaction/${id}`, transaction), enqueueSnackbar),
+
+            getSingle: (id: number) =>
+                new ApiRequest<Transaction>(() => request<Transaction>('GET', `/transaction/${id}`), enqueueSnackbar),
         },
     };
 }

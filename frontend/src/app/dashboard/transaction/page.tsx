@@ -10,6 +10,7 @@ import DeleteDialog from './DeleteDialog';
 import { TransactionGraph } from './TransactionGraph';
 import { useIsMobile } from '../../utilities/useMobile';
 import TransactionTableFilter, { FilterData } from './TransactionTableFilter';
+import { Transaction } from '@/models/backend';
 
 export default function Page() {
     const graph = useRef(null);
@@ -47,6 +48,11 @@ export default function Page() {
         setOpenTransactionDialog(false);
     };
 
+    const editTransactionHandler = (transaction: Transaction) => {
+        setTransactionId(transaction.id);
+        setOpenTransactionDialog(true);
+    };
+
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <TransactionDialog
@@ -61,7 +67,7 @@ export default function Page() {
                     </Button>
                     <TransactionTableFilter setData={setFilter} />
                 </Box>
-                <TransactionTable ref={tableRef} filter={filter} />
+                <TransactionTable ref={tableRef} filter={filter} onEditClick={editTransactionHandler} />
             </Box>
             {/* <Box
                 sx={{

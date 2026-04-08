@@ -1,6 +1,7 @@
 ﻿using database.Models;
 using logic;
 using logic.Commands.Transaction;
+using logic.Commands.Wallets;
 using logic.Exceptions;
 using logic.Managers;
 using logic.Models;
@@ -30,7 +31,7 @@ namespace webserver.Controllers {
                 .Include(t => t.TransactionType)
                 .Include(t => t.Wallet)
                 .Include(t => t.Wallet.Color)
-                .Include(t => t.TransactionDestination) 
+                .Include(t => t.TransactionDestination)
                 .Include(t => t.TransactionDestination.Wallet)
                 .Include(t => t.TransactionDestination.Wallet.Color)
                 .Include(t => t.User)
@@ -44,6 +45,26 @@ namespace webserver.Controllers {
                 .CountAsync();
 
             return ListResponse(transactionList.Select(t => t.Convert()).ToList(), quantity, "transaction");
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSingle([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+            await executor.LoginUser();
+
+            using var database = DatabaseFactory.Use();
+
+            var transaction = await database.Transactions.Where(t => t.Id == id && t.UserId == executor.UserId)
+                .Include(t => t.TransactionType)
+                .Include(t => t.Wallet)
+                .Include(t => t.Wallet.Color)
+                .Include(t => t.TransactionDestination)
+                .Include(t => t.TransactionDestination.Wallet)
+                .Include(t => t.TransactionDestination.Wallet.Color)
+                .Include(t => t.User)
+                .Include(t => t.UserInsert).FirstAsync();
+
+            return OkResponse(transaction.Convert(), "Transaction");
         }
 
         [HttpPost()]
@@ -71,6 +92,30 @@ namespace webserver.Controllers {
             } catch (WalletGoesToNegative ex) {
                 return ErrorResponse(301, "Wallet goes to negative");
             }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Transaction transaction, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+            await executor.LoginUser();
+
+            var updateCommand = new UpdateTransactionCommand(
+                id: id,
+                description: transaction.Description,
+                longDescription: transaction.LongDescription,
+                date: transaction.Date != null ? DateOnly.FromDateTime(transaction.Date.Value) : null,
+                walletId: transaction.Wallet?.Id,
+                walletDestinationId: transaction.WalletDestination?.Id,
+                value: transaction.Value,
+                transactionTypeId: transaction.TransactionType?.Id,
+                userId: transaction.User?.Id,
+                forceUpdate: false,
+                overwriteNull: false
+                );
+
+            await executor.Execute(updateCommand);
+
+            return OkResponse();
         }
     }
 }

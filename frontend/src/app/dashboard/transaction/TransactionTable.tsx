@@ -35,10 +35,8 @@ export interface TransactionTableRef {
 interface ITransactionTableProps {
     ref: RefObject<TransactionTableRef>;
     filter?: FilterData;
-    setTransactionDialogId: (_value: any) => void;
-    setTransactionDescription: (_value: any) => void;
-    setOpenTransactionDialog: (_value: any) => void;
-    setOpenTransactionDeleteDialog: (_value: any) => void;
+    onEditClick: (transaction: Transaction) => void;
+    onDeleteClick: (transaction: Transaction) => void;
 }
 
 const sortDefault: SortType = {
@@ -94,15 +92,12 @@ export function TransactionTable(props: ITransactionTableProps) {
         loadTransactions();
     }, [sort, page, props.filter]);
 
-    const editHandler = (id) => () => {
-        props.setTransactionDialogId(id);
-        props.setOpenTransactionDialog(true);
+    const editHandler = (transaction: Transaction) => () => {
+        props.onEditClick(transaction);
     };
 
-    const deleteHandler = (id, description) => () => {
-        props.setTransactionDialogId(id);
-        props.setTransactionDescription(description);
-        props.setOpenTransactionDeleteDialog(true);
+    const deleteHandler = (transaction: Transaction) => () => {
+        props.onDeleteClick(transaction);
     };
 
     const changePageHandler = (event: MouseEvent<HTMLButtonElement>, page: number) => {
@@ -205,12 +200,12 @@ export function TransactionTable(props: ITransactionTableProps) {
                                                         <FontAwesomeIcon
                                                             style={{ cursor: 'pointer' }}
                                                             icon={faPen}
-                                                            onClick={editHandler(value.walletDestination ?? value.id)}
+                                                            onClick={editHandler(value)}
                                                         />
                                                         <FontAwesomeIcon
                                                             style={{ cursor: 'pointer' }}
                                                             icon={faTrash}
-                                                            onClick={deleteHandler(value.id, value.description)}
+                                                            onClick={deleteHandler(value)}
                                                         />
                                                     </Box>
                                                 </TableCell>

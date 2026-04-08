@@ -69,7 +69,7 @@ namespace logic.Commands.Transaction {
 
             if ((currentTransaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id && walletDestinationId == null) ||
                 (walletDestinationId != null && currentTransaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id)) {
-                throw new ExecutorException("Not all data are in trnsfer");
+                throw new ExecutorException("Not all data are in transfer");
             }
 
             if (overwriteNull && walletDestinationId == null && currentTransaction.TransactionDestinationId != null) {

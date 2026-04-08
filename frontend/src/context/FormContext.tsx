@@ -6,6 +6,7 @@ interface FormInformation {
 }
 
 export type FormType = { [key: string]: FormInformation };
+export type DefaultFormType = { [key: string]: string };
 
 interface FormContext {
     form: FormType;
@@ -16,7 +17,7 @@ interface FormContext {
 
 export interface FormProvideProps {
     settings: FormSettings;
-    default?: { [key: string]: string | number };
+    default?: DefaultFormType;
     onUpdate?: (values: FormType, keyUpdated: string) => void;
     children: ReactNode;
 }
@@ -76,6 +77,7 @@ export function FormProvider(props: FormProvideProps) {
 
     useEffect(() => {
         if (props.default && Object.keys(form).length == 0) {
+            console.log('default param', props.default);
             setForm(
                 Object.keys(props.default).reduce((acc, key) => {
                     acc[key] = { value: props.default[key], error: undefined };

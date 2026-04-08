@@ -19,11 +19,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { enqueueSnackbar } from 'notistack';
 import { useIsMobile } from '../../utilities/useMobile';
-import { FormProvider, FormSettings, FormType } from '@/context/FormContext';
+import { DefaultFormType, FormProvider, FormSettings, FormType } from '@/context/FormContext';
 import Input from '@/component/Input';
 import Submit from '@/component/Submit';
 import useApi from '@/hooks/useApi';
 import { Transaction, Type, Wallet } from '@/models/backend';
+import dayjs from 'dayjs';
 
 const ID_TRANSFER_TYPE = 1;
 const ID_ADJUST_TYPE = 2;
@@ -93,6 +94,8 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
 
     const api = useApi();
 
+    const [defaultForm, setDefaultForm] = useState<DefaultFormType>({});
+
     const [loading, setLoading] = useState<number>(0);
     const [wallets, setWallets] = useState<Wallet[]>(undefined);
     const [types, setTypes] = useState<Type[]>(undefined);
@@ -106,7 +109,32 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
     useEffect(() => {
         loadTransactionType();
         loadWallet();
-    }, []);
+    }, [open]);
+
+    useEffect(() => {
+        if (transactionId !== undefined) {
+            setDefaultForm({});
+            setLoading((i) => i + 1);
+
+            api.transaction
+                .getSingle(transactionId)
+                .onSuccess((transaction) => {
+                    setDefaultForm({
+                        description: transaction.description,
+                        date: transaction.date,
+                        value: transaction.value.toString(),
+                        type: transaction.transactionType.id.toString(),
+                        wallet: transaction.wallet.id.toString(),
+                        'wallet-destination': transaction.walletDestination?.id.toString(),
+                    });
+                    setTypeSelectedId(transaction.transactionType.id);
+                })
+                .onFinish(() => setLoading((i) => i - 1))
+                .execute();
+        } else {
+            setDefaultForm({ date: dayjs().format('YYYY-MM-DD') });
+        }
+    }, [transactionId, open]);
 
     const loadTransactionType = useCallback(() => {
         setLoading((i) => i + 1);
@@ -171,30 +199,49 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                     id: form['wallet'].value as number,
                 },
                 walletDestination: {
-                    id: form['wallet-destination']?.value as number,
+                    id:
+                        (form['type'].value as number) === ID_TRANSFER_TYPE
+                            ? (form['wallet-destination']?.value as number)
+                            : null,
                 },
             };
 
-            api.transaction
-                .add(transaction)
-                .onSuccess(() => {
-                    enqueueSnackbar('Transazione creata', { variant: 'success' });
+            if (transactionId === undefined) {
+                api.transaction
+                    .add(transaction)
+                    .onSuccess(() => {
+                        enqueueSnackbar('Transazione creata', { variant: 'success' });
 
-                    onClose(true);
+                        onClose(true);
 
-                    resolve();
-                })
-                .onError((error) => {
-                    switch (error.code) {
-                        case 301:
-                            reject({ wallet: 'Il portafoglio andrebbe in negativo' });
-                            break;
-                    }
-                })
-                .onFinish(() => {
-                    setLoading((i) => i - 1);
-                })
-                .execute();
+                        resolve();
+                    })
+                    .onError((error) => {
+                        switch (error.code) {
+                            case 301:
+                                reject({ wallet: 'Il portafoglio andrebbe in negativo' });
+                                break;
+                        }
+                    })
+                    .onFinish(() => {
+                        setLoading((i) => i - 1);
+                    })
+                    .execute();
+            } else {
+                api.transaction
+                    .modify(transactionId, transaction)
+                    .onSuccess(() => {
+                        enqueueSnackbar('Transazione aggiornata', { variant: 'success' });
+
+                        onClose(true);
+
+                        resolve();
+                    })
+                    .onFinish(() => {
+                        setLoading((i) => i - 1);
+                    })
+                    .execute();
+            }
         });
     };
 
@@ -202,7 +249,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         <Dialog open={open} onClose={onClose}>
             <AddNewTypeDialog open={openAddNewTypeDialog} onClose={closeAddNewTypeDialogHandler} />
             {loading !== 0 && <LinearProgress />}
-            <FormProvider settings={formSettings}>
+            <FormProvider settings={formSettings} default={defaultForm}>
                 <DialogTitle>Crea nuova transazione</DialogTitle>
                 <DialogContent>
                     <DialogContentText>Inserire i dati della nuova transizione</DialogContentText>
@@ -306,7 +353,10 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                     <Button onClick={closeTransactionDialogHandler} color="secondary">
                         Annulla
                     </Button>
-                    <Submit label="Salva" onValidate={saveTransactionHandler} />
+                    <Submit
+                        label={transactionId === undefined ? 'Crea' : 'Aggiorna'}
+                        onValidate={saveTransactionHandler}
+                    />
                 </DialogActions>
             </FormProvider>
         </Dialog>
