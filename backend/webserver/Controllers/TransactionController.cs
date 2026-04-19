@@ -117,5 +117,15 @@ namespace webserver.Controllers {
 
             return OkResponse();
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
+            var executor = new ExecutorManager(authorization);
+            var commnad = new DeleteTransactionCommand(id: id);
+
+            await executor.Execute(commnad);
+
+            return OkResponse();
+        }
     }
 }

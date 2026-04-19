@@ -103,6 +103,9 @@ export default function useApi() {
 
             getSingle: (id: number) =>
                 new ApiRequest<Transaction>(() => request<Transaction>('GET', `/transaction/${id}`), enqueueSnackbar),
+
+            delete: (id: number) =>
+                new ApiRequest<number>(() => request<number>('DELETE', `/transaction/${id}`), enqueueSnackbar),
         },
     };
 }

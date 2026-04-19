@@ -91,5 +91,55 @@ namespace TestProject.Commands.Transaction {
 
             Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(deleteTransaction));
         }
+
+        [Test]
+        public async Task DeleteTransaction_UpdatesWalletCurrentValue() {
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+
+            using (var db = DatabaseFactory.Use()) {
+                var walletAfterTransaction = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
+                Assert.That(walletAfterTransaction.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
+            }
+
+            var deleteCommand = new DeleteTransactionCommand(transaction.AddTransactionCommand.Result);
+            await ExecutorManager.Execute(deleteCommand);
+
+            using var dbAfterDelete = DatabaseFactory.Use();
+            var walletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
+            Assert.That(walletAfterDelete.CurrentValue, Is.EqualTo(wallet.Value));
+        }
+
+        [Test]
+        public async Task DeleteTransfer_UpdatesWalletCurrentValuesCorrectly() {
+            const Double transferValue = 50;
+            var secondWallet = new WalletSample(name: "my_second_wallet");
+            await ExecutorManager.Execute(secondWallet.AddWalletCommand);
+
+            var transferTransaction = new TransactionSample(
+                transactionTypeId: DatabaseInitializer.TRANSFER.Id,
+                walletId: wallet.AddWalletCommand.Result,
+                walletDestinationId: secondWallet.AddWalletCommand.Result,
+                value: transferValue);
+
+            await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
+
+            using (var db = DatabaseFactory.Use()) {
+                var sourceWallet = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
+                var destinationWallet = db.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result);
+
+                Assert.That(sourceWallet.CurrentValue, Is.EqualTo(wallet.Value - transferValue));
+                Assert.That(destinationWallet.CurrentValue, Is.EqualTo(secondWallet.Value + transferValue));
+            }
+
+            var deleteCommand = new DeleteTransactionCommand(transferTransaction.AddTransactionCommand.Result);
+            await ExecutorManager.Execute(deleteCommand);
+
+            using var dbAfterDelete = DatabaseFactory.Use();
+            var sourceWalletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
+            var destinationWalletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result);
+
+            Assert.That(sourceWalletAfterDelete.CurrentValue, Is.EqualTo(wallet.Value));
+            Assert.That(destinationWalletAfterDelete.CurrentValue, Is.EqualTo(secondWallet.Value));
+        }
     }
 }

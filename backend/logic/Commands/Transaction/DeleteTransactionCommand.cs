@@ -1,4 +1,5 @@
-﻿using logic.Exceptions;
+﻿using logic.Commands.Wallets;
+using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -22,10 +23,18 @@ namespace logic.Commands.Transaction {
             if (transaction.TransactionDestinationId != null) {
                 var transactionDestination = await database.Transactions.FirstAsync(t => t.Id == transaction.TransactionDestinationId);
 
+                var updateDestinationWalletValueCommnad = new UpdateWalletCurrentValueCommand(transactionDestination.WalletId, -transactionDestination.Value, true);
+
+                await updateDestinationWalletValueCommnad.Execute(executorManager);
+
                 database.Transactions.Remove(transactionDestination);
                 await database.SaveChangesAsync();
             }
 
+            var updateWalletValueCommnad = new UpdateWalletCurrentValueCommand(transaction.WalletId, -transaction.Value, true);
+
+            await updateWalletValueCommnad.Execute(executorManager);
+            
             database.Transactions.Remove(transaction);
 
             await database.SaveChangesAsync();
