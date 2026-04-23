@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Models {
-    public class Type {
+    public class TransactionType {
         public UInt64? Id { get; set; }
         public String? Name { get; set; }
         public UInt64? UserId { get; set; }

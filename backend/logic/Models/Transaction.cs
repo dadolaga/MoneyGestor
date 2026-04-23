@@ -11,7 +11,7 @@ namespace logic.Models {
         public String? Description { get; set; }
         public String? LongDescription { get; set; }
         public DateTime? Date { get; set; }
-        public Type? TransactionType { get; set; }
+        public TransactionType? TransactionType { get; set; }
         public User? User { get; set; }
         public User? UserInsert { get; set; }
         public Wallet? Wallet { get; set; }

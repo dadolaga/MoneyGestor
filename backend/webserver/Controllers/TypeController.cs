@@ -24,7 +24,7 @@ namespace webserver.Controllers {
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, logic.Models.Type type) {
+        public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, logic.Models.TransactionType type) {
             if(type.Name == null) {
                 return ErrorResponse(10, "Not all mandatory data inserted");
             }

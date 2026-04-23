@@ -37,8 +37,8 @@ namespace logic.Models {
             };
         }
 
-        public static Type Convert(this TransactionTypeDb transactionTypeDb) {
-            return new Type {
+        public static TransactionType Convert(this TransactionTypeDb transactionTypeDb) {
+            return new TransactionType {
                 Id = transactionTypeDb.Id,
                 Name = transactionTypeDb.Name,
                 UserId = transactionTypeDb.UserId,
