@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState, memo } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import utcPlugin from 'dayjs/plugin/utc';
 import timezonePlugin from 'dayjs/plugin/timezone';
@@ -77,32 +77,35 @@ interface Shortcut {
     getValue: () => [Dayjs, Dayjs];
 }
 
-const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps) => {
+const PickerContent = memo(({ startDate, endDate, onChange, shortcuts }: PickerProps) => {
     const theme = useTheme();
     const [direction, setDirection] = useState<'left' | 'right'>('left');
     const [currentMonth, setCurrentMonth] = useState<Dayjs>(startDate || dayjs());
 
-    useEffect(() => {
-        console.log('currentMonth updated:', currentMonth.format('YYYY-MM-DD'));
-    }, [currentMonth]);
+    // Memoize date calculations to avoid recalculation on every render
+    const dateConstraints = useMemo(() => ({
+        minDate: dayjs().add(-1, 'year'),
+        maxDate: dayjs().add(1, 'year'),
+        focusedDay: dayjs().add(1, 'day'),
+    }), []);
 
-    const handleDayClick = (date: Dayjs) => {
+    const handleDayClick = useCallback((date: Dayjs) => {
         if (!startDate || (startDate && endDate)) {
             onChange(date, null);
         } else {
             date.isBefore(startDate) ? onChange(date, startDate) : onChange(startDate, date);
         }
-    };
+    }, [startDate, endDate, onChange]);
 
     const moveMonthHandler = useCallback(
-        (direction: 'left' | 'right') => (event) => {
-            setDirection(direction);
-            setCurrentMonth((date) => dayjs(date).add(direction === 'right' ? 1 : -1, 'month'));
+        (dir: 'left' | 'right') => () => {
+            setDirection(dir);
+            setCurrentMonth((date) => dayjs(date).add(dir === 'right' ? 1 : -1, 'month'));
         },
         [],
     );
 
-    const renderDay = (props: PickersDayProps) => {
+    const renderDay = useCallback((props: PickersDayProps) => {
         const { day } = props;
 
         const isStart = !!startDate && day.isSame(startDate, 'day');
@@ -111,7 +114,7 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
 
         return (
             <CustomDay
-                {...props} // Pass all original props through
+                {...props}
                 theme={theme}
                 isSelectedStart={isStart}
                 isSelectedEnd={isEnd}
@@ -119,21 +122,25 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
                 onClick={() => handleDayClick(day)}
             />
         );
-    };
+    }, [startDate, endDate, theme, handleDayClick]);
+
+    const nextMonth = useMemo(() => currentMonth.add(1, 'month'), [currentMonth]);
+
+    const handleShortcutClick = useCallback((shortcut: Shortcut) => () => {
+        const [start, end] = shortcut.getValue();
+        onChange(start, end);
+    }, [onChange]);
 
     return (
-        <Box sx={{ p: 3, display: 'inline-block' }}>
-            <Stack direction="row" spacing={3}>
+        <Box sx={{ p: 2, display: 'inline-block' }}>
+            <Stack direction="row" spacing={1.5} sx={{ gap: 0 }}>
                 <Stack spacing={1} sx={{ width: 130, pt: 8 }}>
                     {(shortcuts || []).map((shortcut) => (
                         <Button
                             key={shortcut.label}
                             variant="contained"
                             size="small"
-                            onClick={() => {
-                                const [start, end] = shortcut.getValue();
-                                onChange(start, end);
-                            }}
+                            onClick={handleShortcutClick(shortcut)}
                         >
                             {shortcut.label}
                         </Button>
@@ -142,7 +149,7 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
 
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="it">
                     <Box>
-                        <Box>
+                        <Box sx={{ mb: 1.5 }}>
                             <Typography
                                 sx={{ textTransform: 'uppercase' }}
                                 fontSize={10}
@@ -156,31 +163,31 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
                                 <Typography>{endDate?.format('MMM D')}</Typography>
                             </Box>
                         </Box>
-                        <Stack direction="row">
+                        <Stack direction="row" sx={{ gap: 0 }}>
                             <Box
                                 p={1}
                                 sx={{ borderRight: `1px solid ${theme.palette.divider}` }}
                                 display="flex"
                                 flexDirection="column"
                             >
-                                <Box display="flex" alignItems="baseline" justifyContent="space-between">
+                                <Box display="flex" alignItems="baseline" justifyContent="space-between" sx={{ mb: 0.5 }}>
                                     <Box width="30px">
                                         <IconButton size="small" onClick={moveMonthHandler('left')}>
                                             <FontAwesomeIcon icon={faArrowLeft} />
                                         </IconButton>
                                     </Box>
-                                    <Typography>{currentMonth.locale('it').format('MMMM')}</Typography>
+                                    <Typography sx={{ fontSize: '0.9rem' }}>{currentMonth.locale('it').format('MMMM')}</Typography>
                                     <Box width="30px" />
                                 </Box>
                                 <DayCalendar
                                     currentMonth={currentMonth}
                                     disableFuture={false}
                                     disablePast={false}
-                                    focusedDay={dayjs().add(1, 'day')}
+                                    focusedDay={dateConstraints.focusedDay}
                                     hasFocus
                                     isMonthSwitchingAnimating={false}
-                                    maxDate={dayjs().add(1, 'year')}
-                                    minDate={dayjs().add(-1, 'year')}
+                                    maxDate={dateConstraints.maxDate}
+                                    minDate={dateConstraints.minDate}
                                     onFocusedDayChange={() => {}}
                                     onSelectedDaysChange={handleDayClick}
                                     onMonthSwitchingAnimationEnd={() => {}}
@@ -195,23 +202,22 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
                             <Box p={1} display="flex" flexDirection="column">
                                 <Box display="flex" alignItems="baseline" justifyContent="space-between">
                                     <Box width="30px" />
-                                    <Typography>{currentMonth.add(1, 'month').locale('it').format('MMMM')}</Typography>
+                                    <Typography sx={{ fontSize: '0.9rem' }}>{nextMonth.locale('it').format('MMMM')}</Typography>
                                     <Box width="30px">
-                                        {' '}
                                         <IconButton size="small" onClick={moveMonthHandler('right')}>
                                             <FontAwesomeIcon icon={faArrowRight} />
                                         </IconButton>
                                     </Box>
                                 </Box>
                                 <DayCalendar
-                                    currentMonth={currentMonth.add(1, 'month')}
+                                    currentMonth={nextMonth}
                                     disableFuture={false}
                                     disablePast={false}
-                                    focusedDay={dayjs().add(1, 'day')}
+                                    focusedDay={dateConstraints.focusedDay}
                                     hasFocus
                                     isMonthSwitchingAnimating={false}
-                                    maxDate={dayjs().add(1, 'year')}
-                                    minDate={dayjs().add(-1, 'year')}
+                                    maxDate={dateConstraints.maxDate}
+                                    minDate={dateConstraints.minDate}
                                     onFocusedDayChange={() => {}}
                                     onSelectedDaysChange={handleDayClick}
                                     onMonthSwitchingAnimationEnd={() => {}}
@@ -228,28 +234,45 @@ const PickerContent = ({ startDate, endDate, onChange, shortcuts }: PickerProps)
             </Stack>
         </Box>
     );
-};
+}, (prevProps, nextProps) => {
+    // Custom comparison for memo - only re-render if these change
+    return (
+        prevProps.startDate?.isSame(nextProps.startDate, 'day') &&
+        prevProps.endDate?.isSame(nextProps.endDate, 'day') &&
+        prevProps.shortcuts === nextProps.shortcuts
+    );
+});
 
 export interface RangePickerProps extends FormControlOwnProps {
     date: DateRange;
     onDateChange: (date: DateRange) => void;
 }
 
-export default function RangePickerField(props: RangePickerProps) {
+const RangePickerField = memo((props: RangePickerProps) => {
     const { date, onDateChange, ...otherProps } = props;
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
 
-    const handleClick = (event: React.MouseEvent<HTMLDivElement>) => setAnchorEl(event.currentTarget);
-    const handleClose = () => setAnchorEl(null);
+    const handleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        setAnchorEl(event.currentTarget);
+    }, []);
 
-    const formattedRange =
+    const handleClose = useCallback(() => {
+        setAnchorEl(null);
+    }, []);
+
+    const handleDateChange = useCallback((start: Dayjs | null, end: Dayjs | null) => {
+        onDateChange({ start, end });
+        handleClose();
+    }, [onDateChange, handleClose]);
+
+    const formattedRange = useMemo(() =>
         date?.start && date?.end
             ? `${date?.start.format('DD/MM/YYYY')} – ${date?.end ? date?.end.format('DD/MM/YYYY') : '...'}`
-            : 'Select date range';
+            : 'Select date range',
+    [date?.start, date?.end]);
 
     return (
         <FormControl fullWidth {...otherProps}>
-            {/* The "Input" Trigger */}
             <TextField
                 label="Date Range"
                 value={formattedRange}
@@ -269,7 +292,6 @@ export default function RangePickerField(props: RangePickerProps) {
                 sx={{ cursor: 'pointer', '& input': { cursor: 'pointer' } }}
             />
 
-            {/* The Dropdown Popover */}
             <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
@@ -289,11 +311,13 @@ export default function RangePickerField(props: RangePickerProps) {
                 <PickerContent
                     startDate={date?.start}
                     endDate={date?.end}
-                    onChange={(s, e) => {
-                        onDateChange({ start: s, end: e });
-                    }}
+                    onChange={handleDateChange}
                 />
             </Popover>
         </FormControl>
     );
-}
+});
+
+RangePickerField.displayName = 'RangePickerField';
+
+export default RangePickerField;
