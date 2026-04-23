@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
+import utcPlugin from 'dayjs/plugin/utc';
+import timezonePlugin from 'dayjs/plugin/timezone';
 import {
     Box,
     Button,
@@ -29,6 +31,9 @@ import { faCalendar } from '@fortawesome/free-regular-svg-icons';
 import 'dayjs/locale/it';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { DayCalendar } from '@mui/x-date-pickers/internals';
+
+dayjs.extend(utcPlugin);
+dayjs.extend(timezonePlugin);
 
 export interface DateRange {
     start: Dayjs;
@@ -231,18 +236,19 @@ export interface RangePickerProps extends FormControlOwnProps {
 }
 
 export default function RangePickerField(props: RangePickerProps) {
+    const { date, onDateChange, ...otherProps } = props;
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
 
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => setAnchorEl(event.currentTarget);
     const handleClose = () => setAnchorEl(null);
 
     const formattedRange =
-        props.date?.start && props.date?.end
-            ? `${props.date?.start.format('DD/MM/YYYY')} – ${props.date?.end ? props.date?.end.format('DD/MM/YYYY') : '...'}`
+        date?.start && date?.end
+            ? `${date?.start.format('DD/MM/YYYY')} – ${date?.end ? date?.end.format('DD/MM/YYYY') : '...'}`
             : 'Select date range';
 
     return (
-        <FormControl fullWidth {...props}>
+        <FormControl fullWidth {...otherProps}>
             {/* The "Input" Trigger */}
             <TextField
                 label="Date Range"
@@ -281,10 +287,10 @@ export default function RangePickerField(props: RangePickerProps) {
                 }}
             >
                 <PickerContent
-                    startDate={props.date?.start}
-                    endDate={props.date?.end}
+                    startDate={date?.start}
+                    endDate={date?.end}
                     onChange={(s, e) => {
-                        props.onDateChange({ start: s, end: e });
+                        onDateChange({ start: s, end: e });
                     }}
                 />
             </Popover>

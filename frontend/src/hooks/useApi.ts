@@ -3,7 +3,8 @@ import axios from '../app/axios/axios';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
 import { useCallback } from 'react';
-import { ApiList, Color, ListFilter, Login, Transaction, Type, User, Wallet } from '@/models/backend';
+import { ApiList, Color, DashboardOutput, ListFilter, Login, Transaction, Type, User, Wallet } from '@/models/backend';
+import { DateRange } from '@/component/DataPickerNew';
 
 export interface Response<T> {
     code: number;
@@ -99,13 +100,25 @@ export default function useApi() {
                 ),
 
             modify: (id: number, transaction: Transaction) =>
-                new ApiRequest<number>(() => request<number>('PUT', `/transaction/${id}`, transaction), enqueueSnackbar),
+                new ApiRequest<number>(
+                    () => request<number>('PUT', `/transaction/${id}`, transaction),
+                    enqueueSnackbar,
+                ),
 
             getSingle: (id: number) =>
                 new ApiRequest<Transaction>(() => request<Transaction>('GET', `/transaction/${id}`), enqueueSnackbar),
 
             delete: (id: number) =>
                 new ApiRequest<number>(() => request<number>('DELETE', `/transaction/${id}`), enqueueSnackbar),
+        },
+
+        dashboard: {
+            all: (dateRange: DateRange) =>
+                new ApiRequest<DashboardOutput>(
+                    () =>
+                        request<DashboardOutput>('GET', '/dashboard/all', { from: dateRange.start, to: dateRange.end }),
+                    enqueueSnackbar,
+                ),
         },
     };
 }

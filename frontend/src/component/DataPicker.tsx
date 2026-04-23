@@ -4,10 +4,15 @@ import { Box, Stack, Button, Typography, IconButton, useTheme, Paper, styled, Th
 import { LocalizationProvider, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DayCalendar } from '@mui/x-date-pickers/internals';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs, utc } from 'dayjs';
+import utcPlugin from 'dayjs/plugin/utc';
+import timezonePlugin from 'dayjs/plugin/timezone';
 import 'dayjs/locale/it';
 import React from 'react';
 import { useCallback, useMemo, useState } from 'react';
+
+dayjs.extend(utcPlugin);
+dayjs.extend(timezonePlugin);
 
 const MemoizedCalendar = React.memo(DayCalendar);
 

@@ -16,7 +16,7 @@ const themeOptions: ThemeOptions = {
         },
         secondary: {
             main: '#f50057',
-        },
+        }
     },
 };
 

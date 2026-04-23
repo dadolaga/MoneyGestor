@@ -4,10 +4,10 @@ export interface ApiList<T> {
 }
 
 export interface ListFilter {
-    order?: string,
-    offset?: number,
-    limit?: number,
-    where?: string,
+    order?: string;
+    offset?: number;
+    limit?: number;
+    where?: string;
 }
 
 export interface User {
@@ -58,4 +58,16 @@ export class Login {
     user: string;
     password: string;
     remember: boolean = false;
+}
+
+export class DashboardOutput {
+    incoming: number;
+    expense: number;
+    incomingCategories: DashboardOutputChar[];
+    expenseCategories: DashboardOutputChar[];
+}
+
+export class DashboardOutputChar {
+    type: Type;
+    value: number;
 }
