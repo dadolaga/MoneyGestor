@@ -27,7 +27,7 @@ namespace webserver.Controllers {
                 var incoming = await database.Transactions.Where(whereFunction).Where(t => t.Value > 0).SumAsync(t => t.Value);
                 var expense = await database.Transactions.Where(whereFunction).Where(t => t.Value < 0).SumAsync(t => t.Value);
 
-                var incomingCategories = (await database.Transactions
+                var expenseCategories = (await database.Transactions
                     .Where(whereFunction)
                     .Where(t => t.Value < 0)
                     .Include(t => t.TransactionType)
@@ -35,7 +35,7 @@ namespace webserver.Controllers {
                     .ToListAsync())
                     .Select(gt => new TransactionTypeValue { Type = gt.First().TransactionType.Convert(), Value = gt.Sum(t => t.Value) });
 
-                var expenseCategories = (await database.Transactions
+                var incomingCategories = (await database.Transactions
                     .Where(whereFunction)
                     .Where(t => t.Value > 0)
                     .Include(t => t.TransactionType)

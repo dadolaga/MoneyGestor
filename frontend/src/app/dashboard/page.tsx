@@ -83,7 +83,13 @@ export default function Dashboard() {
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle spese</Typography>
                         <Box sx={{ flexGrow: 1 }}>
-                            <PieChart pieData={dashboardData?.expenseCategories} position="left" />
+                            <PieChart
+                                pieData={dashboardData?.expenseCategories.map((v) => ({
+                                    ...v,
+                                    value: Math.abs(v.value),
+                                }))}
+                                position="left"
+                            />
                         </Box>
                     </CardContent>
                 </Card>
@@ -91,13 +97,7 @@ export default function Dashboard() {
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle entrate</Typography>
                         <Box sx={{ flexGrow: 1 }}>
-                            <PieChart
-                                pieData={dashboardData?.incomingCategories.map((v) => ({
-                                    ...v,
-                                    value: Math.abs(v.value),
-                                }))}
-                                position="right"
-                            />
+                            <PieChart pieData={dashboardData?.incomingCategories} position="right" />
                         </Box>
                     </CardContent>
                 </Card>
