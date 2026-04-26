@@ -34,7 +34,7 @@ export default function Drawer({ width, open, hide }) {
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={openPage('/dashboard/bank_stocks')}>
+                    <ListItemButton onClick={openPage('/dashboard/not_implemented')}>
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faMoneyBillTrendUp} />
                         </ListItemIcon>
