@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Button, Card, CardContent, Typography, useTheme } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import 'dayjs/locale/it';
 import RangePickerField, { DateRange } from '@/component/DataPickerNew';
 import useApi from '@/hooks/useApi';
@@ -10,9 +10,12 @@ import { DashboardOutput, DashboardOutputChar as DashboardOutputPie } from '@/mo
 import { convertNumberToPercentage, convertNumberToValue } from '../utilities/Utilities';
 import { ResponsivePie } from '@nivo/pie';
 import { getAdaptiveBackground } from '@/utilis/color';
+import TransactionDialog from './transaction/TransactionDialog';
 
 export default function Dashboard() {
     const api = useApi();
+
+    const [showTransactionDialog, setShowTransactionDialog] = useState<boolean>(false);
 
     const [dateSelection, setDateSelection] = useState<DateRange>({
         start: dayjs().startOf('month'),
@@ -22,6 +25,10 @@ export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState<DashboardOutput>(undefined);
 
     useEffect(() => {
+        refreshDashboard();
+    }, [dateSelection]);
+
+    const refreshDashboard = useCallback(() => {
         api.dashboard
             .all(dateSelection)
             .onSuccess((data) => {
@@ -32,20 +39,39 @@ export default function Dashboard() {
                 console.log(error);
             })
             .execute();
-    }, [dateSelection]);
+    }, [api, dateSelection]);
 
     useEffect(() => {
         console.log(dashboardData);
     }, [dashboardData]);
 
+    const openTransactionDialogHandler = () => {
+        setShowTransactionDialog(true);
+    };
+
+    const closeTransactionDialogHandler = (reload: boolean) => {
+        if (reload) {
+            refreshDashboard();
+        }
+
+        setShowTransactionDialog(false);
+    };
+
     return (
         <Box display={'flex'} flexDirection={'column'} gap={3} p={1}>
+            <TransactionDialog
+                transactionId={undefined}
+                open={showTransactionDialog}
+                onClose={closeTransactionDialogHandler}
+            />
             <Box width="100%" display="flex" flexDirection="row" justifyContent="space-between">
-                <Typography color="secondary" variant="h5">
-                    Dashboard finanze - date
+                <Typography color="secondary" variant="h4">
+                    Dashboard finanze
                 </Typography>
                 <Box display="flex" flexDirection={'row-reverse'} gap={2}>
-                    <Button variant="contained">Aggiungi transazione</Button>
+                    <Button fullWidth variant="contained" onClick={openTransactionDialogHandler}>
+                        Aggiungi transazione
+                    </Button>
                     <RangePickerField date={dateSelection} onDateChange={(date) => setDateSelection(date)} />
                 </Box>
             </Box>
@@ -82,23 +108,39 @@ export default function Dashboard() {
                 <Card sx={{ width: '100%', height: '100%' }}>
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle spese</Typography>
-                        <Box sx={{ flexGrow: 1 }}>
-                            <PieChart
-                                pieData={dashboardData?.expenseCategories.map((v) => ({
-                                    ...v,
-                                    value: Math.abs(v.value),
-                                }))}
-                                position="left"
-                            />
-                        </Box>
+                        {dashboardData?.expenseCategories.length > 0 ? (
+                            <Box sx={{ flexGrow: 1 }}>
+                                <PieChart
+                                    pieData={dashboardData?.expenseCategories.map((v) => ({
+                                        ...v,
+                                        value: Math.abs(v.value),
+                                    }))}
+                                    position="left"
+                                />
+                            </Box>
+                        ) : (
+                            <Box height="100%" display="flex" alignItems="center" justifyContent="center">
+                                <Typography color="textDisabled" fontStyle="italic">
+                                    Nessuna spesa registrata
+                                </Typography>
+                            </Box>
+                        )}
                     </CardContent>
                 </Card>
                 <Card sx={{ width: '100%', height: '100%' }}>
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle entrate</Typography>
-                        <Box sx={{ flexGrow: 1 }}>
-                            <PieChart pieData={dashboardData?.incomingCategories} position="right" />
-                        </Box>
+                        {dashboardData?.incomingCategories.length > 0 ? (
+                            <Box sx={{ flexGrow: 1 }}>
+                                <PieChart pieData={dashboardData?.incomingCategories} position="right" />
+                            </Box>
+                        ) : (
+                            <Box height="100%" display="flex" alignItems="center" justifyContent="center">
+                                <Typography color="textDisabled" fontStyle="italic">
+                                    Nessuna entrata registrata
+                                </Typography>
+                            </Box>
+                        )}
                     </CardContent>
                 </Card>
             </Box>
