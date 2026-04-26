@@ -4,7 +4,7 @@ import { faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { convertNumberToPercentage, convertNumberToValue } from "../../utilities/Utilities";
 import { StockMovement } from "../../utilities/BackEndTypes";
 import { Order } from "../base/Order";
-import { useIsMobile } from "../../utilities/useMobile";
+import { useIsMobile } from "../../../hooks/useMobile";
 import { MouseEventHandler, RefObject, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useRestApi } from "../../request/Request";
 

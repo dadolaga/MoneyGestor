@@ -1,8 +1,7 @@
 import { useCookies } from 'react-cookie';
-import axios from '../app/axios/axios';
-import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EnqueueSnackbar, useSnackbar } from 'notistack';
-import { useCallback } from 'react';
+import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiList, Color, DashboardOutput, ListFilter, Login, Transaction, Type, User, Wallet } from '@/models/backend';
 import { DateRange } from '@/component/DataPickerNew';
 
@@ -25,9 +24,18 @@ export default function useApi() {
     const [cookie] = useCookies(['token']);
     const { enqueueSnackbar } = useSnackbar();
 
+    const myAxios = useMemo<AxiosInstance>(() => {
+        const instance = axios.create({
+            //baseURL: process.env.NEXT_PUBLIC_API_URL,
+            baseURL: 'https://localhost:7184',
+        });
+
+        return instance;
+    }, []);
+
     const request = useCallback(
         <T>(type: 'POST' | 'GET' | 'PUT' | 'DELETE', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
-            let axiosConfig: AxiosRequestConfig<any> = {
+            const axiosConfig: AxiosRequestConfig<any> = {
                 params: type === 'GET' ? data : undefined,
                 data: data,
                 headers: cookie && {
@@ -37,13 +45,13 @@ export default function useApi() {
 
             switch (type) {
                 case 'POST':
-                    return axios.post(url, data, axiosConfig);
+                    return myAxios.post(url, data, axiosConfig);
                 case 'GET':
-                    return axios.get(url, axiosConfig);
+                    return myAxios.get(url, axiosConfig);
                 case 'PUT':
-                    return axios.put(url, data, axiosConfig);
+                    return myAxios.put(url, data, axiosConfig);
                 case 'DELETE':
-                    return axios.delete(url, axiosConfig);
+                    return myAxios.delete(url, axiosConfig);
             }
         },
         [cookie],

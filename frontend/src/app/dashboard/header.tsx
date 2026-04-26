@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useState, MouseEvent, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
-import { useIsMobile } from '../utilities/useMobile';
+import { useIsMobile } from '../../hooks/useMobile';
 import useApi from '@/hooks/useApi';
 
 export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {

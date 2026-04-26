@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { ResponsivePie } from '@nivo/pie';
-import { convertNumberToValue } from '../../utilities/Utilities';
+import { convertNumberToValue } from '@/utilis/values';
 import { Ref, useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import useApi from '@/hooks/useApi';
 import { Wallet } from '@/models/backend';

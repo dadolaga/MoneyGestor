@@ -2,7 +2,7 @@ import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from "@fortawesom
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Drawer as MaterialDrawer } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "../utilities/useMobile";
+import { useIsMobile } from "../../hooks/useMobile";
 
 export default function Drawer({ width, open, hide }) {
     const router = useRouter();

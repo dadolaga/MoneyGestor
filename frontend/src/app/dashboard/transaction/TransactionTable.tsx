@@ -14,9 +14,9 @@ import {
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { convertNumberToValue } from '../../utilities/Utilities';
+import { convertNumberToValue } from '@/utilis/values';
 import { Order } from '../base/Order';
-import { useIsMobile } from '../../utilities/useMobile';
+import { useIsMobile } from '../../../hooks/useMobile';
 import { RefObject, useCallback, useImperativeHandle, useState, MouseEvent, useEffect } from 'react';
 import useApi from '@/hooks/useApi';
 import { Transaction } from '@/models/backend';

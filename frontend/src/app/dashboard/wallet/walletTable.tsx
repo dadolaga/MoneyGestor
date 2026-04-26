@@ -17,9 +17,9 @@ import {
 } from '@mui/material';
 import { useState, useEffect, useImperativeHandle, Ref, useCallback } from 'react';
 import WalletDialog from './WalletDialog';
-import { convertNumberToValue } from '../../utilities/Utilities';
+import { convertNumberToValue } from '@/utilis/values';
 import { useRestApi } from '../../request/Request';
-import { useIsMobile } from '../../utilities/useMobile';
+import { useIsMobile } from '../../../hooks/useMobile';
 import { Wallet } from '@/models/backend';
 import useApi from '@/hooks/useApi';
 import DeleteDialog from '@/component/DeleteDialog';

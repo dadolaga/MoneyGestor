@@ -7,12 +7,12 @@ import { Box, Button } from '@mui/material';
 import TransactionDialog from './TransactionDialog';
 import { TransactionTable, TransactionTableRef } from './TransactionTable';
 import { TransactionGraph } from './TransactionGraph';
-import { useIsMobile } from '../../utilities/useMobile';
+import { useIsMobile } from '../../../hooks/useMobile';
 import TransactionTableFilter, { FilterData } from './TransactionTableFilter';
 import { Transaction } from '@/models/backend';
 import DeleteDialog from '@/component/DeleteDialog';
 import useApi from '@/hooks/useApi';
-import { convertNumberToValue } from '@/app/utilities/Utilities';
+import { convertNumberToValue } from '@/utilis/values';
 
 export default function Page() {
     const tableRef = useRef<TransactionTableRef>(null);

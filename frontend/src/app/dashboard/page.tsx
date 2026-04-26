@@ -7,7 +7,7 @@ import RangePickerField, { DateRange } from '@/component/DataPickerNew';
 import useApi from '@/hooks/useApi';
 import dayjs from 'dayjs';
 import { DashboardOutput, DashboardOutputChar as DashboardOutputPie } from '@/models/backend';
-import { convertNumberToPercentage, convertNumberToValue } from '../utilities/Utilities';
+import { convertNumberToPercentage, convertNumberToValue } from '@/utilis/values';
 import { ResponsivePie } from '@nivo/pie';
 import { getAdaptiveBackground } from '@/utilis/color';
 import TransactionDialog from './transaction/TransactionDialog';

@@ -18,7 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { enqueueSnackbar } from 'notistack';
-import { useIsMobile } from '../../utilities/useMobile';
+import { useIsMobile } from '../../../hooks/useMobile';
 import { DefaultFormType, FormProvider, FormSettings, FormType } from '@/context/FormContext';
 import Input from '@/component/Input';
 import Submit from '@/component/Submit';

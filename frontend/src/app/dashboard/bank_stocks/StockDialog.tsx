@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { TransitionDialog } from "../base/transition";
 import { useRestApi } from "../../request/Request";
 import { Stock } from "../../utilities/BackEndTypes";
-import Input from "../../component/Input";
 import { BaseChecker, Form, FormSettings } from "../../form/Form";
 import dayjs from "dayjs";
 import { useSnackbar } from "notistack";
 import { ResponseError } from "../../request/ResponseError";
+import Input from "@/component/Input";
 
 interface IProps {
     open: boolean
