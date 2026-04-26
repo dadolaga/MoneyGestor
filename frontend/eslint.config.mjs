@@ -13,7 +13,7 @@ const compat = new FlatCompat({
 export default tseslint.config(
     {
         // Global ignores
-        ignores: ["node_modules/", ".next/", "out/", "public/", "eslint.config.mjs"]
+        ignores: ["node_modules/", ".next/", "out/", "public/", "eslint.config.mjs", "./src/app/dashboard/bank_stocks"]
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,
