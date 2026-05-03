@@ -1,3 +1,11 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import dayjs from 'dayjs';
+import { enqueueSnackbar } from 'notistack';
+
+import type { SelectChangeEvent } from '@mui/material';
 import {
     Button,
     Dialog,
@@ -10,21 +18,18 @@ import {
     Typography,
     InputAdornment,
     IconButton,
-    SelectChangeEvent,
     Box,
 } from '@mui/material';
+
 import 'dayjs/locale/it';
-import { useCallback, useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightLong, faArrowDownLong, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
-import { enqueueSnackbar } from 'notistack';
-import { useIsMobile } from '../../../hooks/useMobile';
-import { DefaultFormType, FormProvider, FormSettings, FormType } from '@/context/FormContext';
+
 import Input from '@/component/Input';
 import Submit from '@/component/Submit';
+import type { DefaultFormType, FormSettings, FormType } from '@/context/FormContext';
+import { FormProvider } from '@/context/FormContext';
 import useApi from '@/hooks/useApi';
-import { Transaction, Type, Wallet } from '@/models/backend';
-import dayjs from 'dayjs';
+import { useIsMobile } from '@/hooks/useMobile';
+import type { Transaction, Type, Wallet } from '@/models/backend';
 
 const ID_TRANSFER_TYPE = 1;
 const ID_ADJUST_TYPE = 2;
@@ -34,11 +39,16 @@ const formSettings: FormSettings = {
         mandatory: false,
         checkers: [
             {
-                action: (value: string, form) =>
-                    (form['type'] !== undefined &&
-                        form['type'].value !== null &&
-                        form['type'].value == ID_TRANSFER_TYPE) ||
-                    (value !== undefined && value !== null && value.length > 0),
+                action: (value: string | number | null, form: FormType) => {
+                    const isTransfer =
+                        form['type']?.value !== undefined &&
+                        form['type']?.value !== null &&
+                        form['type']?.value == ID_TRANSFER_TYPE;
+
+                    const hasValue = value !== undefined && value !== null && String(value).length > 0;
+
+                    return Boolean(isTransfer || hasValue);
+                },
                 message: 'La descrizione non può essere vuota',
             },
         ],
@@ -89,7 +99,13 @@ const formAddNewTypeSettings: FormSettings = {
     },
 };
 
-export default function TransactionDialog({ open, onClose, transactionId }) {
+export interface TransactionDialogProps {
+    open: boolean;
+    onClose: (isToReload: boolean) => void;
+    transactionId?: number;
+}
+
+export default function TransactionDialog({ open, onClose, transactionId }: TransactionDialogProps) {
     const isMobile = useIsMobile();
 
     const api = useApi();
@@ -97,47 +113,17 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
     const [defaultForm, setDefaultForm] = useState<DefaultFormType>({});
 
     const [loading, setLoading] = useState<number>(0);
-    const [wallets, setWallets] = useState<Wallet[]>(undefined);
-    const [types, setTypes] = useState<Type[]>(undefined);
+    const [wallets, setWallets] = useState<Wallet[]>();
+    const [types, setTypes] = useState<Type[]>();
 
-    const [typeSelectedId, setTypeSelectedId] = useState<number>(undefined);
+    const [typeSelectedId, setTypeSelectedId] = useState<number>();
 
     const [openAddNewTypeDialog, setOpenAddNewTypeDialog] = useState<boolean>(false);
 
-    const [sign, setSign] = useState<boolean>(true); // false: plus - true: minus
-
-    useEffect(() => {
-        loadTransactionType();
-        loadWallet();
-    }, [open]);
-
-    useEffect(() => {
-        if (transactionId !== undefined) {
-            setDefaultForm({});
-            setLoading((i) => i + 1);
-
-            api.transaction
-                .getSingle(transactionId)
-                .onSuccess((transaction) => {
-                    setDefaultForm({
-                        description: transaction.description,
-                        date: transaction.date,
-                        value: transaction.value.toString(),
-                        type: transaction.transactionType.id.toString(),
-                        wallet: transaction.wallet.id.toString(),
-                        'wallet-destination': transaction.walletDestination?.id.toString(),
-                    });
-                    setTypeSelectedId(transaction.transactionType.id);
-                })
-                .onFinish(() => setLoading((i) => i - 1))
-                .execute();
-        } else {
-            setDefaultForm({ date: dayjs().format('YYYY-MM-DD') });
-        }
-    }, [transactionId, open]);
+    const [sign] = useState<boolean>(true); // false: plus - true: minus
 
     const loadTransactionType = useCallback(() => {
-        setLoading((i) => i + 1);
+        queueMicrotask(() => setLoading((i) => i + 1));
 
         api.type
             .get()
@@ -151,7 +137,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
     }, []);
 
     const loadWallet = useCallback(() => {
-        setLoading((i) => i + 1);
+        queueMicrotask(() => setLoading((i) => i + 1));
 
         api.wallet
             .get()
@@ -164,6 +150,40 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
             .execute();
     }, []);
 
+    useEffect(() => {
+        loadTransactionType();
+        loadWallet();
+    }, [loadTransactionType, loadWallet, open]);
+
+    useEffect(() => {
+        if (transactionId !== undefined) {
+            queueMicrotask(() => {
+                setDefaultForm({});
+                setLoading((i) => i + 1);
+            });
+
+            api.transaction
+                .getSingle(transactionId)
+                .onSuccess((transaction) => {
+                    setDefaultForm({
+                        description: transaction?.description,
+                        date: transaction?.date,
+                        value: transaction?.value?.toString(),
+                        type: transaction?.transactionType?.id?.toString(),
+                        wallet: transaction?.wallet?.id?.toString(),
+                        'wallet-destination': transaction?.walletDestination?.id?.toString(),
+                    });
+                    setTypeSelectedId(transaction?.transactionType?.id);
+                })
+                .onFinish(() => setLoading((i) => i - 1))
+                .execute();
+        } else {
+            queueMicrotask(() => {
+                setDefaultForm({ date: dayjs().format('YYYY-MM-DD') });
+            });
+        }
+    }, [transactionId, open]);
+
     const typeChangeHandler = useCallback((action: SelectChangeEvent<string>) => {
         setTypeSelectedId(parseInt(action.target.value));
     }, []);
@@ -172,23 +192,26 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
         setOpenAddNewTypeDialog(true);
     }, []);
 
-    const closeAddNewTypeDialogHandler = useCallback((isToReload: boolean) => {
-        if (isToReload) {
-            loadTransactionType();
-        }
+    const closeAddNewTypeDialogHandler = useCallback(
+        (isToReload: boolean) => {
+            if (isToReload) {
+                loadTransactionType();
+            }
 
-        setOpenAddNewTypeDialog(false);
-    }, []);
+            setOpenAddNewTypeDialog(false);
+        },
+        [loadTransactionType],
+    );
 
     const closeTransactionDialogHandler = useCallback(() => {
         onClose(false);
-    }, []);
+    }, [onClose]);
 
     const saveTransactionHandler = (form: FormType) => {
         return new Promise<void>((resolve, reject) => {
             setLoading((i) => i + 1);
 
-            var transaction: Transaction = {
+            const transaction: Transaction = {
                 description: form['description'].value as string,
                 date: form['date'].value as string,
                 value: form['value'].value as number,
@@ -202,7 +225,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                     id:
                         (form['type'].value as number) === ID_TRANSFER_TYPE
                             ? (form['wallet-destination']?.value as number)
-                            : null,
+                            : undefined,
                 },
             };
 
@@ -260,9 +283,10 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                         <Grid size={{ xs: 12, sm: 8 }}>
                             <Input type="date" name="date" label="Data" disabled={loading !== 0} />
                         </Grid>
-                        {isMobile && typeSelectedId != ID_TRANSFER_TYPE && (
+                        {!!isMobile && typeSelectedId != ID_TRANSFER_TYPE && (
                             <Grid size={{ xs: 2 }} display="flex" alignItems="center" justifyContent="center">
                                 <IconButton onClick={() => {}}>
+                                    {/* eslint-disable-next-line react/jsx-no-leaked-render */}
                                     <FontAwesomeIcon icon={sign ? faMinus : faPlus} />
                                 </IconButton>
                             </Grid>
@@ -283,20 +307,22 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                                 name="type"
                                 label="Tipo"
                                 disabled={loading !== 0}
-                                values={types?.map((value) => ({
-                                    key: value.id,
-                                    text: (
-                                        <Typography
-                                            fontStyle={
-                                                value.id == ID_ADJUST_TYPE || value.id == ID_TRANSFER_TYPE
-                                                    ? 'italic'
-                                                    : undefined
-                                            }
-                                        >
-                                            {value.name}
-                                        </Typography>
-                                    ),
-                                }))}
+                                values={
+                                    types?.map((value) => ({
+                                        key: value.id!,
+                                        text: (
+                                            <Typography
+                                                fontStyle={
+                                                    value.id == ID_ADJUST_TYPE || value.id == ID_TRANSFER_TYPE
+                                                        ? 'italic'
+                                                        : 'normal'
+                                                }
+                                            >
+                                                {value.name}
+                                            </Typography>
+                                        ),
+                                    })) ?? []
+                                }
                                 onChange={typeChangeHandler}
                             />
                             <Typography
@@ -320,7 +346,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                                 label="Portafoglio"
                                 disabled={loading !== 0}
                                 values={wallets?.map((value) => ({
-                                    key: value.id,
+                                    key: value.id!,
                                     text: value.name,
                                 }))}
                             />
@@ -331,6 +357,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                                     size={{ xs: 12, md: 2 }}
                                     sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
+                                    {/* eslint-disable-next-line react/jsx-no-leaked-render */}
                                     <FontAwesomeIcon icon={isMobile ? faArrowDownLong : faArrowRightLong} size="2x" />
                                 </Grid>
                                 <Grid size={{ xs: 12, sm: 5 }}>
@@ -340,7 +367,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
                                         label="Portafoglio destinazione"
                                         disabled={loading !== 0}
                                         values={wallets?.map((value) => ({
-                                            key: value.id,
+                                            key: value.id!,
                                             text: value.name,
                                         }))}
                                     />
@@ -363,7 +390,7 @@ export default function TransactionDialog({ open, onClose, transactionId }) {
     );
 }
 
-function AddNewTypeDialog({ open, onClose }) {
+function AddNewTypeDialog({ open, onClose }: { open: boolean; onClose: (isToReload: boolean) => void }) {
     const api = useApi();
 
     const [loading, setLoading] = useState<boolean>(false);
@@ -372,37 +399,40 @@ function AddNewTypeDialog({ open, onClose }) {
         onClose(false);
     };
 
-    const validateHandler = useCallback((form: FormType) => {
-        return new Promise<void>((resolve, reject) => {
-            var type: Type = {
-                name: form['name'].value as string,
-            };
+    const validateHandler = useCallback(
+        (form: FormType) => {
+            return new Promise<void>((resolve, reject) => {
+                const type: Type = {
+                    name: form['name'].value as string,
+                };
 
-            setLoading(true);
+                setLoading(true);
 
-            api.type
-                .add(type)
-                .onSuccess(() => {
-                    resolve();
-                    onClose(true);
-                })
-                .onError((error) => {
-                    switch (error.code) {
-                        case 401:
-                            reject({ name: 'Il tipo esiste gia' });
-                            break;
-                    }
-                })
-                .onFinish(() => {
-                    setLoading(false);
-                })
-                .execute();
-        });
-    }, []);
+                api.type
+                    .add(type)
+                    .onSuccess(() => {
+                        resolve();
+                        onClose(true);
+                    })
+                    .onError((error) => {
+                        switch (error.code) {
+                            case 401:
+                                reject({ name: 'Il tipo esiste gia' });
+                                break;
+                        }
+                    })
+                    .onFinish(() => {
+                        setLoading(false);
+                    })
+                    .execute();
+            });
+        },
+        [onClose],
+    );
 
     return (
         <Dialog open={open}>
-            {loading && <LinearProgress />}
+            {!!loading && <LinearProgress />}
             <DialogTitle>Agguingi nuovo tipo</DialogTitle>
             <FormProvider settings={formAddNewTypeSettings}>
                 <DialogContent>

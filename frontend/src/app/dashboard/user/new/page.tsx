@@ -1,13 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Card, Grid, Typography, LinearProgress, CardContent } from '@mui/material';
+
 import { enqueueSnackbar } from 'notistack';
+
+import { Box, Card, Grid, Typography, LinearProgress, CardContent } from '@mui/material';
+
 import Input from '@/component/Input';
-import { checkIsEmail, checkPassword, FormProvider, FormSettings, FormType } from '@/context/FormContext';
 import Submit from '@/component/Submit';
-import useApi, { ResponseError } from '@/hooks/useApi';
-import { User } from '@/models/backend';
+import type { FormSettings, FormType } from '@/context/FormContext';
+import { checkIsEmail, checkPassword, FormProvider } from '@/context/FormContext';
+import type { ResponseError } from '@/hooks/useApi';
+import useApi from '@/hooks/useApi';
+import type { User } from '@/models/backend';
 
 export default function Page() {
     const [showLoading, setShowLoading] = useState(false);
@@ -85,7 +90,7 @@ export default function Page() {
     return (
         <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
             <Card sx={{ maxWidth: '500px' }}>
-                {showLoading && <LinearProgress sx={{ width: '100%' }} />}
+                {!!showLoading && <LinearProgress sx={{ width: '100%' }} />}
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <Box>
                         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}

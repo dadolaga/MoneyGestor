@@ -1,6 +1,11 @@
-import { faPen, faStar, faTrash } from '@fortawesome/free-solid-svg-icons';
+import type { Ref } from 'react';
+import { useState, useEffect, useImperativeHandle, useCallback } from 'react';
+
 import { faStar as faStartEmpty } from '@fortawesome/free-regular-svg-icons';
+import { faPen, faStar, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { enqueueSnackbar } from 'notistack';
+
 import {
     Box,
     LinearProgress,
@@ -15,15 +20,13 @@ import {
     TableRow,
     TableSortLabel,
 } from '@mui/material';
-import { useState, useEffect, useImperativeHandle, Ref, useCallback } from 'react';
-import WalletDialog from './WalletDialog';
-import { convertNumberToValue } from '@/utilis/values';
-import { useRestApi } from '../../request/Request';
-import { useIsMobile } from '../../../hooks/useMobile';
-import { Wallet } from '@/models/backend';
-import useApi from '@/hooks/useApi';
+
 import DeleteDialog from '@/component/DeleteDialog';
-import { enqueueSnackbar } from 'notistack';
+import useApi from '@/hooks/useApi';
+import type { Wallet } from '@/models/backend';
+import { convertNumberToValue } from '@/utilis/values';
+
+import WalletDialog from './WalletDialog';
 
 export interface WalletTableRef {
     refreshTable: () => void;
@@ -35,34 +38,20 @@ interface Props {
 }
 
 export default function WalletTable({ ref, refreshPage }: Props) {
-    const isMobile = useIsMobile();
-
     const api = useApi();
 
     const [loading, setLoading] = useState<boolean>(false);
-    const [wallets, setWallets] = useState<Wallet[]>(undefined);
+    const [wallets, setWallets] = useState<Wallet[]>();
     const [sort, setSort] = useState<{ [key: string]: 'asc' | 'desc' }>({});
     const [openWalletDialog, setOpenWalletDialog] = useState(false);
-    const [deleteWallet, setDeleteWallet] = useState<Wallet>(undefined);
-    const [editWalletId, setEditWalletId] = useState<number>(undefined);
-
-    useEffect(() => {
-        reloadWallets();
-    }, []);
-
-    useImperativeHandle<WalletTableRef, WalletTableRef>(
-        ref,
-        () => ({
-            refreshTable: () => {
-                reloadWallets();
-            },
-        }),
-        [],
-    );
+    const [deleteWallet, setDeleteWallet] = useState<Wallet>();
+    const [editWalletId, setEditWalletId] = useState<number>();
 
     const reloadWallets = useCallback(() => {
-        setLoading(true);
-        setWallets(undefined);
+        queueMicrotask(() => {
+            setLoading(true);
+            setWallets(undefined);
+        });
 
         api.wallet
             .get()
@@ -73,9 +62,23 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                 setLoading(false);
             })
             .execute();
-    }, [api]);
+    }, []);
 
-    const clickFavoriteHandler = (id) => () => {
+    useEffect(() => {
+        reloadWallets();
+    }, [reloadWallets]);
+
+    useImperativeHandle<WalletTableRef, WalletTableRef>(
+        ref,
+        () => ({
+            refreshTable: () => {
+                reloadWallets();
+            },
+        }),
+        [reloadWallets],
+    );
+
+    const clickFavoriteHandler = (id: number) => () => {
         api.wallet
             .favorite(id)
             .onSuccess(() => {
@@ -110,7 +113,7 @@ export default function WalletTable({ ref, refreshPage }: Props) {
         }
 
         api.wallet
-            .delete(wallet.id)
+            .delete(wallet.id!)
             .onSuccess(() => {
                 enqueueSnackbar('Portafoglio eliminato con successo', { variant: 'success' });
                 reloadWallets();
@@ -160,11 +163,11 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                     </TableSortLabel>
                                 </TableCell>
                                 <TableCell style={{ width: '20px' }}>Azioni</TableCell>
-                                <TableCell style={{ width: '15px' }}></TableCell>
+                                <TableCell style={{ width: '15px' }} />
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(!wallets || loading) && (
+                            {!!(!wallets || loading) && (
                                 <TableRow>
                                     <TableCell sx={{ p: 0 }} colSpan={4}>
                                         <LinearProgress />
@@ -175,13 +178,16 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                 return (
                                     <TableRow key={index} sx={{ '*': { color: '#' + value.color + '!important' } }}>
                                         <TableCell> {value.name} </TableCell>
-                                        <TableCell align="right"> {convertNumberToValue(value.currentValue)} </TableCell>
+                                        <TableCell align="right">
+                                            {' '}
+                                            {convertNumberToValue(value.currentValue)}{' '}
+                                        </TableCell>
                                         <TableCell>
                                             <Box sx={{ display: 'flex', gap: 2 }}>
                                                 <FontAwesomeIcon
                                                     style={{ cursor: 'pointer' }}
                                                     icon={faPen}
-                                                    onClick={clickEditWalletHandler(value.id)}
+                                                    onClick={clickEditWalletHandler(value.id!)}
                                                 />
                                                 <FontAwesomeIcon
                                                     style={{ cursor: 'pointer' }}
@@ -193,7 +199,8 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                         <TableCell>
                                             <FontAwesomeIcon
                                                 style={{ cursor: 'pointer' }}
-                                                onClick={clickFavoriteHandler(value.id)}
+                                                onClick={clickFavoriteHandler(value.id!)}
+                                                // eslint-disable-next-line react/jsx-no-leaked-render
                                                 icon={value.favorite ? faStar : faStartEmpty}
                                             />
                                         </TableCell>
@@ -217,7 +224,7 @@ export default function WalletTable({ ref, refreshPage }: Props) {
                                     {wallets ? (
                                         convertNumberToValue(
                                             wallets
-                                                .map((wallet) => wallet.currentValue)
+                                                .map((wallet) => wallet.currentValue!)
                                                 .reduce((value, currentValue) => value + currentValue, 0),
                                         )
                                     ) : (

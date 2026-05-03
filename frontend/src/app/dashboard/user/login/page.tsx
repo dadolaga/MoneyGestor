@@ -1,13 +1,18 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+
 import { useCookies } from 'react-cookie';
+
 import { Box, Card, CardContent, LinearProgress, Typography } from '@mui/material';
-import { FormProvider, FormSettings, FormType } from '@/context/FormContext';
+
 import Input from '@/component/Input';
 import Submit from '@/component/Submit';
-import useApi, { ResponseError } from '@/hooks/useApi';
-import { Login } from '@/models/backend';
+import type { FormSettings, FormType } from '@/context/FormContext';
+import { FormProvider } from '@/context/FormContext';
+import type { ResponseError } from '@/hooks/useApi';
+import useApi from '@/hooks/useApi';
+import type { Login } from '@/models/backend';
 
 export default function Page() {
     const formSettings: FormSettings = {
@@ -26,12 +31,12 @@ export default function Page() {
     const [loading, setLoading] = useState<boolean>(false);
 
     const loginHandler = useCallback(
-        (_form: FormType) => {
+        (form: FormType) => {
             return new Promise<void>((resolve, reject) => {
                 const loginData: Login = {
-                    user: _form.username.value.toString(),
-                    password: _form.password.value.toString(),
-                    remember: _form.remember !== undefined,
+                    user: form.username.value!.toString(),
+                    password: form.password.value!.toString(),
+                    remember: form.remember !== undefined,
                 };
 
                 setLoading(true);
@@ -56,13 +61,13 @@ export default function Page() {
                     .execute();
             });
         },
-        [api.user, setCookie],
+        [setCookie],
     );
 
     return (
         <Box height={'100%'} width={'100%'} display={'flex'} alignItems={'center'} justifyContent={'center'}>
             <Card>
-                {loading && <LinearProgress sx={{ width: '100%' }} />}
+                {!!loading && <LinearProgress sx={{ width: '100%' }} />}
                 <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <Box>
                         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}

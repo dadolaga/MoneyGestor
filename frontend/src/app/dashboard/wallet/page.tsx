@@ -1,14 +1,18 @@
 'use client';
 
-import { Box, Button } from '@mui/material';
 import { useRef, useState } from 'react';
-import WalletTable from './WalletTable';
+
+import { Box, Button } from '@mui/material';
+
 import WalletDialog from './WalletDialog';
+import type { WalletPieRef } from './WalletPie';
 import WalletPie from './WalletPie';
+import type { WalletTableRef } from './WalletTable';
+import WalletTable from './WalletTable';
 
 export default function Page() {
-    const tableWallet = useRef(null);
-    const pieWallet = useRef(null);
+    const tableWallet = useRef<WalletTableRef>(null);
+    const pieWallet = useRef<WalletPieRef>(null);
 
     const [showWalletDialog, setShowWalletDialog] = useState<boolean>(false);
 
@@ -17,6 +21,8 @@ export default function Page() {
     };
 
     const refreshPage = () => {
+        if (tableWallet.current === null || pieWallet.current === null) return;
+
         tableWallet.current.refreshTable();
         pieWallet.current.refresh();
     };
@@ -39,7 +45,7 @@ export default function Page() {
                             Aggiungi portafoglio
                         </Button>
                     </Box>
-                    <WalletTable ref={tableWallet} refreshPage={refreshPage }/>
+                    <WalletTable ref={tableWallet} refreshPage={refreshPage} />
                 </Box>
                 <Box display="flex" alignItems="center">
                     <WalletPie ref={pieWallet} />

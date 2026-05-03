@@ -1,12 +1,16 @@
-"use client"
+'use client';
 
-import { Box, Toolbar } from "@mui/material";
-import Header from "./header";
-import Drawer from "./drawer";
-import { ThemeOptions, createTheme } from '@mui/material/styles'
-import { ThemeProvider } from '@emotion/react'
-import { SnackbarProvider } from "notistack";
-import { useState } from "react";
+import { useState } from 'react';
+
+import { ThemeProvider } from '@emotion/react';
+import { SnackbarProvider } from 'notistack';
+
+import { Box, Toolbar } from '@mui/material';
+import type { ThemeOptions } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
+
+import Drawer from './drawer';
+import Header from './header';
 
 const themeOptions: ThemeOptions = {
     palette: {
@@ -16,27 +20,25 @@ const themeOptions: ThemeOptions = {
         },
         secondary: {
             main: '#f50057',
-        }
+        },
     },
 };
 
 const theme = createTheme(themeOptions);
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [openDrawer, setOpenDrawer] = useState<boolean>();
 
     return (
         <ThemeProvider theme={theme}>
             <SnackbarProvider>
                 <Box sx={{ position: 'relative', height: '100vh' }}>
-                    <Header openDrawerClick={() => setOpenDrawer(!openDrawer)}/>
+                    <Header openDrawerClick={() => setOpenDrawer(!openDrawer)} />
                     <Box sx={{ display: 'flex', height: '100%' }}>
-                        <Drawer width={200} open={openDrawer} hide={() => setOpenDrawer(false)} />
-                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: "100%" }}>
+                        <Drawer width={200} open={openDrawer ?? false} hide={() => setOpenDrawer(false)} />
+                        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: '100%' }}>
                             <Toolbar />
-                            <Box sx={{ margin: 2, flexGrow: 1, overflowY: 'hidden' }}>
-                                {children}
-                            </Box>
+                            <Box sx={{ margin: 2, flexGrow: 1, overflowY: 'hidden' }}>{children}</Box>
                         </Box>
                     </Box>
                 </Box>

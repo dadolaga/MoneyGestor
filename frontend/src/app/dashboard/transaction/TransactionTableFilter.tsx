@@ -1,21 +1,14 @@
-import RangePickerField, { DateRange } from '@/component/DataPickerNew';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { Box } from '@mui/material';
+
+import type { DateRange } from '@/component/DataPickerNew';
+import RangePickerField from '@/component/DataPickerNew';
 import Input from '@/component/Input';
-import { FormProvider, FormType } from '@/context/FormContext';
+import type { FormType } from '@/context/FormContext';
+import { FormProvider } from '@/context/FormContext';
 import useApi from '@/hooks/useApi';
-import { Type, Wallet } from '@/models/backend';
-import {
-    Box,
-    FormControl,
-    FormHelperText,
-    InputBase,
-    InputLabel,
-    MenuItem,
-    OutlinedInput,
-    Select,
-    TextField,
-} from '@mui/material';
-import dayjs from 'dayjs';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import type { Type, Wallet } from '@/models/backend';
 
 export interface FilterData {
     name?: string;
@@ -39,9 +32,9 @@ export default function TransactionTableFilter(props: IProps) {
 
     const [filer, setFilter] = useState<FilterData>({});
     const [updateData, setUpdateData] = useState<boolean>(false);
-    const [wallet, setWallet] = useState<Wallet[]>(undefined);
-    const [types, setTypes] = useState<Type[]>(undefined);
-    const [date, setDate] = useState<DateRange>(undefined);
+    const [wallet, setWallet] = useState<Wallet[]>();
+    const [types, setTypes] = useState<Type[]>();
+    const [date, setDate] = useState<DateRange>();
 
     useEffect(() => {
         api.wallet
@@ -65,8 +58,8 @@ export default function TransactionTableFilter(props: IProps) {
             typeId: filer.typeId,
         });
 
-        setUpdateData(false);
-    }, [updateData]);
+        queueMicrotask(() => setUpdateData(false));
+    }, [filer, props, updateData]);
 
     const updateValueHandler = useCallback((data: FormType, updatedKey: string) => {
         setFilter({
@@ -76,7 +69,9 @@ export default function TransactionTableFilter(props: IProps) {
         });
 
         if (updatedKey == 'name') {
-            clearTimeout(timeoutRef.current);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
 
             timeoutRef.current = setTimeout(() => {
                 setUpdateData(true);
@@ -96,7 +91,7 @@ export default function TransactionTableFilter(props: IProps) {
                     name="wallet"
                     label="Portafoglio"
                     emptySelect
-                    values={wallet?.map((w) => ({ key: w.id, text: w.name }))}
+                    values={wallet?.map((w) => ({ key: w.id!, text: w.name }))}
                     disabled={wallet === undefined}
                 />
                 <Input
@@ -105,7 +100,7 @@ export default function TransactionTableFilter(props: IProps) {
                     name="type"
                     label="Tipo"
                     emptySelect
-                    values={types?.map((t) => ({ key: t.id, text: t.name }))}
+                    values={types?.map((t) => ({ key: t.id!, text: t.name }))}
                     disabled={types === undefined}
                 />
                 <RangePickerField date={date} onDateChange={setDate} />

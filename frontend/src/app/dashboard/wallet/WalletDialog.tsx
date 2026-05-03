@@ -1,3 +1,7 @@
+import { useState, useEffect, useCallback } from 'react';
+
+import { useSnackbar } from 'notistack';
+
 import {
     Box,
     Button,
@@ -9,14 +13,15 @@ import {
     LinearProgress,
     Typography,
 } from '@mui/material';
-import { useState, useEffect } from 'react';
-import { FormProvider, FormSettings, FormType, checkIsDecimal } from '@/context/FormContext';
+
 import Input from '@/component/Input';
-import useApi, { ResponseError, ApiRequest } from '@/hooks/useApi';
-import { Color, Wallet } from '@/models/backend';
-import { convertColor } from '@/utilis/color';
 import Submit from '@/component/Submit';
-import { useSnackbar } from 'notistack';
+import type { FormSettings, FormType } from '@/context/FormContext';
+import { FormProvider, checkIsDecimal } from '@/context/FormContext';
+import type { ResponseError, ApiRequest } from '@/hooks/useApi';
+import useApi from '@/hooks/useApi';
+import type { Color, Wallet } from '@/models/backend';
+import { convertColor } from '@/utilis/color';
 
 interface WalletDialogInterface {
     open: boolean;
@@ -30,8 +35,8 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
     const { enqueueSnackbar } = useSnackbar();
 
     const [loading, setLoading] = useState<number>(0);
-    const [colors, setColors] = useState<Color[]>(undefined);
-    const [wallet, setWallet] = useState<Wallet>(undefined);
+    const [colors, setColors] = useState<Color[]>();
+    const [wallet, setWallet] = useState<Wallet>();
 
     const formSettings: FormSettings = {
         name: {
@@ -53,19 +58,8 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
         },
     };
 
-    useEffect(() => {
-        if (!open) return;
-
-        setWallet(undefined);
-        loadColor();
-
-        if (walletId) {
-            loadWallet();
-        }
-    }, [open, walletId]);
-
-    const loadColor = () => {
-        setLoading((i) => i + 1);
+    const loadColor = useCallback(() => {
+        queueMicrotask(() => setLoading((i) => i + 1));
 
         api.color
             .get()
@@ -77,10 +71,12 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 setLoading((i) => i - 1);
             })
             .execute();
-    };
+    }, []);
 
-    const loadWallet = () => {
-        setLoading((i) => i + 1);
+    const loadWallet = useCallback(() => {
+        queueMicrotask(() => setLoading((i) => i + 1));
+
+        if (walletId === undefined) return;
 
         api.wallet
             .getSingle(walletId)
@@ -91,7 +87,19 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                 setLoading((i) => i - 1);
             })
             .execute();
-    };
+    }, [walletId]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        queueMicrotask(() => setWallet(undefined));
+
+        loadColor();
+
+        if (walletId) {
+            loadWallet();
+        }
+    }, [loadColor, loadWallet, open, walletId]);
 
     function saveHandler(form: FormType) {
         return new Promise<void>((resolve, reject) => {
@@ -105,7 +113,7 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
 
             setLoading((i) => i + 1);
 
-            var apiRequest: ApiRequest<number> = walletId
+            const apiRequest: ApiRequest<number> = walletId
                 ? api.wallet.modify(walletId, wallet)
                 : api.wallet.add(wallet);
 
@@ -115,9 +123,9 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                         walletId ? 'Portafoglio modificato con successo' : 'Portafoglio aggiunto con successo',
                         { variant: 'success' },
                     );
-                    
+
                     onClose(true);
-                    
+
                     resolve();
                 })
                 .onError((err: ResponseError) => {
@@ -142,7 +150,12 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
         <Dialog open={open} fullWidth maxWidth="sm" onClose={onClose} PaperProps={{}}>
             <FormProvider
                 settings={formSettings}
-                default={wallet ? { name: wallet.name, value: wallet.value, color: wallet.color.id } : undefined}
+                default={
+                    // eslint-disable-next-line react/jsx-no-leaked-render
+                    wallet
+                        ? { name: `${wallet.name}`, value: `${wallet.value}`, color: `${wallet.color?.id}` }
+                        : undefined
+                }
             >
                 {loading > 0 && <LinearProgress />}
                 <DialogTitle>
@@ -162,14 +175,14 @@ export default function WalletDialog({ open, onClose, walletId }: WalletDialogIn
                                 name="color"
                                 label="Colore"
                                 values={colors?.map((color) => ({
-                                    key: color.id,
+                                    key: color.id!,
                                     text: (
                                         <Box display="flex" alignItems="center" gap={2}>
                                             <Box
                                                 sx={{
                                                     height: 16,
                                                     width: 16,
-                                                    backgroundColor: convertColor(color.value),
+                                                    backgroundColor: convertColor(color.value!),
                                                 }}
                                             />
                                             <Typography>{color.name}</Typography>

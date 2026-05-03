@@ -1,7 +1,9 @@
-import { convertSortToApi } from '@/utilis/backend';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type SortType = { [key: string]: 'asc' | 'desc' };
+import { convertSortToApi } from '@/utilis/backend';
+
+export type SortType = { [key: string]: 'asc' | 'desc' | undefined };
 
 export type SortHandler = (sort: SortType, sortString: string) => void;
 
@@ -10,7 +12,7 @@ interface SortContext {
     clickOnRow: (key: string) => void;
 }
 
-const SortContext = createContext(null);
+const SortContext = createContext<SortContext>({ sort: {}, clickOnRow: () => {} });
 
 export const useSort = () => useContext<SortContext>(SortContext);
 
@@ -19,27 +21,32 @@ export function SortProvider(props: { onSort: SortHandler; default?: SortType; c
 
     useEffect(() => {
         if (props.default && Object.keys(sort).length == 0) {
-            setSort(
-                Object.keys(props.default).reduce<SortType>((acc, key) => {
-                    acc[key] = props.default[key];
-                    return acc;
-                }, {}),
+            queueMicrotask(() =>
+                setSort(
+                    Object.keys(props.default!).reduce<SortType>((acc, key) => {
+                        acc[key] = props.default![key];
+                        return acc;
+                    }, {}),
+                ),
             );
         }
-    }, [props.default]);
+    }, [props.default, sort]);
 
-    const clickOnRow = useCallback((key: string) => {
-        setSort((value) => {
-            const newValue: SortType = {
-                ...value,
-                [key]: value[key] !== undefined ? (value[key] === 'asc' ? 'desc' : undefined) : 'asc',
-            };
+    const clickOnRow = useCallback(
+        (key: string) => {
+            setSort((value) => {
+                const newValue: SortType = {
+                    ...value,
+                    [key]: value[key] !== undefined ? (value[key] === 'asc' ? 'desc' : undefined) : 'asc',
+                };
 
-            props.onSort(newValue, convertSortToApi(newValue));
+                props.onSort(newValue, convertSortToApi(newValue) ?? '');
 
-            return newValue;
-        });
-    }, []);
+                return newValue;
+            });
+        },
+        [props],
+    );
 
     return <SortContext.Provider value={{ sort, clickOnRow }}>{props.children}</SortContext.Provider>;
 }

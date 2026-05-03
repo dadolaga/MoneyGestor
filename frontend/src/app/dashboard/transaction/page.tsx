@@ -1,25 +1,26 @@
 'use client';
 
-import { ChangeEventHandler, useCallback, useEffect, useRef, useState } from 'react';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useCallback, useRef, useState } from 'react';
+
 import { Box, Button } from '@mui/material';
-import TransactionDialog from './TransactionDialog';
-import { TransactionTable, TransactionTableRef } from './TransactionTable';
-import { TransactionGraph } from './TransactionGraph';
-import { useIsMobile } from '../../../hooks/useMobile';
-import TransactionTableFilter, { FilterData } from './TransactionTableFilter';
-import { Transaction } from '@/models/backend';
+
 import DeleteDialog from '@/component/DeleteDialog';
 import useApi from '@/hooks/useApi';
+import type { Transaction } from '@/models/backend';
 import { convertNumberToValue } from '@/utilis/values';
 
+import TransactionDialog from './TransactionDialog';
+import type { TransactionTableRef } from './TransactionTable';
+import { TransactionTable } from './TransactionTable';
+import type { FilterData } from './TransactionTableFilter';
+import TransactionTableFilter from './TransactionTableFilter';
+
 export default function Page() {
-    const tableRef = useRef<TransactionTableRef>(null);
+    const tableRef = useRef<TransactionTableRef>(null!);
 
     const [openTransactionDialog, setOpenTransactionDialog] = useState<boolean>(false);
-    const [transactionId, setTransactionId] = useState<number>(undefined);
-    const [deleteTransaction, setDeleteTransaction] = useState<Transaction>(undefined);
+    const [transactionId, setTransactionId] = useState<number>();
+    const [deleteTransaction, setDeleteTransaction] = useState<Transaction>();
 
     const [filter, setFilter] = useState<FilterData>({});
 
@@ -31,7 +32,7 @@ export default function Page() {
     }
 
     const closeTransactionDialogHandler = (isToReload: boolean) => {
-        if (isToReload) {
+        if (isToReload && tableRef.current !== null) {
             tableRef.current.refreshTable();
         }
 
@@ -54,9 +55,11 @@ export default function Page() {
         }
 
         api.transaction
-            .delete(transactionDelete.id)
+            .delete(transactionDelete.id!)
             .onSuccess(() => {
-                tableRef.current.refreshTable();
+                if (tableRef.current !== null) {
+                    tableRef.current.refreshTable();
+                }
             })
             .onFinish(() => {
                 setDeleteTransaction(undefined);

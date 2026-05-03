@@ -11,9 +11,7 @@ export default function DeleteDialog<T_ID>(props: IProps<T_ID>) {
         <Dialog open={true} onClose={() => props.onDelete(undefined)}>
             <DialogTitle>Conferma eliminazione</DialogTitle>
             <DialogContent>
-                <DialogContentText>
-                    {typeof props.deleteMessage === 'string' ? props.deleteMessage : props.deleteMessage(props.data)}
-                </DialogContentText>
+                <DialogContentText>{typeof props.deleteMessage === 'string' && props.deleteMessage}</DialogContentText>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => props.onDelete(undefined)} color="secondary">

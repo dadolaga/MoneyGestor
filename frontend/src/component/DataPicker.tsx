@@ -1,15 +1,21 @@
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Box, Stack, Button, Typography, IconButton, useTheme, Paper, styled, Theme, alpha } from '@mui/material';
-import { LocalizationProvider, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DayCalendar } from '@mui/x-date-pickers/internals';
-import dayjs, { Dayjs, utc } from 'dayjs';
-import utcPlugin from 'dayjs/plugin/utc';
-import timezonePlugin from 'dayjs/plugin/timezone';
-import 'dayjs/locale/it';
 import React from 'react';
 import { useCallback, useMemo, useState } from 'react';
+
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import timezonePlugin from 'dayjs/plugin/timezone';
+import utcPlugin from 'dayjs/plugin/utc';
+
+import type { Theme } from '@mui/material';
+import { Box, Stack, Button, Typography, IconButton, useTheme, Paper, styled, alpha } from '@mui/material';
+import type { PickersDayProps } from '@mui/x-date-pickers';
+import { LocalizationProvider, PickersDay } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DayCalendar } from '@mui/x-date-pickers/internals';
+
+import 'dayjs/locale/it';
 
 dayjs.extend(utcPlugin);
 dayjs.extend(timezonePlugin);
@@ -42,8 +48,8 @@ const CustomDay = styled(PickersDay, {
 );
 
 export interface DateRange {
-    start: Dayjs;
-    end: Dayjs;
+    start?: Dayjs;
+    end?: Dayjs;
 }
 
 export interface DatePickerProps {
@@ -54,13 +60,16 @@ export interface DatePickerProps {
 export default function DataPicker(props: DatePickerProps) {
     const theme = useTheme();
 
-    const [visualizedMonth, setVisualizedMonth] = useState<Dayjs>(props.date?.start || dayjs());
+    const [visualizedMonth, setVisualizedMonth] = useState<Dayjs>(props.date?.start ?? dayjs());
     const [direction, setDirection] = useState<'left' | 'right'>('left');
 
-    const selectedDays = useMemo(() => [props.date?.start, props.date?.end], [props.date?.start, props.date?.end]);
+    const selectedDays = useMemo(
+        () => [props.date?.start ?? null, props.date?.end ?? null],
+        [props.date?.start, props.date?.end],
+    );
 
     const moveMonthHandler = useCallback(
-        (direction: 'left' | 'right') => (event) => {
+        (direction: 'left' | 'right') => () => {
             setVisualizedMonth((date) => dayjs(date).add(direction === 'right' ? 1 : -1, 'month'));
             setDirection(direction === 'left' ? 'right' : 'left');
         },
@@ -68,7 +77,12 @@ export default function DataPicker(props: DatePickerProps) {
     );
 
     const handleDayClick = useCallback(
-        (date: Dayjs) => {
+        (date: Dayjs | null) => {
+            if (date === null) {
+                props.onDateChange({ start: undefined, end: undefined });
+                return;
+            }
+
             if (props.date?.start === undefined && props.date?.end === undefined) {
                 props.onDateChange({ start: date, end: undefined });
             } else if (props.date?.start !== undefined && props.date?.end === undefined) {
@@ -93,7 +107,7 @@ export default function DataPicker(props: DatePickerProps) {
                 }
             }
         },
-        [props.date],
+        [props],
     );
 
     const renderDay = (dayProps: PickersDayProps) => {
@@ -124,7 +138,7 @@ export default function DataPicker(props: DatePickerProps) {
         );
     };
 
-    const onChange = (boh_1: any, boh_2: any) => {};
+    const onChange = (_boh_1: unknown, _boh_2: unknown) => {};
 
     const shortcuts: any[] = [];
 

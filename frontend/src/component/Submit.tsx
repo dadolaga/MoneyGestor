@@ -1,6 +1,10 @@
-import { Button, ButtonOwnProps } from '@mui/material';
-import { DOMAttributes } from 'react';
-import { FormType, useForm } from '../context/FormContext';
+import type { DOMAttributes } from 'react';
+
+import type { ButtonOwnProps } from '@mui/material';
+import { Button } from '@mui/material';
+
+import type { FormType } from '../context/FormContext';
+import { useForm } from '../context/FormContext';
 
 export interface IProps extends ButtonOwnProps, DOMAttributes<HTMLButtonElement> {
     label: string;
@@ -12,6 +16,8 @@ export default function Submit(props: IProps) {
 
     const submitHandler = () => {
         if (!validate()) return;
+
+        if (props.onValidate === undefined) return;
 
         props.onValidate(form).catch((error) => {
             Object.keys(error).forEach((key) => {

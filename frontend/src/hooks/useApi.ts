@@ -1,9 +1,23 @@
+import { useCallback, useMemo } from 'react';
+
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios from 'axios';
+import type { EnqueueSnackbar } from 'notistack';
+import { useSnackbar } from 'notistack';
 import { useCookies } from 'react-cookie';
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { EnqueueSnackbar, useSnackbar } from 'notistack';
-import { use, useCallback, useEffect, useMemo, useState } from 'react';
-import { ApiList, Color, DashboardOutput, ListFilter, Login, Transaction, Type, User, Wallet } from '@/models/backend';
-import { DateRange } from '@/component/DataPickerNew';
+
+import type { DateRange } from '@/component/DataPickerNew';
+import type {
+    ApiList,
+    Color,
+    DashboardOutput,
+    ListFilter,
+    Login,
+    Transaction,
+    Type,
+    User,
+    Wallet,
+} from '@/models/backend';
 
 export interface Response<T> {
     code: number;
@@ -34,8 +48,12 @@ export default function useApi() {
     }, []);
 
     const request = useCallback(
-        <T>(type: 'POST' | 'GET' | 'PUT' | 'DELETE', url: string, data?: any): Promise<AxiosResponse<Response<T>>> => {
-            const axiosConfig: AxiosRequestConfig<any> = {
+        <T>(
+            type: 'POST' | 'GET' | 'PUT' | 'DELETE',
+            url: string,
+            data?: object,
+        ): Promise<AxiosResponse<Response<T>>> => {
+            const axiosConfig: AxiosRequestConfig<object> = {
                 params: type === 'GET' ? data : undefined,
                 data: data,
                 headers: cookie && {
@@ -54,7 +72,7 @@ export default function useApi() {
                     return myAxios.delete(url, axiosConfig);
             }
         },
-        [cookie],
+        [cookie, myAxios],
     );
 
     return {
@@ -168,7 +186,7 @@ export class ApiRequest<T_RETURN> {
                 console.debug(response);
 
                 if (response.code === 0) {
-                    this.successFunction(response.data);
+                    this.successFunction(response.data as T_RETURN);
                 }
             })
             .catch((error) => {

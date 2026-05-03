@@ -1,10 +1,10 @@
-import { FilterData } from '@/app/dashboard/transaction/TransactionTableFilter';
-import { SortType } from '@/context/SortTableContext';
+import type { FilterData } from '@/app/dashboard/transaction/TransactionTableFilter';
+import type { SortType } from '@/context/SortTableContext';
 
 export function convertSortToApi(sort: SortType) {
-    var text = '';
+    let text = '';
 
-    var sortSize: number = Object.keys(sort).length;
+    const sortSize: number = Object.keys(sort).length;
 
     Object.keys(sort).forEach((key, index) => {
         if (sort[key] !== undefined) {
@@ -15,12 +15,12 @@ export function convertSortToApi(sort: SortType) {
     return text.length > 0 ? text : undefined;
 }
 
-export function convertFilterToApi(filter: FilterData) {
+export function convertFilterToApi(filter?: FilterData) {
     console.log('convertFilterToApi: ', filter);
 
     if (filter === undefined) return undefined;
 
-    var text = '';
+    let text = '';
 
     if (filter.name !== undefined && filter.name.trim().length > 0) {
         text += `description~${filter.name}`;

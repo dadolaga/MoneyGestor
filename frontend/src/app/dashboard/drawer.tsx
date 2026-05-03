@@ -1,20 +1,41 @@
-import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Drawer as MaterialDrawer } from "@mui/material";
-import { useRouter } from "next/navigation";
-import { useIsMobile } from "../../hooks/useMobile";
+import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useRouter } from 'next/navigation';
 
-export default function Drawer({ width, open, hide }) {
+import {
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Toolbar,
+    Drawer as MaterialDrawer,
+} from '@mui/material';
+
+import { useIsMobile } from '../../hooks/useMobile';
+
+interface IProps {
+    width: number;
+    open: boolean;
+    hide: () => void;
+}
+
+export default function Drawer({ width, open, hide }: IProps) {
     const router = useRouter();
     const isMobile = useIsMobile();
 
-    const openPage = (link) => () => {
+    const openPage = (link: string) => () => {
         hide();
         router.push(link);
-    }
+    };
 
     return (
-        <MaterialDrawer sx={{ flexShrink: 0, width: width + 'px', '& .MuiDrawer-paper': { width: width + 'px' } }} variant={isMobile ? "temporary" : "permanent"} anchor="left" open={open}>
+        <MaterialDrawer
+            sx={{ flexShrink: 0, width: width + 'px', '& .MuiDrawer-paper': { width: width + 'px' } }}
+            variant={isMobile ? 'temporary' : 'permanent'}
+            anchor="left"
+            open={open}
+        >
             <Toolbar />
             <List>
                 <ListItem disablePadding>
@@ -22,7 +43,7 @@ export default function Drawer({ width, open, hide }) {
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faWallet} />
                         </ListItemIcon>
-                        <ListItemText primary='Portafoglio' />
+                        <ListItemText primary="Portafoglio" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -30,7 +51,7 @@ export default function Drawer({ width, open, hide }) {
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faArrowRightArrowLeft} />
                         </ListItemIcon>
-                        <ListItemText primary='Transazioni' />
+                        <ListItemText primary="Transazioni" />
                     </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -38,7 +59,7 @@ export default function Drawer({ width, open, hide }) {
                         <ListItemIcon>
                             <FontAwesomeIcon icon={faMoneyBillTrendUp} />
                         </ListItemIcon>
-                        <ListItemText primary='Azioni' />
+                        <ListItemText primary="Azioni" />
                     </ListItemButton>
                 </ListItem>
             </List>

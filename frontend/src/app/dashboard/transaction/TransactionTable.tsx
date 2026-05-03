@@ -1,3 +1,9 @@
+import type { RefObject, MouseEvent } from 'react';
+import { useCallback, useImperativeHandle, useState, useEffect } from 'react';
+
+import { faArrowRightLong, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import {
     Box,
     Chip,
@@ -12,19 +18,18 @@ import {
     TableRow,
     TableSortLabel,
 } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightLong, faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { convertNumberToValue } from '@/utilis/values';
-import { Order } from '../base/Order';
-import { useIsMobile } from '../../../hooks/useMobile';
-import { RefObject, useCallback, useImperativeHandle, useState, MouseEvent, useEffect } from 'react';
-import useApi from '@/hooks/useApi';
-import { Transaction } from '@/models/backend';
-import { convertColor } from '@/utilis/color';
+
 import TableCellSort from '@/component/TableCellSort';
-import { SortProvider, SortType } from '@/context/SortTableContext';
+import type { SortType } from '@/context/SortTableContext';
+import { SortProvider } from '@/context/SortTableContext';
+import useApi from '@/hooks/useApi';
+import type { Transaction } from '@/models/backend';
 import { convertSortToApi, convertFilterToApi } from '@/utilis/backend';
-import { FilterData } from './TransactionTableFilter';
+import { convertColor } from '@/utilis/color';
+import { convertNumberToValue } from '@/utilis/values';
+
+import type { FilterData } from './TransactionTableFilter';
+import { useIsMobile } from '../../../hooks/useMobile';
 
 const ID_EXCHANGE_TYPE = 1;
 
@@ -47,15 +52,15 @@ export function TransactionTable(props: ITransactionTableProps) {
     const isMobile = useIsMobile();
     const api = useApi();
 
-    const [transactions, setTransactions] = useState<Transaction[]>(undefined);
+    const [transactions, setTransactions] = useState<Transaction[]>();
     const [sort, setSort] = useState<SortType>(sortDefault);
     const [loading, setLoading] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
 
-    const [transactionNumber, setTransactionNumber] = useState<number>(undefined);
+    const [transactionNumber, setTransactionNumber] = useState<number>();
 
     const loadTransactions = useCallback(() => {
-        setLoading(true);
+        queueMicrotask(() => setLoading(true));
 
         api.transaction
             .list({
@@ -65,16 +70,17 @@ export function TransactionTable(props: ITransactionTableProps) {
             .onSuccess((data) => {
                 setPage(0);
 
-                setTransactionNumber(data.length);
-                setTransactions(data.data);
+                setTransactionNumber(data!.length);
+                setTransactions(data!.data);
             })
             .onFinish(() => {
                 setLoading(false);
             })
             .execute();
-    }, [sort, page, props.filter]);
+    }, [sort, props.filter]);
 
     useImperativeHandle(
+        // eslint-disable-next-line react-hooks/refs
         props.ref,
         () => ({
             refreshTable: () => {
@@ -86,11 +92,11 @@ export function TransactionTable(props: ITransactionTableProps) {
 
     useEffect(() => {
         loadTransactions();
-    }, []);
+    }, [loadTransactions]);
 
     useEffect(() => {
         loadTransactions();
-    }, [sort, page, props.filter]);
+    }, [sort, page, loadTransactions]);
 
     const editHandler = (transaction: Transaction) => () => {
         props.onEditClick(transaction);
@@ -100,7 +106,7 @@ export function TransactionTable(props: ITransactionTableProps) {
         props.onDeleteClick(transaction);
     };
 
-    const changePageHandler = (event: MouseEvent<HTMLButtonElement>, page: number) => {
+    const changePageHandler = (event: MouseEvent<HTMLButtonElement> | null, page: number) => {
         setPage(page);
     };
 
@@ -138,60 +144,61 @@ export function TransactionTable(props: ITransactionTableProps) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {loading ? (
+                            {!!loading && (
                                 <TableRow>
                                     <TableCell sx={{ p: 0 }} colSpan={5}>
                                         <LinearProgress />
                                     </TableCell>
                                 </TableRow>
-                            ) : null}
+                            )}
                             {transactions?.map((value, index) => {
                                 return (
                                     <TableRow key={index}>
                                         <TableCell>
-                                            {new Date(value.date).toLocaleDateString('it-IT', {
+                                            {new Date(value.date!).toLocaleDateString('it-IT', {
                                                 day: 'numeric',
                                                 month: isMobile ? 'numeric' : 'long',
                                                 year: 'numeric',
                                             })}
                                         </TableCell>
                                         <TableCell>{value.description}</TableCell>
-                                        {!isMobile && <TableCell>{value.transactionType.name}</TableCell>}
+                                        {!isMobile && <TableCell>{value.transactionType!.name}</TableCell>}
                                         <TableCell align="right">
                                             {convertNumberToValue(
-                                                value.transactionType.id == ID_EXCHANGE_TYPE
-                                                    ? Math.abs(value.value)
+                                                value.transactionType!.id == ID_EXCHANGE_TYPE
+                                                    ? Math.abs(value.value!)
                                                     : value.value,
                                             )}
                                         </TableCell>
                                         {!isMobile && (
                                             <>
                                                 <TableCell sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                                                    {value.transactionType.id == ID_EXCHANGE_TYPE && value.walletDestination && (
-                                                        <>
-                                                            <Chip
-                                                                label={value.walletDestination.name}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                style={{
-                                                                    color: convertColor(
-                                                                        value.walletDestination.color.value,
-                                                                    ),
-                                                                    borderColor: convertColor(
-                                                                        value.walletDestination.color.value,
-                                                                    ),
-                                                                }}
-                                                            />
-                                                            <FontAwesomeIcon icon={faArrowRightLong} />
-                                                        </>
-                                                    )}
+                                                    {value.transactionType!.id == ID_EXCHANGE_TYPE &&
+                                                        !!value.walletDestination && (
+                                                            <>
+                                                                <Chip
+                                                                    label={value.walletDestination.name}
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    style={{
+                                                                        color: convertColor(
+                                                                            value.walletDestination.color!.value!,
+                                                                        ),
+                                                                        borderColor: convertColor(
+                                                                            value.walletDestination.color!.value!,
+                                                                        ),
+                                                                    }}
+                                                                />
+                                                                <FontAwesomeIcon icon={faArrowRightLong} />
+                                                            </>
+                                                        )}
                                                     <Chip
-                                                        label={value.wallet.name}
+                                                        label={value.wallet!.name}
                                                         size="small"
                                                         variant="outlined"
                                                         style={{
-                                                            color: convertColor(value.wallet.color.value),
-                                                            borderColor: convertColor(value.wallet.color.value),
+                                                            color: convertColor(value.wallet!.color!.value!),
+                                                            borderColor: convertColor(value.wallet!.color!.value!),
                                                         }}
                                                     />
                                                 </TableCell>
@@ -221,7 +228,7 @@ export function TransactionTable(props: ITransactionTableProps) {
             <TablePagination
                 sx={{ overflow: 'hidden' }}
                 component="div"
-                count={transactionNumber}
+                count={transactionNumber ?? 0}
                 page={page}
                 rowsPerPage={25}
                 onPageChange={changePageHandler}

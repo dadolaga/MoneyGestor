@@ -54,20 +54,20 @@ export interface Color {
     userId?: number;
 }
 
-export class Login {
+export interface Login {
     user: string;
     password: string;
-    remember: boolean = false;
+    remember: boolean;
 }
 
-export class DashboardOutput {
+export interface DashboardOutput {
     incoming: number;
     expense: number;
     incomingCategories: DashboardOutputChar[];
     expenseCategories: DashboardOutputChar[];
 }
 
-export class DashboardOutputChar {
+export interface DashboardOutputChar {
     type: Type;
     value: number;
 }

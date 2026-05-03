@@ -1,15 +1,20 @@
 'use client';
 
-import { Box, Button, Card, CardContent, Typography, useTheme } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import 'dayjs/locale/it';
-import RangePickerField, { DateRange } from '@/component/DataPickerNew';
-import useApi from '@/hooks/useApi';
-import dayjs from 'dayjs';
-import { DashboardOutput, DashboardOutputChar as DashboardOutputPie } from '@/models/backend';
-import { convertNumberToPercentage, convertNumberToValue } from '@/utilis/values';
+
 import { ResponsivePie } from '@nivo/pie';
+import dayjs from 'dayjs';
+
+import { Box, Button, Card, CardContent, Typography, useTheme } from '@mui/material';
+
+import 'dayjs/locale/it';
+import type { DateRange } from '@/component/DataPickerNew';
+import RangePickerField from '@/component/DataPickerNew';
+import useApi from '@/hooks/useApi';
+import type { DashboardOutput, DashboardOutputChar as DashboardOutputPie } from '@/models/backend';
 import { getAdaptiveBackground } from '@/utilis/color';
+import { convertNumberToPercentage, convertNumberToValue } from '@/utilis/values';
+
 import TransactionDialog from './transaction/TransactionDialog';
 
 export default function Dashboard() {
@@ -22,11 +27,7 @@ export default function Dashboard() {
         end: dayjs().endOf('month'),
     });
 
-    const [dashboardData, setDashboardData] = useState<DashboardOutput>(undefined);
-
-    useEffect(() => {
-        refreshDashboard();
-    }, [dateSelection]);
+    const [dashboardData, setDashboardData] = useState<DashboardOutput>();
 
     const refreshDashboard = useCallback(() => {
         api.dashboard
@@ -39,11 +40,11 @@ export default function Dashboard() {
                 console.log(error);
             })
             .execute();
-    }, [api, dateSelection]);
+    }, [dateSelection]);
 
     useEffect(() => {
-        console.log(dashboardData);
-    }, [dashboardData]);
+        refreshDashboard();
+    }, [refreshDashboard]);
 
     const openTransactionDialogHandler = () => {
         setShowTransactionDialog(true);
@@ -80,7 +81,7 @@ export default function Dashboard() {
                     <CardContent>
                         <Typography color="textSecondary">Totale in entrata</Typography>
                         <Typography fontWeight="bold" fontSize={24} color="#29bf12">
-                            {dashboardData === undefined ? '???' : convertNumberToValue(dashboardData.incoming)}
+                            {(dashboardData && convertNumberToValue(dashboardData.incoming)) ?? '???'}
                         </Typography>
                     </CardContent>
                 </Card>
@@ -88,7 +89,7 @@ export default function Dashboard() {
                     <CardContent>
                         <Typography color="textSecondary">Totale in uscita</Typography>
                         <Typography fontWeight="bold" fontSize={24} color="#ef233c">
-                            {dashboardData === undefined ? '???' : convertNumberToValue(dashboardData.expense)}
+                            {(dashboardData && convertNumberToValue(dashboardData?.expense)) ?? '???'}
                         </Typography>
                     </CardContent>
                 </Card>
@@ -108,7 +109,7 @@ export default function Dashboard() {
                 <Card sx={{ width: '100%', height: '100%' }}>
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle spese</Typography>
-                        {dashboardData?.expenseCategories.length > 0 ? (
+                        {dashboardData && dashboardData?.expenseCategories.length > 0 ? (
                             <Box sx={{ flexGrow: 1 }}>
                                 <PieChart
                                     pieData={dashboardData?.expenseCategories.map((v) => ({
@@ -121,7 +122,7 @@ export default function Dashboard() {
                         ) : (
                             <Box height="100%" display="flex" alignItems="center" justifyContent="center">
                                 <Typography color="textDisabled" fontStyle="italic">
-                                    Nessuna spesa registrata
+                                    {dashboardData === undefined ? 'Loading...' : 'Nessuna spesa registrata'}
                                 </Typography>
                             </Box>
                         )}
@@ -130,14 +131,14 @@ export default function Dashboard() {
                 <Card sx={{ width: '100%', height: '100%' }}>
                     <CardContent sx={{ height: '100%', display: 'flex', flexFlow: 'column', boxSizing: 'border-box' }}>
                         <Typography color="textSecondary">Distribuzione delle entrate</Typography>
-                        {dashboardData?.incomingCategories.length > 0 ? (
+                        {dashboardData && dashboardData?.incomingCategories.length > 0 ? (
                             <Box sx={{ flexGrow: 1 }}>
                                 <PieChart pieData={dashboardData?.incomingCategories} position="right" />
                             </Box>
                         ) : (
                             <Box height="100%" display="flex" alignItems="center" justifyContent="center">
                                 <Typography color="textDisabled" fontStyle="italic">
-                                    Nessuna entrata registrata
+                                    {dashboardData === undefined ? 'Loading...' : 'Nessuna entrata registrata'}
                                 </Typography>
                             </Box>
                         )}
@@ -154,7 +155,7 @@ function PieChart(props: { pieData: DashboardOutputPie[]; position: 'left' | 'ri
     return (
         <ResponsivePie
             data={props.pieData || []}
-            id={(data) => data.type.name}
+            id={(data) => data.type.name!}
             value={(data) => data.value}
             colors={{ scheme: 'pastel1' }}
             fit={true}
@@ -167,7 +168,7 @@ function PieChart(props: { pieData: DashboardOutputPie[]; position: 'left' | 'ri
             arcLinkLabelsColor={theme.palette.text.secondary}
             arcLinkLabelsTextColor={theme.palette.text.secondary}
             margin={{ top: 30, right: 10, left: 10, bottom: 30 }}
-            arcLinkLabel={(data) => data.data.type.name}
+            arcLinkLabel={(data) => data.data.type.name!}
             isInteractive={true}
             activeOuterRadiusOffset={6}
             legends={[

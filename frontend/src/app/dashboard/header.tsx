@@ -1,24 +1,27 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useCookies } from 'react-cookie';
+import type { MouseEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import AppBar from '@mui/material/AppBar';
-import { Avatar, Box, CircularProgress, Menu, MenuItem, Toolbar } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import { useState, MouseEvent, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSnackbar } from 'notistack';
-import { useIsMobile } from '../../hooks/useMobile';
+import { useCookies } from 'react-cookie';
+
+import { Avatar, Box, Button, CircularProgress, Menu, MenuItem, Toolbar } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+
 import useApi from '@/hooks/useApi';
+import { useIsMobile } from '@/hooks/useMobile';
 
 export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {
     const isMobile = useIsMobile();
     const api = useApi();
 
-    const [cookies, _, removeCookie] = useCookies(['token']);
+    const [cookies, , removeCookie] = useCookies(['token']);
 
     const [userFullName, setUserFullName] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
@@ -30,10 +33,8 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
 
     const router = useRouter();
 
-    useEffect(() => {
-        setLoading(true);
-
-        console.log('location: ', window.location);
+    const loadUserInformation = useCallback(() => {
+        void Promise.resolve().then(() => setLoading(true));
 
         api.user
             .info()
@@ -51,15 +52,18 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
                 setLoading(false);
             })
             .execute();
-    }, [cookies.token]);
+    }, [enqueueSnackbar, cookies.token]);
 
-    function stringToColor(string) {
+    useEffect(() => {
+        loadUserInformation();
+    }, [loadUserInformation]);
+
+    function stringToColor(text: string) {
         let hash = 0;
         let i;
 
-        /* eslint-disable no-bitwise */
-        for (i = 0; i < string.length; i += 1) {
-            hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        for (i = 0; i < text.length; i += 1) {
+            hash = text.charCodeAt(i) + ((hash << 5) - hash);
         }
 
         let color = '#';
@@ -68,12 +72,11 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
             const value = (hash >> (i * 8)) & 0xff;
             color += `00${value.toString(16)}`.slice(-2);
         }
-        /* eslint-enable no-bitwise */
 
         return color;
     }
 
-    function stringAvatar(name) {
+    function stringAvatar(name: string) {
         return {
             sx: {
                 bgcolor: stringToColor(name),
@@ -104,6 +107,26 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
         }
     };
 
+    const renderUserSection = () => {
+        if (loading) return <CircularProgress />;
+
+        if (userFullName) {
+            return (
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    {!isMobile && <Typography align="center">{userFullName}</Typography>}
+                    <Avatar {...stringAvatar(userFullName)} onClick={handleClick} />
+                </Box>
+            );
+        }
+
+        return (
+            <>
+                <Button onClick={() => router.push('/dashboard/user/login')}>Login</Button>
+                <Button onClick={() => router.push('/dashboard/user/new')}>Registrati</Button>
+            </>
+        );
+    };
+
     return (
         <AppBar sx={{ zIndex: 1300 }}>
             <Toolbar>
@@ -116,23 +139,7 @@ export default function Header({ openDrawerClick }: { openDrawerClick: () => voi
                     </Typography>
                 </Box>
 
-                {loading ? (
-                    <CircularProgress />
-                ) : userFullName ? (
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        {!isMobile && <Typography align="center">{userFullName}</Typography>}
-                        <Avatar {...stringAvatar(userFullName)} onClick={handleClick} />
-                    </Box>
-                ) : (
-                    <>
-                        <Button color="inherit" onClick={() => router.push('/dashboard/user/login')}>
-                            Login
-                        </Button>
-                        <Button color="inherit" onClick={() => router.push('/dashboard/user/new')}>
-                            Registrati
-                        </Button>
-                    </>
-                )}
+                {renderUserSection()}
 
                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                     <MenuItem onClick={logoutHandler}>Logout</MenuItem>

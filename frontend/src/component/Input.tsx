@@ -1,28 +1,30 @@
+import type { ChangeEventHandler } from 'react';
+import * as React from 'react';
+
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+import type { InputBaseProps, SlotProps, TextFieldOwnerState, SelectChangeEvent } from '@mui/material';
 import {
     TextField,
-    InputBaseProps,
-    SlotProps,
-    TextFieldOwnerState,
     FormControl,
     InputLabel,
     Select,
     FormHelperText,
-    SelectChangeEvent,
     MenuItem,
     FormControlLabel,
     Checkbox,
-    StandardTextFieldProps,
 } from '@mui/material';
-import { ChangeEventHandler } from 'react';
-import { DatePicker, DatePickerProps, LocalizationProvider } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import * as React from 'react';
+import type { DatePickerProps } from '@mui/x-date-pickers';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
 import 'dayjs/locale/it';
 import 'dayjs/locale/en';
+
 import { useForm } from '../context/FormContext';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 interface IValuesType {
     key: number;
@@ -34,7 +36,7 @@ interface IInput {
     name: string;
     label: string;
     disabled?: boolean;
-    inputProps?: SlotProps<React.ElementType<InputBaseProps['inputProps']>, {}, TextFieldOwnerState>;
+    inputProps?: SlotProps<React.ElementType<InputBaseProps['inputProps']>, object, TextFieldOwnerState>;
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
     values?: IValuesType[];
@@ -74,10 +76,13 @@ export default function Input(props: IInput) {
         };
 
     const selectChangeHandler =
-        (name: string): ((_event: SelectChangeEvent<string>) => void) =>
+        (name: string): ((_event: SelectChangeEvent<any>) => void) =>
         (action) => {
-            const findResult = props.values.find((value) => value.key === parseInt(action.target.value));
-            updateValue(name, findResult?.key);
+            const findResult = props.values?.find((value) => value.key === parseInt(action.target.value));
+
+            if (!findResult) return;
+
+            updateValue(name, findResult.key);
 
             if (props.onChange) {
                 props.onChange(action);
@@ -132,6 +137,7 @@ export default function Input(props: IInput) {
                             },
                         }}
                         value={
+                            // eslint-disable-next-line react/jsx-no-leaked-render
                             form[props.name]?.value !== undefined
                                 ? dayjs(form[props.name].value, 'YYYY-MM-DD', 'it')
                                 : null
@@ -164,7 +170,9 @@ export default function Input(props: IInput) {
                         disabled={props.disabled}
                         size={props.size}
                     >
-                        {props.values !== undefined && props.emptySelect === true && <MenuItem key={0}>&nbsp;</MenuItem>}
+                        {props.values !== undefined && props.emptySelect === true && (
+                            <MenuItem key={0}>&nbsp;</MenuItem>
+                        )}
                         {props.values?.map((value, index) => {
                             return (
                                 <MenuItem key={index} value={value.key}>

@@ -1,10 +1,14 @@
-import { Box } from '@mui/material';
+import type { Ref } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useState } from 'react';
+
 import { ResponsivePie } from '@nivo/pie';
-import { convertNumberToValue } from '@/utilis/values';
-import { Ref, useCallback, useEffect, useImperativeHandle, useState } from 'react';
+
+import { Box } from '@mui/material';
+
 import useApi from '@/hooks/useApi';
-import { Wallet } from '@/models/backend';
+import type { Wallet } from '@/models/backend';
 import { convertColor } from '@/utilis/color';
+import { convertNumberToValue } from '@/utilis/values';
 
 export interface WalletPieRef {
     refresh: () => void;
@@ -15,52 +19,50 @@ interface Props {
 }
 
 export default function WalletPie(props: Props) {
+    const ref = props.ref;
+
     const api = useApi();
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [wallets, setWallets] = useState<Wallet[]>(undefined);
-
-    useImperativeHandle(
-        props.ref,
-        () => ({
-            refresh: () => {
-                reloadWallets();
-            },
-        }),
-        [],
-    );
-
-    useEffect(() => {
-        reloadWallets();
-    }, []);
+    const [wallets, setWallets] = useState<Wallet[] | undefined>(undefined);
 
     const reloadWallets = useCallback(() => {
-        setLoading(true);
-        setWallets(undefined);
+        queueMicrotask(() => setWallets(undefined));
 
         api.wallet
             .get()
             .onSuccess((wallets) => {
                 setWallets(wallets);
             })
-            .onFinish(() => {
-                setLoading(false);
-            })
             .execute();
-    }, [api]);
+    }, []);
+
+    useImperativeHandle(
+        // eslint-disable-next-line react-hooks/refs
+        ref,
+        () => ({
+            refresh: () => {
+                reloadWallets();
+            },
+        }),
+        [reloadWallets],
+    );
+
+    useEffect(() => {
+        reloadWallets();
+    }, [reloadWallets]);
 
     return (
         <Box width="100%" height="400px">
             <ResponsivePie
-                data={wallets || []}
+                data={wallets ?? []}
                 id={'name'}
                 value={'currentValue'}
                 sortByValue={true}
                 margin={{ left: -100, top: 20, bottom: 20 }}
                 enableArcLinkLabels={false}
-                valueFormat={(number) => convertNumberToValue(number)}
+                valueFormat={(number) => convertNumberToValue(number) ?? ''}
                 activeOuterRadiusOffset={10}
-                colors={(data) => convertColor(data.data.color.value)}
+                colors={(data) => convertColor(data.data.color!.value!)}
                 legends={[
                     {
                         anchor: 'right',
