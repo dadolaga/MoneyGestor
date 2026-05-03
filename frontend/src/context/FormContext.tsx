@@ -90,19 +90,19 @@ export function FormProvider(props: FormProvideProps) {
     const [form, setForm] = useState<FormType>({});
 
     useEffect(() => {
-        if (props.default && Object.keys(form).length == 0) {
+        if (props.default) {
             console.log('default param', props.default);
 
-            queueMicrotask(() =>
+            queueMicrotask(() => {
                 setForm(
                     Object.keys(props.default!).reduce((acc: FormType, key) => {
                         acc[key] = { value: props.default![key] ?? null, error: undefined };
                         return acc;
                     }, {}),
-                ),
-            );
+                );
+            });
         }
-    }, [form, props.default]);
+    }, [props.default]);
 
     const validate = useCallback(() => {
         const newForm = { ...form };
