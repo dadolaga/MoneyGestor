@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ExportImportApplication": {
+      "commandName": "Project",
+      "commandLineArgs": "export",
+      "environmentVariables": {
+        "IMPORT_EXPORT_APP_SETTINGS": "C:\\Users\\Davide\\Documents\\Progetti\\BIG - MoneyGestor\\Rest\\ApiRest_copy\\backend\\webserver\\settings.json"
+      }
+    }
+  }
+}

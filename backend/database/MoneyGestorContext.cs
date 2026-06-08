@@ -14,6 +14,7 @@ namespace database {
         private static String? NAME;
         private static String? USER;
         private static String? PASSWORD;
+        private static Boolean ENABLE_LOGGING = true;
 
         public DbSet<UserDb> Users { get; set; }
         public DbSet<LoginDb> Logins { get; set; }
@@ -22,10 +23,11 @@ namespace database {
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
 
-        public static void Initialize(String name, String user, String password) {
+        public static void Initialize(String name, String user, String password, Boolean enableLogging = true) {
             NAME = name;
             USER = user;
             PASSWORD = password;
+            ENABLE_LOGGING = enableLogging;
         }
 
         public MoneyGestorContext() {
@@ -38,10 +40,13 @@ namespace database {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             try {
                 optionsBuilder
-                    .UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};")
+                    .UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};");
+                if (ENABLE_LOGGING) {
+                    optionsBuilder
                     .LogTo(Log.Information, Microsoft.Extensions.Logging.LogLevel.Information)
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
+                }
             } catch (Exception ex) {
                 Log.Fatal(ex, "Fail connection to DB");
                 Environment.Exit(1);
