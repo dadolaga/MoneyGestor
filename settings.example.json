@@ -1,0 +1,20 @@
+{
+  "log": {
+    "level": "Information",
+    "output": {
+      "console": true,
+      "file": {
+        "path": "../log/backend/",
+        "fileName": "backend"
+      }
+    }
+  },
+  "database": {
+    "host": "localhost",
+    "port": 3306,
+    "name": "moneygestor_db",
+    "user": "moneygestor_user",
+    "password": "CHANGE_ME_IN_PRODUCTION",
+    "forceUpdate": false
+  }
+}

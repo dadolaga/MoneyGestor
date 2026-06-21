@@ -1,0 +1,9 @@
+# Docker build context exclusions
+
+node_modules
+npm-debug.log
+.next
+out
+.git
+.env.local
+.env.*.local

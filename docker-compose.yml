@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: webserver/Dockerfile
+    container_name: moneygestor-backend
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./settings.json:/app/settings.json:ro
+      - ./backend/log:/app/log
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DOTNET_RUNNING_IN_CONTAINER=true
+    networks:
+      - moneygestor-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    container_name: moneygestor-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - moneygestor-network
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:500
+
+  importexport:
+    build:
+      context: ./backend
+      dockerfile: ExportImportApplication/Dockerfile
+    volumes:
+      - ./settings.json:/app/settings.json:ro
+    profiles:
+      - tools
+    networks:
+      - moneygestor-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  moneygestor-network:
+    driver: bridge

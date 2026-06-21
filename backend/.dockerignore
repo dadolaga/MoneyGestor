@@ -1,0 +1,52 @@
+# Docker build context exclusions
+
+# Source control
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node/Frontend
+node_modules
+npm-debug.log
+.next
+out
+.env.local
+.env.*.local
+
+# .NET
+bin
+obj
+packages
+.vs
+.vscode
+*.user
+*.suo
+
+# Logs
+logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Documentation
+docs
+*.md
+LICENSE
+
+# Tests
+coverage
+.nyc_output
