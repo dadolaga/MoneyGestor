@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace ExportImportApplication.Models {
     public class Settings {
@@ -22,6 +23,8 @@ namespace ExportImportApplication.Models {
     }
 
     public class SettingsDatabase {
+        public String Host { get; set; }
+        public UInt16 Port { get; set; }
         public String Name { get; set; }
         public String User { get; set; }
         public String Password { get; set; }

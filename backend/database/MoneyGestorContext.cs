@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace database {
     public class MoneyGestorContext : DbContext {
+        private static String? HOST;
+        private static UInt16? PORT;
         private static String? NAME;
         private static String? USER;
         private static String? PASSWORD;
@@ -23,7 +25,9 @@ namespace database {
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
 
-        public static void Initialize(String name, String user, String password, Boolean enableLogging = true) {
+        public static void Initialize(String host, UInt16 port, String name, String user, String password, Boolean enableLogging = true) {
+            HOST = host;
+            PORT = port;
             NAME = name;
             USER = user;
             PASSWORD = password;
@@ -38,9 +42,11 @@ namespace database {
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+            Log.Information($"Connect to DB server {HOST}:{PORT}");
+
             try {
                 optionsBuilder
-                    .UseMySQL($"Server=localhost;Port=3306;Database={NAME};Uid={USER};Pwd={PASSWORD};");
+                    .UseMySQL($"Server={HOST};Port={PORT};Database={NAME};Uid={USER};Pwd={PASSWORD};");
                 if (ENABLE_LOGGING) {
                     optionsBuilder
                     .LogTo(Log.Information, Microsoft.Extensions.Logging.LogLevel.Information)

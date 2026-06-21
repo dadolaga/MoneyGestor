@@ -10,7 +10,7 @@ namespace webserver {
 
             Log.Logger = LoggerFactory.Create();
 
-            MoneyGestorContext.Initialize(Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
+            MoneyGestorContext.Initialize(Settings.Database.Server, Settings.Database.Port, Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
 
             Log.Information("Start application with version {a}", "0.0.1-alpha");
 

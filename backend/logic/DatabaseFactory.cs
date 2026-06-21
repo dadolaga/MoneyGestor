@@ -17,6 +17,8 @@ namespace logic {
         public static MoneyGestorContext Create() {
             if (IN_TEST) {
                 MoneyGestorContext.Initialize(
+                    host: "localhost",
+                    port: 1883,
                     name: "ut_money_gestor",
                     user: "unit_test",
                     password: "psw_ut"

@@ -6,7 +6,11 @@ namespace webserver {
         public static SettingsLog Log { private set; get; } = new SettingsLog();
         public static SettingsDatabase Database { private set; get; } = new SettingsDatabase();
 
-        public static void Load(String path = "./settings.json") {
+        public static void Load(String? path = null) {
+            path ??= Environment.GetEnvironmentVariable("BACKEND_APP_SETTINGS") ?? "./settings.json";
+
+            Console.WriteLine($"Reading setting file: {Path.GetFullPath(path)}");
+
             if (!File.Exists(path)) {
                 Console.WriteLine($"JSON file setting not exist, file path: {Path.GetFullPath(path)}");
                 Environment.Exit(1);
@@ -47,6 +51,8 @@ namespace webserver {
             }
 
             // Load databases settings
+            Database.Server = ((String?) rootNode["database"]?["host"]) ?? "localhost";
+            Database.Port = ((UInt16?) rootNode["database"]?["port"]) ?? 3306;
             Database.DatabaseName = ((String?) rootNode["database"]?["name"]) ?? "money_gestor";
             Database.User = ((String?) rootNode["database"]?["user"]) ?? "root";
             Database.Password = ((String?) rootNode["database"]?["password"]) ?? "root";
@@ -66,6 +72,8 @@ namespace webserver {
         }
 
         public class SettingsDatabase {
+            public String Server {  internal set; get; }
+            public UInt16 Port { internal set; get; }
             public String DatabaseName { internal set; get; }
             public String User { internal set; get; }
             public String Password { internal set; get; }

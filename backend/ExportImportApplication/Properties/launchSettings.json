@@ -6,6 +6,13 @@
       "environmentVariables": {
         "IMPORT_EXPORT_APP_SETTINGS": "C:\\Users\\Davide\\Documents\\Progetti\\BIG - MoneyGestor\\Rest\\ApiRest_copy\\backend\\webserver\\settings.json"
       }
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {
+        "IMPORT_EXPORT_APP_SETTINGS": "C:\\Users\\Davide\\Documents\\Progetti\\BIG - MoneyGestor\\Rest\\ApiRest_copy\\backend\\webserver\\settings.json"
+      },
+      "distributionName": ""
     }
   }
 }

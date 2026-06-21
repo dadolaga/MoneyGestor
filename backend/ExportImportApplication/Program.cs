@@ -9,11 +9,11 @@ using System.Text.Json.Nodes;
 
 internal class Program {
     private static void Main(String[] args) {
-        var setting = SettingsReader.Read();
-        ApplySettings(setting);
-
         var commandLineManager = new CommandLineManager();
         commandLineManager.Check(args);
+
+        var setting = SettingsReader.Read();
+        ApplySettings(setting);
 
         if (commandLineManager.ApplicationType == EApplicationType.Export) {
             IExport export = new Export(commandLineManager.FilePath ?? "./export.zip");
@@ -29,7 +29,7 @@ internal class Program {
     private static void ApplySettings(Settings settings) {
         ApplyLogSettings(settings.Log);
 
-        MoneyGestorContext.Initialize(settings.Database.Name, settings.Database.User, settings.Database.Password, false);
+        MoneyGestorContext.Initialize(settings.Database.Host, settings.Database.Port, settings.Database.Name, settings.Database.User, settings.Database.Password, false);
     }
 
     private static void ApplyLogSettings(SettingsLog settingsLog) {
