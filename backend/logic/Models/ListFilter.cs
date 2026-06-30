@@ -23,7 +23,7 @@ namespace logic.Models {
             const Char propretiesDelimiter = '+';
             const Char descendentChar = '!';
 
-            if (order != null) {
+            if (order != null && order.Length > 0) {
                 foreach (var propriety in order.Split(propretiesDelimiter)) {
                     Boolean isDescendent = propriety[0] == descendentChar;
 

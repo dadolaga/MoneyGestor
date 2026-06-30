@@ -92,10 +92,6 @@ export function TransactionTable(props: ITransactionTableProps) {
 
     useEffect(() => {
         loadTransactions();
-    }, [loadTransactions]);
-
-    useEffect(() => {
-        loadTransactions();
     }, [sort, page, loadTransactions]);
 
     const editHandler = (transaction: Transaction) => () => {
