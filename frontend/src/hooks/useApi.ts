@@ -40,7 +40,7 @@ export default function useApi() {
 
     const myAxios = useMemo<AxiosInstance>(() => {
         const instance = axios.create({
-            baseURL: process.env.NEXT_API_PORT ?? 'https://localhost:7184',
+            baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:7184',
         });
 
         return instance;
