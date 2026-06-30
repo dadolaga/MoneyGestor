@@ -40,7 +40,7 @@ export default function useApi() {
 
     const myAxios = useMemo<AxiosInstance>(() => {
         const instance = axios.create({
-            baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:7184',
+            baseURL: process.env.NEXT_API_PORT ?? 'https://localhost:7184',
         });
 
         return instance;
@@ -118,11 +118,14 @@ export default function useApi() {
             add: (transaction: Transaction) =>
                 new ApiRequest<number>(() => request<number>('POST', '/transaction', transaction), enqueueSnackbar),
 
-            list: (filter: ListFilter) =>
-                new ApiRequest<ApiList<Transaction>>(
+            list: (filter: ListFilter) => {
+                console.trace();
+
+                return new ApiRequest<ApiList<Transaction>>(
                     () => request<ApiList<Transaction>>('GET', '/transaction', filter),
                     enqueueSnackbar,
-                ),
+                );
+            },
 
             modify: (id: number, transaction: Transaction) =>
                 new ApiRequest<number>(

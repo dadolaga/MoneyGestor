@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 import { useCookies } from 'react-cookie';
 
@@ -29,11 +29,6 @@ export default function Page() {
     const [, setCookie] = useCookies(['token']);
 
     const [loading, setLoading] = useState<boolean>(false);
-
-    useEffect(() => {
-        console.log(process.env);
-        console.log(process.env.NEXT_PUBLIC_API_URL);
-    }, []);
 
     const loginHandler = useCallback(
         (form: FormType) => {
