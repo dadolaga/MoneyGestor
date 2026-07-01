@@ -33,6 +33,7 @@ export default function Page() {
     const loginHandler = useCallback(
         (form: FormType) => {
             return new Promise<void>((resolve, reject) => {
+                const expiredData = new Date();
                 const loginData: Login = {
                     user: form.username.value!.toString(),
                     password: form.password.value!.toString(),
@@ -41,10 +42,12 @@ export default function Page() {
 
                 setLoading(true);
 
+                expiredData.setMonth(expiredData.getMonth() + 6);
+
                 api.user
                     .login(loginData)
                     .onSuccess((data) => {
-                        setCookie('token', data, { path: '/' });
+                        setCookie('token', data, { path: '/', expires: expiredData });
 
                         resolve();
                     })
