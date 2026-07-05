@@ -48,15 +48,19 @@ namespace logic.Managers {
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) => source.OrderByPropertyName(order.Name, order.Descendent, first);
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, IList<Order> orders) {
+            if (orders == null || orders.Count == 0) {
+                throw new ArgumentException("Orders list cannot be empty to return an IOrderedQueryable.", nameof(orders));
+            }
+
+            IQueryable<T> currentSource = source;
             Boolean first = true;
-            var newSource = (IOrderedQueryable<T>) source;
 
             foreach (var order in orders) {
-                newSource = newSource.OrderByPropertyName(order, first);
+                currentSource = currentSource.OrderByPropertyName(order, first);
                 first = false;
             }
 
-            return newSource;
+            return (IOrderedQueryable<T>) currentSource;
         }
 
         public static IQueryable<T> WhereByFilter<T>(this IQueryable<T> source, Where where) {
@@ -102,11 +106,10 @@ namespace logic.Managers {
             return source;
         }
 
-        public static IOrderedQueryable<T> ApplyFilter<T>(this IQueryable<T> source, ListFilter filter) {
-            source = source.Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit);
-
-            return source.WhereByFilter(filter.Wheres).OrderByPropertyName(filter.Orders);
-        }
+        public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> source, ListFilter filter) =>
+            filter.Orders.Count > 0 ?
+                source.WhereByFilter(filter.Wheres).OrderByPropertyName(filter.Orders).Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit) :
+                source.WhereByFilter(filter.Wheres).Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit);
 
         private static Expression? CreateComparisonExpression(Where where, Expression propreryAccess) {
             if (where.ComparatorType == EComparatorType.LIKE) {

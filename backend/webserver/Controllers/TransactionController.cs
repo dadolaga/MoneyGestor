@@ -36,8 +36,8 @@ namespace webserver.Controllers {
                 .Include(t => t.TransactionDestination.Wallet.Color)
                 .Include(t => t.User)
                 .Include(t => t.UserInsert)
-                .ApplyFilter(listFilter)
                 .Where(t => t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0)
+                .ApplyFilter(listFilter)
                 .ToListAsync();
 
             var quantity = await database.Transactions
