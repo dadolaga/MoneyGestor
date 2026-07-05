@@ -33,6 +33,8 @@ import { useIsMobile } from '../../../hooks/useMobile';
 
 const ID_EXCHANGE_TYPE = 1;
 
+const PAGE_SIZE = 25;
+
 export interface TransactionTableRef {
     refreshTable: () => void;
 }
@@ -66,10 +68,10 @@ export function TransactionTable(props: ITransactionTableProps) {
             .list({
                 order: convertSortToApi(sort),
                 where: convertFilterToApi(props.filter),
+                offset: page,
+                limit: PAGE_SIZE
             })
             .onSuccess((data) => {
-                setPage(0);
-
                 setTransactionNumber(data!.length);
                 setTransactions(data!.data);
             })
@@ -77,7 +79,7 @@ export function TransactionTable(props: ITransactionTableProps) {
                 setLoading(false);
             })
             .execute();
-    }, [sort, props.filter]);
+    }, [sort, props.filter, page]);
 
     useImperativeHandle(
         // eslint-disable-next-line react-hooks/refs
@@ -226,9 +228,9 @@ export function TransactionTable(props: ITransactionTableProps) {
                 component="div"
                 count={transactionNumber ?? 0}
                 page={page}
-                rowsPerPage={25}
+                rowsPerPage={PAGE_SIZE}
                 onPageChange={changePageHandler}
-                rowsPerPageOptions={[25]}
+                rowsPerPageOptions={[PAGE_SIZE]}
             />
         </Paper>
     );

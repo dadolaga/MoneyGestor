@@ -42,6 +42,7 @@ namespace webserver.Controllers {
 
             var quantity = await database.Transactions
                 .Where(t => t.UserInsertId == executor.UserId && (t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0))
+                .WhereByFilter(listFilter.Wheres)
                 .CountAsync();
 
             return ListResponse(transactionList.Select(t => t.Convert()).ToList(), quantity, "transaction");

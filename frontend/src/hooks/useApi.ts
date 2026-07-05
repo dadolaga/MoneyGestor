@@ -119,8 +119,6 @@ export default function useApi() {
                 new ApiRequest<number>(() => request<number>('POST', '/transaction', transaction), enqueueSnackbar),
 
             list: (filter: ListFilter) => {
-                console.trace();
-
                 return new ApiRequest<ApiList<Transaction>>(
                     () => request<ApiList<Transaction>>('GET', '/transaction', filter),
                     enqueueSnackbar,
