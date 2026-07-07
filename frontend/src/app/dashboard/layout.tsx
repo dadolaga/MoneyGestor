@@ -9,6 +9,8 @@ import { Box, Toolbar } from '@mui/material';
 import type { ThemeOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 
+import { useIsMobile } from '@/hooks/useMobile';
+
 import Drawer from './drawer';
 import Header from './header';
 
@@ -27,11 +29,17 @@ const themeOptions: ThemeOptions = {
 const theme = createTheme(themeOptions);
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    const isMobile = useIsMobile();
     const [openDrawer, setOpenDrawer] = useState<boolean>();
 
     return (
         <ThemeProvider theme={theme}>
-            <SnackbarProvider>
+            <SnackbarProvider
+                anchorOrigin={
+                    // eslint-disable-next-line react/jsx-no-leaked-render
+                    isMobile ? { horizontal: 'center', vertical: 'top' } : { horizontal: 'left', vertical: 'bottom' }
+                }
+            >
                 <Box sx={{ position: 'relative', height: '100vh' }}>
                     <Header openDrawerClick={() => setOpenDrawer(!openDrawer)} />
                     <Box sx={{ display: 'flex', height: '100%' }}>
