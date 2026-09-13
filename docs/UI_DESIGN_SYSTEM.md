@@ -151,6 +151,11 @@ Oltre alle primitive shadcn:
 
 Ogni componente deve documentare varianti, stati e casi limite nel catalogo UI scelto.
 
+Le primitive di form della Fase 3 vivono in `src/components/shared`: `FormField`, `TextField`, `PasswordField`,
+`AmountField`, `CheckboxField`, `SelectField`, `DateRangeField` e `ConfirmDeleteDialog`. I campi condivisi non
+incorporano regole di dominio; gli importi passano dal normalizzatore locale al payload di presentazione e il date
+range converte da `Date` del calendario a Day.js al boundary.
+
 ## Form
 
 - Label sempre visibile; il placeholder non sostituisce la label.

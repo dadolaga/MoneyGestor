@@ -30,6 +30,9 @@ Durante la transizione:
 - il frontend contiene soltanto stato e validazione di presentazione; la logica pesante resta nel backend;
 - le tabelle usano shadcn e semplice stato React fino alla futura integrazione backend;
 - desktop e mobile condividono campi, componenti e stato del form;
+- i nuovi form usano React Hook Form solo per stato, errori e submit; le regole di dominio restano nel backend;
+- importi immessi dall'utente vengono normalizzati una volta nel boundary di presentazione con la locale attiva;
+- il `DateRangeField` scambia `Date` con il calendario e converte a Day.js nel suo boundary;
 - Day.js è l'unica libreria data;
 - temi chiaro e scuro usano gli stessi token, incluso il rosso di brand parametrico;
 - login e registrazione restano fuori dalla shell dashboard;

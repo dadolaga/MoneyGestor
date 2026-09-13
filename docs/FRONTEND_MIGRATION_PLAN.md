@@ -207,6 +207,12 @@ Criterio di uscita: i componenti di feature possono essere mostrati con fixture;
 
 ### Fase 3 — form e primitive condivise
 
+Stato: **implementata il 13 settembre 2026; verifiche in attesa della dipendenza locale**. I nuovi form condivisi usano React Hook Form per stato, errori e submit;
+le primitive includono testo, password, importo localizzato, checkbox, select e date range. Il calendario shadcn
+scambia `Date` e il boundary `DateRangeField` espone Day.js. I pattern riusabili per stati di contenuto e conferma
+distruttiva sono disponibili nell'area condivisa. I componenti MUI legacy restano finché esistono consumer nelle
+relative route non migrate.
+
 Attività:
 
 - usare React Hook Form soltanto per stato, errori e submit dei form;

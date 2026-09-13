@@ -3,7 +3,9 @@
         "actions": {
             "close": "Chiudi",
             "cancel": "Annulla",
-            "save": "Salva"
+            "save": "Salva",
+            "delete": "Elimina",
+            "retry": "Riprova"
         },
         "theme": {
             "label": "Tema",

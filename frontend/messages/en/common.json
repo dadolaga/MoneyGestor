@@ -3,7 +3,9 @@
         "actions": {
             "close": "Close",
             "cancel": "Cancel",
-            "save": "Save"
+            "save": "Save",
+            "delete": "Delete",
+            "retry": "Try again"
         },
         "theme": {
             "label": "Theme",

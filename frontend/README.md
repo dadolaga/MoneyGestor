@@ -70,8 +70,8 @@ stesse route.
 ## Organizzazione
 
 - `src/app`: route e componenti specifici delle pagine
-- `src/component`: componenti condivisi
-- `src/context`: stato e logica condivisa per form e ordinamento
+- `src/components/shared`: componenti comuni del nuovo sistema, inclusi form, stati e conferme
+- `src/component` e `src/context`: componenti legacy MUI, mantenuti finché hanno consumer
 - `src/hooks/useApi.ts`: client HTTP e adattamento dell'envelope backend
 - `src/features`: view model, adapter puri e componenti visuali pilotati tramite props
 - `src/lib/fixtures`: dati realistici per sviluppo e test senza backend
