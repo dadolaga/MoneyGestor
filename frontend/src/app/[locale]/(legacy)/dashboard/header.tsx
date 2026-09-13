@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRouter } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { useCookies } from 'react-cookie';
 
@@ -16,6 +15,7 @@ import Typography from '@mui/material/Typography';
 
 import useApi from '@/hooks/useApi';
 import { useIsMobile } from '@/hooks/useMobile';
+import { useRouter } from '@/i18n/navigation';
 
 export default function Header({ openDrawerClick }: { openDrawerClick: () => void }) {
     const isMobile = useIsMobile();

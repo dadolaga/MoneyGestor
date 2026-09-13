@@ -1,13 +1,108 @@
-@import url('https://fonts.googleapis.com/css2?family=Gabarito&family=Graduate&display=swap');
+/* Preflight is deliberately omitted while MUI legacy routes coexist. */
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities);
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-income: var(--income);
+    --color-expense: var(--expense);
+    --color-transfer: var(--transfer);
+    --color-warning: var(--warning);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+}
 
 :root {
+    --background: oklch(0.975 0.008 250);
+    --foreground: oklch(0.23 0.035 255);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.23 0.035 255);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.23 0.035 255);
+    --primary: oklch(0.57 0.22 22);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.94 0.018 250);
+    --secondary-foreground: oklch(0.3 0.04 255);
+    --muted: oklch(0.95 0.012 250);
+    --muted-foreground: oklch(0.48 0.03 255);
+    --accent: oklch(0.92 0.025 20);
+    --accent-foreground: oklch(0.31 0.06 20);
+    --destructive: oklch(0.58 0.23 28);
+    --destructive-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.015 250);
+    --input: oklch(0.88 0.015 250);
+    --ring: oklch(0.57 0.22 22);
+    --income: oklch(0.6 0.17 145);
+    --expense: oklch(0.58 0.23 28);
+    --transfer: oklch(0.56 0.16 245);
+    --warning: oklch(0.76 0.16 78);
+    --chart-1: oklch(0.57 0.22 22);
+    --chart-2: oklch(0.6 0.17 145);
+    --chart-3: oklch(0.56 0.16 245);
+    --chart-4: oklch(0.76 0.16 78);
+    --chart-5: oklch(0.66 0.16 320);
+    --chart-6: oklch(0.67 0.13 190);
+    --radius: 0.75rem;
     --text-color: #f0efeb;
     --header-height: 90px;
     --navigation-width: 200px;
+    color-scheme: light;
+}
+
+.dark {
+    --background: oklch(0.16 0.025 255);
+    --foreground: oklch(0.97 0.008 250);
+    --card: oklch(0.21 0.025 255);
+    --card-foreground: oklch(0.97 0.008 250);
+    --popover: oklch(0.21 0.025 255);
+    --popover-foreground: oklch(0.97 0.008 250);
+    --primary: oklch(0.64 0.23 22);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.28 0.028 255);
+    --secondary-foreground: oklch(0.94 0.012 250);
+    --muted: oklch(0.27 0.022 255);
+    --muted-foreground: oklch(0.72 0.025 250);
+    --accent: oklch(0.31 0.05 20);
+    --accent-foreground: oklch(0.97 0.01 20);
+    --destructive: oklch(0.66 0.23 28);
+    --destructive-foreground: oklch(0.99 0 0);
+    --border: oklch(0.34 0.025 255);
+    --input: oklch(0.34 0.025 255);
+    --ring: oklch(0.69 0.2 22);
+    --income: oklch(0.68 0.17 145);
+    --expense: oklch(0.66 0.23 28);
+    --transfer: oklch(0.67 0.15 245);
+    --warning: oklch(0.81 0.15 78);
+    color-scheme: dark;
 }
 
 body {
-    margin: 0px;
+    margin: 0;
     background-color: #0a0908;
+    color: var(--text-color);
+    font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
 }

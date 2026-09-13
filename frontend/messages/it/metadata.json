@@ -1,0 +1,19 @@
+{
+    "Metadata": {
+        "title": "Money Gestor",
+        "description": "Gestione delle finanze personali"
+    },
+    "DesignSystem": {
+        "title": "Sistema visuale",
+        "description": "Anteprima delle fondamenta per colori, superfici e controlli.",
+        "brand": "Brand",
+        "income": "Entrata",
+        "expense": "Uscita",
+        "transfer": "Trasferimento",
+        "cardTitle": "Saldo del portafoglio",
+        "cardContent": "I token semantici condivisi sono pronti per la prima slice migrata.",
+        "openDialog": "Apri dialog",
+        "dialogTitle": "Dialog delle fondamenta",
+        "dialogDescription": "Verifica la primitiva condivisa Radix per i dialog."
+    }
+}

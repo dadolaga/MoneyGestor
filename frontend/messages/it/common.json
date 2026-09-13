@@ -1,0 +1,15 @@
+{
+    "Common": {
+        "actions": {
+            "close": "Chiudi",
+            "cancel": "Annulla",
+            "save": "Salva"
+        },
+        "theme": {
+            "label": "Tema",
+            "light": "Chiaro",
+            "dark": "Scuro",
+            "system": "Sistema"
+        }
+    }
+}

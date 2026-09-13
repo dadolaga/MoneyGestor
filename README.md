@@ -8,7 +8,7 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 
 - Backend: ASP.NET Core 8, Entity Framework Core e MySQL
 - Frontend attuale: Next.js 15, React 19, TypeScript, Material UI e Nivo
-- Frontend pianificato: Next.js, Tailwind CSS, shadcn/ui con primitive Radix e next-intl; TanStack escluso
+- Frontend in migrazione: Next.js, Tailwind CSS v4, shadcn/ui con primitive Radix e next-intl; MUI resta nelle route legacy e TanStack è escluso
 - Test backend: NUnit
 - Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
 - Runtime container: Docker Compose

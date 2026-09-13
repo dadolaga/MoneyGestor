@@ -10,6 +10,12 @@ La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog pree
 [`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere
 implementato incidentalmente durante le fondazioni.
 
+Le fondamenta runtime della Fase 1 sono attive: Tailwind v4 senza Preflight, primitive locali shadcn/Radix,
+`next-intl`, `next-themes`, Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto
+`app/[locale]/(legacy)` senza cambiare gli URL pubblici; il nuovo codice appartiene a `(app)` e non importa MUI.
+Vitest, Testing Library e Playwright verranno aggiunti con un passaggio compatibile separato, senza forzare peer
+dependencies.
+
 Durante la transizione:
 
 - una route dichiarata migrata non deve importare MUI;

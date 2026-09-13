@@ -1,9 +1,22 @@
 # Sistema visuale MoneyGestor
 
-Stato: Fase 0 completata il 13 settembre 2026; token semantici iniziali definiti. Baseline e backlog sono in
+Stato: fondamenta runtime della Fase 1 implementate il 13 settembre 2026. Baseline e backlog sono in
 [`PHASE_0_BASELINE.md`](PHASE_0_BASELINE.md); il Quick Add mobile è rinviato e non condiziona le fondazioni.
 
 Questo documento impedisce che ogni pagina sviluppi un proprio stile durante e dopo la migrazione a Tailwind e shadcn/ui. Le decisioni approvate qui diventano vincolanti per primitive, feature e route.
+
+## Adozione Fase 1
+
+- `frontend/components.json` definisce shadcn `new-york`, alias locali e CSS variables; le primitive sono possedute
+  dal repository in `frontend/src/components/ui`.
+- Sono disponibili `Button`, `Card`, `Input`, `Label`, `Checkbox`, `Dialog`, `AlertDialog`, `Select`,
+  `DropdownMenu`, `Sheet`, `Skeleton`, `Progress`, `Table`, `Popover`, `Calendar`, `Badge`, `Avatar`, `Separator`
+  e `Sonner`.
+- I token semantici light/dark sono in `frontend/src/app/globals.css`, in OKLCH. Il tema iniziale segue il sistema e
+  l'eventuale scelta utente è gestita da `next-themes`.
+- Tailwind importa solo `theme` e `utilities`: Preflight rimane disabilitato finché esistono route MUI.
+- `/design-system` e `/it/design-system` sono disponibili soltanto in development e mostrano le fondamenta nelle due
+  lingue iniziali.
 
 Le regole linguistiche e di formattazione sono definite in [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md).
 

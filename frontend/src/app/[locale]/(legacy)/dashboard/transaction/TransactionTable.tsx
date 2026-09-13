@@ -23,13 +23,13 @@ import TableCellSort from '@/component/TableCellSort';
 import type { SortType } from '@/context/SortTableContext';
 import { SortProvider } from '@/context/SortTableContext';
 import useApi from '@/hooks/useApi';
+import { useIsMobile } from '@/hooks/useMobile';
 import type { Transaction } from '@/models/backend';
 import { convertSortToApi, convertFilterToApi } from '@/utilis/backend';
 import { convertColor } from '@/utilis/color';
 import { convertNumberToValue } from '@/utilis/values';
 
 import type { FilterData } from './TransactionTableFilter';
-import { useIsMobile } from '../../../hooks/useMobile';
 
 const ID_EXCHANGE_TYPE = 1;
 

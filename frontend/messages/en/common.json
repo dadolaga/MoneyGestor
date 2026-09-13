@@ -1,0 +1,15 @@
+{
+    "Common": {
+        "actions": {
+            "close": "Close",
+            "cancel": "Cancel",
+            "save": "Save"
+        },
+        "theme": {
+            "label": "Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        }
+    }
+}

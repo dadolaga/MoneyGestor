@@ -1,6 +1,6 @@
 # Piano di migrazione frontend
 
-Stato: Fase 0 completata; Fase 1 pronta. Il Quick Add è rinviato e non blocca le fondazioni.
+Stato: Fase 0 completata; fondamenta runtime della Fase 1 implementate. Il test harness dedicato è rinviato a un passaggio compatibile separato. Il Quick Add non blocca le fondazioni.
 
 Ultima ricognizione: 13 settembre 2026.
 
@@ -154,6 +154,11 @@ Criterio di uscita: direzione visuale approvata e nessuna decisione strutturale 
 Quick Add costituiscono un'attività successiva indipendente e non bloccano la Fase 1.
 
 ### Fase 1 — fondamenta senza rimuovere MUI
+
+Stato: **fondazioni runtime completate il 13 settembre 2026**. Tailwind, primitive locali, token, temi,
+next-intl, routing locale-aware e catalogo interno sono disponibili. Vitest, Testing Library e Playwright restano
+un'attività tecnica separata: la loro installazione è stata rimandata per un conflitto di peer dependency, senza usare
+`--force` o `--legacy-peer-deps`.
 
 Attività:
 

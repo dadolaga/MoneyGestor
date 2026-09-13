@@ -18,10 +18,18 @@ const themeOptions: ThemeOptions = {
     palette: {
         mode: 'dark',
         primary: {
-            main: '#ff0000',
+            main: '#e11d48',
         },
         secondary: {
-            main: '#f50057',
+            main: '#f43f5e',
+        },
+        background: {
+            default: '#0b1220',
+            paper: '#182033',
+        },
+        text: {
+            primary: '#f8fafc',
+            secondary: '#b7c0cf',
         },
     },
 };

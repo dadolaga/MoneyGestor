@@ -1,6 +1,5 @@
 import { faArrowRightArrowLeft, faWallet, faMoneyBillTrendUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRouter } from 'next/navigation';
 
 import {
     List,
@@ -12,7 +11,8 @@ import {
     Drawer as MaterialDrawer,
 } from '@mui/material';
 
-import { useIsMobile } from '../../hooks/useMobile';
+import { useIsMobile } from '@/hooks/useMobile';
+import { useRouter } from '@/i18n/navigation';
 
 interface IProps {
     width: number;
