@@ -1,41 +1,61 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with
-[`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Frontend MoneyGestor
 
-## Getting Started
+Client web di MoneyGestor realizzato con Next.js 15, React 19, TypeScript e Material UI.
 
-First, run the development server:
+## Avvio
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Dalla radice del repository:
+
+```powershell
+$env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
+npm --prefix .\frontend install
+npm --prefix .\frontend run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Oppure dalla directory `frontend`:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```powershell
+$env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and
-load Inter, a custom Google Font.
+Apri `http://localhost:3000`. Se `NEXT_PUBLIC_API_URL` non è valorizzata, il client usa attualmente un indirizzo LAN codificato in `src/hooks/useApi.ts`; per uno sviluppo riproducibile conviene impostare sempre la variabile.
 
-## Learn More
+## Script
 
-To learn more about Next.js, take a look at the following resources:
+| Comando | Scopo |
+|---|---|
+| `npm run dev` | server di sviluppo |
+| `npm run build` | build di produzione |
+| `npm run start` | avvio della build di produzione |
+| `npm run lint` | controlli ESLint |
+| `npm run lint:fix` | correzioni ESLint automatiche |
+| `npm run typecheck` | controllo TypeScript senza emissione |
+| `npm run format` | formattazione Prettier |
+| `npm run format:check` | verifica Prettier |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Route principali
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions
-are welcome!
+| Route | Funzione |
+|---|---|
+| `/dashboard` | riepilogo entrate, uscite e categorie |
+| `/dashboard/wallet` | elenco e gestione portafogli |
+| `/dashboard/transaction` | elenco, filtri e gestione transazioni |
+| `/dashboard/transaction/add_mobile` | nuova UI mobile, ancora in lavorazione |
+| `/dashboard/user/login` | accesso |
+| `/dashboard/user/new` | registrazione |
+| `/dashboard/not_implemented` | segnaposto per funzionalità future |
 
-## Deploy on Vercel
+## Organizzazione
 
-The easiest way to deploy your Next.js app is to use the
-[Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)
-from the creators of Next.js.
+- `src/app`: route e componenti specifici delle pagine
+- `src/component`: componenti condivisi
+- `src/context`: stato e logica condivisa per form e ordinamento
+- `src/hooks/useApi.ts`: client HTTP e adattamento dell'envelope backend
+- `src/models/backend.ts`: tipi del contratto API
+- `src/utilis`: conversioni per filtri, colori e valori monetari
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Il token viene attualmente letto dal cookie `token` e inviato nel valore grezzo dell'header `Authorization`.
+
+Per le convenzioni interne consulta [README_DEV.md](README_DEV.md). Per problemi noti e priorità consulta [l'audit](../docs/PROJECT_AUDIT.md).

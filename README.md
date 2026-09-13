@@ -1,47 +1,61 @@
-# MoneyGestor - Personal Finance Management
+# MoneyGestor
 
-MoneyGestor is a comprehensive application for managing personal and household finances. It allows you to track transactions, manage wallets, categorize expenses, and maintain complete control over your money.
+MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti, portafogli, movimenti, trasferimenti tra portafogli, categorie e riepiloghi mensili.
 
-## 📋 Project Overview
+> Stato: progetto in sviluppo. Prima di usarlo con dati reali, consulta l'[audit tecnico](docs/PROJECT_AUDIT.md), in particolare le sezioni su autorizzazione, import/export e gestione degli importi.
 
-The project is structured as a modern full-stack application:
+## Stack
 
-- **Backend**: ASP.NET Core 8.0 REST API
-- **Frontend**: Next.js (React) with TypeScript
-- **Database**: MySQL
-- **Additional Tools**: Console application for CSV data import/export
+- Backend: ASP.NET Core 8, Entity Framework Core e MySQL
+- Frontend: Next.js 15, React 19, TypeScript, Material UI e Nivo
+- Test backend: NUnit
+- Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
+- Runtime container: Docker Compose
 
-## 🚀 Quick Start with Docker
+## Struttura
 
-### Prerequisites
-- Docker and Docker Compose installed
-- `settings.json` file configured in `./settings.json`
-
-### Starting the Application
-
-```bash
-# Start all services (backend, frontend, database)
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+```text
+.
+|-- backend/
+|   |-- database/                 # DbContext e modelli EF Core
+|   |-- logic/                    # comandi, regole applicative e autenticazione
+|   |-- webserver/                # REST API ASP.NET Core
+|   |-- TestProject/              # test NUnit (richiedono un MySQL dedicato)
+|   `-- ExportImportApplication/  # backup e ripristino ZIP/CSV
+|-- frontend/                     # applicazione Next.js
+|-- docs/                         # architettura, API e audit
+|-- docker-compose.yml
+|-- settings.example.json
+`-- settings.json                 # configurazione locale, ignorata da Git
 ```
 
-The application will be available at:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/api/health (if implemented)
+Approfondimenti:
 
-## ⚙️ Configuration
+- [Architettura](docs/ARCHITECTURE.md)
+- [Contratto API](docs/API.md)
+- [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
+- [Guida frontend](frontend/README.md)
+- [Convenzioni frontend](frontend/README_DEV.md)
 
-### settings.json File
+## Prerequisiti
 
-The main configuration file is located at: `./settings.json`
+Per lo sviluppo locale:
 
-Configuration example:
+- .NET SDK 8 o successivo
+- Node.js 22 e npm
+- MySQL raggiungibile dalla macchina
+
+Per l'esecuzione containerizzata servono Docker e Docker Compose. Il file Compose attuale **non avvia MySQL**: il database deve esistere già ed essere raggiungibile dai container.
+
+## Configurazione
+
+Crea la configurazione locale partendo dall'esempio:
+
+```powershell
+Copy-Item .\settings.example.json .\settings.json
+```
+
+Campi principali:
 
 ```json
 {
@@ -56,125 +70,93 @@ Configuration example:
     }
   },
   "database": {
-    "name": "db_name",
-    "user": "db_user_name",
-    "password": "db_user_password",
-    "forceUpdate": true
+    "host": "localhost",
+    "port": 3306,
+    "name": "moneygestor_db",
+    "user": "moneygestor_user",
+    "password": "CHANGE_ME_IN_PRODUCTION",
+    "forceUpdate": false
   }
 }
 ```
 
-**Warning**: Before running with Docker, update the database credentials in `settings.json` with secure values for the production environment.
+`settings.json` è ignorato da Git. Non inserirlo nei commit e non usare credenziali di produzione nell'esempio.
 
-### Environment Variables
+Nota: `forceUpdate` viene letto dalla configurazione ma, allo stato attuale, non viene applicato dal backend.
 
-In `docker-compose.yml` are defined:
-- `ASPNETCORE_ENVIRONMENT=Production` (backend)
-- `NODE_ENV=production` (frontend)
+## Avvio locale
 
-## 🛠️ Local Development
+Esegui i comandi dalla radice del repository.
 
-### Backend (ASP.NET Core)
+Backend:
 
-```bash
-cd backend
-dotnet restore
-dotnet build
-dotnet run --project webserver/webserver.csproj
+```powershell
+$env:BACKEND_APP_SETTINGS = (Resolve-Path .\settings.json)
+dotnet run --project .\backend\webserver\webserver.csproj --launch-profile http
 ```
 
-The backend will be available at http://localhost:5000
+In sviluppo l'API ascolta su `http://localhost:5256`; Swagger è disponibile su `http://localhost:5256/swagger`.
 
-### Frontend (Next.js)
+Frontend, in un secondo terminale:
 
-```bash
-cd frontend
-npm install
-npm run dev
+```powershell
+$env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
+npm --prefix .\frontend install
+npm --prefix .\frontend run dev
 ```
 
-The frontend will be available at http://localhost:3000
+Il frontend è disponibile su `http://localhost:3000`.
 
-### Tests
+## Avvio con Docker
 
-```bash
-cd backend
-dotnet test
+Nel file `settings.json`, usa un host MySQL raggiungibile dal container, per esempio `host.docker.internal` quando il database gira sulla macchina host.
+
+```powershell
+docker compose up --build -d backend frontend
+docker compose logs -f
+docker compose down
 ```
 
-## 📦 Additional Tools
+Servizi esposti:
 
-### CSV Export/Import
+- frontend: `http://localhost:3000`
+- backend: `http://localhost:5000`
 
-The application includes a CLI tool for exporting and importing data in CSV format.
+Swagger è abilitato solo con `ASPNETCORE_ENVIRONMENT=Development`; il Compose imposta `Production`.
 
-Start with the 'tools' profile:
+## Verifiche
 
-```bash
-docker-compose --profile tools up exportimport
+```powershell
+dotnet build .\backend\backend.sln
+npm --prefix .\frontend run typecheck
+npm --prefix .\frontend run lint
+npm --prefix .\frontend run build
 ```
 
-## 🐳 Docker Services
+I test backend usano un database MySQL fisso chiamato `ut_money_gestor` su `localhost:1883` e il teardown lo elimina. Eseguili solo dopo aver verificato che quella destinazione sia dedicata ai test:
 
-### Backend (webserver)
-- Port: 5000:8080
-- Image: mcr.microsoft.com/dotnet/aspnet:8.0
-- Volumes:
-  - `settings.json` → `/app/settings.json` (read-only)
-  - Log directory → `/app/log`
-
-### Frontend
-- Port: 3000:3000
-- Image: node:22-alpine
-- Multi-stage build for optimization
-
-### Export/Import Tool
-- Profile: tools (not started by default)
-- Runtime: .NET 8.0
-
-## 🐛 Troubleshooting
-
-### Container fails to start
-```bash
-# Check logs
-docker-compose logs backend
-
-# Verify settings.json file
-cat backend/webserver/settings.json
+```powershell
+dotnet test .\backend\backend.sln
 ```
 
-### Port already in use
-```bash
-# Change ports in docker-compose.yml
-# Example: "5001:8080" for backend
+## Import ed export
+
+La CLI legge `IMPORT_EXPORT_APP_SETTINGS`, oppure `./settings.json` se la variabile non è impostata.
+
+```powershell
+$env:IMPORT_EXPORT_APP_SETTINGS = (Resolve-Path .\settings.json)
+dotnet run --project .\backend\ExportImportApplication\ExportImportApplication.csproj -- export --path .\backup.zip
+dotnet run --project .\backend\ExportImportApplication\ExportImportApplication.csproj -- import --path .\backup.zip
 ```
 
-### Database connection error
-```bash
-# Verify credentials in settings.json
-# Ensure the database is reachable
-docker-compose logs backend | grep -i database
-```
+L'import sostituisce il database applicativo e va considerato distruttivo. Prima di affidarsi a questa funzione, consulta i limiti documentati nell'[audit](docs/PROJECT_AUDIT.md#importexport-e-integrita-dei-dati).
 
-## 📖 Useful Commands
+## Stato delle verifiche
 
-```bash
-# View container status
-docker-compose ps
+Ultima ricognizione: 10 settembre 2026.
 
-# Rebuild images
-docker-compose build
-
-# Clean up everything (containers, volumes, networks)
-docker-compose down -v
-
-# Execute a command in a container
-docker-compose exec backend dotnet --version
-
-# View logs for a specific service
-docker-compose logs -f frontend
-```
-
----
-
-**Last updated**: June 2026
+- build .NET: completata, 0 errori e 79 warning
+- type-check frontend: completato senza errori
+- lint frontend: non passa; gli errori sono concentrati nella pagina mobile delle transazioni
+- build frontend: bloccata dal certificato TLS durante il download del font Inter da Google
+- test backend: non eseguiti automaticamente, perché eliminano il database di test configurato
