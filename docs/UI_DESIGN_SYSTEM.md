@@ -1,6 +1,7 @@
 # Sistema visuale MoneyGestor
 
-Stato: direzione visuale approvata; token semantici iniziali definiti, variante mobile da validare.
+Stato: Fase 0 completata il 13 settembre 2026; token semantici iniziali definiti. Baseline e backlog sono in
+[`PHASE_0_BASELINE.md`](PHASE_0_BASELINE.md); il Quick Add mobile è rinviato e non condiziona le fondazioni.
 
 Questo documento impedisce che ogni pagina sviluppi un proprio stile durante e dopo la migrazione a Tailwind e shadcn/ui. Le decisioni approvate qui diventano vincolanti per primitive, feature e route.
 

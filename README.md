@@ -36,6 +36,7 @@ Approfondimenti:
 - [Contratto API](docs/API.md)
 - [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
 - [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
+- [Baseline frontend — Fase 0](docs/PHASE_0_BASELINE.md)
 - [Sistema visuale condiviso](docs/UI_DESIGN_SYSTEM.md)
 - [Mockup visuale ufficiale](docs/dashboard_mockup.png)
 - [Internazionalizzazione frontend](docs/INTERNATIONALIZATION.md)

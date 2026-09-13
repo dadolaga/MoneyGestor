@@ -6,6 +6,10 @@ Questo file descrive le convenzioni già adottate o desiderate nel frontend. Non
 
 La migrazione a Tailwind CSS e shadcn/ui basato su Radix deve seguire il [piano per slice](../docs/FRONTEND_MIGRATION_PLAN.md) e il [contratto visuale](../docs/UI_DESIGN_SYSTEM.md). TanStack non fa parte dello stack di destinazione. Fino all'avvio dell'implementazione, le convenzioni MUI sotto riportate descrivono il codice corrente.
 
+La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog preesistente sono in
+[`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere
+implementato incidentalmente durante le fondazioni.
+
 Durante la transizione:
 
 - una route dichiarata migrata non deve importare MUI;

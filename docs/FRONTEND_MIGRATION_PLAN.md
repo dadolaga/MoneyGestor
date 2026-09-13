@@ -1,6 +1,6 @@
 # Piano di migrazione frontend
 
-Stato: stack, direzione visuale e perimetro approvati; dettaglio Quick Add ancora da validare.
+Stato: Fase 0 completata; Fase 1 pronta. Il Quick Add è rinviato e non blocca le fondazioni.
 
 Ultima ricognizione: 13 settembre 2026.
 
@@ -134,6 +134,9 @@ Durante la prima fase il `ThemeProvider` MUI può restare nel layout dashboard e
 
 ### Fase 0 — decisioni e baseline
 
+Stato: **completata il 13 settembre 2026**, con evidenze e matrice in
+[`PHASE_0_BASELINE.md`](PHASE_0_BASELINE.md).
+
 Deliverable:
 
 - risposte alle questioni aperte in fondo al documento;
@@ -142,11 +145,13 @@ Deliverable:
 - scelta delle versioni esatte e lockfile riproducibile;
 - backlog dei bug funzionali distinto dalla migrazione visuale;
 - tema chiaro/scuro e direzione visuale approvati;
-- prototipo del flusso rapido “movimento in tre tocchi”.
+- prototipo del flusso rapido “movimento in tre tocchi” (rinviato su richiesta del proprietario e rimosso dal gate
+  della Fase 0).
 
 Il mockup desktop deve essere registrato come baseline ufficiale e il backlog funzionale deve restare limitato alle capacità già presenti nel progetto.
 
-Criterio di uscita: direzione visuale approvata e nessuna decisione strutturale lasciata implicita.
+Criterio di uscita: direzione visuale approvata e nessuna decisione strutturale lasciata implicita. I dettagli del
+Quick Add costituiscono un'attività successiva indipendente e non bloccano la Fase 1.
 
 ### Fase 1 — fondamenta senza rimuovere MUI
 
@@ -414,6 +419,8 @@ La migrazione è conclusa quando:
 - Inglese predefinito senza prefisso, italiano sotto `/it`, lingua determinata dall'URL senza rilevamento browser.
 - Login e registrazione di destinazione sono `/login` e `/register`, con equivalenti `/it/...` e redirect legacy temporanei.
 
-## Questione ancora aperta
+## Attività rinviata
 
-Prima di implementare il Quick Add bisogna definire quali valori possono essere precompilati e cosa conta esattamente come “click”. Il riferimento mobile sarà derivato dallo stile ufficiale del mockup desktop.
+Il Quick Add non viene implementato nelle prime fasi. Quando il proprietario riaprirà l'attività, bisognerà definire
+quali valori possono essere precompilati e cosa conta esattamente come “tocco”. Il riferimento mobile sarà derivato
+dallo stile ufficiale del mockup desktop.
