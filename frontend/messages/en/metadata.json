@@ -15,5 +15,44 @@
         "openDialog": "Open dialog",
         "dialogTitle": "Foundation dialog",
         "dialogDescription": "This verifies the shared Radix dialog primitive."
+    },
+    "FeaturePreview": {
+        "title": "Feature state workshop",
+        "description": "Visual components receive fixture data through props and do not need a running backend.",
+        "features": {
+            "dashboard": "Dashboard",
+            "wallets": "Wallets",
+            "transactions": "Transactions"
+        },
+        "statuses": {
+            "idle": "Idle",
+            "loading": "Loading",
+            "ready": "Ready",
+            "empty": "Empty",
+            "error": "Error"
+        },
+        "states": {
+            "idle": "Waiting for a request.",
+            "loading": "Loading data…",
+            "empty": "There is no data to show yet.",
+            "error": "Data could not be loaded."
+        },
+        "dashboard": {
+            "incoming": "Total income",
+            "expense": "Total expenses",
+            "categories": "Category snapshot"
+        },
+        "wallets": {
+            "balance": "Current balance",
+            "favorite": "Favourite wallet"
+        },
+        "transactions": {
+            "description": "Description",
+            "wallet": "Wallet",
+            "date": "Date",
+            "amount": "Amount",
+            "fallbackDescription": "Untitled transaction",
+            "transfer": "Transfer"
+        }
     }
 }

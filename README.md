@@ -159,10 +159,11 @@ L'import sostituisce il database applicativo e va considerato distruttivo. Prima
 
 ## Stato delle verifiche
 
-Ultima ricognizione: 10 settembre 2026.
+Ultima ricognizione frontend: 13 settembre 2026.
 
 - build .NET: completata, 0 errori e 79 warning
 - type-check frontend: completato senza errori
-- lint frontend: non passa; gli errori sono concentrati nella pagina mobile delle transazioni
-- build frontend: bloccata dal certificato TLS durante il download del font Inter da Google
+- lint frontend: completato senza errori; restano warning legacy già censiti
+- test frontend: 7 test Vitest/Testing Library completati senza errori
+- build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
 - test backend: non eseguiti automaticamente, perché eliminano il database di test configurato

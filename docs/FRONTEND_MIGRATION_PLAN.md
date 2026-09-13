@@ -1,6 +1,6 @@
 # Piano di migrazione frontend
 
-Stato: Fase 0 completata; fondamenta runtime della Fase 1 implementate. Il test harness dedicato è rinviato a un passaggio compatibile separato. Il Quick Add non blocca le fondazioni.
+Stato: Fasi 0, 1 e 2 completate. Il boundary fra DTO e presentazione, le fixture e il test harness dei componenti sono disponibili. Il Quick Add non blocca le fondazioni.
 
 Ultima ricognizione: 13 settembre 2026.
 
@@ -22,24 +22,26 @@ TanStack è stato escluso interamente dalla destinazione. Il routing resta affid
 
 ## Fotografia del frontend attuale
 
-Il frontend contiene 36 file TypeScript, JavaScript o CSS fuori da `node_modules` e `.next`. Ventiquattro file sotto `src` importano direttamente MUI, per un totale di 42 righe di import. Non sono presenti test frontend.
+Il frontend contiene 74 file TypeScript o JavaScript sotto `src`, fuori da `node_modules` e `.next`. Ventiquattro file
+importano ancora MUI, per un totale di 49 righe contenenti import o riferimenti al pacchetto. Il primo file di test
+frontend contiene 7 casi eseguiti senza backend.
 
 Dipendenze e responsabilità principali:
 
-| Area | Implementazione attuale | Destinazione proposta |
-|---|---|---|
-| layout e responsive | MUI `Box`, `Grid`, `useMediaQuery` | Tailwind e CSS media/container query |
-| componenti | MUI e componenti wrapper locali | shadcn/ui in `src/components/ui` |
-| notifiche | notistack | Sonner tramite il componente shadcn |
-| icone | Font Awesome | Lucide, salvo icone di brand |
-| dati remoti | Axios e `ApiRequest` callback-based | invariato durante il restyling; integrazione backend rinviata |
-| tabelle | MUI Table e contesti locali | shadcn Table + stato di presentazione React |
-| form | `FormContext`, `Input`, `Submit` custom | React Hook Form come gestore leggero dello stato UI |
-| date | Day.js + MUI X Date Pickers | Calendar/Popover shadcn; `Date` al boundary UI e Day.js per parsing/calcoli |
-| grafici | Nivo Pie | Recharts tramite i componenti Chart di shadcn |
-| routing | Next.js App Router | invariato |
-| lingua e formati | testi italiani hard-coded | next-intl, dizionari versionati e formatter centrali |
-| tema | `createTheme` MUI dark, valori sparsi | token CSS semantici condivisi |
+| Area                | Implementazione attuale                 | Destinazione proposta                                                       |
+| ------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
+| layout e responsive | MUI `Box`, `Grid`, `useMediaQuery`      | Tailwind e CSS media/container query                                        |
+| componenti          | MUI e componenti wrapper locali         | shadcn/ui in `src/components/ui`                                            |
+| notifiche           | notistack                               | Sonner tramite il componente shadcn                                         |
+| icone               | Font Awesome                            | Lucide, salvo icone di brand                                                |
+| dati remoti         | Axios e `ApiRequest` callback-based     | invariato durante il restyling; integrazione backend rinviata               |
+| tabelle             | MUI Table e contesti locali             | shadcn Table + stato di presentazione React                                 |
+| form                | `FormContext`, `Input`, `Submit` custom | React Hook Form come gestore leggero dello stato UI                         |
+| date                | Day.js + MUI X Date Pickers             | Calendar/Popover shadcn; `Date` al boundary UI e Day.js per parsing/calcoli |
+| grafici             | Nivo Pie                                | Recharts tramite i componenti Chart di shadcn                               |
+| routing             | Next.js App Router                      | invariato                                                                   |
+| lingua e formati    | testi italiani hard-coded               | next-intl, dizionari versionati e formatter centrali                        |
+| tema                | `createTheme` MUI dark, valori sparsi   | token CSS semantici condivisi                                               |
 
 Dipendenze dichiarate ma non usate nel sorgente: `chart.js`, `react-router-dom` e, allo stato attuale, `recharts`. Recharts è però il candidato naturale per i grafici shadcn e può diventare usato durante la migrazione.
 
@@ -155,10 +157,10 @@ Quick Add costituiscono un'attività successiva indipendente e non bloccano la F
 
 ### Fase 1 — fondamenta senza rimuovere MUI
 
-Stato: **fondazioni runtime completate il 13 settembre 2026**. Tailwind, primitive locali, token, temi,
-next-intl, routing locale-aware e catalogo interno sono disponibili. Vitest, Testing Library e Playwright restano
-un'attività tecnica separata: la loro installazione è stata rimandata per un conflitto di peer dependency, senza usare
-`--force` o `--legacy-peer-deps`.
+Stato: **completata il 13 settembre 2026**. Tailwind, primitive locali, token, temi, next-intl, routing locale-aware e
+catalogo interno sono disponibili. Vitest, Testing Library, `user-event` e `jest-dom` sono stati aggiunti durante la
+Fase 2 con versioni compatibili, senza usare `--force` o `--legacy-peer-deps`; Playwright verrà introdotto con gli smoke
+test della prima slice migrata.
 
 Attività:
 
@@ -183,6 +185,11 @@ Criterio di uscita: build, lint e typecheck passano; le route MUI non hanno regr
 L'architettura i18n completa è descritta in [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md).
 
 ### Fase 2 — confine UI e dati, senza ridisegnare il backend
+
+Stato: **completata il 13 settembre 2026**. Dashboard, portafogli e movimenti dispongono di view model e adapter puri,
+un boundary condiviso per `idle`, `loading`, `ready`, `empty` ed `error`, fixture realistiche e componenti visuali
+pilotabili esclusivamente tramite props. Il catalogo development permette di combinare ogni feature con ogni stato;
+i test Vitest/Testing Library coprono i dati pronti e tutti gli stati senza servizi esterni.
 
 Attività:
 
@@ -335,20 +342,20 @@ Ogni voce deve essere un cambiamento piccolo e reversibile:
 
 ## Matrice file attuali
 
-| File/area | Dipendenze o problema | Fase |
-|---|---|---:|
-| `app/dashboard/layout.tsx` | ThemeProvider MUI, Snackbar, shell client | 1, 2, 4 |
-| `header.tsx`, `drawer.tsx` | MUI, Font Awesome, sessione | 4 |
-| `hooks/useApi.ts` | Axios, cookie, callback API, redirect | 2 |
-| `context/FormContext.tsx` | form custom non tipizzato per schema | 3 |
-| `context/SortTableContext.tsx` | sort custom accoppiato alla tabella MUI | 7 |
-| `component/Input.tsx` | accoppia form, MUI, date e route mobile | 3 |
-| `DataPicker*.tsx` | duplicazione e API MUI interna | 3 |
-| auth | form, MUI, cookie e navigazione | 5 |
-| wallet | MUI, refresh via ref, sort non applicato, Nivo | 6 |
-| transactions | MUI, form duplicato, filtri incompleti | 7 |
-| dashboard | MUI, Nivo, divisione per zero | 8 |
-| `app/dashboard/error/page.tsx` | pagina errore legacy basata su MUI | 9 |
+| File/area                      | Dipendenze o problema                          |    Fase |
+| ------------------------------ | ---------------------------------------------- | ------: |
+| `app/dashboard/layout.tsx`     | ThemeProvider MUI, Snackbar, shell client      | 1, 2, 4 |
+| `header.tsx`, `drawer.tsx`     | MUI, Font Awesome, sessione                    |       4 |
+| `hooks/useApi.ts`              | Axios, cookie, callback API, redirect          |       2 |
+| `context/FormContext.tsx`      | form custom non tipizzato per schema           |       3 |
+| `context/SortTableContext.tsx` | sort custom accoppiato alla tabella MUI        |       7 |
+| `component/Input.tsx`          | accoppia form, MUI, date e route mobile        |       3 |
+| `DataPicker*.tsx`              | duplicazione e API MUI interna                 |       3 |
+| auth                           | form, MUI, cookie e navigazione                |       5 |
+| wallet                         | MUI, refresh via ref, sort non applicato, Nivo |       6 |
+| transactions                   | MUI, form duplicato, filtri incompleti         |       7 |
+| dashboard                      | MUI, Nivo, divisione per zero                  |       8 |
+| `app/dashboard/error/page.tsx` | pagina errore legacy basata su MUI             |       9 |
 
 ## Test e controlli per ogni slice
 
@@ -388,16 +395,16 @@ La migrazione è conclusa quando:
 
 ## Rischi principali e mitigazioni
 
-| Rischio | Mitigazione |
-|---|---|
-| Tailwind Preflight altera MUI | Preflight disabilitato durante la convivenza; attivazione e baseline completa dopo l'ultima route MUI |
-| pagine ibride incoerenti | token condivisi e migrazione per route completa |
-| stato duplicato durante la transizione | adapter temporaneo e una sola fonte di stato per feature |
-| regressioni in trasferimenti/importi | modello di form unico, normalizzatori e test prima della UI |
-| bundle più grande durante la convivenza | finestra di coesistenza limitata e misurata |
-| componenti shadcn divergenti | modifiche solo nelle primitive e catalogo UI |
-| update CLI sovrascrive personalizzazioni | mai usare overwrite senza diff e test |
-| backend futuro diverso da quello attuale | componenti guidati da props e adapter sostituibili |
+| Rischio                                  | Mitigazione                                                                                           |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Tailwind Preflight altera MUI            | Preflight disabilitato durante la convivenza; attivazione e baseline completa dopo l'ultima route MUI |
+| pagine ibride incoerenti                 | token condivisi e migrazione per route completa                                                       |
+| stato duplicato durante la transizione   | adapter temporaneo e una sola fonte di stato per feature                                              |
+| regressioni in trasferimenti/importi     | modello di form unico, normalizzatori e test prima della UI                                           |
+| bundle più grande durante la convivenza  | finestra di coesistenza limitata e misurata                                                           |
+| componenti shadcn divergenti             | modifiche solo nelle primitive e catalogo UI                                                          |
+| update CLI sovrascrive personalizzazioni | mai usare overwrite senza diff e test                                                                 |
+| backend futuro diverso da quello attuale | componenti guidati da props e adapter sostituibili                                                    |
 
 ## Decisioni confermate
 

@@ -15,5 +15,44 @@
         "openDialog": "Apri dialog",
         "dialogTitle": "Dialog delle fondamenta",
         "dialogDescription": "Verifica la primitiva condivisa Radix per i dialog."
+    },
+    "FeaturePreview": {
+        "title": "Laboratorio stati delle feature",
+        "description": "I componenti visuali ricevono fixture tramite props e non richiedono un backend attivo.",
+        "features": {
+            "dashboard": "Dashboard",
+            "wallets": "Portafogli",
+            "transactions": "Movimenti"
+        },
+        "statuses": {
+            "idle": "Inattivo",
+            "loading": "Caricamento",
+            "ready": "Pronto",
+            "empty": "Vuoto",
+            "error": "Errore"
+        },
+        "states": {
+            "idle": "In attesa di una richiesta.",
+            "loading": "Caricamento dati…",
+            "empty": "Non ci sono ancora dati da mostrare.",
+            "error": "Non è stato possibile caricare i dati."
+        },
+        "dashboard": {
+            "incoming": "Totale entrate",
+            "expense": "Totale uscite",
+            "categories": "Riepilogo per tipo"
+        },
+        "wallets": {
+            "balance": "Saldo attuale",
+            "favorite": "Portafoglio preferito"
+        },
+        "transactions": {
+            "description": "Descrizione",
+            "wallet": "Portafoglio",
+            "date": "Data",
+            "amount": "Importo",
+            "fallbackDescription": "Movimento senza titolo",
+            "transfer": "Trasferimento"
+        }
     }
 }

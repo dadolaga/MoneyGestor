@@ -4,17 +4,23 @@ Questo file descrive le convenzioni già adottate o desiderate nel frontend. Non
 
 ## Migrazione UI pianificata
 
-La migrazione a Tailwind CSS e shadcn/ui basato su Radix deve seguire il [piano per slice](../docs/FRONTEND_MIGRATION_PLAN.md) e il [contratto visuale](../docs/UI_DESIGN_SYSTEM.md). TanStack non fa parte dello stack di destinazione. Fino all'avvio dell'implementazione, le convenzioni MUI sotto riportate descrivono il codice corrente.
+La migrazione a Tailwind CSS e shadcn/ui basato su Radix deve seguire il
+[piano per slice](../docs/FRONTEND_MIGRATION_PLAN.md) e il [contratto visuale](../docs/UI_DESIGN_SYSTEM.md). TanStack
+non fa parte dello stack di destinazione. Fino all'avvio dell'implementazione, le convenzioni MUI sotto riportate
+descrivono il codice corrente.
 
 La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog preesistente sono in
-[`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere
-implementato incidentalmente durante le fondazioni.
+[`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere implementato
+incidentalmente durante le fondazioni.
 
-Le fondamenta runtime della Fase 1 sono attive: Tailwind v4 senza Preflight, primitive locali shadcn/Radix,
-`next-intl`, `next-themes`, Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto
-`app/[locale]/(legacy)` senza cambiare gli URL pubblici; il nuovo codice appartiene a `(app)` e non importa MUI.
-Vitest, Testing Library e Playwright verranno aggiunti con un passaggio compatibile separato, senza forzare peer
-dependencies.
+Le Fasi 1 e 2 sono attive: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
+Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto `app/[locale]/(legacy)` senza
+cambiare gli URL pubblici; il nuovo codice appartiene a `(app)` e non importa MUI. View model e adapter puri vivono
+nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti visuali ricevono dati e
+stato tramite props usando il tipo discriminato `FeatureState<T>`.
+
+Vitest, Testing Library, `user-event` e `jest-dom` sono configurati senza forzare peer dependency. Playwright verrà
+aggiunto insieme agli smoke test della prima slice migrata.
 
 Durante la transizione:
 
@@ -31,7 +37,8 @@ Durante la transizione:
 - `docs/dashboard_mockup.png` è la baseline visuale ufficiale;
 - nei testi UI usare “movimento”; mantenere `Transaction` nei nomi tecnici esistenti;
 - non implementare le funzionalità future mostrate nel mockup se non vengono richieste esplicitamente.
-- durante la convivenza con MUI, Tailwind Preflight resta disabilitato; verrà abilitato e verificato solo dopo l'ultima route legacy;
+- durante la convivenza con MUI, Tailwind Preflight resta disabilitato; verrà abilitato e verificato solo dopo l'ultima
+  route legacy;
 - il tema applicativo parte da quello di sistema e conserva l'eventuale scelta esplicita.
 
 ## Internazionalizzazione
@@ -60,7 +67,9 @@ All'interno di un componente React, usa questo ordine:
 7. funzioni di rendering locali;
 8. `return` JSX.
 
-Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la funzione deve essere stabile (`useCallback`) oppure l'effetto deve contenere direttamente l'operazione. Evita di disabilitare `react-hooks/exhaustive-deps` senza annotare il motivo reale.
+Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la funzione deve essere stabile
+(`useCallback`) oppure l'effetto deve contenere direttamente l'operazione. Evita di disabilitare
+`react-hooks/exhaustive-deps` senza annotare il motivo reale.
 
 ## Nomi
 
@@ -73,21 +82,26 @@ Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la
 
 ## Chiamate API
 
-Le API passano da `useApi`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che modifica uno stato di caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
+Le API passano da `useApi`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che modifica uno stato di
+caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
 
-Il wrapper `ApiRequest` non restituisce oggi una Promise dalla funzione `execute`. Finché non verrà rifattorizzato, gestisci successo, errore e fine con i callback disponibili e non usare `await execute()`.
+Il wrapper `ApiRequest` non restituisce oggi una Promise dalla funzione `execute`. Finché non verrà rifattorizzato,
+gestisci successo, errore e fine con i callback disponibili e non usare `await execute()`.
 
 ## Form
 
 - Definisci le regole in un oggetto `FormSettings` vicino al componente o esportale solo se sono davvero condivise.
-- Non affidarti al cast TypeScript per convertire valori runtime: gli input testuali restano stringhe e vanno convertiti esplicitamente prima della richiesta.
-- Mostra gli errori del backend sul campo corretto quando esiste una corrispondenza; usa una snackbar per errori generali.
+- Non affidarti al cast TypeScript per convertire valori runtime: gli input testuali restano stringhe e vanno convertiti
+  esplicitamente prima della richiesta.
+- Mostra gli errori del backend sul campo corretto quando esiste una corrispondenza; usa una snackbar per errori
+  generali.
 
 ## Controlli prima di una modifica
 
 ```powershell
 npm run typecheck
 npm run lint
+npm run test
 npm run format:check
 ```
 

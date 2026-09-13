@@ -1,6 +1,6 @@
 # Sistema visuale MoneyGestor
 
-Stato: fondamenta runtime della Fase 1 implementate il 13 settembre 2026. Baseline e backlog sono in
+Stato: fondamenta runtime della Fase 1 e boundary visuale della Fase 2 implementati il 13 settembre 2026. Baseline e backlog sono in
 [`PHASE_0_BASELINE.md`](PHASE_0_BASELINE.md); il Quick Add mobile è rinviato e non condiziona le fondazioni.
 
 Questo documento impedisce che ogni pagina sviluppi un proprio stile durante e dopo la migrazione a Tailwind e shadcn/ui. Le decisioni approvate qui diventano vincolanti per primitive, feature e route.
@@ -17,6 +17,8 @@ Questo documento impedisce che ogni pagina sviluppi un proprio stile durante e d
 - Tailwind importa solo `theme` e `utilities`: Preflight rimane disabilitato finché esistono route MUI.
 - `/design-system` e `/it/design-system` sono disponibili soltanto in development e mostrano le fondamenta nelle due
   lingue iniziali.
+- Il catalogo include dashboard, portafogli e movimenti con fixture realistiche e selezione degli stati `idle`,
+  `loading`, `ready`, `empty` ed `error`; i componenti non avviano richieste remote.
 
 Le regole linguistiche e di formattazione sono definite in [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md).
 
@@ -57,18 +59,18 @@ I colori dei wallet sono dati utente e fanno eccezione, ma testo e bordo sopra t
 
 Baseline cromatica derivata dal mockup:
 
-| Ruolo | Direzione iniziale |
-|---|---|
-| `primary` | rosso brand energico, configurabile e distinto dal rosso di errore |
-| `background` | grigio-blu molto chiaro in light; blu-nero neutro in dark |
-| `card` | bianco in light; superficie leggermente elevata in dark |
-| `foreground` | blu notte in light; quasi bianco in dark |
-| `muted-foreground` | grigio-blu leggibile |
-| `border` | bordo freddo e discreto |
-| `income` | verde semantico |
-| `expense` / `destructive` | rosso semantico, non automaticamente uguale a `primary` |
-| `transfer` | blu semantico |
-| `warning` | ambra |
+| Ruolo                     | Direzione iniziale                                                 |
+| ------------------------- | ------------------------------------------------------------------ |
+| `primary`                 | rosso brand energico, configurabile e distinto dal rosso di errore |
+| `background`              | grigio-blu molto chiaro in light; blu-nero neutro in dark          |
+| `card`                    | bianco in light; superficie leggermente elevata in dark            |
+| `foreground`              | blu notte in light; quasi bianco in dark                           |
+| `muted-foreground`        | grigio-blu leggibile                                               |
+| `border`                  | bordo freddo e discreto                                            |
+| `income`                  | verde semantico                                                    |
+| `expense` / `destructive` | rosso semantico, non automaticamente uguale a `primary`            |
+| `transfer`                | blu semantico                                                      |
+| `warning`                 | ambra                                                              |
 
 L'implementazione usa CSS variables shadcn in OKLCH. Il catalogo è la sede per calibrare i valori, non le singole pagine. Il tema iniziale segue il sistema operativo e una scelta manuale viene persistita.
 
@@ -95,15 +97,15 @@ Decisioni iniziali:
 
 Scala proposta:
 
-| Ruolo | Uso |
-|---|---|
-| display | solo schermate marketing/errore eccezionali |
-| page title | un solo `h1` per route |
-| section title | gruppi principali |
-| card title | KPI e pannelli |
-| body | contenuto standard |
-| label | controlli e tabelle |
-| caption | metadati e aiuti |
+| Ruolo         | Uso                                         |
+| ------------- | ------------------------------------------- |
+| display       | solo schermate marketing/errore eccezionali |
+| page title    | un solo `h1` per route                      |
+| section title | gruppi principali                           |
+| card title    | KPI e pannelli                              |
+| body          | contenuto standard                          |
+| label         | controlli e tabelle                         |
+| caption       | metadati e aiuti                            |
 
 Font remoti caricati a build o runtime non sono ammessi. Il font va incluso localmente o si usa uno stack di sistema.
 
