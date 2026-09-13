@@ -1,5 +1,25 @@
 {
     "Navigation": {
-        "designSystem": "Design system"
+        "designSystem": "Design system",
+        "brandTagline": "Your finances, simplified",
+        "dashboard": "Dashboard",
+        "wallets": "Wallets",
+        "transactions": "Transactions",
+        "reports": "Reports",
+        "primaryNavigation": "Primary navigation",
+        "navigationDescription": "Choose an area of Money Gestor.",
+        "openNavigation": "Open navigation",
+        "changeLanguage": "Change language",
+        "searchPlaceholder": "Search transactions, categories, wallets...",
+        "language": "Language",
+        "english": "English",
+        "italian": "Italiano",
+        "accountMenu": "Account menu",
+        "login": "Log in",
+        "enter": "Entra",
+        "register": "Create account",
+        "logout": "Log out",
+        "logoutSuccess": "You have been logged out.",
+        "sessionExpired": "Your session has expired. Please log in again."
     }
 }

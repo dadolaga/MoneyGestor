@@ -1,5 +1,25 @@
 {
     "Navigation": {
-        "designSystem": "Sistema visuale"
+        "designSystem": "Sistema visuale",
+        "brandTagline": "Le tue finanze, più semplici",
+        "dashboard": "Dashboard",
+        "wallets": "Portafogli",
+        "transactions": "Movimenti",
+        "reports": "Report",
+        "primaryNavigation": "Navigazione principale",
+        "navigationDescription": "Scegli un'area di Money Gestor.",
+        "openNavigation": "Apri navigazione",
+        "changeLanguage": "Cambia lingua",
+        "searchPlaceholder": "Cerca movimenti, categorie, portafogli...",
+        "language": "Lingua",
+        "english": "English",
+        "italian": "Italiano",
+        "accountMenu": "Menu account",
+        "login": "Accedi",
+        "enter": "Entra",
+        "register": "Crea account",
+        "logout": "Esci",
+        "logoutSuccess": "Hai effettuato il logout.",
+        "sessionExpired": "La sessione è scaduta. Accedi di nuovo."
     }
 }

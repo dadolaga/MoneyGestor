@@ -226,7 +226,7 @@ Attività:
 
 Criterio di uscita: errori inline, submit pending e reset sono coperti da test; Day.js è l'unica libreria data.
 
-### Fase 4 — shell applicativa
+### Fase 4 — shell applicativa *(completata il 13 settembre 2026)*
 
 Attività:
 
@@ -239,7 +239,11 @@ Attività:
 
 Criterio di uscita: shell unica e coerente su tutte le route, anche quelle ancora MUI.
 
-### Fase 5 — autenticazione
+Esito: `AppShell` centralizza header, navigazione desktop, Sheet mobile, route attiva, selettore lingua e stato
+sessione. Le route legacy continuano a usare le proprie feature MUI dentro la shell, mentre login e registrazione
+restano fuori dalla shell dashboard. Il precedente hook mobile non dipende più da MUI.
+
+### Fase 5 — autenticazione *(implementata il 13 settembre 2026; verifiche automatiche bloccate dall'ambiente)*
 
 Slice di destinazione:
 
@@ -256,6 +260,10 @@ Attività specifiche:
 - mantenere il ritorno alla dashboard come destinazione visuale prevista dopo l'accesso.
 
 Criterio di uscita: entrambe le pagine senza import MUI, test dei casi successo/errore e aspetto coerente con la shell.
+
+Esito: login e registrazione sono route locale-aware autonome (`/login`, `/register`, `/it/login`, `/it/register`),
+con `next/image`, React Hook Form, autocomplete, error summary e stato pending. Le route legacy dashboard ora
+reindirizzano alla nuova destinazione mantenendo la locale; il contratto API e il cookie del token restano invariati.
 
 ### Fase 6 — wallet
 
@@ -350,8 +358,8 @@ Ogni voce deve essere un cambiamento piccolo e reversibile:
 
 | File/area                      | Dipendenze o problema                          |    Fase |
 | ------------------------------ | ---------------------------------------------- | ------: |
-| `app/dashboard/layout.tsx`     | ThemeProvider MUI, Snackbar, shell client      | 1, 2, 4 |
-| `header.tsx`, `drawer.tsx`     | MUI, Font Awesome, sessione                    |       4 |
+| `components/app/app-shell.tsx` | shadcn/Radix, shell client, sessione e lingua  |       4 |
+| header e drawer legacy         | rimossi: sostituiti da sidebar e Sheet Radix   |       4 |
 | `hooks/useApi.ts`              | Axios, cookie, callback API, redirect          |       2 |
 | `context/FormContext.tsx`      | form custom non tipizzato per schema           |       3 |
 | `context/SortTableContext.tsx` | sort custom accoppiato alla tabella MUI        |       7 |

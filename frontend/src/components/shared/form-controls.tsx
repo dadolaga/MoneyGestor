@@ -4,10 +4,10 @@ import type { ComponentProps, ReactNode } from 'react';
 
 import { Controller, type FieldValues, type UseControllerProps } from 'react-hook-form';
 
+import { FormField, fieldAriaProps } from '@/components/shared/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FormField, fieldAriaProps } from '@/components/shared/form-field';
 import { parseLocalizedAmount } from '@/lib/money';
 
 type ControlledProps<T extends FieldValues> = UseControllerProps<T> & { label: string; description?: string };
@@ -17,23 +17,35 @@ export function TextField<T extends FieldValues>({
     description,
     ...props
 }: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name'>) {
-    const id = String(props.name);
+    const { control, name, rules, shouldUnregister, defaultValue, disabled, ...inputProps } = props;
+    const id = String(name);
     return (
         <Controller
-            {...props}
+            control={control}
+            name={name}
+            rules={rules}
+            shouldUnregister={shouldUnregister}
+            defaultValue={defaultValue}
+            disabled={disabled}
             render={({ field, fieldState }) => (
                 <FormField id={id} label={label} description={description} error={fieldState.error?.message}>
-                    <Input {...field} {...fieldAriaProps(id, fieldState.error?.message, description)} />
+                    <Input
+                        {...inputProps}
+                        {...field}
+                        disabled={disabled}
+                        {...fieldAriaProps(id, fieldState.error?.message, description)}
+                    />
                 </FormField>
             )}
         />
     );
 }
 
-export function PasswordField<T extends FieldValues>(
-    props: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name' | 'type'>,
-) {
-    return <TextField {...props} type="password" autoComplete="current-password" />;
+export function PasswordField<T extends FieldValues>({
+    autoComplete = 'current-password',
+    ...props
+}: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name' | 'type'>) {
+    return <TextField {...props} type="password" autoComplete={autoComplete} />;
 }
 
 export function AmountField<T extends FieldValues>({
@@ -84,10 +96,12 @@ export function CheckboxField<T extends FieldValues>({ label, description, ...pr
                             {label}
                         </label>
                     </div>
-                    {description ? <p className="m-0 text-sm text-muted-foreground">{description}</p> : null}
-                    {fieldState.error ? (
+                    {description !== undefined ? (
+                        <p className="m-0 text-sm text-muted-foreground">{String(description)}</p>
+                    ) : null}
+                    {fieldState.error !== undefined ? (
                         <p role="alert" className="m-0 text-sm text-destructive">
-                            {fieldState.error.message}
+                            {String(fieldState.error.message)}
                         </p>
                     ) : null}
                 </div>

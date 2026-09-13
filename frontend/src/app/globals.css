@@ -67,8 +67,8 @@
     --chart-6: oklch(0.67 0.13 190);
     --radius: 0.75rem;
     --text-color: #f0efeb;
-    --header-height: 90px;
-    --navigation-width: 200px;
+    --header-height: 4rem;
+    --navigation-width: 14rem;
     color-scheme: light;
 }
 
@@ -101,8 +101,9 @@
 
 body {
     margin: 0;
-    background-color: #0a0908;
-    color: var(--text-color);
+    min-height: 100dvh;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+    overflow-x: hidden;
 }

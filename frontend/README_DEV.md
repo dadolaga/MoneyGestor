@@ -13,11 +13,15 @@ La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog pree
 [`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere implementato
 incidentalmente durante le fondazioni.
 
-Le Fasi 1 e 2 sono attive: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
+Le Fasi 1–5 sono implementate: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
 Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto `app/[locale]/(legacy)` senza
-cambiare gli URL pubblici; il nuovo codice appartiene a `(app)` e non importa MUI. View model e adapter puri vivono
+cambiare gli URL pubblici; la shell condivisa non importa MUI e le feature nuove appartengono a `(app)`. View model e adapter puri vivono
 nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti visuali ricevono dati e
 stato tramite props usando il tipo discriminato `FeatureState<T>`.
+
+La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login e
+registrazione vivono nel route group `(auth)`, quindi non ricevono la shell dashboard: sono disponibili in `/login` e
+`/register` (con gli equivalenti `/it/...`); le precedenti URL dashboard eseguono un redirect temporaneo.
 
 Vitest, Testing Library, `user-event` e `jest-dom` sono configurati senza forzare peer dependency. Playwright verrà
 aggiunto insieme agli smoke test della prima slice migrata.

@@ -1,6 +1,6 @@
 # Sistema visuale MoneyGestor
 
-Stato: fondamenta runtime della Fase 1 e boundary visuale della Fase 2 implementati il 13 settembre 2026. Baseline e backlog sono in
+Stato: fondamenta runtime delle Fasi 1–4 implementate il 13 settembre 2026. Baseline e backlog sono in
 [`PHASE_0_BASELINE.md`](PHASE_0_BASELINE.md); il Quick Add mobile è rinviato e non condiziona le fondazioni.
 
 Questo documento impedisce che ogni pagina sviluppi un proprio stile durante e dopo la migrazione a Tailwind e shadcn/ui. Le decisioni approvate qui diventano vincolanti per primitive, feature e route.
