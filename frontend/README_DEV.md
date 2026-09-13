@@ -2,6 +2,41 @@
 
 Questo file descrive le convenzioni già adottate o desiderate nel frontend. Non sostituisce ESLint e TypeScript.
 
+## Migrazione UI pianificata
+
+La migrazione a Tailwind CSS e shadcn/ui basato su Radix deve seguire il [piano per slice](../docs/FRONTEND_MIGRATION_PLAN.md) e il [contratto visuale](../docs/UI_DESIGN_SYSTEM.md). TanStack non fa parte dello stack di destinazione. Fino all'avvio dell'implementazione, le convenzioni MUI sotto riportate descrivono il codice corrente.
+
+Durante la transizione:
+
+- una route dichiarata migrata non deve importare MUI;
+- il nuovo codice usa token semantici e primitive condivise, non valori visuali ad hoc;
+- Next.js App Router resta il router dell'applicazione;
+- il frontend contiene soltanto stato e validazione di presentazione; la logica pesante resta nel backend;
+- le tabelle usano shadcn e semplice stato React fino alla futura integrazione backend;
+- desktop e mobile condividono campi, componenti e stato del form;
+- Day.js è l'unica libreria data;
+- temi chiaro e scuro usano gli stessi token, incluso il rosso di brand parametrico;
+- login e registrazione restano fuori dalla shell dashboard;
+- il catalogo componenti è una route interna leggera, non Storybook.
+- `docs/dashboard_mockup.png` è la baseline visuale ufficiale;
+- nei testi UI usare “movimento”; mantenere `Transaction` nei nomi tecnici esistenti;
+- non implementare le funzionalità future mostrate nel mockup se non vengono richieste esplicitamente.
+- durante la convivenza con MUI, Tailwind Preflight resta disabilitato; verrà abilitato e verificato solo dopo l'ultima route legacy;
+- il tema applicativo parte da quello di sistema e conserva l'eventuale scelta esplicita.
+
+## Internazionalizzazione
+
+Seguire [INTERNATIONALIZATION.md](../docs/INTERNATIONALIZATION.md).
+
+- Nessun testo utente significativo hard-coded nelle slice migrate.
+- Usare chiavi semantiche e namespace per feature.
+- Usare i formatter condivisi per valuta, percentuali e date.
+- Day.js gestisce parsing e calcoli; next-intl/Intl gestisce la presentazione localizzata.
+- Usare il navigation wrapper locale-aware invece di importare direttamente le API Next.js nelle feature.
+- L'inglese è il fallback deterministico; non usare `Accept-Language` per cambiare automaticamente la prima visita.
+- Non tradurre nomi o descrizioni inseriti dall'utente.
+- Non aggiungere chiavi per funzionalità future fuori scope.
+
 ## Ordine nel componente
 
 All'interno di un componente React, usa questo ordine:

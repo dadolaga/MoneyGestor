@@ -7,7 +7,8 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 ## Stack
 
 - Backend: ASP.NET Core 8, Entity Framework Core e MySQL
-- Frontend: Next.js 15, React 19, TypeScript, Material UI e Nivo
+- Frontend attuale: Next.js 15, React 19, TypeScript, Material UI e Nivo
+- Frontend pianificato: Next.js, Tailwind CSS, shadcn/ui con primitive Radix e next-intl; TanStack escluso
 - Test backend: NUnit
 - Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
 - Runtime container: Docker Compose
@@ -23,7 +24,7 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 |   |-- TestProject/              # test NUnit (richiedono un MySQL dedicato)
 |   `-- ExportImportApplication/  # backup e ripristino ZIP/CSV
 |-- frontend/                     # applicazione Next.js
-|-- docs/                         # architettura, API e audit
+|-- docs/                         # architettura, API, audit, migrazione e design
 |-- docker-compose.yml
 |-- settings.example.json
 `-- settings.json                 # configurazione locale, ignorata da Git
@@ -34,6 +35,10 @@ Approfondimenti:
 - [Architettura](docs/ARCHITECTURE.md)
 - [Contratto API](docs/API.md)
 - [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
+- [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
+- [Sistema visuale condiviso](docs/UI_DESIGN_SYSTEM.md)
+- [Mockup visuale ufficiale](docs/dashboard_mockup.png)
+- [Internazionalizzazione frontend](docs/INTERNATIONALIZATION.md)
 - [Guida frontend](frontend/README.md)
 - [Convenzioni frontend](frontend/README_DEV.md)
 

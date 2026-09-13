@@ -6,6 +6,8 @@ Data della ricognizione: 10 settembre 2026.
 
 Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La modellazione dei trasferimenti e l'uso di transazioni applicative mostrano una buona base. Prima di ampliare le funzionalità, conviene però chiudere alcuni rischi che possono compromettere isolamento tra utenti, backup e precisione economica.
 
+> Nota di pianificazione: questo documento resta la fotografia dei rischi al 10 settembre 2026. Il proprietario ha scelto di affrontare ora la migrazione frontend e di rinviare il backend. Per il workstream corrente fanno fede [FRONTEND_MIGRATION_PLAN.md](FRONTEND_MIGRATION_PLAN.md), [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md); le priorità backend sotto riportate restano aperte e non vanno risolte incidentalmente nella UI.
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;
@@ -151,7 +153,7 @@ Direzione: dependency injection per `DbContext`, migration EF versionate, seed i
 
 `useApi()` restituisce un nuovo oggetto a ogni render. Molti callback omettono le dipendenze API per evitare loop e generano warning `exhaustive-deps`. Stabilizzare il client e far restituire Promise reali alle richieste semplificherebbe loading, errori, cancellazione e test.
 
-La pagina `/dashboard/transaction/add_mobile` è chiaramente in lavorazione: il type-check passa, ma il lint segnala 10 errori tra import type, ordine import e stato inutilizzato. Conviene terminarla solo dopo aver reso affidabili form e client API condivisi.
+La pagina `/dashboard/transaction/add_mobile` è chiaramente in lavorazione: il type-check passa, ma il lint segnala 10 errori tra import type, ordine import e stato inutilizzato. Non va completata come seconda implementazione autonoma: il piano di migrazione la assorbe nel Quick Add responsive condiviso, sviluppato con fixture e adapter senza vincolarlo ora al backend.
 
 ### Build riproducibile
 

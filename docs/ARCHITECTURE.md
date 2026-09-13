@@ -18,6 +18,8 @@ flowchart LR
 
 Il frontend concentra le chiamate HTTP in `frontend/src/hooks/useApi.ts`. I controller traducono le richieste nei comandi del progetto `logic`; `ExecutorManager` apre una transazione EF, risolve l'utente dal token ed esegue il comando. Alcune letture interrogano invece `MoneyGestorContext` direttamente dal controller.
 
+Questa è la fotografia dell'implementazione corrente. La destinazione frontend già approvata è Next.js App Router con Tailwind CSS, shadcn/ui su Radix e next-intl, senza TanStack; MUI verrà rimosso progressivamente per slice. Architettura di transizione, confini e ordine operativo sono definiti nel [piano di migrazione frontend](FRONTEND_MIGRATION_PLAN.md), mentre [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md) sono i contratti trasversali.
+
 ## Progetti backend
 
 ### `database`
