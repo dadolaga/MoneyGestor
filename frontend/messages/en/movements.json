@@ -1,0 +1,75 @@
+{
+    "Movements": {
+        "title": "Transactions",
+        "description": "A complete view of your income, expenses and transfers.",
+        "actions": {
+            "add": "New transaction",
+            "reset": "Reset filters",
+            "edit": "Edit",
+            "delete": "Delete",
+            "more": "More actions for {name}",
+            "cancel": "Cancel",
+            "save": "Save transaction",
+            "previous": "Previous page",
+            "next": "Next page"
+        },
+        "summary": {
+            "income": "Income this month",
+            "expenses": "Expenses this month",
+            "transfers": "Transfers",
+            "net": "Net balance"
+        },
+        "filters": {
+            "search": "Search transactions",
+            "searchPlaceholder": "Search by description, amount or note...",
+            "dateRange": "Date range",
+            "datePlaceholder": "Choose a date range",
+            "wallet": "Wallet",
+            "allWallets": "All wallets",
+            "kind": "Type",
+            "allKinds": "All types",
+            "income": "Income",
+            "expense": "Expense",
+            "transfer": "Transfer"
+        },
+        "list": {
+            "title": "Transaction list",
+            "count": "{count, plural, =0 {No transactions} one {# transaction} other {# transactions}}",
+            "date": "Date",
+            "description": "Description",
+            "kind": "Type",
+            "category": "Category",
+            "wallet": "Wallet",
+            "amount": "Amount",
+            "actions": "Actions",
+            "untitled": "Untitled transaction",
+            "perPage": "per page",
+            "range": "{from}-{to} of {total}"
+        },
+        "dialog": {
+            "createTitle": "New transaction",
+            "createDescription": "Record an income, expense or transfer.",
+            "editTitle": "Edit transaction",
+            "editDescription": "Update the transaction details.",
+            "description": "Description",
+            "descriptionPlaceholder": "E.g. Weekly groceries",
+            "amount": "Amount",
+            "date": "Date",
+            "kind": "Type",
+            "category": "Category",
+            "wallet": "Wallet",
+            "destinationWallet": "Destination wallet",
+            "required": "This field is required.",
+            "invalidAmount": "Enter an amount greater than zero.",
+            "differentWallet": "Choose a different destination wallet.",
+            "deleteTitle": "Delete transaction?",
+            "deleteDescription": "{name} will be removed from this local preview."
+        },
+        "states": {
+            "idle": "Transactions are ready to load.",
+            "loading": "Loading transactions…",
+            "empty": "No transactions match these filters.",
+            "error": "Transactions could not be loaded."
+        }
+    }
+}

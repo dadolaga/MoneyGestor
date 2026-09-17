@@ -11,16 +11,14 @@ import 'dayjs/locale/it';
 import type { DateRange } from '@/component/DataPickerNew';
 import RangePickerField from '@/component/DataPickerNew';
 import useApi from '@/hooks/useApi';
+import { useRouter } from '@/i18n/navigation';
 import type { DashboardOutput, DashboardOutputChar as DashboardOutputPie } from '@/models/backend';
 import { getAdaptiveBackground } from '@/utilis/color';
 import { convertNumberToPercentage, convertNumberToValue } from '@/utilis/values';
 
-import TransactionDialog from './transaction/TransactionDialog';
-
 export default function Dashboard() {
     const api = useApi();
-
-    const [showTransactionDialog, setShowTransactionDialog] = useState<boolean>(false);
+    const router = useRouter();
 
     const [dateSelection, setDateSelection] = useState<DateRange>({
         start: dayjs().startOf('month'),
@@ -46,31 +44,14 @@ export default function Dashboard() {
         refreshDashboard();
     }, [refreshDashboard]);
 
-    const openTransactionDialogHandler = () => {
-        setShowTransactionDialog(true);
-    };
-
-    const closeTransactionDialogHandler = (reload: boolean) => {
-        if (reload) {
-            refreshDashboard();
-        }
-
-        setShowTransactionDialog(false);
-    };
-
     return (
         <Box display={'flex'} flexDirection={'column'} gap={3} p={1}>
-            <TransactionDialog
-                transactionId={undefined}
-                open={showTransactionDialog}
-                onClose={closeTransactionDialogHandler}
-            />
             <Box width="100%" display="flex" flexDirection="row" justifyContent="space-between">
                 <Typography color="secondary" variant="h4">
                     Dashboard finanze
                 </Typography>
                 <Box display="flex" flexDirection={'row-reverse'} gap={2}>
-                    <Button fullWidth variant="contained" onClick={openTransactionDialogHandler}>
+                    <Button fullWidth variant="contained" onClick={() => router.push('/dashboard/transaction')}>
                         Aggiungi transazione
                     </Button>
                     <RangePickerField date={dateSelection} onDateChange={(date) => setDateSelection(date)} />

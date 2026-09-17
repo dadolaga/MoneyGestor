@@ -1,0 +1,75 @@
+{
+    "Movements": {
+        "title": "Movimenti",
+        "description": "Riepilogo completo di entrate, uscite e trasferimenti.",
+        "actions": {
+            "add": "Nuovo movimento",
+            "reset": "Reset filtri",
+            "edit": "Modifica",
+            "delete": "Elimina",
+            "more": "Altre azioni per {name}",
+            "cancel": "Annulla",
+            "save": "Salva movimento",
+            "previous": "Pagina precedente",
+            "next": "Pagina successiva"
+        },
+        "summary": {
+            "income": "Entrate del mese",
+            "expenses": "Uscite del mese",
+            "transfers": "Trasferimenti",
+            "net": "Saldo netto"
+        },
+        "filters": {
+            "search": "Cerca movimenti",
+            "searchPlaceholder": "Cerca per descrizione, importo o nota...",
+            "dateRange": "Intervallo date",
+            "datePlaceholder": "Scegli un intervallo",
+            "wallet": "Portafoglio",
+            "allWallets": "Tutti i portafogli",
+            "kind": "Tipo",
+            "allKinds": "Tutti i tipi",
+            "income": "Entrata",
+            "expense": "Uscita",
+            "transfer": "Trasferimento"
+        },
+        "list": {
+            "title": "Elenco movimenti",
+            "count": "{count, plural, =0 {Nessun movimento} one {# movimento} other {# movimenti}}",
+            "date": "Data",
+            "description": "Descrizione",
+            "kind": "Tipo",
+            "category": "Categoria",
+            "wallet": "Portafoglio",
+            "amount": "Importo",
+            "actions": "Azioni",
+            "untitled": "Movimento senza titolo",
+            "perPage": "per pagina",
+            "range": "{from}-{to} di {total}"
+        },
+        "dialog": {
+            "createTitle": "Nuovo movimento",
+            "createDescription": "Registra un'entrata, un'uscita o un trasferimento.",
+            "editTitle": "Modifica movimento",
+            "editDescription": "Aggiorna i dettagli del movimento.",
+            "description": "Descrizione",
+            "descriptionPlaceholder": "Es. Spesa settimanale",
+            "amount": "Importo",
+            "date": "Data",
+            "kind": "Tipo",
+            "category": "Categoria",
+            "wallet": "Portafoglio",
+            "destinationWallet": "Portafoglio destinazione",
+            "required": "Questo campo è obbligatorio.",
+            "invalidAmount": "Inserisci un importo maggiore di zero.",
+            "differentWallet": "Scegli un portafoglio di destinazione diverso.",
+            "deleteTitle": "Eliminare il movimento?",
+            "deleteDescription": "{name} verrà rimosso da questa anteprima locale."
+        },
+        "states": {
+            "idle": "I movimenti sono pronti per essere caricati.",
+            "loading": "Caricamento movimenti…",
+            "empty": "Nessun movimento corrisponde ai filtri.",
+            "error": "Non è stato possibile caricare i movimenti."
+        }
+    }
+}

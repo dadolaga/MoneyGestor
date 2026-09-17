@@ -1,5 +1,10 @@
-import type { FilterData } from '@/app/[locale]/(legacy)/dashboard/transaction/TransactionTableFilter';
 import type { SortType } from '@/context/SortTableContext';
+
+interface FilterData {
+    name?: string;
+    walletId?: number;
+    typeId?: number;
+}
 
 export function convertSortToApi(sort: SortType) {
     let text = '';

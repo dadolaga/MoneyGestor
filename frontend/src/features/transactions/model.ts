@@ -4,6 +4,7 @@ export interface TransactionViewModel {
     date?: string;
     typeName?: string;
     walletName?: string;
+    destinationWalletName?: string;
     value: number;
     isTransfer: boolean;
 }

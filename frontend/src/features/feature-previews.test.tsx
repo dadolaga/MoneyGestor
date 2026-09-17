@@ -61,7 +61,7 @@ describe('fixture-driven feature previews', () => {
         );
 
         expect(screen.getByText('Weekly groceries')).toBeInTheDocument();
-        expect(screen.getByText('Transfer')).toBeInTheDocument();
+        expect(screen.getAllByText('Transfer')).toHaveLength(2);
     });
 
     it.each([
