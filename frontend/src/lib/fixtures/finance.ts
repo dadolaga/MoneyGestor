@@ -1,6 +1,7 @@
 import { toDashboardViewModel } from '@/features/dashboard/adapter';
 import { toTransactionViewModels } from '@/features/transactions/adapter';
 import { toWalletViewModels } from '@/features/wallets/adapter';
+import type { WalletViewModel } from '@/features/wallets/model';
 import type { DashboardOutput, Transaction, Wallet } from '@/models/backend';
 import type { FeatureState, FeatureStatus } from '@/types/feature-state';
 
@@ -38,25 +39,25 @@ const dashboardDto: DashboardOutput = {
 const walletDtos: Wallet[] = [
     {
         id: 11,
-        name: 'Daily account',
+        name: 'Main account',
         value: 1800,
-        currentValue: 2248.35,
+        currentValue: 5230.45,
         favorite: true,
         color: { id: 1, value: 0xe3494f },
     },
     {
         id: 12,
-        name: 'Travel card',
+        name: 'Main card',
         value: 600,
-        currentValue: 438.8,
+        currentValue: 1250.3,
         favorite: false,
         color: { id: 2, value: 0x3182ce },
     },
     {
         id: 13,
-        name: 'Emergency fund',
+        name: 'Savings account',
         value: 5000,
-        currentValue: 5650,
+        currentValue: 10200,
         favorite: false,
         color: { id: 3, value: 0x35a36f },
     },
@@ -91,7 +92,34 @@ const transactionDtos: Transaction[] = [
 ];
 
 export const dashboardStateFixtures = createStateFixtures(toDashboardViewModel(dashboardDto));
-export const walletStateFixtures = createStateFixtures(toWalletViewModels(walletDtos));
+export const demoWallets: WalletViewModel[] = toWalletViewModels(walletDtos).map((wallet, index) => ({
+    ...wallet,
+    kind: (['bank', 'card', 'savings'] as const)[index],
+    monthlyChange: [1.4, -2.1, 3.6][index],
+}));
+
+demoWallets.push(
+    {
+        id: 14,
+        name: 'Cash',
+        currentValue: 320,
+        isFavorite: false,
+        color: '#2fbf71',
+        kind: 'cash',
+        monthlyChange: 0,
+    },
+    {
+        id: 15,
+        name: 'Investments',
+        currentValue: 5770.2,
+        isFavorite: false,
+        color: '#f2b935',
+        kind: 'investment',
+        monthlyChange: 5.2,
+    },
+);
+
+export const walletStateFixtures = createStateFixtures(demoWallets);
 export const transactionStateFixtures = createStateFixtures(toTransactionViewModels(transactionDtos));
 
 export function fixtureForStatus<T>(fixtures: FeatureStateFixtures<T>, status: FeatureStatus): FeatureState<T> {

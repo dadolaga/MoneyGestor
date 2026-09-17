@@ -32,14 +32,14 @@ export function ConfirmDeleteDialog<T>({
     pending,
 }: ConfirmDeleteDialogProps<T>) {
     if (item === undefined) return null;
+    const resolvedDescription = typeof description === 'function' ? description(item) : description;
+
     return (
         <AlertDialog open onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {typeof description === 'function' ? description(item) : description}
-                    </AlertDialogDescription>
+                    <AlertDialogDescription>{resolvedDescription}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { PasswordField, TextField } from '@/components/shared/form-controls';
+import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useApi from '@/hooks/useApi';
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                             </div>
                         ) : null}
                         <div className="grid gap-5 sm:grid-cols-2">
-                            <TextField
+                            <InputField
                                 autoComplete="given-name"
                                 control={form.control}
                                 disabled={isPending}
@@ -89,7 +89,7 @@ export default function RegisterPage() {
                                 name="firstName"
                                 rules={{ required: t('validation.required') }}
                             />
-                            <TextField
+                            <InputField
                                 autoComplete="family-name"
                                 control={form.control}
                                 disabled={isPending}
@@ -98,7 +98,7 @@ export default function RegisterPage() {
                                 rules={{ required: t('validation.required') }}
                             />
                         </div>
-                        <TextField
+                        <InputField
                             autoComplete="username"
                             control={form.control}
                             disabled={isPending}
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                             name="username"
                             rules={{ required: t('validation.required') }}
                         />
-                        <TextField
+                        <InputField
                             autoComplete="email"
                             control={form.control}
                             disabled={isPending}
@@ -118,7 +118,8 @@ export default function RegisterPage() {
                             }}
                             type="email"
                         />
-                        <PasswordField
+                        <InputField
+                            kind="password"
                             autoComplete="new-password"
                             control={form.control}
                             disabled={isPending}
@@ -129,7 +130,8 @@ export default function RegisterPage() {
                                 required: t('validation.required'),
                             }}
                         />
-                        <PasswordField
+                        <InputField
+                            kind="password"
                             autoComplete="new-password"
                             control={form.control}
                             disabled={isPending}

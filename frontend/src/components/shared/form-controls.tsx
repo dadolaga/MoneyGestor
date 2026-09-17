@@ -2,23 +2,124 @@
 
 import type { ComponentProps, ReactNode } from 'react';
 
-import { Controller, type FieldValues, type UseControllerProps } from 'react-hook-form';
+import { Controller, type ControllerRenderProps, type FieldValues, type UseControllerProps } from 'react-hook-form';
 
 import { FormField, fieldAriaProps } from '@/components/shared/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
+import { FieldAdornment, FieldControl, fieldControlInputClassName } from '@/components/ui/field-control';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch, type SwitchProps } from '@/components/ui/switch';
 import { parseLocalizedAmount } from '@/lib/money';
+import { cn } from '@/lib/utils';
 
-type ControlledProps<T extends FieldValues> = UseControllerProps<T> & { label: string; description?: string };
+type ControlledProps<T extends FieldValues> = UseControllerProps<T> & {
+    id?: string;
+    label: ReactNode;
+    description?: string;
+};
 
-export function TextField<T extends FieldValues>({
+type NativeInputProps = Omit<
+    ComponentProps<typeof Input>,
+    'defaultValue' | 'disabled' | 'name' | 'onBlur' | 'onChange' | 'ref' | 'value'
+>;
+
+export interface SelectOption {
+    value: string;
+    label: ReactNode;
+    disabled?: boolean;
+}
+
+export type InputFieldProps<T extends FieldValues> = ControlledProps<T> &
+    NativeInputProps & {
+        kind?: 'text' | 'password' | 'amount' | 'select';
+        startAdornment?: ReactNode;
+        endAdornment?: ReactNode;
+        locale?: string;
+        options?: SelectOption[];
+        contentClassName?: string;
+    };
+
+/** A single API for text, password, amount and select fields. */
+export function InputField<T extends FieldValues>({
+    id: providedId,
     label,
     description,
-    ...props
-}: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name'>) {
-    const { control, name, rules, shouldUnregister, defaultValue, disabled, ...inputProps } = props;
-    const id = String(name);
+    kind = 'text',
+    startAdornment,
+    endAdornment,
+    locale,
+    options = [],
+    contentClassName,
+    control,
+    name,
+    rules,
+    shouldUnregister,
+    defaultValue,
+    disabled,
+    className,
+    ...inputProps
+}: InputFieldProps<T>) {
+    const id = providedId ?? String(name);
+    const inputType = kind === 'password' ? 'password' : inputProps.type;
+    const inputMode = kind === 'amount' ? 'decimal' : inputProps.inputMode;
+
+    const renderInput = (field: ControllerRenderProps<T>, error?: string) => (
+        <FieldControl invalid={error !== undefined} disabled={disabled} className={className}>
+            {startAdornment !== undefined && <FieldAdornment position="start">{startAdornment}</FieldAdornment>}
+            <Input
+                {...inputProps}
+                {...field}
+                id={id}
+                type={inputType}
+                disabled={disabled}
+                value={field.value ?? ''}
+                inputMode={inputMode}
+                className={fieldControlInputClassName}
+                {...fieldAriaProps(id, error, description)}
+                onChange={(event) => field.onChange(event.target.value)}
+                onBlur={() => {
+                    if (kind === 'amount') {
+                        const amount = parseLocalizedAmount(String(field.value ?? ''), locale ?? 'en');
+                        if (amount !== undefined) field.onChange(amount);
+                    }
+                    field.onBlur();
+                }}
+            />
+            {endAdornment !== undefined && <FieldAdornment position="end">{endAdornment}</FieldAdornment>}
+        </FieldControl>
+    );
+
+    const renderControl = (field: ControllerRenderProps<T>, error?: string) => {
+        if (kind !== 'select') return renderInput(field, error);
+
+        const selectValue = field.value == null ? '' : String(field.value);
+        return (
+            <Select value={selectValue} name={field.name} disabled={disabled} onValueChange={field.onChange}>
+                <FieldControl invalid={error !== undefined} disabled={disabled} className={className}>
+                    {startAdornment !== undefined && <FieldAdornment position="start">{startAdornment}</FieldAdornment>}
+                    <SelectTrigger
+                        ref={field.ref}
+                        id={id}
+                        className={fieldControlInputClassName}
+                        onBlur={field.onBlur}
+                        {...fieldAriaProps(id, error, description)}
+                    >
+                        <SelectValue placeholder={inputProps.placeholder} />
+                    </SelectTrigger>
+                    {endAdornment !== undefined && <FieldAdornment position="end">{endAdornment}</FieldAdornment>}
+                </FieldControl>
+                <SelectContent className={contentClassName}>
+                    {options.map((option) => (
+                        <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        );
+    };
+
     return (
         <Controller
             control={control}
@@ -29,57 +130,20 @@ export function TextField<T extends FieldValues>({
             disabled={disabled}
             render={({ field, fieldState }) => (
                 <FormField id={id} label={label} description={description} error={fieldState.error?.message}>
-                    <Input
-                        {...inputProps}
-                        {...field}
-                        disabled={disabled}
-                        {...fieldAriaProps(id, fieldState.error?.message, description)}
-                    />
+                    {renderControl(field, fieldState.error?.message)}
                 </FormField>
             )}
         />
     );
 }
 
-export function PasswordField<T extends FieldValues>({
-    autoComplete = 'current-password',
-    ...props
-}: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name' | 'type'>) {
-    return <TextField {...props} type="password" autoComplete={autoComplete} />;
-}
-
-export function AmountField<T extends FieldValues>({
+export function CheckboxField<T extends FieldValues>({
     label,
     description,
-    locale,
+    id: providedId,
     ...props
-}: ControlledProps<T> & Omit<ComponentProps<typeof Input>, 'name' | 'inputMode'> & { locale: string }) {
-    const id = String(props.name);
-    return (
-        <Controller
-            {...props}
-            render={({ field, fieldState }) => (
-                <FormField id={id} label={label} description={description} error={fieldState.error?.message}>
-                    <Input
-                        {...field}
-                        value={field.value ?? ''}
-                        inputMode="decimal"
-                        {...fieldAriaProps(id, fieldState.error?.message, description)}
-                        onChange={(event) => field.onChange(event.target.value)}
-                        onBlur={() => {
-                            const amount = parseLocalizedAmount(String(field.value ?? ''), locale);
-                            if (amount !== undefined) field.onChange(amount);
-                            field.onBlur();
-                        }}
-                    />
-                </FormField>
-            )}
-        />
-    );
-}
-
-export function CheckboxField<T extends FieldValues>({ label, description, ...props }: ControlledProps<T>) {
-    const id = String(props.name);
+}: ControlledProps<T>) {
+    const id = providedId ?? String(props.name);
     return (
         <Controller
             {...props}
@@ -89,6 +153,7 @@ export function CheckboxField<T extends FieldValues>({ label, description, ...pr
                         <Checkbox
                             id={id}
                             checked={Boolean(field.value)}
+                            disabled={props.disabled}
                             onCheckedChange={field.onChange}
                             aria-invalid={Boolean(fieldState.error)}
                         />
@@ -96,50 +161,58 @@ export function CheckboxField<T extends FieldValues>({ label, description, ...pr
                             {label}
                         </label>
                     </div>
-                    {description !== undefined ? (
+                    {description !== undefined && (
                         <p className="m-0 text-sm text-muted-foreground">{String(description)}</p>
-                    ) : null}
-                    {fieldState.error !== undefined ? (
+                    )}
+                    {fieldState.error !== undefined && (
                         <p role="alert" className="m-0 text-sm text-destructive">
                             {String(fieldState.error.message)}
                         </p>
-                    ) : null}
+                    )}
                 </div>
             )}
         />
     );
 }
 
-export interface SelectOption {
-    value: string;
-    label: ReactNode;
-}
-export function SelectField<T extends FieldValues>({
+export function SwitchField<T extends FieldValues>({
     label,
     description,
-    options,
-    placeholder,
+    id: providedId,
+    size = 'md',
+    className,
     ...props
-}: ControlledProps<T> & { options: SelectOption[]; placeholder: string }) {
-    const id = String(props.name);
+}: ControlledProps<T> & { size?: SwitchProps['size']; className?: string }) {
+    const id = providedId ?? String(props.name);
     return (
         <Controller
             {...props}
             render={({ field, fieldState }) => (
-                <FormField id={id} label={label} description={description} error={fieldState.error?.message}>
-                    <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                        <SelectTrigger id={id} {...fieldAriaProps(id, fieldState.error?.message, description)}>
-                            <SelectValue placeholder={placeholder} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {options.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </FormField>
+                <div className={cn('flex items-start gap-3', className)}>
+                    <Switch
+                        id={id}
+                        size={size}
+                        checked={Boolean(field.value)}
+                        disabled={props.disabled}
+                        onCheckedChange={field.onChange}
+                        {...fieldAriaProps(id, fieldState.error?.message, description)}
+                    />
+                    <div className="grid min-w-0 gap-1">
+                        <label htmlFor={id} className="cursor-pointer text-sm font-semibold leading-6">
+                            {label}
+                        </label>
+                        {description !== undefined && (
+                            <p id={`${id}-description`} className="m-0 text-sm leading-5 text-muted-foreground">
+                                {String(description)}
+                            </p>
+                        )}
+                        {fieldState.error !== undefined && (
+                            <p id={`${id}-error`} role="alert" className="m-0 text-sm text-destructive">
+                                {String(fieldState.error.message)}
+                            </p>
+                        )}
+                    </div>
+                </div>
             )}
         />
     );

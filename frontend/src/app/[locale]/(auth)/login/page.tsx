@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useCookies } from 'react-cookie';
 import { useForm } from 'react-hook-form';
 
-import { CheckboxField, PasswordField, TextField } from '@/components/shared/form-controls';
+import { CheckboxField, InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useApi from '@/hooks/useApi';
@@ -70,7 +70,7 @@ export default function LoginPage() {
                                 {submitError}
                             </div>
                         ) : null}
-                        <TextField
+                        <InputField
                             autoComplete="username"
                             control={form.control}
                             disabled={isPending}
@@ -78,7 +78,8 @@ export default function LoginPage() {
                             name="username"
                             rules={{ required: t('validation.required') }}
                         />
-                        <PasswordField
+                        <InputField
+                            kind="password"
                             autoComplete="current-password"
                             control={form.control}
                             disabled={isPending}

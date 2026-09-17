@@ -1,0 +1,157 @@
+{
+    "Wallets": {
+        "title": "I tuoi portafogli",
+        "description": "Gestisci conti, carte, risparmi e investimenti in un unico posto.",
+        "actions": {
+            "add": "Aggiungi portafoglio",
+            "details": "Dettagli",
+            "edit": "Modifica",
+            "delete": "Elimina",
+            "more": "Altre azioni per {name}",
+            "gridView": "Vista a griglia",
+            "listView": "Vista a lista"
+        },
+        "summary": {
+            "total": "Patrimonio totale",
+            "available": "Liquidità disponibile",
+            "savings": "Risparmio",
+            "investments": "Investimenti",
+            "comparedToLastMonth": "rispetto al mese scorso"
+        },
+        "list": {
+            "title": "I miei portafogli",
+            "sortLabel": "Ordina per",
+            "sortName": "Nome",
+            "sortBalance": "Saldo",
+            "currentBalance": "Saldo attuale",
+            "favorite": "Portafoglio preferito"
+        },
+        "chart": {
+            "title": "Distribuzione del patrimonio",
+            "total": "Totale",
+            "description": "Distribuzione del saldo attuale fra tutti i portafogli."
+        },
+        "dialog": {
+            "createTitle": "Nuovo portafoglio",
+            "createDescription": "Aggiungi un conto, una carta o un portafoglio da monitorare.",
+            "editTitle": "Modifica portafoglio",
+            "editDescription": "Le modifiche restano in questa sessione e non vengono inviate al backend.",
+            "cardTitles": {
+                "create": {
+                    "debit": "Nuova carta di debito",
+                    "credit": "Nuova carta di credito",
+                    "prepaid": "Nuova carta prepagata"
+                },
+                "edit": {
+                    "debit": "Modifica carta di debito",
+                    "credit": "Modifica carta di credito",
+                    "prepaid": "Modifica carta prepagata"
+                }
+            },
+            "cardDescriptions": {
+                "debit": "Collega una carta che usa direttamente i fondi di uno dei tuoi conti.",
+                "credit": "Monitora una carta il cui saldo viene addebitato a un conto collegato in un giorno stabilito.",
+                "prepaid": "Gestisci una carta con saldo proprio e ricariche opzionali."
+            },
+            "name": "Nome portafoglio",
+            "namePlaceholder": "Conto principale",
+            "nameHelp": "Inserisci un nome per identificare questo portafoglio.",
+            "cardName": "Nome carta",
+            "cardNamePlaceholder": "Carta principale",
+            "cardNameHelp": "Inserisci un nome per identificare questa carta.",
+            "balance": "Saldo iniziale",
+            "balanceHelp": "Inserisci il saldo iniziale del portafoglio.",
+            "institution": "Banca / Istituto",
+            "institutionPlaceholder": "Es. Intesa Sanpaolo, Revolut, N26...",
+            "institutionHelp": "Il nome della banca o dell'istituto finanziario.",
+            "currency": "Valuta",
+            "currencyHelp": "Seleziona la valuta del portafoglio.",
+            "currencyEur": "EUR (€)",
+            "type": "Tipo di portafoglio",
+            "typePlaceholder": "Scegli un tipo",
+            "cardType": "Tipo di carta",
+            "cardNetwork": "Circuito",
+            "cardNetworkHelp": "Seleziona il circuito indicato sulla carta.",
+            "lastFour": "Ultime 4 cifre (opzionale)",
+            "lastFourHelp": "Inserisci solo le ultime quattro cifre, mai il numero completo della carta.",
+            "invalidLastFour": "Inserisci esattamente quattro cifre.",
+            "linkedAccount": "Conto collegato",
+            "linkedAccountHelp": "È il conto da cui vengono prelevati gli addebiti della carta.",
+            "linkedAccountPlaceholder": "Seleziona un conto",
+            "topUpAccount": "Conto per ricariche (opzionale)",
+            "topUpAccountHelp": "Seleziona il conto usato per ricaricare questa carta prepagata.",
+            "noLinkedAccounts": "Aggiungi prima un portafoglio di tipo conto per collegare questa carta.",
+            "paymentDay": "Giorno di addebito",
+            "paymentDayHelp": "Giorno del mese in cui il saldo della carta di credito viene prelevato dal conto collegato.",
+            "invalidDay": "Inserisci un giorno da 1 a 31.",
+            "creditBalance": "Importo attualmente dovuto",
+            "creditBalanceHelp": "Inserisci l'importo attualmente maturato sulla carta.",
+            "prepaidBalance": "Saldo iniziale",
+            "prepaidBalanceHelp": "Inserisci l'importo attualmente disponibile sulla carta prepagata.",
+            "lowBalanceThreshold": "Soglia minima (opzionale)",
+            "lowBalanceThresholdHelp": "Ricevi un promemoria quando il saldo scende sotto questo importo.",
+            "allowLinkedTopUps": "Consenti ricariche dal conto collegato",
+            "allowLinkedTopUpsHelp": "Usa il conto selezionato per aggiungere fondi a questa carta.",
+            "suggestAutomaticTopUp": "Suggerisci una ricarica quando il saldo è basso",
+            "suggestAutomaticTopUpHelp": "Mostra un promemoria quando il saldo scende sotto la soglia.",
+            "color": "Colore icona",
+            "colorHelp": "Scegli un colore per identificare il portafoglio.",
+            "chooseColor": "Scegli il colore {color}",
+            "icon": "Icona",
+            "iconHelp": "Seleziona un'icona per il portafoglio.",
+            "description": "Descrizione (opzionale)",
+            "descriptionPlaceholder": "Es. Conto corrente principale per le spese quotidiane...",
+            "descriptionHelp": "Una breve descrizione del portafoglio.",
+            "showOnDashboard": "Mostra in dashboard",
+            "showOnDashboardHelp": "Rendi visibile questo portafoglio nella dashboard.",
+            "favorite": "Imposta come principale",
+            "favoriteHelp": "Imposta come portafoglio principale.",
+            "info": "Potrai modificare questo portafoglio in qualsiasi momento.",
+            "cardInfo": {
+                "debit": "I pagamenti con carta di debito usano il saldo del conto collegato.",
+                "credit": "L'importo dovuto viene prelevato dal conto collegato nel giorno scelto ogni mese.",
+                "prepaid": "La carta prepagata usa un saldo separato e può essere ricaricata dal conto selezionato."
+            },
+            "saveDraft": "Salva bozza",
+            "addAction": "Aggiungi portafoglio",
+            "addCardAction": "Aggiungi carta",
+            "updateAction": "Salva modifiche",
+            "required": "Questo campo è obbligatorio.",
+            "invalidAmount": "Inserisci un importo valido.",
+            "deleteTitle": "Eliminare il portafoglio?",
+            "deleteDescription": "{name} verrà rimosso da questa anteprima locale."
+        },
+        "types": {
+            "bank": "Conto",
+            "savings": "Risparmio",
+            "card": "Carta",
+            "cash": "Contanti",
+            "investment": "Investimenti"
+        },
+        "cardTypes": {
+            "debit": "Debito",
+            "credit": "Credito",
+            "prepaid": "Prepagata"
+        },
+        "cardNetworks": {
+            "visa": "Visa",
+            "mastercard": "Mastercard",
+            "amex": "American Express",
+            "other": "Altro"
+        },
+        "icons": {
+            "bank": "Banca",
+            "savings": "Salvadanaio",
+            "card": "Carta",
+            "cash": "Banconota",
+            "investment": "Investimenti",
+            "wallet": "Portafoglio"
+        },
+        "states": {
+            "idle": "I portafogli sono pronti per essere caricati.",
+            "loading": "Caricamento portafogli…",
+            "empty": "Non ci sono ancora portafogli. Aggiungi il primo per iniziare.",
+            "error": "Non è stato possibile caricare i portafogli."
+        }
+    }
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, WalletCards } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
@@ -13,10 +13,12 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { FieldAdornment, FieldControl, fieldControlInputClassName } from '@/components/ui/field-control';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -155,7 +157,17 @@ export function DesignSystemPreview() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Label htmlFor="design-system-input">{tCommon('actions.save')}</Label>
-                            <Input id="design-system-input" placeholder={t('cardTitle')} />
+                            <FieldControl>
+                                <FieldAdornment position="start">
+                                    <WalletCards aria-hidden="true" />
+                                </FieldAdornment>
+                                <Input
+                                    id="design-system-input"
+                                    className={fieldControlInputClassName}
+                                    placeholder={t('cardTitle')}
+                                />
+                                <FieldAdornment position="end">EUR</FieldAdornment>
+                            </FieldControl>
                             <Separator />
                             <Skeleton className="h-4 w-4/5" />
                             <Skeleton className="h-4 w-3/5" />
@@ -175,7 +187,9 @@ export function DesignSystemPreview() {
                                         <DialogTitle>{t('dialogTitle')}</DialogTitle>
                                         <DialogDescription>{t('dialogDescription')}</DialogDescription>
                                     </DialogHeader>
-                                    <Button type="button">{tCommon('actions.save')}</Button>
+                                    <DialogFooter>
+                                        <Button type="button">{tCommon('actions.save')}</Button>
+                                    </DialogFooter>
                                 </DialogContent>
                             </Dialog>
                         </CardContent>

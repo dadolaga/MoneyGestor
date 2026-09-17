@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 
 interface FormFieldProps {
     id: string;
-    label: string;
+    label: ReactNode;
     error?: string;
     description?: string;
     children: ReactNode;
@@ -18,16 +18,16 @@ export function FormField({ id, label, error, description, children }: FormField
         <div className="grid gap-2">
             <Label htmlFor={id}>{label}</Label>
             {children}
-            {description ? (
+            {!!description && (
                 <p id={descriptionId} className="m-0 text-sm text-muted-foreground">
                     {description}
                 </p>
-            ) : null}
-            {error ? (
+            )}
+            {!!error && (
                 <p id={errorId} role="alert" className="m-0 text-sm text-destructive">
                     {error}
                 </p>
-            ) : null}
+            )}
         </div>
     );
 }

@@ -116,7 +116,7 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
     }, [router]);
 
     return (
-        <div className="min-h-dvh bg-background text-foreground">
+        <div className="min-h-dvh max-h-dvh bg-background text-foreground">
             <header className="sticky top-0 z-40 flex h-[var(--header-height)] items-center bg-primary px-4 text-primary-foreground shadow-md sm:px-7">
                 <Button
                     aria-label={t('openNavigation')}
@@ -176,11 +176,11 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
                     )}
                 </div>
             </header>
-            <div className="mx-auto flex min-h-[calc(100dvh-var(--header-height))]">
+            <div className="mx-auto flex h-[calc(100dvh-var(--header-height))] overflow-auto">
                 <aside className="hidden w-[var(--navigation-width)] shrink-0 border-r border-border bg-card p-3 lg:block">
                     {navigationLinks()}
                 </aside>
-                <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+                <main className="min-w-0 flex-1 p-4 sm:p-6 overflow-auto">{children}</main>
             </div>
             <Sheet open={mobileNavigationOpen} onOpenChange={setMobileNavigationOpen}>
                 <SheetContent side="left">

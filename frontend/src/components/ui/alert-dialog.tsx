@@ -5,6 +5,7 @@ import * as React from 'react';
 import * as AlertDialogPrimitive from 'radix-ui/alert-dialog';
 
 import { buttonVariants } from '@/components/ui/button';
+import { dialogContentMotion, dialogOverlayMotion } from '@/components/ui/dialog-motion';
 import { cn } from '@/lib/utils';
 
 const AlertDialog = AlertDialogPrimitive.Root;
@@ -20,14 +21,26 @@ const AlertDialogAction = React.forwardRef<React.ElementRef<typeof AlertDialogPr
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogOverlay = React.forwardRef<React.ElementRef<typeof AlertDialogPrimitive.Overlay>, React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay>>(({ className, ...props }, ref) => (
-    <AlertDialogPrimitive.Overlay ref={ref} className={cn('fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm', className)} {...props} />
+    <AlertDialogPrimitive.Overlay
+        ref={ref}
+        className={cn('fixed inset-0 z-50 bg-foreground/20 backdrop-blur-sm', dialogOverlayMotion, className)}
+        {...props}
+    />
 ));
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 
 const AlertDialogContent = React.forwardRef<React.ElementRef<typeof AlertDialogPrimitive.Content>, React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>>(({ className, ...props }, ref) => (
     <AlertDialogPortal>
         <AlertDialogOverlay />
-        <AlertDialogPrimitive.Content ref={ref} className={cn('fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-lg', className)} {...props} />
+        <AlertDialogPrimitive.Content
+            ref={ref}
+            className={cn(
+                'fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-lg',
+                dialogContentMotion,
+                className,
+            )}
+            {...props}
+        />
     </AlertDialogPortal>
 ));
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;

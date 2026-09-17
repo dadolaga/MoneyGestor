@@ -13,11 +13,15 @@ La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog pree
 [`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere implementato
 incidentalmente durante le fondazioni.
 
-Le Fasi 1–5 sono implementate: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
+Le Fasi 1–6 sono implementate: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
 Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto `app/[locale]/(legacy)` senza
-cambiare gli URL pubblici; la shell condivisa non importa MUI e le feature nuove appartengono a `(app)`. View model e adapter puri vivono
-nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti visuali ricevono dati e
-stato tramite props usando il tipo discriminato `FeatureState<T>`.
+cambiare gli URL pubblici; la shell condivisa non importa MUI e le feature nuove appartengono a `(app)`. View model e
+adapter puri vivono nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti
+visuali ricevono dati e stato tramite props usando il tipo discriminato `FeatureState<T>`.
+
+La route `/dashboard/wallet` vive ora nel gruppo `(app)` e usa esclusivamente fixture locali: riepiloghi, ordinamento,
+viste responsive, dialog create/edit, eliminazione e grafico Recharts aggiornano stato React in memoria senza chiamare
+il backend. I componenti wallet legacy MUI/Nivo sono stati rimossi; i trasferimenti restano fuori dalla slice.
 
 La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login e
 registrazione vivono nel route group `(auth)`, quindi non ricevono la shell dashboard: sono disponibili in `/login` e

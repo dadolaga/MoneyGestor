@@ -1,11 +1,12 @@
 import type { Locale } from 'next-intl';
 
 export async function getMessagesForLocale(locale: Locale) {
-    const [common, navigation, metadata, auth] = await Promise.all([
+    const [common, navigation, metadata, auth, wallets] = await Promise.all([
         import(`../../messages/${locale}/common.json`),
         import(`../../messages/${locale}/navigation.json`),
         import(`../../messages/${locale}/metadata.json`),
         import(`../../messages/${locale}/auth.json`),
+        import(`../../messages/${locale}/wallets.json`),
     ]);
 
     return {
@@ -13,5 +14,6 @@ export async function getMessagesForLocale(locale: Locale) {
         ...navigation.default,
         ...metadata.default,
         ...auth.default,
+        ...wallets.default,
     };
 }

@@ -38,7 +38,7 @@ describe('fixture-driven feature previews', () => {
             />,
         );
 
-        expect(screen.getByText('Daily account')).toBeInTheDocument();
+        expect(screen.getByText('Main account')).toBeInTheDocument();
         expect(screen.getByLabelText('Favourite wallet')).toBeInTheDocument();
     });
 
