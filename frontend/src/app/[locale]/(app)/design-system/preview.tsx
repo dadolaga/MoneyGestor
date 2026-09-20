@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import { Moon, Sun, WalletCards } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
@@ -19,6 +18,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { FieldAdornment, FieldControl, fieldControlInputClassName } from '@/components/ui/field-control';
+import { Moon, Sun, WalletCards } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';

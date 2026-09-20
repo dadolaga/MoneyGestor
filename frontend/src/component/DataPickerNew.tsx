@@ -1,8 +1,5 @@
 import React, { useCallback, useMemo, useState, memo } from 'react';
 
-import { faCalendar } from '@fortawesome/free-regular-svg-icons';
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import timezonePlugin from 'dayjs/plugin/timezone';
@@ -31,6 +28,8 @@ import { LocalizationProvider, PickersDay } from '@mui/x-date-pickers';
 import type { PickersDayProps } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DayCalendar } from '@mui/x-date-pickers/internals';
+
+import { ArrowLeft, ArrowRight, CalendarIcon } from '@/components/ui/icons';
 
 dayjs.extend(utcPlugin);
 dayjs.extend(timezonePlugin);
@@ -190,7 +189,7 @@ const PickerContent = memo(
                                     >
                                         <Box width="30px">
                                             <IconButton size="small" onClick={moveMonthHandler('left')}>
-                                                <FontAwesomeIcon icon={faArrowLeft} />
+                                                <ArrowLeft aria-hidden="true" />
                                             </IconButton>
                                         </Box>
                                         <Typography sx={{ fontSize: '0.9rem' }}>
@@ -226,7 +225,7 @@ const PickerContent = memo(
                                         </Typography>
                                         <Box width="30px">
                                             <IconButton size="small" onClick={moveMonthHandler('right')}>
-                                                <FontAwesomeIcon icon={faArrowRight} />
+                                                <ArrowRight aria-hidden="true" />
                                             </IconButton>
                                         </Box>
                                     </Box>
@@ -313,7 +312,7 @@ const RangePickerField = memo((props: RangePickerProps) => {
                         readOnly: true,
                         startAdornment: (
                             <InputAdornment position="start">
-                                <FontAwesomeIcon icon={faCalendar} />
+                                <CalendarIcon aria-hidden="true" />
                             </InputAdornment>
                         ),
                     },

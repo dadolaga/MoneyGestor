@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { AlertCircle, CircleDashed } from 'lucide-react';
-
 import { Card, CardContent } from '@/components/ui/card';
+import { AlertCircle, CircleDashed } from '@/components/ui/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FeatureState } from '@/types/feature-state';
 

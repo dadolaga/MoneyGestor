@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { useCookies } from 'react-cookie';
+import { toast } from 'sonner';
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
     ArrowLeftRight,
     BarChart3,
@@ -12,14 +19,7 @@ import {
     Search,
     UserPlus,
     Wallet,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { useCookies } from 'react-cookie';
-import { toast } from 'sonner';
-
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/icons';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -168,7 +168,12 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
                                 <LogIn aria-hidden="true" />
                                 {t('enter')}
                             </Button>
-                            <Button size="default" className="bg-white text-(--primary)" variant={'outline'} onClick={registrationClickHandler}>
+                            <Button
+                                size="default"
+                                className="bg-white text-(--primary)"
+                                variant={'outline'}
+                                onClick={registrationClickHandler}
+                            >
                                 <UserPlus aria-hidden="true" />
                                 {t('register')}
                             </Button>

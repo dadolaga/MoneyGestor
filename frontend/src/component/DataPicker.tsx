@@ -1,8 +1,6 @@
 import React from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import timezonePlugin from 'dayjs/plugin/timezone';
@@ -14,6 +12,8 @@ import type { PickersDayProps } from '@mui/x-date-pickers';
 import { LocalizationProvider, PickersDay } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DayCalendar } from '@mui/x-date-pickers/internals';
+
+import { ArrowLeft, ArrowRight } from '@/components/ui/icons';
 
 import 'dayjs/locale/it';
 
@@ -189,7 +189,7 @@ export default function DataPicker(props: DatePickerProps) {
                                 <Box display="flex" alignItems="baseline" justifyContent="space-between">
                                     <Box width="30px">
                                         <IconButton size="small" onClick={moveMonthHandler('left')}>
-                                            <FontAwesomeIcon icon={faArrowLeft} />
+                                            <ArrowLeft aria-hidden="true" />
                                         </IconButton>
                                     </Box>
                                     <Typography>{visualizedMonth.format('MMMM')}</Typography>
@@ -221,7 +221,7 @@ export default function DataPicker(props: DatePickerProps) {
                                     <Typography>{visualizedMonth.add(1, 'month').format('MMMM')}</Typography>
                                     <Box width="30px">
                                         <IconButton size="small" onClick={moveMonthHandler('right')}>
-                                            <FontAwesomeIcon icon={faArrowRight} />
+                                            <ArrowRight aria-hidden="true" />
                                         </IconButton>
                                     </Box>
                                 </Box>

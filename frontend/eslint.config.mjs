@@ -66,7 +66,11 @@ export default tseslint.config(
                     paths: [
                         {
                             name: '@mui/icons-material',
-                            message: 'Use second-level imports like @mui/icons-material/Add to reduce bundle size.',
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
+                        },
+                        {
+                            name: 'lucide-react',
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
                         },
                         {
                             name: 'date-fns',
@@ -81,6 +85,14 @@ export default tseslint.config(
                         {
                             group: ['date-fns/*'],
                             message: 'Use Day.js as the project date library.',
+                        },
+                        {
+                            group: ['@fortawesome/*'],
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
+                        },
+                        {
+                            group: ['@mui/icons-material/*'],
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
                         },
                     ],
                 },
@@ -102,6 +114,10 @@ export default tseslint.config(
                             message: 'Migrated slices must not import MUI.',
                         },
                         {
+                            name: 'lucide-react',
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
+                        },
+                        {
                             name: 'next/link',
                             message: 'Use the locale-aware navigation wrapper from @/i18n/navigation.',
                         },
@@ -114,6 +130,10 @@ export default tseslint.config(
                         {
                             group: ['@mui/*'],
                             message: 'Migrated slices must not import MUI.',
+                        },
+                        {
+                            group: ['@fortawesome/*'],
+                            message: 'Use the local Iconify catalog from @/components/ui/icons.',
                         },
                     ],
                 },

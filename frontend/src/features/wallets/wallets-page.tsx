@@ -2,7 +2,19 @@
 
 import { useMemo, useState } from 'react';
 
-import type { LucideIcon } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
+
+import { ConfirmDeleteDialog } from '@/components/shared/confirm-delete-dialog';
+import { FeatureStateBoundary } from '@/components/shared/feature-state';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Banknote,
     ChartNoAxesColumnIncreasing,
@@ -17,20 +29,8 @@ import {
     TrendingDown,
     TrendingUp,
     WalletCards,
-} from 'lucide-react';
-import { useFormatter, useTranslations } from 'next-intl';
-
-import { ConfirmDeleteDialog } from '@/components/shared/confirm-delete-dialog';
-import { FeatureStateBoundary } from '@/components/shared/feature-state';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/icons';
+import type { IconComponent } from '@/components/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { FeatureState } from '@/types/feature-state';
@@ -46,7 +46,7 @@ interface WalletsPageProps {
     initialState: FeatureState<WalletViewModel[]>;
 }
 
-const kindIcons: Record<WalletIcon, LucideIcon> = {
+const kindIcons: Record<WalletIcon, IconComponent> = {
     bank: Landmark,
     savings: PiggyBank,
     card: CreditCard,
@@ -113,7 +113,7 @@ function WalletCard({
                         <p className="m-0 mt-1 truncate text-sm text-muted-foreground">{walletDescription}</p>
                     </div>
                 </div>
-                <div className={cn("flex flex-col gap-1", layout === "grid" ? "items-start" : "items-end")}>
+                <div className={cn('flex flex-col gap-1', layout === 'grid' ? 'items-start' : 'items-end')}>
                     <p className="m-0 mt-1 text-2xl font-bold tabular-nums">{formatMoney(wallet.currentValue)}</p>
                     <WalletBadge value={monthlyChange} />
                 </div>
@@ -212,7 +212,7 @@ export function WalletsPage({ initialState }: WalletsPageProps) {
         );
     };
 
-    const summaryCards: { key: keyof typeof totals; icon: LucideIcon; change: number }[] = [
+    const summaryCards: { key: keyof typeof totals; icon: IconComponent; change: number }[] = [
         { key: 'total', icon: WalletCards, change: -3.0 },
         { key: 'available', icon: Banknote, change: 1.2 },
         { key: 'savings', icon: PiggyBank, change: 3.6 },

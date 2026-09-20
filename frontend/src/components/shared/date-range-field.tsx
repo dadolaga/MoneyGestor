@@ -2,11 +2,11 @@
 
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { CalendarIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from '@/components/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,10 @@ interface DateRangeFieldProps {
     onChange: (value: DayjsDateRange) => void;
     placeholder: string;
     formatDate: (date: Date) => string;
+    formatMonth: (date: Date) => string;
+    formatWeekday: (date: Date) => string;
+    previousMonthLabel: string;
+    nextMonthLabel: string;
     disabled?: boolean;
 }
 
@@ -26,7 +30,17 @@ const toDate = (value?: Dayjs) => value?.toDate();
 const toDayjs = (value?: Date) => (value ? dayjs(value).startOf('day') : undefined);
 
 /** The calendar boundary speaks Date; consumers receive Day.js values only. */
-export function DateRangeField({ value, onChange, placeholder, formatDate, disabled }: DateRangeFieldProps) {
+export function DateRangeField({
+    value,
+    onChange,
+    placeholder,
+    formatDate,
+    formatMonth,
+    formatWeekday,
+    previousMonthLabel,
+    nextMonthLabel,
+    disabled,
+}: DateRangeFieldProps) {
     const selection: DateRange | undefined = value ? { from: toDate(value.start), to: toDate(value.end) } : undefined;
     const label = value?.start
         ? `${formatDate(toDate(value.start)!)}${value.end ? ` – ${formatDate(toDate(value.end)!)}` : ''}`
@@ -44,12 +58,26 @@ export function DateRangeField({ value, onChange, placeholder, formatDate, disab
                     {label}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent
+                className="w-auto overflow-hidden rounded-2xl border-border/80 bg-popover p-0 shadow-2xl"
+                align="start"
+                sideOffset={8}
+            >
                 <Calendar
+                    appearance="spacious"
                     mode="range"
                     selected={selection}
                     onSelect={(range) => onChange({ start: toDayjs(range?.from), end: toDayjs(range?.to) })}
                     numberOfMonths={2}
+                    formatters={{
+                        formatCaption: formatMonth,
+                        formatWeekdayName: formatWeekday,
+                    }}
+                    labels={{
+                        labelDayButton: formatDate,
+                        labelPrevious: () => previousMonthLabel,
+                        labelNext: () => nextMonthLabel,
+                    }}
                 />
             </PopoverContent>
         </Popover>

@@ -3,28 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import dayjs from 'dayjs';
-import type { LucideIcon } from 'lucide-react';
-import {
-    ArrowDown,
-    ArrowDownLeft,
-    ArrowLeftRight,
-    ArrowUp,
-    ArrowUpDown,
-    ArrowUpRight,
-    ChevronLeft,
-    ChevronRight,
-    CircleDollarSign,
-    EllipsisVertical,
-    Plus,
-    RotateCcw,
-    Search,
-    Tag,
-    WalletCards,
-} from 'lucide-react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { ConfirmDeleteDialog } from '@/components/shared/confirm-delete-dialog';
+import { DateField } from '@/components/shared/date-field';
 import { DateRangeField, type DayjsDateRange } from '@/components/shared/date-range-field';
 import { FeatureStateBoundary } from '@/components/shared/feature-state';
 import { InputField } from '@/components/shared/form-controls';
@@ -46,6 +29,25 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    ArrowDown,
+    ArrowDownLeft,
+    ArrowLeftRight,
+    ArrowUp,
+    ArrowUpDown,
+    ArrowUpRight,
+    ChevronLeft,
+    ChevronRight,
+    CircleDollarSign,
+    EllipsisVertical,
+    FileText,
+    Plus,
+    RotateCcw,
+    Search,
+    Tag,
+    WalletCards,
+} from '@/components/ui/icons';
+import type { IconComponent } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -77,6 +79,27 @@ interface TransactionFormValues {
     destinationWallet: string;
 }
 
+const transactionKindOptions: Record<
+    TransactionKind,
+    { icon: IconComponent; selectedClassName: string; iconClassName: string }
+> = {
+    expense: {
+        icon: ArrowUpRight,
+        selectedClassName: 'border-expense bg-expense text-primary-foreground shadow-md',
+        iconClassName: 'bg-expense/10 text-expense',
+    },
+    income: {
+        icon: ArrowDownLeft,
+        selectedClassName: 'border-income bg-income text-primary-foreground shadow-md',
+        iconClassName: 'bg-income/10 text-income',
+    },
+    transfer: {
+        icon: ArrowLeftRight,
+        selectedClassName: 'border-transfer bg-transfer text-primary-foreground shadow-md',
+        iconClassName: 'bg-transfer/10 text-transfer',
+    },
+};
+
 function transactionKind(transaction: TransactionViewModel): TransactionKind {
     if (transaction.isTransfer) return 'transfer';
     return transaction.value >= 0 ? 'income' : 'expense';
@@ -98,7 +121,7 @@ function SummaryCard({
     value,
     tone,
 }: {
-    icon: LucideIcon;
+    icon: IconComponent;
     label: string;
     value: string;
     tone: string;
@@ -167,6 +190,7 @@ function TransactionDialog({
 }) {
     const t = useTranslations('Movements');
     const locale = useLocale();
+    const format = useFormatter();
     const { control, handleSubmit, reset } = useForm<TransactionFormValues>();
     const kind = useWatch({ control, name: 'kind' });
     const sourceWallet = useWatch({ control, name: 'wallet' });
@@ -201,97 +225,183 @@ function TransactionDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent closeLabel={t('actions.cancel')}>
-                <DialogHeader>
-                    <DialogTitle>
+            <DialogContent closeLabel={t('actions.cancel')} className="max-w-3xl gap-0 p-0 sm:w-[calc(100%-3rem)]">
+                <DialogHeader className="shrink-0 px-5 pt-5 sm:px-7 sm:pt-7">
+                    <DialogTitle className="mb-0 text-left text-2xl font-bold sm:text-3xl">
                         {/* Both branches are translated strings; no nullable value can reach the tree. */}
                         {/* eslint-disable-next-line react/jsx-no-leaked-render */}
                         {transaction !== undefined ? t('dialog.editTitle') : t('dialog.createTitle')}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="mt-1 text-left text-base">
                         {/* eslint-disable-next-line react/jsx-no-leaked-render */}
                         {transaction !== undefined ? t('dialog.editDescription') : t('dialog.createDescription')}
                     </DialogDescription>
                 </DialogHeader>
-                <DialogBody>
-                    <form id="transaction-form" className="grid gap-4 py-1" onSubmit={submit}>
-                        <InputField
+
+                <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
+                    <DialogBody className="grid gap-5 px-5 py-5 sm:px-7">
+                        <Controller
                             control={control}
                             name="kind"
-                            kind="select"
-                            label={t('dialog.kind')}
-                            options={(['expense', 'income', 'transfer'] as const).map((value) => ({
-                                value,
-                                label: t(`filters.${value}`),
-                            }))}
+                            render={({ field }) => (
+                                <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0">
+                                    <legend className="sr-only">{t('dialog.kind')}</legend>
+                                    <div className="grid grid-cols-3 gap-2" role="radiogroup">
+                                        {(['expense', 'income', 'transfer'] as const).map((value) => {
+                                            const option = transactionKindOptions[value];
+                                            const Icon = option.icon;
+                                            const selected = field.value === value;
+
+                                            return (
+                                                <Button
+                                                    key={value}
+                                                    type="button"
+                                                    role="radio"
+                                                    aria-checked={selected}
+                                                    className={cn(
+                                                        'flex min-h-24 min-w-0 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border bg-secondary/35 px-2 py-3 text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                                        selected
+                                                            ? option.selectedClassName
+                                                            : 'border-border hover:bg-accent',
+                                                    )}
+                                                    onClick={() => field.onChange(value)}
+                                                >
+                                                    <span
+                                                        className={cn(
+                                                            'flex size-9 items-center justify-center rounded-full',
+                                                            selected
+                                                                ? 'bg-primary-foreground/15 text-primary-foreground'
+                                                                : option.iconClassName,
+                                                        )}
+                                                    >
+                                                        <Icon aria-hidden="true" className="size-5" />
+                                                    </span>
+                                                    <span className="truncate">{t(`filters.${value}`)}</span>
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                </fieldset>
+                            )}
                         />
-                        <InputField
-                            control={control}
-                            name="description"
-                            label={t('dialog.description')}
-                            placeholder={t('dialog.descriptionPlaceholder')}
-                            rules={{ required: t('dialog.required') }}
-                        />
-                        <div className="grid gap-4 sm:grid-cols-2">
+
+                        <div className="grid min-w-0 gap-5 sm:grid-cols-2">
                             <InputField
                                 control={control}
                                 name="amount"
                                 kind="amount"
                                 locale={locale}
                                 label={t('dialog.amount')}
+                                description={t('dialog.amountHelp')}
                                 startAdornment="€"
                                 rules={{
                                     required: t('dialog.required'),
                                     validate: (value) => Number(value) > 0 || t('dialog.invalidAmount'),
                                 }}
                             />
-                            <InputField
+                            <DateField
                                 control={control}
                                 name="date"
-                                type="date"
                                 label={t('dialog.date')}
+                                description={t('dialog.dateHelp')}
+                                placeholder={t('dialog.datePlaceholder')}
+                                todayLabel={t('dialog.today')}
+                                previousMonthLabel={t('dialog.previousMonth')}
+                                nextMonthLabel={t('dialog.nextMonth')}
+                                formatDate={(value) => format.dateTime(value, { dateStyle: 'long' })}
+                                formatMonth={(value) =>
+                                    format.dateTime(value, { month: 'long', year: 'numeric' })
+                                }
+                                formatWeekday={(value) => format.dateTime(value, { weekday: 'short' })}
                                 rules={{ required: t('dialog.required') }}
                             />
+                            <div className="sm:col-span-2">
+                                <InputField
+                                    control={control}
+                                    name="description"
+                                    label={t('dialog.description')}
+                                    description={t('dialog.descriptionHelp')}
+                                    placeholder={t('dialog.descriptionPlaceholder')}
+                                    startAdornment={<FileText aria-hidden="true" />}
+                                    rules={{ required: t('dialog.required') }}
+                                />
+                            </div>
                         </div>
-                        {kind !== 'transfer' && (
-                            <InputField
-                                control={control}
-                                name="category"
-                                label={t('dialog.category')}
-                                rules={{ required: t('dialog.required') }}
-                            />
+
+                        {kind === 'transfer' ? (
+                            <div className="grid min-w-0 gap-4 rounded-xl border border-transfer/30 bg-transfer/5 p-4 sm:grid-cols-2">
+                                <div className="flex items-center gap-3 sm:col-span-2">
+                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-transfer/10 text-transfer">
+                                        <ArrowLeftRight aria-hidden="true" className="size-5" />
+                                    </span>
+                                    <div className="min-w-0">
+                                        <p className="m-0 text-sm font-semibold">{t('dialog.transferTitle')}</p>
+                                        <p className="m-0 mt-0.5 text-sm text-muted-foreground">
+                                            {t('dialog.transferHelp')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <InputField
+                                    control={control}
+                                    name="wallet"
+                                    kind="select"
+                                    label={t('dialog.sourceWallet')}
+                                    startAdornment={<WalletCards aria-hidden="true" />}
+                                    options={wallets.map((wallet) => ({ value: wallet, label: wallet }))}
+                                    rules={{ required: t('dialog.required') }}
+                                />
+                                <InputField
+                                    control={control}
+                                    name="destinationWallet"
+                                    kind="select"
+                                    label={t('dialog.destinationWallet')}
+                                    startAdornment={<WalletCards aria-hidden="true" />}
+                                    options={wallets.map((wallet) => ({ value: wallet, label: wallet }))}
+                                    rules={{
+                                        required: t('dialog.required'),
+                                        validate: (value) => value !== sourceWallet || t('dialog.differentWallet'),
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <div className="grid min-w-0 gap-5 sm:grid-cols-2">
+                                <InputField
+                                    control={control}
+                                    name="category"
+                                    label={t('dialog.category')}
+                                    description={t('dialog.categoryHelp')}
+                                    startAdornment={<Tag aria-hidden="true" />}
+                                    rules={{ required: t('dialog.required') }}
+                                />
+                                <InputField
+                                    control={control}
+                                    name="wallet"
+                                    kind="select"
+                                    label={t('dialog.wallet')}
+                                    description={t('dialog.walletHelp')}
+                                    startAdornment={<WalletCards aria-hidden="true" />}
+                                    options={wallets.map((wallet) => ({ value: wallet, label: wallet }))}
+                                    rules={{ required: t('dialog.required') }}
+                                />
+                            </div>
                         )}
-                        <InputField
-                            control={control}
-                            name="wallet"
-                            kind="select"
-                            label={t('dialog.wallet')}
-                            options={wallets.map((wallet) => ({ value: wallet, label: wallet }))}
-                            rules={{ required: t('dialog.required') }}
-                        />
-                        {kind === 'transfer' && (
-                            <InputField
-                                control={control}
-                                name="destinationWallet"
-                                kind="select"
-                                label={t('dialog.destinationWallet')}
-                                options={wallets.map((wallet) => ({ value: wallet, label: wallet }))}
-                                rules={{
-                                    required: t('dialog.required'),
-                                    validate: (value) => value !== sourceWallet || t('dialog.differentWallet'),
-                                }}
-                            />
-                        )}
-                    </form>
-                </DialogBody>
-                <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                        {t('actions.cancel')}
-                    </Button>
-                    <Button type="submit" form="transaction-form">
-                        {t('actions.save')}
-                    </Button>
-                </DialogFooter>
+                    </DialogBody>
+
+                    <DialogFooter className="border-t border-border bg-background px-5 py-4 sm:justify-start sm:px-7">
+                        <Button
+                            className="sm:min-w-36"
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            {t('actions.cancel')}
+                        </Button>
+                        <Button className="sm:ml-auto sm:min-w-52" type="submit">
+                            <Plus aria-hidden="true" className="size-5" />
+                            {t('actions.save')}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     );
@@ -478,7 +588,7 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
     );
 
     return (
-        <div className="mx-auto grid w-full max-w-[96rem] gap-4 lg:h-full lg:min-h-0 lg:grid-rows-[auto_auto_auto_minmax(0,1fr)] lg:overflow-hidden">
+        <div className="mx-auto grid w-full  gap-4 lg:h-full lg:min-h-0 lg:grid-rows-[auto_auto_auto_minmax(0,1fr)] lg:overflow-hidden">
             <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="m-0 text-3xl font-bold tracking-tight sm:text-4xl">{t('title')}</h1>
@@ -547,6 +657,10 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                             }}
                             placeholder={t('filters.datePlaceholder')}
                             formatDate={(value) => format.dateTime(value, { dateStyle: 'medium' })}
+                            formatMonth={(value) => format.dateTime(value, { month: 'long', year: 'numeric' })}
+                            formatWeekday={(value) => format.dateTime(value, { weekday: 'short' })}
+                            previousMonthLabel={t('filters.previousMonth')}
+                            nextMonthLabel={t('filters.nextMonth')}
                         />
                     </label>
                     <label className="grid gap-1.5 text-sm font-medium">
@@ -608,14 +722,6 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                             {t('list.count', { count: filtered.length })}
                         </p>
                     </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => toggleSort('date')}>
-                        {sort.key === 'date' && sort.direction === 'ascending' ? (
-                            <ArrowUp aria-hidden="true" className="size-4" />
-                        ) : (
-                            <ArrowDown aria-hidden="true" className="size-4" />
-                        )}
-                        {t('list.date')}
-                    </Button>
                 </div>
                 {/* Both branches render React elements; the numeric length itself is never rendered. */}
                 {/* eslint-disable-next-line react/jsx-no-leaked-render */}

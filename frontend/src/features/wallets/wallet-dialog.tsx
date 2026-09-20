@@ -2,18 +2,6 @@
 
 import { useEffect } from 'react';
 
-import type { LucideIcon } from 'lucide-react';
-import {
-    Banknote,
-    ChartNoAxesColumnIncreasing,
-    CreditCard,
-    FileText,
-    Landmark,
-    PiggyBank,
-    Plus,
-    Save,
-    WalletCards,
-} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
@@ -29,6 +17,18 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    Banknote,
+    ChartNoAxesColumnIncreasing,
+    CreditCard,
+    FileText,
+    Landmark,
+    PiggyBank,
+    Plus,
+    Save,
+    WalletCards,
+} from '@/components/ui/icons';
+import type { IconComponent } from '@/components/ui/icons';
 import { parseLocalizedAmount } from '@/lib/money';
 import { cn } from '@/lib/utils';
 
@@ -69,7 +69,7 @@ const cardNetworks: CardNetwork[] = ['visa', 'mastercard', 'amex', 'other'];
 const walletColors = ['#ef2850', '#8b5cf6', '#3b82f6', '#10b981', '#84cc16', '#f59e0b', '#64748b'];
 const draftStorageKey = 'moneygestor.wallet-draft';
 
-const kindIcons: Record<WalletIcon, LucideIcon> = {
+const kindIcons: Record<WalletIcon, IconComponent> = {
     bank: Landmark,
     savings: PiggyBank,
     card: CreditCard,

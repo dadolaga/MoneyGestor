@@ -1,8 +1,8 @@
-import { ArrowRightLeft } from 'lucide-react';
 
 import { FeatureStateBoundary } from '@/components/shared/feature-state';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { ArrowRightLeft } from '@/components/ui/icons';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { FeatureState } from '@/types/feature-state';
 

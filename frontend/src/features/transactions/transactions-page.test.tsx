@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it } from 'vitest';
@@ -38,6 +38,21 @@ describe('transactions page', () => {
         expect(screen.getByRole('heading', { name: 'New transaction' })).toBeInTheDocument();
         expect(screen.getByLabelText('Description')).toBeInTheDocument();
         expect(screen.getByLabelText('Amount')).toBeInTheDocument();
+        expect(screen.getByLabelText('Date')).toHaveProperty('tagName', 'BUTTON');
+
+        fireEvent.click(screen.getByLabelText('Date'));
+        expect(screen.getByRole('grid')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument();
+    });
+
+    it('opens the two-month date range calendar', () => {
+        renderPage();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Date range' }));
+
+        expect(screen.getAllByRole('grid')).toHaveLength(2);
+        expect(screen.getByRole('button', { name: 'Previous month' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Next month' })).toBeInTheDocument();
     });
 
     it('sorts a column in both directions from its header', async () => {

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { AlertCircle, Inbox, LoaderCircle } from 'lucide-react';
-
 import { Card, CardContent } from '@/components/ui/card';
+import { AlertCircle, Inbox, LoaderCircle } from '@/components/ui/icons';
+
 
 function StateCard({ children, role = 'status' }: { children: ReactNode; role?: 'status' | 'alert' }) {
     return (

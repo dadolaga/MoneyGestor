@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-import { X } from 'lucide-react';
 import * as DialogPrimitive from 'radix-ui/dialog';
 
 import { dialogContentMotion, dialogOverlayMotion } from '@/components/ui/dialog-motion';
+import { X } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 
 const Dialog = DialogPrimitive.Root;
