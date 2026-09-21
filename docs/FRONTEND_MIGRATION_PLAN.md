@@ -290,6 +290,12 @@ Criterio di uscita: feature wallet senza MUI/Nivo/notistack/Font Awesome; stati,
 
 È la slice più rischiosa e va affrontata dopo i pattern condivisi.
 
+Stato: **in corso dal 17 settembre 2026**. La route elenco è stata spostata nel gruppo `(app)` e ora usa la shell,
+i token e le primitive condivise senza import MUI. Sono disponibili KPI, filtri locali, ordinamento, paginazione,
+presentazione responsive e un unico form add/edit con gestione dei trasferimenti; i dati restano pilotati da fixture
+dietro il boundary di presentazione. Il Quick Add a tre tocchi e il collegamento remoto dei filtri restano attività
+aperte prima di dichiarare conclusa la fase.
+
 Attività specifiche:
 
 - creare un solo modello di form e un solo adapter di submit per add/edit;
