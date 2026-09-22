@@ -20,7 +20,17 @@ namespace webserver {
 
                 Log.Logger = LoggerFactory.Create();
 
-                MoneyGestorContext.Initialize(Settings.Database.Server, Settings.Database.Port, Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
+                var enableDatabaseLogging = ShouldEnableDatabaseLogging(
+                    builder.Environment.IsDevelopment(),
+                    Settings.Log.Level);
+
+                MoneyGestorContext.Initialize(
+                    Settings.Database.Server,
+                    Settings.Database.Port,
+                    Settings.Database.DatabaseName,
+                    Settings.Database.User,
+                    Settings.Database.Password,
+                    enableDatabaseLogging);
 
                 Log.Information("Start application with version {a}", "0.0.1-alpha");
 
@@ -64,7 +74,11 @@ namespace webserver {
             app.MapControllers();
 
             if (!isTesting) {
-                app.UseSerilogRequestLogging();
+                app.UseSerilogRequestLogging(options => {
+                    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms (TraceId: {TraceId})";
+                    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+                        diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
+                });
             }
 
             app.UseCors();
@@ -73,5 +87,10 @@ namespace webserver {
 
             return app;
         }
+
+        internal static Boolean ShouldEnableDatabaseLogging(
+            Boolean isDevelopment,
+            Serilog.Events.LogEventLevel configuredLevel) =>
+            isDevelopment && configuredLevel == Serilog.Events.LogEventLevel.Verbose;
     }
 }

@@ -15,13 +15,14 @@ namespace webserver {
                 loggerConfiguration.MinimumLevel.Is(Settings.Log.Level);
 
                 if (Settings.Log.Output.Console) {
-                    loggerConfiguration.WriteTo.Console();
+                    loggerConfiguration.WriteTo.Console(outputTemplate: outputFormat);
                 }
 
                 if (Settings.Log.Output.File) {
                     loggerConfiguration.WriteTo.File(
                         path: $"{Path.Combine(Settings.Log.Output.FolderPath!, Settings.Log.Output.LogName!)}_.log",
                         rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 14,
                         outputTemplate: outputFormat);
                 }
 

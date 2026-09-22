@@ -41,12 +41,12 @@ namespace ExportImportApplication.Imports {
 
                 Directory.CreateDirectory(destinationFolder);
 
-                Log.Debug($"Extracting {filePath} to {destinationFolder}...");
+                Log.Debug("Extracting import archive to a temporary folder");
                 ZipFile.ExtractToDirectory(filePath, destinationFolder);
 
                 Log.Information("File extract success in temp folder");
             } catch (Exception ex) {
-                Console.WriteLine($"An error occurred during extraction: {ex.Message}");
+                SafeLog.Error("Import archive extraction", ex);
                 throw;
             }
         }

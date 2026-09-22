@@ -13,7 +13,12 @@ namespace webserver.Controllers {
         protected IActionResult OkResponse(Object? data = null, String message = "") => Response(0, message, data);
 
         private IActionResult Response(UInt32 code, String? message = "", Object? data = null, UInt16 statusCode = 200) {
-            Log.Debug($"Reponse ({statusCode}) with: {{Code: {code}, Message: \"{message}\", Data: {data}}}");
+            Log.Debug(
+                "HTTP response {StatusCode} with application code {Code} for {Route} (TraceId: {TraceId})",
+                statusCode,
+                code,
+                HttpContext?.Request.Path.Value ?? "<no-route>",
+                HttpContext?.TraceIdentifier ?? "<no-trace-id>");
 
             return StatusCode(statusCode, new BaseResponse {
                 Code = code,

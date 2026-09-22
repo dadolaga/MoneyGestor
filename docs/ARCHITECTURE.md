@@ -76,7 +76,7 @@ Questa operazione è ad alto impatto e presenta limiti di affidabilità document
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-Il run ordinario comprende 73 casi verdi. Quattro ulteriori casi cross-user sono `Explicit`: descrivono le policy attese
+Il run ordinario comprende 76 casi verdi. Quattro ulteriori casi cross-user sono `Explicit`: descrivono le policy attese
 per i gap di autorizzazione che verranno chiusi nella Fase 1.
 
 ## Modello dati
@@ -118,3 +118,11 @@ Non è usato il middleware ASP.NET Core Authentication/Authorization; ogni endpo
 Il backend esegue `EnsureCreated` e inizializza colori e tipi globali a ogni avvio. Non sono presenti migration EF. `forceUpdate` è definito nella configurazione ma non influenza il flusso di startup.
 
 Il Compose avvia backend, frontend e, su profilo `tools`, la CLI; MySQL resta esterno.
+
+## Logging sicuro
+
+I log HTTP contengono soltanto metodo, route, status, durata, codice applicativo e trace ID; non includono header,
+body o dati della risposta. Il sensitive-data logging di EF è disabilitato. Gli eventi SQL senza valori dei parametri
+sono disponibili esclusivamente con livello `Trace`/`Verbose` in ambiente `Development` e restano disabilitati in
+`Production`. Gli errori della CLI registrano l'operazione e il tipo di eccezione, non il messaggio potenzialmente
+derivato dall'input. I sink su file applicano rolling giornaliero e conservano al massimo 14 file.

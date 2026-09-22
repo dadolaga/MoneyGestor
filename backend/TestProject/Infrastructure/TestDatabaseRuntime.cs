@@ -57,7 +57,7 @@ internal static class TestDatabaseRuntime {
                 name: databaseName,
                 user: username,
                 password: password,
-                enableLogging: false);
+                enableDatabaseLogging: false);
 
             using (var database = DatabaseFactory.Create()) {
                 await database.Database.EnsureCreatedAsync();

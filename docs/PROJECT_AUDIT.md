@@ -13,6 +13,10 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > chiuso l'advisory transitivo noto. Le righe storiche sotto restano invariate come fotografia dell'audit originario;
 > per lo stato corrente vedere la [roadmap backend](backend-modernization/ROADMAP.md).
 
+> Aggiornamento del 22 settembre 2026: SEC-10 ha rimosso il sensitive-data logging EF, i token dalle eccezioni e i
+> payload dai log delle risposte. TRACE conserva dettaglio tecnico senza password, token, header, body o valori dei
+> parametri SQL; gli eventi EF sono inoltre limitati a `Development`. La sezione SEC-02 sotto resta storica.
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

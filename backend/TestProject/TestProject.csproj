@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ExportImportApplication\ExportImportApplication.csproj" />
     <ProjectReference Include="..\logic\logic.csproj" />
     <ProjectReference Include="..\webserver\webserver.csproj" />
   </ItemGroup>

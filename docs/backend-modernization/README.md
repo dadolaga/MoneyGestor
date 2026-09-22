@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 non iniziata**
-- Data dell'ultimo aggiornamento: **21 settembre 2026**
+- Stato del documento: **Fase 0 completata; Fase 1 in corso (SEC-10 completato)**
+- Data dell'ultimo aggiornamento: **22 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -44,15 +44,16 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-73 casi ordinari fra command, infrastruttura e pipeline HTTP.
+76 casi ordinari fra command, infrastruttura, pipeline HTTP e redazione dei log.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
 1. **Isolamento fra utenti.** `EditWalletCommand` modifica un portafoglio cercandolo solo per ID. Inoltre il client può
    assegnare a un movimento un `UserId` arbitrario; lista, dettaglio e dashboard usano poi criteri di proprietà diversi.
    Questo consente attribuzione cross-account e può esporre dati del profilo referenziato.
-2. **Protezione dei segreti.** EF abilita per default il sensitive-data logging, il token compare in un'eccezione e le
-   risposte, incluso il token di login, possono essere scritte nei log di debug.
+2. **Protezione dei segreti.** SEC-10 ha rimosso il sensitive-data logging EF, il token dalle eccezioni e i payload dai
+   log HTTP. Gli eventi SQL senza valori sono ora limitati a `Development + Trace`; restano da mantenere queste
+   garanzie negli step successivi.
 3. **Sicurezza delle operazioni distruttive.** I test cancellano un database MySQL con nome e credenziali fissi. L'import
    sposta le tabelle e rimuove database prima di avere validato e caricato completamente il backup; un errore durante il
    primo rename non è coperto dal recovery.
@@ -122,6 +123,8 @@ prerequisito.
 
 La baseline iniziale è [BSL-00 del 21 settembre 2026](evidence/BSL-00_2026-09-21.md); l'esito aggiornato è nel
 [completamento della Fase 0](evidence/PHASE_0_2026-09-21.md).
+
+SEC-10 è documentato nell'[evidenza del 22 settembre 2026](evidence/SEC-10_2026-09-22.md).
 
 | Elemento | Risultato al 21 settembre 2026 |
 |---|---|

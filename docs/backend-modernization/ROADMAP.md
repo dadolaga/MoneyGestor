@@ -83,7 +83,7 @@ Scheda: [PHASE_1_SECURITY.md](phases/PHASE_1_SECURITY.md)
 
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
-| SEC-10 | P0 | non iniziato | disabilitare logging sensibile e redigere segreti | BSL-00 |
+| SEC-10 | P0 | completato (22 settembre 2026) | disabilitare logging sensibile e redigere segreti | BSL-00 |
 | SEC-11 | P0 | non iniziato | ownership portafogli, colori e tipi | TST-02 |
 | SEC-12 | P0 | non iniziato | ownership movimenti e preflight bloccante | DEC-01, DEC-09, TST-02 |
 | SEC-13 | P1 | non iniziato | saldi negativi e invarianti dei trasferimenti | DEC-05, SEC-11, SEC-12 |

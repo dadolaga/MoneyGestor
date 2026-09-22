@@ -29,7 +29,7 @@ internal class Program {
     private static void ApplySettings(Settings settings) {
         ApplyLogSettings(settings.Log);
 
-        MoneyGestorContext.Initialize(settings.Database.Host, settings.Database.Port, settings.Database.Name, settings.Database.User, settings.Database.Password, false);
+        MoneyGestorContext.Initialize(settings.Database.Host, settings.Database.Port, settings.Database.Name, settings.Database.User, settings.Database.Password);
     }
 
     private static void ApplyLogSettings(SettingsLog settingsLog) {
@@ -70,6 +70,7 @@ internal class Program {
             loggerConfig.WriteTo.File(
                 path: Path.Combine(settingsLog.Output.File.Path, settingsLog.Output.File.FileName),
                 rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
             );
         }

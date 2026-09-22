@@ -16,7 +16,7 @@ namespace database {
         private static String? NAME;
         private static String? USER;
         private static String? PASSWORD;
-        private static Boolean ENABLE_LOGGING = true;
+        private static Boolean ENABLE_DATABASE_LOGGING = false;
 
         public DbSet<UserDb> Users { get; set; }
         public DbSet<LoginDb> Logins { get; set; }
@@ -25,13 +25,13 @@ namespace database {
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
 
-        public static void Initialize(String host, UInt16 port, String name, String user, String password, Boolean enableLogging = true) {
+        public static void Initialize(String host, UInt16 port, String name, String user, String password, Boolean enableDatabaseLogging = false) {
             HOST = host;
             PORT = port;
             NAME = name;
             USER = user;
             PASSWORD = password;
-            ENABLE_LOGGING = enableLogging;
+            ENABLE_DATABASE_LOGGING = enableDatabaseLogging;
         }
 
         public MoneyGestorContext() {
@@ -42,19 +42,17 @@ namespace database {
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            Log.Information($"Connect to DB server {HOST}:{PORT}");
+            Log.Information("Configuring database connection");
 
             try {
                 optionsBuilder
                     .UseMySQL($"Server={HOST};Port={PORT};Database={NAME};Uid={USER};Pwd={PASSWORD};");
-                if (ENABLE_LOGGING) {
+                if (ENABLE_DATABASE_LOGGING) {
                     optionsBuilder
-                    .LogTo(Log.Information, Microsoft.Extensions.Logging.LogLevel.Information)
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+                        .LogTo(Log.Verbose, Microsoft.Extensions.Logging.LogLevel.Debug);
                 }
             } catch (Exception ex) {
-                Log.Fatal(ex, "Fail connection to DB");
+                Log.Fatal("Database configuration failed ({ExceptionType})", ex.GetType().Name);
                 Environment.Exit(1);
             }
         }

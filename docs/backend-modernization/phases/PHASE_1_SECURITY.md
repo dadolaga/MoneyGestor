@@ -5,7 +5,7 @@ del frontend. Ogni fix di ownership deve avere un test con due utenti e dati dis
 
 ## SEC-10 — Logging sicuro e redazione dei segreti
 
-**Stato:** non iniziato
+**Stato:** completato (22 settembre 2026)
 
 **Priorità:** P0
 

@@ -52,11 +52,13 @@ namespace TestProject.Commands.User {
 
         [Test]
         public async Task FindToken_TokenNotExistExist() {
-            ExecutorManager.SetToken($"{login.LoginCommand.Result}_not_exist");
+            var missingToken = $"{login.LoginCommand.Result}_not_exist";
+            ExecutorManager.SetToken(missingToken);
 
             var findUserCommand = new FindUserByTokenCommand();
 
-            Assert.ThrowsAsync<ExecutorException>(async () => await ExecutorManager.Execute(findUserCommand));
+            var exception = Assert.ThrowsAsync<ExecutorException>(async () => await ExecutorManager.Execute(findUserCommand));
+            Assert.That(exception!.Message, Does.Not.Contain(missingToken));
         }
 
         [Test]

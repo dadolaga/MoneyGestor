@@ -53,7 +53,7 @@ namespace ExportImportApplication {
 
                 Log.Information("Import succed");
             } catch (Exception ex) {
-                Log.Error($"Import fail: {ex.Message}", ex);
+                SafeLog.Error("Import", ex);
             }
         }
 
@@ -66,14 +66,14 @@ namespace ExportImportApplication {
 
                 Directory.CreateDirectory(destinationFolder);
 
-                Log.Debug($"Extracting {path} to {destinationFolder}...");
+                Log.Debug("Extracting import archive to a temporary folder");
                 ZipFile.ExtractToDirectory(path, destinationFolder);
 
                 Log.Information("File extract success in temp folder");
 
                 return destinationFolder;
             } catch (Exception ex) {
-                Console.WriteLine($"An error occurred during extraction: {ex.Message}");
+                SafeLog.Error("Import archive extraction", ex);
                 throw;
             }
         }

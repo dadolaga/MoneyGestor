@@ -18,7 +18,7 @@ namespace logic.Commands.User {
 
             using var database = DatabaseFactory.Use();
 
-            var login = await database.Logins.Where(l => l.Token == executorManager.Token).Include(l => l.User).FirstOrDefaultAsync() ?? throw new ExecutorException($"User not found, with token {executorManager.Token}");
+            var login = await database.Logins.Where(l => l.Token == executorManager.Token).Include(l => l.User).FirstOrDefaultAsync() ?? throw new ExecutorException("User not found for the supplied authentication token");
 
             result = login.Expirated < ClockFactory.Clock().Now ? throw new TokenExpiatedException("Token is expirated") : login.User.Id;
 

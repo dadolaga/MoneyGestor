@@ -91,6 +91,13 @@ Campi principali:
 
 Nota: `forceUpdate` viene letto dalla configurazione ma, allo stato attuale, non viene applicato dal backend.
 
+### Livelli e sicurezza dei log
+
+Il livello `Trace`/`Verbose` abilita gli eventi SQL di EF solo quando il backend gira in ambiente `Development`.
+I valori dei parametri SQL, le password, i token, gli header `Authorization`, i body e i dati delle risposte non vengono
+mai scritti nei log, a nessun livello. In `Production` il logging EF resta disabilitato anche se il livello configurato è
+`Trace`. I file ruotano ogni giorno e vengono conservati per un massimo di 14 file.
+
 ## Avvio locale
 
 Esegui i comandi dalla radice del repository.
@@ -169,4 +176,4 @@ Ultima ricognizione frontend: 17 settembre 2026.
 - lint frontend: completato senza errori; restano 10 warning legacy già censiti
 - test frontend: 20 test Vitest/Testing Library completati senza errori
 - build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
-- test backend: 73 casi ordinari completati senza errori su MySQL effimero; 4 casi cross-user `Explicit` documentano i gap da chiudere nella Fase 1
+- test backend: 76 casi ordinari completati senza errori su MySQL effimero; 4 casi cross-user `Explicit` documentano i gap da chiudere nella Fase 1

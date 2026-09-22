@@ -18,4 +18,8 @@
     <ProjectReference Include="..\database\database.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TestProject" />
+  </ItemGroup>
+
 </Project>

@@ -43,7 +43,7 @@ namespace ExportImportApplication.Imports {
                     } catch (Exception ex) {
                         transaction.Rollback();
 
-                        Log.Error($"Fail to import: {ex.Message}");
+                        SafeLog.Error("Import transaction", ex);
 
                         DeleteDatabase(connectionStringBuilder.ConnectionString, originalDatabaseName);
                         RenameDatabase(connectionStringBuilder.ConnectionString, newDatabaseName, originalDatabaseName);
