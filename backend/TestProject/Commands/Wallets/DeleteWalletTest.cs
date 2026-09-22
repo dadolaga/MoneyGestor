@@ -1,5 +1,6 @@
 ﻿using logic;
 using logic.Commands.Wallets;
+using logic.Commands.Transaction;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -35,6 +36,7 @@ namespace TestProject.Commands.Wallets {
         public async Task Teardown() {
             using var db = DatabaseFactory.Use();
 
+            await db.Transactions.ExecuteDeleteAsync();
             await db.Wallets.ExecuteDeleteAsync();
             await db.Logins.ExecuteDeleteAsync();
             await db.Users.ExecuteDeleteAsync();
@@ -53,7 +55,21 @@ namespace TestProject.Commands.Wallets {
         }
 
         [Test]
-        public async Task DeleteWhenTransactionNotEmpty_Throws() => Assert.Inconclusive("Transaction not implemented");
+        public async Task DeleteWhenTransactionNotEmpty_Throws() {
+            var transaction = new TransactionSample(
+                transactionTypeId: DatabaseInitializer.ADJUSTMENT.Id,
+                walletId: wallet.AddWalletCommand.Result,
+                value: 1);
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+
+            var deleteWallet = new DeleteWalletCommand(wallet.AddWalletCommand.Result);
+
+            Assert.ThrowsAsync<NotValidForDeleteException>(async () => await ExecutorManager.Execute(deleteWallet));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Wallets.Any(w => w.Id == wallet.AddWalletCommand.Result), Is.True);
+            Assert.That(db.Transactions.Any(t => t.Id == transaction.AddTransactionCommand.Result), Is.True);
+        }
 
         [Test]
         public async Task DeleteWalletWhenUserNotHavePermission() {

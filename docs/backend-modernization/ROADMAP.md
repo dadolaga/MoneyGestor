@@ -1,8 +1,8 @@
 # Roadmap di modernizzazione backend
 
-Le decisioni DEC-01..10 sono approvate e lo step documentale DEC-00 è **completato** il 20 settembre 2026. Gli step di
-implementazione restano non iniziati, salvo BAK-41..43 che sono bloccati dalla decisione di prodotto. La numerazione
-esprime dipendenze, non stime temporali.
+Le decisioni DEC-01..10 sono approvate, DEC-00 è **completato** dal 20 settembre 2026 e la Fase 0 è **completata** dal
+21 settembre 2026. Gli step successivi restano non iniziati, salvo BAK-41..43 che sono bloccati dalla decisione di
+prodotto. La numerazione esprime dipendenze, non stime temporali.
 
 ## Legenda
 
@@ -65,12 +65,14 @@ Scheda: [PHASE_0_BASELINE_AND_SAFETY.md](phases/PHASE_0_BASELINE_AND_SAFETY.md)
 |---|---:|---|---|---|
 | BSL-00 | P0 | completato (21 settembre 2026) | baseline riproducibile e registro rischi | nessuno |
 | DEC-00 | P0 | completato | decisioni DEC-01..10 registrate e propagate nel piano | audit esistente |
-| TST-01 | P0 | non iniziato | MySQL test effimero e guardie distruttive | BSL-00 |
-| TST-02 | P0 | non iniziato | riparazione test e caratterizzazione del comportamento | TST-01 |
-| DEP-10 | P1 | non iniziato | rimozione Playwright backend inutilizzato e audit | BSL-00 |
+| TST-01 | P0 | completato (21 settembre 2026) | MySQL test effimero e guardie distruttive | BSL-00 |
+| TST-02 | P0 | completato (21 settembre 2026) | riparazione test e caratterizzazione del comportamento | TST-01 |
+| DEP-10 | P1 | completato (21 settembre 2026) | rimozione Playwright backend inutilizzato e audit | BSL-00 |
 
 **Gate fase 0:** i test non possono toccare un DB non creato dal run; baseline build/test/contract registrata; decisioni
 DEC-01..10 applicate; vulnerabilità transitiva nota rimossa o eccezione formale.
+
+**Gate superato il 21 settembre 2026.** Evidenza: [completamento Fase 0](evidence/PHASE_0_2026-09-21.md).
 
 **Fast-track obbligatorio per la CLI:** DEC-08 ne impone la disabilitazione. Eseguire BAK-40 subito dopo TST-01 e prima
 di usare la CLI o trattare dati reali; fino ad allora non eseguire `ExportImportApplication` in alcun ambiente.

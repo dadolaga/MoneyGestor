@@ -50,11 +50,9 @@ namespace TestProject.Commands.User {
         }
 
         [Test]
-        public async Task AddNewUser_NullParamThrow() {
-            String password = "Password";
-
-            Assert.ThrowsAsync<MandatoryParamException>(async () => {
-                var executor = new AddNewUserCommand(
+        public void AddNewUser_NullParamThrow() {
+            Assert.Throws<MandatoryParamException>(() => {
+                _ = new AddNewUserCommand(
                     firstname: null!,
                     lastname: null!,
                     email: null!,

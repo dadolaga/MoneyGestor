@@ -1,30 +1,7 @@
-﻿using logic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace TestProject.Base {
+    [Category("Integration")]
     internal abstract class DatabaseBase : ClockBase {
-        [OneTimeSetUp]
-        protected async Task DatabaseSetup() {
-            DatabaseFactory.InTest();
-            using var database = DatabaseFactory.Create();
-
-            await database.Database.EnsureCreatedAsync();
-
-            await DatabaseInitializer.Init();
-        }
-
-        [OneTimeTearDown]
-        protected async Task DatabaseTeardown() {
-            using var database = DatabaseFactory.Use();
-
-            var isDeleted = await database.Database.EnsureDeletedAsync();
-            await DatabaseInitializer.Init();
-
-            Assert.That(isDeleted, Is.True);
-        }
+        [SetUp]
+        public Task EnsureGlobalSeed() => logic.DatabaseInitializer.Init();
     }
 }

@@ -145,7 +145,7 @@ Implementare questi punti per supposizione può correggere un bug introducendo u
 
 ## TST-01 — MySQL di test effimero e guardie distruttive
 
-**Stato:** non iniziato
+**Stato:** completato il 21 settembre 2026
 
 **Priorità:** P0
 
@@ -220,9 +220,13 @@ condivisi o configurati per errore.
 - suite avviabile con un solo comando documentato e fallimento sicuro senza prerequisiti;
 - log test non contengono connection string o password.
 
+**Evidenza**
+
+- [Completamento della Fase 0](../evidence/PHASE_0_2026-09-21.md)
+
 ## TST-02 — Riparazione test e caratterizzazione
 
-**Stato:** non iniziato
+**Stato:** completato il 21 settembre 2026
 
 **Priorità:** P0
 
@@ -294,9 +298,13 @@ Test verdi ma non pertinenti possono mascherare regressioni di saldo e autorizza
 - nessun setup usa codice legacy differente dal percorso produzione senza motivo documentato;
 - baseline test ed eventuali bug noti sono registrati separatamente.
 
+**Evidenza**
+
+- [Completamento della Fase 0](../evidence/PHASE_0_2026-09-21.md)
+
 ## DEP-10 — Rimozione della dipendenza vulnerabile inutilizzata
 
-**Stato:** non iniziato
+**Stato:** completato il 21 settembre 2026
 
 **Priorità:** P1
 
@@ -354,3 +362,7 @@ Aggiornare un framework browser non usato aggiunge costo; rimuoverlo chiude la c
 - build/test invariati;
 - advisory non presente nel grafo backend oppure dipendenza residua identificata con nuovo step;
 - nessuna dipendenza non correlata aggiornata.
+
+**Evidenza**
+
+- [Completamento della Fase 0](../evidence/PHASE_0_2026-09-21.md)

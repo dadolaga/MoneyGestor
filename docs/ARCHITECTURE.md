@@ -74,7 +74,10 @@ Questa operazione è ad alto impatto e presenta limiti di affidabilità document
 
 ### `TestProject`
 
-Suite NUnit soprattutto sui comandi applicativi. I test sono integration test: usano MySQL, non un database in memoria. Sono presenti 61 metodi marcati `[Test]`, di cui almeno uno è esplicitamente inconcludente.
+Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
+effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
+Il run ordinario comprende 73 casi verdi. Quattro ulteriori casi cross-user sono `Explicit`: descrivono le policy attese
+per i gap di autorizzazione che verranno chiusi nella Fase 1.
 
 ## Modello dati
 

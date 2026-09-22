@@ -8,30 +8,13 @@ using System.Threading.Tasks;
 using TestProject.Base;
 
 namespace TestProject {
+    [Category("Integration")]
     internal class DatabaseInitializerTest {
-        [OneTimeSetUp]
-        protected async Task DatabaseSetup() {
-            DatabaseFactory.InTest();
-            using var database = DatabaseFactory.Create();
-
-            await database.Database.EnsureCreatedAsync();
-        }
-
         [TearDown]
         public async Task Teardown() {
             using var database = DatabaseFactory.Use();
 
             await database.Colors.ExecuteDeleteAsync();
-        }
-
-        [OneTimeTearDown]
-        protected async Task DatabaseTeardown() {
-            using var database = DatabaseFactory.Use();
-
-            var isDeleted = await database.Database.EnsureDeletedAsync();
-            await DatabaseInitializer.Init();
-
-            Assert.That(isDeleted, Is.True);
         }
 
         [Test]

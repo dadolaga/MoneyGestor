@@ -8,6 +8,11 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 
 > Nota di pianificazione: questo documento resta la fotografia dei rischi al 10 settembre 2026. Il proprietario ha scelto di affrontare ora la migrazione frontend e di rinviare il backend. Per il workstream corrente fanno fede [FRONTEND_MIGRATION_PLAN.md](FRONTEND_MIGRATION_PLAN.md), [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md); le priorità backend sotto riportate restano aperte e non vanno risolte incidentalmente nella UI.
 
+> Aggiornamento del 21 settembre 2026: la Fase 0 backend ha sostituito la destinazione test fissa con MySQL 8.4
+> effimero tramite Testcontainers, aggiunto test HTTP e guardie distruttive, rimosso Playwright dal progetto backend e
+> chiuso l'advisory transitivo noto. Le righe storiche sotto restano invariate come fotografia dell'audit originario;
+> per lo stato corrente vedere la [roadmap backend](backend-modernization/ROADMAP.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

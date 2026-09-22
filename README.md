@@ -21,7 +21,7 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 |   |-- database/                 # DbContext e modelli EF Core
 |   |-- logic/                    # comandi, regole applicative e autenticazione
 |   |-- webserver/                # REST API ASP.NET Core
-|   |-- TestProject/              # test NUnit (richiedono un MySQL dedicato)
+|   |-- TestProject/              # test NUnit con MySQL 8.4 effimero via Docker
 |   `-- ExportImportApplication/  # backup e ripristino ZIP/CSV
 |-- frontend/                     # applicazione Next.js
 |-- docs/                         # architettura, API, audit, migrazione e design
@@ -50,6 +50,7 @@ Per lo sviluppo locale:
 - .NET SDK 8 o successivo
 - Node.js 22 e npm
 - MySQL raggiungibile dalla macchina
+- Docker Desktop per eseguire i test backend con il database effimero
 
 Per l'esecuzione containerizzata servono Docker e Docker Compose. Il file Compose attuale **non avvia MySQL**: il database deve esistere già ed essere raggiungibile dai container.
 
@@ -139,10 +140,12 @@ npm --prefix .\frontend run lint
 npm --prefix .\frontend run build
 ```
 
-I test backend usano un database MySQL fisso chiamato `ut_money_gestor` su `localhost:1883` e il teardown lo elimina. Eseguili solo dopo aver verificato che quella destinazione sia dedicata ai test:
+I test backend avviano automaticamente un container MySQL 8.4 dedicato al singolo run. Il database usa un nome
+casuale con prefisso `mg_test_`, una porta dinamica e credenziali casuali; non esiste fallback verso un MySQL locale.
+Docker deve essere disponibile:
 
 ```powershell
-dotnet test .\backend\backend.sln
+dotnet test .\backend\TestProject\TestProject.csproj
 ```
 
 ## Import ed export
@@ -159,11 +162,11 @@ L'import sostituisce il database applicativo e va considerato distruttivo. Prima
 
 ## Stato delle verifiche
 
-Ultima ricognizione frontend: 13 settembre 2026.
+Ultima ricognizione frontend: 17 settembre 2026.
 
 - build .NET: completata, 0 errori e 79 warning
 - type-check frontend: completato senza errori
-- lint frontend: completato senza errori; restano warning legacy già censiti
-- test frontend: 7 test Vitest/Testing Library completati senza errori
+- lint frontend: completato senza errori; restano 10 warning legacy già censiti
+- test frontend: 20 test Vitest/Testing Library completati senza errori
 - build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
-- test backend: non eseguiti automaticamente, perché eliminano il database di test configurato
+- test backend: 73 casi ordinari completati senza errori su MySQL effimero; 4 casi cross-user `Explicit` documentano i gap da chiudere nella Fase 1

@@ -6,27 +6,36 @@ using Serilog;
 namespace webserver {
     public class Program {
         public static void Main(String[] args) {
-            Settings.Load();
+            var app = BuildApplication(args);
 
-            Log.Logger = LoggerFactory.Create();
+            app.Run();
+        }
 
-            MoneyGestorContext.Initialize(Settings.Database.Server, Settings.Database.Port, Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
-
-            Log.Information("Start application with version {a}", "0.0.1-alpha");
-
-            Log.Information("Create DB");
-
-            using (var database = new MoneyGestorContext()) {
-                database.Database.EnsureCreated();
-            }
-
-            DatabaseInitializer.Init().Wait();
-
-            Log.Information("Database created");
-
+        public static WebApplication BuildApplication(String[] args) {
             var builder = WebApplication.CreateBuilder(args);
+            var isTesting = builder.Environment.IsEnvironment("Testing");
 
-            builder.Host.UseSerilog();
+            if (!isTesting) {
+                Settings.Load();
+
+                Log.Logger = LoggerFactory.Create();
+
+                MoneyGestorContext.Initialize(Settings.Database.Server, Settings.Database.Port, Settings.Database.DatabaseName, Settings.Database.User, Settings.Database.Password);
+
+                Log.Information("Start application with version {a}", "0.0.1-alpha");
+
+                Log.Information("Create DB");
+
+                using (var database = new MoneyGestorContext()) {
+                    database.Database.EnsureCreated();
+                }
+
+                DatabaseInitializer.Init().Wait();
+
+                Log.Information("Database created");
+
+                builder.Host.UseSerilog();
+            }
 
             // Add services to the container.
 
@@ -43,7 +52,7 @@ namespace webserver {
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment()) {
+            if (app.Environment.IsDevelopment() || isTesting) {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -54,13 +63,15 @@ namespace webserver {
 
             app.MapControllers();
 
-            app.UseSerilogRequestLogging();
+            if (!isTesting) {
+                app.UseSerilogRequestLogging();
+            }
 
             app.UseCors();
 
             app.UseExceptionHandler();
 
-            app.Run();
+            return app;
         }
     }
 }

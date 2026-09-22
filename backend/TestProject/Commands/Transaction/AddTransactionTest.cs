@@ -63,7 +63,7 @@ namespace TestProject.Commands.Transaction {
             Assert.That(transactionDb.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
             Assert.That(transactionDb.WalletId, Is.EqualTo(transaction.WalletId));
 
-            var walletDb = await db.Transactions.Include(t => t.Wallet).Select(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id);
+            var walletDb = await db.Wallets.FirstAsync(w => w.Id == transaction.WalletId);
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
         }
 
@@ -74,23 +74,23 @@ namespace TestProject.Commands.Transaction {
                 walletId: wallet.AddWalletCommand.Result,
                 value: -21.12);
 
-            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+            await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
             using var db = DatabaseFactory.Use();
             Assert.That(db.Transactions.Count(), Is.EqualTo(1));
 
-            var transactionDb = db.Transactions.First(t => t.Id == transaction.AddTransactionCommand.Result);
-            Assert.That(transactionDb.Description, Is.EqualTo(transaction.Description));
-            Assert.That(transactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transaction.Date));
-            Assert.That(transactionDb.Value, Is.EqualTo(transaction.Value));
+            var transactionDb = db.Transactions.First(t => t.Id == negativeTransaction.AddTransactionCommand.Result);
+            Assert.That(transactionDb.Description, Is.EqualTo(negativeTransaction.Description));
+            Assert.That(transactionDb.LongDescription, Is.EqualTo(negativeTransaction.LongDescription));
+            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(negativeTransaction.Date));
+            Assert.That(transactionDb.Value, Is.EqualTo(negativeTransaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(transactionDb.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
-            Assert.That(transactionDb.WalletId, Is.EqualTo(transaction.WalletId));
+            Assert.That(transactionDb.TransactionTypeId, Is.EqualTo(negativeTransaction.TransactionTypeId));
+            Assert.That(transactionDb.WalletId, Is.EqualTo(negativeTransaction.WalletId));
 
-            var walletDb = await db.Transactions.Include(t => t.Wallet).Select(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id);
-            Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
+            var walletDb = await db.Wallets.FirstAsync(w => w.Id == negativeTransaction.WalletId);
+            Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value + negativeTransaction.Value));
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace TestProject.Commands.Transaction {
             Assert.That(transactionDb.WalletId, Is.EqualTo(transferTransaction.WalletId));
             Assert.That(transactionDb.TransactionDestinationId, Is.Not.Null);
 
-            var walletDb = await db.Transactions.Include(t => t.Wallet).Select(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id);
+            var walletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletId);
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value - transferTransaction.Value));
 
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
@@ -172,7 +172,7 @@ namespace TestProject.Commands.Transaction {
             Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
             Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
 
-            var secondWalletDb = await db.Transactions.Include(t => t.Wallet).Select(t => t.Wallet).FirstAsync(t => t.Id == secondTransactionDb.Id);
+            var secondWalletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletDestinationId);
             Assert.That(secondWalletDb.CurrentValue, Is.EqualTo(secondWallet.Value + transferTransaction.Value));
         }
 
@@ -223,7 +223,7 @@ namespace TestProject.Commands.Transaction {
 
             var list = await db.Transactions.Include(t => t.Wallet).ToListAsync();
 
-            var walletDb = (await db.Transactions.Include(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id)).Wallet;
+            var walletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletId);
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value - transferTransaction.Value));
 
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
@@ -237,7 +237,7 @@ namespace TestProject.Commands.Transaction {
             Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
             Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
 
-            var secondWalletDb = (await db.Transactions.Include(t => t.Wallet).FirstAsync(t => t.Id == secondTransactionDb.Id)).Wallet;
+            var secondWalletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletDestinationId);
             Assert.That(secondWalletDb.CurrentValue, Is.EqualTo(secondWallet.Value + transferTransaction.Value));
         }
 
@@ -252,7 +252,7 @@ namespace TestProject.Commands.Transaction {
                 value: wallet.Value + 10,
                 forceInsert: true);
 
-            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(transaction.AddTransactionCommand));
+            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(negativeTransaction.AddTransactionCommand));
 
             using var db = DatabaseFactory.Use();
             Assert.That(db.Transactions.Count(), Is.EqualTo(0));

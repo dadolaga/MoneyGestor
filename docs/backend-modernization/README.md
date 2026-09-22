@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **decisioni approvate, implementazione in corso (BSL-00 completato)**
-- Data della ricognizione: **20 settembre 2026**
+- Stato del documento: **Fase 0 completata; Fase 1 non iniziata**
+- Data dell'ultimo aggiornamento: **21 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -43,8 +43,8 @@ Documenti operativi:
 
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
-confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone di 61 test di integrazione
-sui comandi principali.
+confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
+73 casi ordinari fra command, infrastruttura e pipeline HTTP.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
@@ -62,8 +62,8 @@ La base è però fragile per dati reali o uso multiutente. Le priorità conferma
    e contiene un aggiornamento dell'oggetto sbagliato.
 6. **Contratto HTTP.** La validazione è manuale e parziale, quasi tutte le eccezioni diventano 500, l'autenticazione è
    ripetuta negli action method e filtri/ordinamenti riflettono liberamente sulle entità persistenti.
-7. **Qualità verificabile.** Non esistono test HTTP o round-trip della CLI, né CI. Il progetto test include Playwright
-   senza usarlo; la dipendenza porta `System.Text.Json 6.0.5`, segnalato con vulnerabilità High.
+7. **Qualità verificabile.** La Fase 0 ha aggiunto i primi test HTTP e rimosso Playwright con la vulnerabilità
+   transitiva nota. Restano assenti test round-trip della CLI, CI e una copertura HTTP completa.
 8. **Ciclo di vita runtime.** Il progetto usa .NET 8, che al 20 settembre 2026 è in maintenance e termina il supporto il
    10 novembre 2026. Il passaggio a .NET 10 LTS va pianificato, ma dopo la rete di sicurezza e senza mescolarlo ai fix di
    autorizzazione.
@@ -120,24 +120,24 @@ prerequisito.
 
 ## Baseline verificata
 
-L'evidenza riproducibile più recente è [BSL-00 del 21 settembre 2026](evidence/BSL-00_2026-09-21.md).
+La baseline iniziale è [BSL-00 del 21 settembre 2026](evidence/BSL-00_2026-09-21.md); l'esito aggiornato è nel
+[completamento della Fase 0](evidence/PHASE_0_2026-09-21.md).
 
 | Elemento | Risultato al 21 settembre 2026 |
 |---|---|
 | Progetti soluzione | `database`, `logic`, `webserver`, `TestProject`, `ExportImportApplication` |
 | Codice produttivo | 80 file C#, circa 3.823 righe |
-| Test | 24 file C#, circa 2.127 righe; 61 metodi `[Test]`; 2 chiamate `Assert.Inconclusive` |
-| Build pulita | `dotnet build backend/backend.sln --no-restore -t:Rebuild`: 0 errori, 79 warning |
-| Test eseguiti | no: destinazione distruttiva fissa `ut_money_gestor` su `localhost:1883` non verificata |
+| Test | 29 file C#, circa 1.990 righe; 73 casi ordinari e 4 casi cross-user `Explicit`; 0 `Assert.Inconclusive` |
+| Build pulita | `dotnet build backend/backend.sln --no-restore -t:Rebuild`: 0 errori, 78 warning |
+| Test eseguiti | 73/73 verdi in tre run consecutivi e nel run conclusivo su MySQL 8.4 effimero |
 | Migration EF | assenti |
-| Test HTTP / CLI | assenti |
+| Test HTTP / CLI | 5 test HTTP/Swagger; test CLI assenti perché la feature resta bloccata da DEC-08 |
 | CI | assente |
 | Database in Compose | assente, MySQL è esterno |
-| Vulnerabilità osservata | `System.Text.Json 6.0.5` transitivo da Playwright inutilizzato, severità High |
+| Vulnerabilità osservata | nessuna nel nuovo audit NuGet top-level/transitivo |
 
-Il comando NuGet di audit non ha potuto leggere il `NuGet.Config` del profilo utente nell'ambiente isolato. La versione
-transitiva è stata verificata in `backend/TestProject/obj/project.assets.json`; la pagina ufficiale NuGet conferma la
-vulnerabilità. Ogni implementazione futura deve comunque rieseguire l'audit nel proprio ambiente.
+L'audit NuGet è stato completato usando le origini configurate nell'ambiente. Playwright e `System.Text.Json 6.0.5`
+non sono più presenti nel grafo backend.
 
 ## Protocollo per ogni AI esecutrice
 
