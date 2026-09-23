@@ -89,7 +89,7 @@ namespace TestProject.Commands.Transaction {
 
             var deleteTransaction = new DeleteTransactionCommand(transaction.AddTransactionCommand.Result);
 
-            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(deleteTransaction));
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(deleteTransaction));
         }
 
         [Test]
@@ -140,6 +140,38 @@ namespace TestProject.Commands.Transaction {
 
             Assert.That(sourceWalletAfterDelete.CurrentValue, Is.EqualTo(wallet.Value));
             Assert.That(destinationWalletAfterDelete.CurrentValue, Is.EqualTo(secondWallet.Value));
+        }
+
+        [Test]
+        public async Task DeleteTransferByDestinationSideDeletesTheWholePair() {
+            var secondWallet = new WalletSample(name: "my_second_wallet");
+            await ExecutorManager.Execute(secondWallet.AddWalletCommand);
+            var transfer = new TransactionSample(
+                DatabaseInitializer.TRANSFER.Id,
+                wallet.AddWalletCommand.Result,
+                secondWallet.AddWalletCommand.Result,
+                value: 50);
+            await ExecutorManager.Execute(transfer.AddTransactionCommand);
+
+            UInt64 destinationTransactionId;
+            using (var database = DatabaseFactory.Use()) {
+                destinationTransactionId = database.Transactions
+                    .Single(candidate => candidate.Id == transfer.AddTransactionCommand.Result)
+                    .TransactionDestinationId!.Value;
+            }
+
+            await ExecutorManager.Execute(new DeleteTransactionCommand(destinationTransactionId));
+
+            using var assertionDatabase = DatabaseFactory.Use();
+            Assert.Multiple(() => {
+                Assert.That(assertionDatabase.Transactions.Count(), Is.Zero);
+                Assert.That(
+                    assertionDatabase.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
+                    Is.EqualTo(wallet.Value));
+                Assert.That(
+                    assertionDatabase.Wallets.Single(candidate => candidate.Id == secondWallet.AddWalletCommand.Result).CurrentValue,
+                    Is.EqualTo(secondWallet.Value));
+            });
         }
     }
 }

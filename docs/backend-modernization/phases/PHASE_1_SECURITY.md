@@ -79,7 +79,7 @@ La compromissione dei log equivale oggi alla compromissione delle sessioni e pu�
 
 ## SEC-11 — Ownership di portafogli, colori e tipi
 
-**Stato:** non iniziato
+**Stato:** completato (23 settembre 2026)
 
 **Priorità:** P0
 
@@ -152,7 +152,7 @@ Chiudere accesso cross-account e rendere uniforme la policy prima di estrarla in
 
 ## SEC-12 — Ownership dei movimenti e preflight bloccante
 
-**Stato:** non iniziato
+**Stato:** completato (23 settembre 2026)
 
 **Priorità:** P0
 
@@ -228,7 +228,7 @@ converter restituisce profilo `User` e `UserInsert`.
 
 ## SEC-13 — Saldi negativi e invarianti dei trasferimenti
 
-**Stato:** non iniziato
+**Stato:** completato (23 settembre 2026)
 
 **Priorità:** P1
 

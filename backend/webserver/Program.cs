@@ -1,6 +1,7 @@
 
 using database;
 using logic;
+using logic.Security;
 using Serilog;
 
 namespace webserver {
@@ -41,6 +42,10 @@ namespace webserver {
                 }
 
                 DatabaseInitializer.Init().Wait();
+
+                using (var database = new MoneyGestorContext()) {
+                    DataIntegrityPreflight.EnsureValidAsync(database).GetAwaiter().GetResult();
+                }
 
                 Log.Information("Database created");
 

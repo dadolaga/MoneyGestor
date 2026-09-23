@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository al 10 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 23 settembre 2026.
 
 ## Vista generale
 
@@ -76,8 +76,9 @@ Questa operazione è ad alto impatto e presenta limiti di affidabilità document
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-Il run ordinario comprende 76 casi verdi. Quattro ulteriori casi cross-user sono `Explicit`: descrivono le policy attese
-per i gap di autorizzazione che verranno chiusi nella Fase 1.
+La suite validata comprende 99 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
+ownership, conflitto concorrente, invarianti dei trasferimenti e preflight di integrità introdotti da SEC-11..13.
+L'esecuzione completa richiede Docker ed è registrata nell'evidenza dello step.
 
 ## Modello dati
 
@@ -95,16 +96,20 @@ erDiagram
     TRANSACTION o|--o| TRANSACTION : transfer_pair
 ```
 
-`TransactionDb` distingue l'utente a cui appartiene il movimento (`UserId`) dall'utente che lo ha inserito (`UserInsertId`). Oggi il client può inviare `UserId`; questa capacità non è accompagnata da un modello di condivisione o permessi esplicito.
+`TransactionDb` conserva sia `UserId` sia `UserInsertId` per compatibilità dello schema, ma la policy corrente è di
+ownership singola: entrambi sono sempre impostati all'utente autenticato. Il client non può scegliere l'owner e non
+esiste un modello di sharing implicito.
 
 ## Regole di dominio osservate
 
 - Un wallet nasce con `Value` e `CurrentValue` uguali.
 - Un movimento normale somma il proprio valore a `CurrentValue`.
-- Salvo operazioni forzate interne, un wallet non può scendere sotto zero.
-- Un trasferimento è rappresentato da due transazioni collegate: valore negativo nel wallet origine e positivo nel wallet destinazione.
-- La lista mostra un solo lato del trasferimento.
+- I saldi iniziali e correnti possono essere negativi; non esistono bypass `force` nei comandi pubblici o interni.
+- Un trasferimento accetta un importo positivo e viene rappresentato da due transazioni reciproche: valore negativo
+  nel wallet origine e positivo nel wallet destinazione, con wallet distinti dello stesso owner e somma zero.
+- La lista mostra soltanto il lato origine del trasferimento.
 - Colori e tipi con `UserId = null` sono globali.
+- Colori e tipi privati possono essere associati soltanto a risorse dello stesso utente.
 - I tipi globali iniziali sono `Transfer` (ID 1) e `Adjustment` (ID 2).
 
 ## Autenticazione attuale
@@ -115,7 +120,10 @@ Non è usato il middleware ASP.NET Core Authentication/Authorization; ogni endpo
 
 ## Avvio e configurazione
 
-Il backend esegue `EnsureCreated` e inizializza colori e tipi globali a ogni avvio. Non sono presenti migration EF. `forceUpdate` è definito nella configurazione ma non influenza il flusso di startup.
+Il backend esegue `EnsureCreated` e inizializza colori e tipi globali a ogni avvio. Subito dopo esegue un preflight
+read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
+ID tecnici, senza correzioni automatiche o PII. Non sono presenti migration EF. `forceUpdate` è definito nella
+configurazione ma non influenza il flusso di startup.
 
 Il Compose avvia backend, frontend e, su profilo `tools`, la CLI; MySQL resta esterno.
 

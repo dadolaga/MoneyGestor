@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TestProject.Base;
 using TestProject.Samples;
+using TestProject.Utils;
 
 namespace TestProject.Commands.Transaction {
     internal class UpdateTransactionTest : ExecutorBase {
@@ -180,7 +181,7 @@ namespace TestProject.Commands.Transaction {
         }
 
         [Test]
-        public async Task CorrectUpdate_NotEnoughtMoney_Throw() {
+        public async Task CorrectUpdate_AllowsNegativeBalance() {
             var newDescription = $"{transaction.Description}_update";
             var newLongDescription = $"{transaction.LongDescription}_update";
             var newDate = transaction.Date.AddDays(-1);
@@ -201,26 +202,26 @@ namespace TestProject.Commands.Transaction {
                 userId: user.AddNewUserExecutor.Result
                 );
 
-            Assert.ThrowsAsync<WalletGoesToNegative>(async () => await ExecutorManager.Execute(updateCommand));
+            await ExecutorManager.Execute(updateCommand);
 
             var db = DatabaseFactory.Use();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.EqualTo(transaction.Description));
-            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(transaction.Date));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(transaction.Value));
+            Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
+            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(transaction.WalletId));
+            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
-            Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
+            Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value));
 
             var newWalletDb = await db.Wallets.FirstAsync(w => w.Id == walletSecond.AddWalletCommand.Result);
-            Assert.That(newWalletDb.CurrentValue, Is.EqualTo(walletSecond.Value));
+            Assert.That(newWalletDb.CurrentValue, Is.EqualTo(walletSecond.Value + newValue));
         }
 
         [Test]
@@ -397,6 +398,68 @@ namespace TestProject.Commands.Transaction {
 
             var destinationWalletDb = await db.Wallets.FirstAsync(w => w.Id == newWalletDestination);
             Assert.That(destinationWalletDb.CurrentValue, Is.EqualTo(wallet.Value + newValue));
+        }
+
+        [Test]
+        public async Task InvalidTransferUpdateRollsBackTransactionAndBalance() {
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+            var invalidUpdate = new UpdateTransactionCommand(
+                transaction.AddTransactionCommand.Result,
+                walletId: wallet.AddWalletCommand.Result,
+                walletDestinationId: wallet.AddWalletCommand.Result,
+                value: 10,
+                transactionTypeId: DatabaseInitializer.TRANSFER.Id);
+
+            Assert.ThrowsAsync<InvalidTransactionException>(async () =>
+                await ExecutorManager.Execute(invalidUpdate));
+
+            using var db = DatabaseFactory.Use();
+            var stored = db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result);
+            Assert.Multiple(() => {
+                Assert.That(db.Transactions.Count(), Is.EqualTo(1));
+                Assert.That(stored.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
+                Assert.That(stored.WalletId, Is.EqualTo(transaction.WalletId));
+                Assert.That(stored.Value, Is.EqualTo(transaction.Value));
+                Assert.That(
+                    db.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
+                    Is.EqualTo(wallet.Value + transaction.Value));
+            });
+        }
+
+        [Test]
+        public async Task CannotUpdateAnotherUsersTransaction() {
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+            var otherUser = new UserSample(username: "other_user", email: "other@test.me");
+            var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
+
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
+                await otherExecutor.Execute(new UpdateTransactionCommand(
+                    transaction.AddTransactionCommand.Result,
+                    description: "forbidden")));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(
+                db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result).Description,
+                Is.EqualTo(transaction.Description));
+        }
+
+        [Test]
+        public async Task CannotUpdateTransactionToAnotherUsersPrivateType() {
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+            var otherUser = new UserSample(username: "other_user", email: "other@test.me");
+            var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
+            var otherType = new AddTransactionTypeCommand("other-type");
+            await otherExecutor.Execute(otherType);
+
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
+                await ExecutorManager.Execute(new UpdateTransactionCommand(
+                    transaction.AddTransactionCommand.Result,
+                    transactionTypeId: otherType.Result)));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(
+                db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result).TransactionTypeId,
+                Is.EqualTo(transaction.TransactionTypeId));
         }
     }
 }

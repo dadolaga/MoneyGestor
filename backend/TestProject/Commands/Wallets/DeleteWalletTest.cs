@@ -78,10 +78,29 @@ namespace TestProject.Commands.Wallets {
 
             var deleteWallet = new DeleteWalletCommand(wallet.AddWalletCommand.Result);
 
-            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(deleteWallet));
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(deleteWallet));
 
             using var db = DatabaseFactory.Use();
             Assert.That(db.Wallets.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task CrossUserDeleteDoesNotRevealWhetherWalletContainsTransactions() {
+            var transaction = new TransactionSample(
+                DatabaseInitializer.ADJUSTMENT.Id,
+                wallet.AddWalletCommand.Result,
+                value: 1);
+            await ExecutorManager.Execute(transaction.AddTransactionCommand);
+
+            var otherUser = new UserSample(username: "other_user", email: "other@test.me");
+            var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
+
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
+                await otherExecutor.Execute(new DeleteWalletCommand(wallet.AddWalletCommand.Result)));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Wallets.Any(candidate => candidate.Id == wallet.AddWalletCommand.Result), Is.True);
+            Assert.That(db.Transactions.Any(candidate => candidate.Id == transaction.AddTransactionCommand.Result), Is.True);
         }
     }
 }

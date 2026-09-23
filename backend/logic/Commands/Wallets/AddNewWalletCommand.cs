@@ -1,5 +1,6 @@
 ﻿using database.Models;
 using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,8 @@ namespace logic.Commands.Wallets {
 
             var database = executorManager.DbContext;
 
+            await OwnershipPolicy.RequireAvailableColorAsync(database, colorId, executorManager.UserId);
+
             if (await database.Wallets.FirstOrDefaultAsync(w => w.UserId == executorManager.UserId && w.Name == name) != null) {
                 throw new DuplicateObjectException($"Try to insert duplicate wallet");
             }
@@ -39,7 +42,13 @@ namespace logic.Commands.Wallets {
 
             await database.AddAsync(wallet);
 
-            await database.SaveChangesAsync();
+            try {
+                await database.SaveChangesAsync();
+            } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
+                throw new DuplicateObjectException("Try to insert duplicate wallet");
+            } catch (DbUpdateException) {
+                throw new ObjectNotFoundException("Color not found");
+            }
 
             result = wallet.Id;
         }

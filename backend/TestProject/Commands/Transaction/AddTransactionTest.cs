@@ -94,25 +94,27 @@ namespace TestProject.Commands.Transaction {
         }
 
         [Test]
-        public async Task NotInsertWhenWalletGoNegative() {
+        public async Task InsertWhenWalletGoesNegative() {
             var negativeTransaction = new TransactionSample(
                 transactionTypeId: transactionType.AddTransactionTypeCommand.Result,
                 walletId: wallet.AddWalletCommand.Result,
                 value: -(wallet.Value + 10));
 
-            Assert.ThrowsAsync<WalletGoesToNegative>(async () => await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand));
+            await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
             using var db = DatabaseFactory.Use();
-            Assert.That(db.Transactions.Count(), Is.EqualTo(0));
+            Assert.That(db.Transactions.Count(), Is.EqualTo(1));
+            Assert.That(
+                db.Wallets.Single(wallet => wallet.Id == this.wallet.AddWalletCommand.Result).CurrentValue,
+                Is.EqualTo(-10));
         }
 
         [Test]
-        public async Task InsertWhenWalletGoNegativeForced() {
+        public async Task InsertWhenWalletGoesNegativeWithoutBypass() {
             var negativeTransaction = new TransactionSample(
                 transactionTypeId: transactionType.AddTransactionTypeCommand.Result,
                 walletId: wallet.AddWalletCommand.Result,
-                value: -(wallet.Value + 10),
-                forceInsert: true);
+                value: -(wallet.Value + 10));
 
             await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
@@ -177,7 +179,7 @@ namespace TestProject.Commands.Transaction {
         }
 
         [Test]
-        public async Task InsertWalletTransfer_NoMutchMoneyInWallet() {
+        public async Task InsertWalletTransfer_AllowsNegativeSourceBalance() {
             var secondWallet = new WalletSample(name: "my_second_wallet", value: 4000);
             await ExecutorManager.Execute(secondWallet.AddWalletCommand);
 
@@ -187,14 +189,17 @@ namespace TestProject.Commands.Transaction {
                 walletDestinationId: secondWallet.AddWalletCommand.Result,
                 value: wallet.Value + 10);
 
-            Assert.ThrowsAsync<WalletGoesToNegative>(async () => await ExecutorManager.Execute(transferTransaction.AddTransactionCommand));
+            await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
             using var db = DatabaseFactory.Use();
-            Assert.That(db.Transactions.Count(), Is.EqualTo(0));
+            Assert.That(db.Transactions.Count(), Is.EqualTo(2));
+            Assert.That(
+                db.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
+                Is.EqualTo(-10));
         }
 
         [Test]
-        public async Task InsertWalletTransfer_NoMutchMoneyInWalletForced() {
+        public async Task InsertWalletTransfer_AllowsNegativeBalanceWithoutBypass() {
             var secondWallet = new WalletSample(name: "my_second_wallet");
             await ExecutorManager.Execute(secondWallet.AddWalletCommand);
 
@@ -202,8 +207,7 @@ namespace TestProject.Commands.Transaction {
                 transactionTypeId: DatabaseInitializer.TRANSFER.Id,
                 walletId: wallet.AddWalletCommand.Result,
                 walletDestinationId: secondWallet.AddWalletCommand.Result,
-                value: wallet.Value + 10,
-                forceInsert: true);
+                value: wallet.Value + 10);
 
             await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
@@ -242,20 +246,110 @@ namespace TestProject.Commands.Transaction {
         }
 
         [Test]
-        public async Task InsertWalletUserNotHavePermission() {
+        public async Task InsertWithAnotherUsersWalletIsNotFound() {
             var secondUser = new UserSample(username: $"{user.Username}_1", email: $"{user.Email}_1");
             var secondExecutor = await TestUtils.CreateExecutorManagerForUser(secondUser);
 
             var negativeTransaction = new TransactionSample(
-                transactionTypeId: transactionType.AddTransactionTypeCommand.Result,
+                transactionTypeId: DatabaseInitializer.ADJUSTMENT.Id,
                 walletId: wallet.AddWalletCommand.Result,
-                value: wallet.Value + 10,
-                forceInsert: true);
+                value: wallet.Value + 10);
 
-            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(negativeTransaction.AddTransactionCommand));
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
+                await secondExecutor.Execute(negativeTransaction.AddTransactionCommand));
 
             using var db = DatabaseFactory.Use();
             Assert.That(db.Transactions.Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task TransferWithoutDestinationIsRejectedBeforeMutation() {
+            var invalid = new TransactionSample(
+                DatabaseInitializer.TRANSFER.Id,
+                wallet.AddWalletCommand.Result,
+                value: 10);
+
+            Assert.ThrowsAsync<InvalidTransactionException>(async () =>
+                await ExecutorManager.Execute(invalid.AddTransactionCommand));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Transactions.Count(), Is.Zero);
+            Assert.That(db.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
+                Is.EqualTo(wallet.Value));
+        }
+
+        [Test]
+        public async Task NonTransferWithDestinationIsRejectedBeforeMutation() {
+            var secondWallet = new WalletSample(name: "second-wallet");
+            await ExecutorManager.Execute(secondWallet.AddWalletCommand);
+            var invalid = new TransactionSample(
+                transactionType.AddTransactionTypeCommand.Result,
+                wallet.AddWalletCommand.Result,
+                secondWallet.AddWalletCommand.Result,
+                value: 10);
+
+            Assert.ThrowsAsync<InvalidTransactionException>(async () =>
+                await ExecutorManager.Execute(invalid.AddTransactionCommand));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Transactions.Count(), Is.Zero);
+            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+        }
+
+        [Test]
+        public async Task TransferToSameWalletIsRejectedBeforeMutation() {
+            var invalid = new TransactionSample(
+                DatabaseInitializer.TRANSFER.Id,
+                wallet.AddWalletCommand.Result,
+                wallet.AddWalletCommand.Result,
+                value: 10);
+
+            Assert.ThrowsAsync<InvalidTransactionException>(async () =>
+                await ExecutorManager.Execute(invalid.AddTransactionCommand));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Transactions.Count(), Is.Zero);
+            Assert.That(db.Wallets.Single().CurrentValue, Is.EqualTo(wallet.Value));
+        }
+
+        [TestCase(0)]
+        [TestCase(-10)]
+        public async Task TransferRequiresPositiveValue(Double invalidValue) {
+            var secondWallet = new WalletSample(name: "second-wallet");
+            await ExecutorManager.Execute(secondWallet.AddWalletCommand);
+            var invalid = new TransactionSample(
+                DatabaseInitializer.TRANSFER.Id,
+                wallet.AddWalletCommand.Result,
+                secondWallet.AddWalletCommand.Result,
+                value: invalidValue);
+
+            Assert.ThrowsAsync<InvalidTransactionException>(async () =>
+                await ExecutorManager.Execute(invalid.AddTransactionCommand));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Transactions.Count(), Is.Zero);
+            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+        }
+
+        [Test]
+        public async Task TransferCannotUseAnotherUsersDestinationWallet() {
+            var otherUser = new UserSample(username: "other_user", email: "other@test.me");
+            var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
+            var otherWallet = new WalletSample(name: "other-wallet");
+            await otherExecutor.Execute(otherWallet.AddWalletCommand);
+
+            var invalid = new TransactionSample(
+                DatabaseInitializer.TRANSFER.Id,
+                wallet.AddWalletCommand.Result,
+                otherWallet.AddWalletCommand.Result,
+                value: 10);
+
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
+                await ExecutorManager.Execute(invalid.AddTransactionCommand));
+
+            using var db = DatabaseFactory.Use();
+            Assert.That(db.Transactions.Count(), Is.Zero);
+            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
         }
     }
 }

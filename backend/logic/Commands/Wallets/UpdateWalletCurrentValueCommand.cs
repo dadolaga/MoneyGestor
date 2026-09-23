@@ -11,23 +11,20 @@ namespace logic.Commands.Wallets {
         private UInt64 walletId;
         private Double value;
         private Boolean isDifferenze;
-        private Boolean force;
 
-        public UpdateWalletCurrentValueCommand(UInt64 walletId, Double value, Boolean isDifferenze = false, Boolean force = false) {
+        public UpdateWalletCurrentValueCommand(UInt64 walletId, Double value, Boolean isDifferenze = false) {
             this.walletId = walletId;
             this.value = value;
             this.isDifferenze = isDifferenze;
-            this.force = force;
         }
 
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
-            var wallet = await database.Wallets.FirstOrDefaultAsync(w => w.Id == walletId && w.UserId == executorManager.UserId) ?? throw new UserNotHavePermissionExcpetion();
-
-            if (!force && isDifferenze && wallet.CurrentValue + value < 0) {
-                throw new WalletGoesToNegative();
-            }
+            var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
+                database,
+                walletId,
+                executorManager.UserId);
 
             wallet.CurrentValue = isDifferenze ? (wallet.CurrentValue + value) : value;
 

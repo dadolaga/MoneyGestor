@@ -16,11 +16,14 @@ namespace logic.Commands.Wallets {
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
+            var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
+                database,
+                id,
+                executorManager.UserId);
+
             if (database.Transactions.Where(t => t.WalletId == id).Count() > 0) {
                 throw new NotValidForDeleteException("Transaction not empty for delete wallet");
             }
-
-            var wallet = database.Wallets.FirstOrDefault(w => w.Id == id && w.UserId == executorManager.UserId) ?? throw new UserNotHavePermissionExcpetion();
 
             database.Wallets.Remove(wallet);
 

@@ -36,6 +36,7 @@ namespace TestProject.Commands.Wallets {
             using var db = DatabaseFactory.Use();
 
             await db.Wallets.ExecuteDeleteAsync();
+            await db.Colors.Where(color => color.UserId != null).ExecuteDeleteAsync();
             await db.Logins.ExecuteDeleteAsync();
             await db.Users.ExecuteDeleteAsync();
         }
@@ -119,6 +120,30 @@ namespace TestProject.Commands.Wallets {
             Assert.That(db.Wallets.Count, Is.EqualTo(2));
             Assert.That(db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result).Name, Is.EqualTo(newName));
             Assert.That(db.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result).Name, Is.EqualTo(newName));
+        }
+
+        [Test]
+        public async Task CannotChangeWalletToAnotherUsersPrivateColor() {
+            var otherUser = new UserSample(username: "other_user", email: "other@test.me");
+            await TestUtils.CreateExecutorManagerForUser(otherUser);
+
+            using (var db = DatabaseFactory.Use()) {
+                db.Colors.Add(new database.Models.ColorDb {
+                    Id = 1000,
+                    Name = "Other private color",
+                    Value = 0x654321,
+                    UserId = otherUser.AddNewUserExecutor.Result
+                });
+                await db.SaveChangesAsync();
+            }
+
+            var update = new EditWalletCommand(wallet.AddWalletCommand.Result, colorId: 1000);
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(update));
+
+            using var assertionDb = DatabaseFactory.Use();
+            Assert.That(
+                assertionDb.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).ColorId,
+                Is.EqualTo(wallet.ColorId));
         }
     }
 }

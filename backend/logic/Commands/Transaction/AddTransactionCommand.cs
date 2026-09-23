@@ -1,11 +1,8 @@
 ﻿using database.Models;
-using logic.Commands.Wallets;
 using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
@@ -18,9 +15,8 @@ namespace logic.Commands.Transaction {
         private Double value;
         private UInt64 transactionTypeId;
         private UInt64? userId;
-        private Boolean forceInsert;
 
-        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Double value, UInt64 transactionTypeId, UInt64? userId, UInt64? walletDestinationId = null, Boolean forceInsert = false) {
+        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Double value, UInt64 transactionTypeId, UInt64? userId, UInt64? walletDestinationId = null) {
             this.description = description;
             this.longDescription = longDescription;
             this.date = date;
@@ -29,63 +25,90 @@ namespace logic.Commands.Transaction {
             this.value = value;
             this.transactionTypeId = transactionTypeId;
             this.userId = userId;
-            this.forceInsert = forceInsert;
         }
 
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
+            var ownerId = executorManager.UserId;
 
-            if (await database.Wallets.FirstOrDefaultAsync(w => w.Id == walletId && w.UserId == executorManager.UserId) == null) {
-                throw new UserNotHavePermissionExcpetion();
+            if (userId != null && userId != ownerId) {
+                throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
             }
 
-            if (walletDestinationId != null && await database.Wallets.FirstOrDefaultAsync(w => w.Id == walletDestinationId && w.UserId == executorManager.UserId) == null) {
-                throw new UserNotHavePermissionExcpetion();
+            if (!Double.IsFinite(value) || value == 0) {
+                throw new InvalidTransactionException("Transaction value must be finite and non-zero");
             }
 
-            var transaction = new TransactionDb {
-                Description = description,
-                LongDescription = longDescription,
-                Date = date.ToDateTime(TimeOnly.MinValue),
-                WalletId = walletId,
-                TransactionTypeId = transactionTypeId,
-                UserId = userId ?? executorManager.UserId,
-                UserInsertId = executorManager.UserId,
-                Value = walletDestinationId == null? value : -Math.Abs(value),
-            };
+            var transactionType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(
+                database,
+                transactionTypeId,
+                ownerId);
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, ownerId);
+            var isTransfer = transactionType.Id == DatabaseInitializer.TRANSFER.Id;
+            WalletDb? walletDestination = null;
 
-            database.Transactions.Add(transaction);
-            await database.SaveChangesAsync();
+            if (isTransfer) {
+                if (walletDestinationId == null || value <= 0) {
+                    throw new InvalidTransactionException("Transfers require a destination wallet and a positive value");
+                }
 
-            var updateWalletCommand = new UpdateWalletCurrentValueCommand(walletId, walletDestinationId == null ? value : -Math.Abs(value), isDifferenze: true, force: forceInsert);
-            await updateWalletCommand.Execute(executorManager);
+                if (walletDestinationId.Value == wallet.Id) {
+                    throw new InvalidTransactionException("Transfer wallets must be different");
+                }
 
-            if (walletDestinationId != null) {
-                var transactionDestination = new TransactionDb {
+                walletDestination = await OwnershipPolicy.RequireOwnedWalletAsync(
+                    database,
+                    walletDestinationId.Value,
+                    ownerId);
+            } else if (walletDestinationId != null) {
+                throw new InvalidTransactionException("Only transfers can specify a destination wallet");
+            }
+
+            var sourceValue = isTransfer ? -value : value;
+
+            try {
+                var transaction = new TransactionDb {
                     Description = description,
                     LongDescription = longDescription,
                     Date = date.ToDateTime(TimeOnly.MinValue),
-                    WalletId = walletDestinationId.Value,
+                    WalletId = walletId,
                     TransactionTypeId = transactionTypeId,
-                    UserId = userId ?? executorManager.UserId,
-                    UserInsertId = executorManager.UserId,
-                    TransactionDestinationId = transaction.Id,
-                    Value = Math.Abs(value),
+                    UserId = ownerId,
+                    UserInsertId = ownerId,
+                    Value = sourceValue,
                 };
 
-                database.Transactions.Add(transactionDestination);
+                wallet.CurrentValue += sourceValue;
+                database.Transactions.Add(transaction);
                 await database.SaveChangesAsync();
 
-                var updateDestinaionWalletCommand = new UpdateWalletCurrentValueCommand(walletDestinationId.Value, Math.Abs(value), isDifferenze: true, force: forceInsert);
-                await updateDestinaionWalletCommand.Execute(executorManager);
+                if (walletDestination != null) {
+                    var transactionDestination = new TransactionDb {
+                        Description = description,
+                        LongDescription = longDescription,
+                        Date = date.ToDateTime(TimeOnly.MinValue),
+                        WalletId = walletDestination.Id,
+                        TransactionTypeId = transactionTypeId,
+                        UserId = ownerId,
+                        UserInsertId = ownerId,
+                        TransactionDestinationId = transaction.Id,
+                        Value = value,
+                    };
 
-                transaction.TransactionDestinationId = transactionDestination.Id;
+                    walletDestination.CurrentValue += value;
+                    database.Transactions.Add(transactionDestination);
+                    await database.SaveChangesAsync();
 
-                database.Transactions.Update(transaction);
-                await database.SaveChangesAsync();
+                    transaction.TransactionDestinationId = transactionDestination.Id;
+
+                    database.Transactions.Update(transaction);
+                    await database.SaveChangesAsync();
+                }
+
+                result = transaction.Id;
+            } catch (DbUpdateException) {
+                throw new ObjectNotFoundException("Transaction reference not found");
             }
-            
-            result = transaction.Id;
         }
     }
 }

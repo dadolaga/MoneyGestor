@@ -27,21 +27,19 @@ namespace webserver.Controllers {
             // TODO Add more complex filter, add and and or check with parenthesis
 
             var transactionList = await database.Transactions
-                .Where(t => t.UserInsertId == executor.UserId)
+                .Where(t => t.UserId == executor.UserId)
                 .Include(t => t.TransactionType)
                 .Include(t => t.Wallet)
                 .Include(t => t.Wallet.Color)
                 .Include(t => t.TransactionDestination)
                 .Include(t => t.TransactionDestination.Wallet)
                 .Include(t => t.TransactionDestination.Wallet.Color)
-                .Include(t => t.User)
-                .Include(t => t.UserInsert)
-                .Where(t => t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0)
+                .Where(t => t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value < 0)
                 .ApplyFilter(listFilter)
                 .ToListAsync();
 
             var quantity = await database.Transactions
-                .Where(t => t.UserInsertId == executor.UserId && (t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value > 0))
+                .Where(t => t.UserId == executor.UserId && (t.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || t.Value < 0))
                 .WhereByFilter(listFilter.Wheres)
                 .CountAsync();
 
@@ -62,8 +60,8 @@ namespace webserver.Controllers {
                 .Include(t => t.TransactionDestination)
                 .Include(t => t.TransactionDestination.Wallet)
                 .Include(t => t.TransactionDestination.Wallet.Color)
-                .Include(t => t.User)
-                .Include(t => t.UserInsert).FirstAsync();
+                .FirstOrDefaultAsync()
+                ?? throw new ObjectNotFoundException("Transaction not found");
 
             return OkResponse(transaction.Convert(), "Transaction");
         }
@@ -83,15 +81,14 @@ namespace webserver.Controllers {
                 walletId: transaction.Wallet.Id.Value,
                 value: transaction.Value.Value,
                 transactionTypeId: transaction.TransactionType.Id.Value,
-                userId: transaction.User?.Id,
+                userId: null,
                 walletDestinationId: transaction.WalletDestination?.Id);
 
             try {
                 await executor.Execute(insertTransactionCommand);
-
                 return CreateResponse(insertTransactionCommand.Result, "transaction");
-            } catch (WalletGoesToNegative ex) {
-                return ErrorResponse(301, "Wallet goes to negative");
+            } catch (InvalidTransactionException) {
+                return ErrorResponse(302, "Invalid transaction");
             }
         }
 
@@ -109,14 +106,16 @@ namespace webserver.Controllers {
                 walletDestinationId: transaction.WalletDestination?.Id,
                 value: transaction.Value,
                 transactionTypeId: transaction.TransactionType?.Id,
-                userId: transaction.User?.Id,
-                forceUpdate: false,
+                userId: null,
                 overwriteNull: false
                 );
 
-            await executor.Execute(updateCommand);
-
-            return OkResponse();
+            try {
+                await executor.Execute(updateCommand);
+                return OkResponse();
+            } catch (InvalidTransactionException) {
+                return ErrorResponse(302, "Invalid transaction");
+            }
         }
 
         [HttpDelete("{id}")]

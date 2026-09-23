@@ -1,13 +1,8 @@
 ﻿using database.Models;
-using logic.Commands.Wallets;
 using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
-using Mysqlx.Cursor;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
@@ -21,7 +16,6 @@ namespace logic.Commands.Transaction {
         private Double? value;
         private UInt64? transactionTypeId;
         private UInt64? userId;
-        private Boolean forceUpdate;
         private Boolean overwriteNull;
 
         public UpdateTransactionCommand(UInt64 id,
@@ -33,7 +27,6 @@ namespace logic.Commands.Transaction {
                 Double? value = null,
                 UInt64? transactionTypeId = null,
                 UInt64? userId = null,
-                Boolean forceUpdate = false,
                 Boolean overwriteNull = false) {
             this.id = id;
             this.description = description;
@@ -44,89 +37,143 @@ namespace logic.Commands.Transaction {
             this.value = value;
             this.transactionTypeId = transactionTypeId;
             this.userId = userId;
-            this.forceUpdate = forceUpdate;
             this.overwriteNull = overwriteNull;
         }
 
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
+            var ownerId = executorManager.UserId;
 
-            var currentTransaction = (await database.Transactions.FirstOrDefaultAsync(t => t.Id == id)) ?? throw new ObjectNotFoundException("Transaction to update not found");
+            var requestedTransaction = await database.Transactions
+                .Include(transaction => transaction.TransactionDestination)
+                .FirstOrDefaultAsync(transaction => transaction.Id == id && transaction.UserId == ownerId)
+                ?? throw new ObjectNotFoundException("Transaction to update not found");
 
-            var restoreCurrentWalletValue = new UpdateWalletCurrentValueCommand(currentTransaction.WalletId, -currentTransaction.Value, isDifferenze: true, force: forceUpdate);
-            await restoreCurrentWalletValue.Execute(executorManager);
-
-            currentTransaction.Description = overwriteNull ? description : (description ?? currentTransaction.Description);
-            currentTransaction.LongDescription = overwriteNull ? longDescription : (longDescription ?? currentTransaction.LongDescription);
-            currentTransaction.Date = date?.ToDateTime(TimeOnly.MinValue) ?? currentTransaction.Date;
-            currentTransaction.WalletId = walletId ?? currentTransaction.WalletId;
-            currentTransaction.TransactionTypeId = transactionTypeId ?? currentTransaction.TransactionTypeId;
-            currentTransaction.Value = currentTransaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id ? -Math.Abs(value ?? currentTransaction.Value) : (value ?? currentTransaction.Value);
-            currentTransaction.UserId = userId ?? currentTransaction.UserId;
-
-            var updateCurrentWalletValue = new UpdateWalletCurrentValueCommand(currentTransaction.WalletId, currentTransaction.Value, isDifferenze: true, force: forceUpdate);
-            await updateCurrentWalletValue.Execute(executorManager);
-
-            if ((currentTransaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id && walletDestinationId == null) ||
-                (walletDestinationId != null && currentTransaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id)) {
-                throw new ExecutorException("Not all data are in transfer");
+            if (userId != null && userId != ownerId) {
+                throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
             }
 
-            if (overwriteNull && walletDestinationId == null && currentTransaction.TransactionDestinationId != null) {
-                var destinationTransactionDb = database.Transactions.FirstOrDefault(t => t.Id == currentTransaction.TransactionDestinationId) ?? throw new ObjectNotFoundException("Transaction destination not found");
-
-                var restoreCurrentWalletDestinationValue = new UpdateWalletCurrentValueCommand(destinationTransactionDb.WalletId, -destinationTransactionDb.Value, isDifferenze: true, force: forceUpdate);
-                await restoreCurrentWalletDestinationValue.Execute(executorManager);
-
-                database.Transactions.Remove(destinationTransactionDb);
-                await database.SaveChangesAsync();
-
-                currentTransaction.TransactionDestinationId = null;
-            } else if (walletDestinationId != null && currentTransaction.TransactionDestinationId == null) {
-                var destinationTransaction = new TransactionDb {
-                    Description = currentTransaction.Description,
-                    LongDescription = currentTransaction.LongDescription,
-                    Date = currentTransaction.Date,
-                    WalletId = walletDestinationId!.Value,
-                    TransactionTypeId = DatabaseInitializer.TRANSFER.Id,
-                    UserId = currentTransaction.UserId,
-                    UserInsertId = currentTransaction.UserInsertId,
-                    TransactionDestinationId = currentTransaction.Id,
-                    Value = Math.Abs(currentTransaction.Value),
-                };
-
-                database.Transactions.Add(destinationTransaction);
-                await database.SaveChangesAsync();
-
-                currentTransaction.TransactionDestinationId = destinationTransaction.Id;
-
-                var updateCurrentWalletDestinationValue = new UpdateWalletCurrentValueCommand(walletDestinationId!.Value, Math.Abs(currentTransaction.Value), isDifferenze: true, force: forceUpdate);
-                await updateCurrentWalletDestinationValue.Execute(executorManager);
-            } else if (walletDestinationId != null && currentTransaction.TransactionDestinationId != null) {
-                var destinationTransactionDb = database.Transactions.FirstOrDefault(t => t.Id == currentTransaction.TransactionDestinationId) ?? throw new ObjectNotFoundException("Transaction destination not found");
-
-                var restoreCurrentWalletDestinationValue = new UpdateWalletCurrentValueCommand(destinationTransactionDb.WalletId, -destinationTransactionDb.Value, isDifferenze: true, force: forceUpdate);
-                await restoreCurrentWalletDestinationValue.Execute(executorManager);
-
-                destinationTransactionDb.Description = currentTransaction.Description;
-                destinationTransactionDb.LongDescription = currentTransaction.LongDescription;
-                destinationTransactionDb.Date = currentTransaction.Date;
-                destinationTransactionDb.WalletId = walletDestinationId.Value;
-                destinationTransactionDb.Value = Math.Abs(currentTransaction.Value);
-                destinationTransactionDb.TransactionTypeId = DatabaseInitializer.TRANSFER.Id;
-                destinationTransactionDb.UserId = currentTransaction.UserId;
-
-                var updateCurrentWalletDestinationValue = new UpdateWalletCurrentValueCommand(walletDestinationId!.Value, Math.Abs(currentTransaction.Value), isDifferenze: true, force: forceUpdate);
-                await updateCurrentWalletDestinationValue.Execute(executorManager);
-
-                database.Update(destinationTransactionDb);
-                await database.SaveChangesAsync();
+            TransactionDb sourceTransaction = requestedTransaction;
+            TransactionDb? destinationTransaction = null;
+            if (requestedTransaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id
+                || requestedTransaction.TransactionDestinationId != null) {
+                (sourceTransaction, destinationTransaction) =
+                    TransactionPairPolicy.RequireValidTransferPair(requestedTransaction);
             }
 
-            database.Update(currentTransaction);
-            await database.SaveChangesAsync();
+            var finalTypeId = transactionTypeId ?? sourceTransaction.TransactionTypeId;
+            var finalType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(database, finalTypeId, ownerId);
+            var finalIsTransfer = finalType.Id == DatabaseInitializer.TRANSFER.Id;
+            var finalSourceWalletId = walletId ?? sourceTransaction.WalletId;
+            var finalSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, finalSourceWalletId, ownerId);
+            WalletDb? finalDestinationWallet = null;
+            Double finalValue;
 
-            result = currentTransaction.Id;
+            if (finalIsTransfer) {
+                var finalDestinationWalletId = walletDestinationId
+                    ?? (!overwriteNull ? destinationTransaction?.WalletId : null);
+                finalValue = value ?? Math.Abs(sourceTransaction.Value);
+
+                if (finalDestinationWalletId == null || !Double.IsFinite(finalValue) || finalValue <= 0) {
+                    throw new InvalidTransactionException("Transfers require a destination wallet and a positive value");
+                }
+
+                if (finalDestinationWalletId.Value == finalSourceWallet.Id) {
+                    throw new InvalidTransactionException("Transfer wallets must be different");
+                }
+
+                finalDestinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
+                    database,
+                    finalDestinationWalletId.Value,
+                    ownerId);
+            } else {
+                if (walletDestinationId != null) {
+                    throw new InvalidTransactionException("Only transfers can specify a destination wallet");
+                }
+
+                finalValue = value ?? (destinationTransaction == null
+                    ? sourceTransaction.Value
+                    : Math.Abs(sourceTransaction.Value));
+                if (!Double.IsFinite(finalValue) || finalValue == 0) {
+                    throw new InvalidTransactionException("Transaction value must be finite and non-zero");
+                }
+            }
+
+            var oldSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
+                database,
+                sourceTransaction.WalletId,
+                ownerId);
+            WalletDb? oldDestinationWallet = null;
+            if (destinationTransaction != null) {
+                oldDestinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
+                    database,
+                    destinationTransaction.WalletId,
+                    ownerId);
+            }
+
+            var finalDescription = overwriteNull ? description : description ?? sourceTransaction.Description;
+            var finalLongDescription = overwriteNull
+                ? longDescription
+                : longDescription ?? sourceTransaction.LongDescription;
+            var finalDate = date?.ToDateTime(TimeOnly.MinValue) ?? sourceTransaction.Date;
+
+            try {
+                oldSourceWallet.CurrentValue -= sourceTransaction.Value;
+                if (destinationTransaction != null && oldDestinationWallet != null) {
+                    oldDestinationWallet.CurrentValue -= destinationTransaction.Value;
+                }
+
+                sourceTransaction.Description = finalDescription;
+                sourceTransaction.LongDescription = finalLongDescription;
+                sourceTransaction.Date = finalDate;
+                sourceTransaction.WalletId = finalSourceWallet.Id;
+                sourceTransaction.TransactionTypeId = finalTypeId;
+                sourceTransaction.UserId = ownerId;
+                sourceTransaction.UserInsertId = ownerId;
+
+                if (!finalIsTransfer) {
+                    sourceTransaction.Value = finalValue;
+                    sourceTransaction.TransactionDestinationId = null;
+                    finalSourceWallet.CurrentValue += finalValue;
+
+                    if (destinationTransaction != null) {
+                        destinationTransaction.TransactionDestinationId = null;
+                        database.Transactions.Remove(destinationTransaction);
+                    }
+
+                    await database.SaveChangesAsync();
+                } else {
+                    sourceTransaction.Value = -finalValue;
+                    finalSourceWallet.CurrentValue -= finalValue;
+                    finalDestinationWallet!.CurrentValue += finalValue;
+
+                    if (destinationTransaction == null) {
+                        destinationTransaction = new TransactionDb {
+                            TransactionDestinationId = sourceTransaction.Id
+                        };
+                        database.Transactions.Add(destinationTransaction);
+                    }
+
+                    destinationTransaction.Description = finalDescription;
+                    destinationTransaction.LongDescription = finalLongDescription;
+                    destinationTransaction.Date = finalDate;
+                    destinationTransaction.WalletId = finalDestinationWallet.Id;
+                    destinationTransaction.TransactionTypeId = DatabaseInitializer.TRANSFER.Id;
+                    destinationTransaction.UserId = ownerId;
+                    destinationTransaction.UserInsertId = ownerId;
+                    destinationTransaction.Value = finalValue;
+
+                    await database.SaveChangesAsync();
+
+                    sourceTransaction.TransactionDestinationId = destinationTransaction.Id;
+                    destinationTransaction.TransactionDestinationId = sourceTransaction.Id;
+                    await database.SaveChangesAsync();
+                }
+
+                result = sourceTransaction.Id;
+            } catch (DbUpdateException) {
+                throw new ObjectNotFoundException("Transaction reference not found");
+            }
         }
     }
 }

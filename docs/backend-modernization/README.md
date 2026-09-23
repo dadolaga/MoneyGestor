@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 in corso (SEC-10 completato)**
-- Data dell'ultimo aggiornamento: **22 settembre 2026**
+- Stato del documento: **Fase 0 completata; Fase 1 in corso (SEC-10..13 completati)**
+- Data dell'ultimo aggiornamento: **23 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -44,21 +44,22 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-76 casi ordinari fra command, infrastruttura, pipeline HTTP e redazione dei log.
+99 casi ordinari fra command, infrastruttura, pipeline HTTP e redazione dei log.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
-1. **Isolamento fra utenti.** `EditWalletCommand` modifica un portafoglio cercandolo solo per ID. Inoltre il client può
-   assegnare a un movimento un `UserId` arbitrario; lista, dettaglio e dashboard usano poi criteri di proprietà diversi.
-   Questo consente attribuzione cross-account e può esporre dati del profilo referenziato.
+1. **Isolamento fra utenti.** SEC-11 e SEC-12 hanno introdotto policy riusabili owner/global, lookup non enumerabili e
+   ownership singola dei movimenti derivata dal principal. I profili utente non vengono più inclusi nei movimenti e il
+   preflight blocca dati storici incoerenti senza correggerli automaticamente. I due step sono completati.
 2. **Protezione dei segreti.** SEC-10 ha rimosso il sensitive-data logging EF, il token dalle eccezioni e i payload dai
    log HTTP. Gli eventi SQL senza valori sono ora limitati a `Development + Trace`; restano da mantenere queste
    garanzie negli step successivi.
-3. **Sicurezza delle operazioni distruttive.** I test cancellano un database MySQL con nome e credenziali fissi. L'import
-   sposta le tabelle e rimuove database prima di avere validato e caricato completamente il backup; un errore durante il
-   primo rename non è coperto dal recovery.
-4. **Integrità economica.** Importi e saldi sono `Double`. L'aggiornamento del saldo è un read-modify-write privo di
-   controllo di concorrenza. Manca una procedura automatica di riconciliazione.
+3. **Sicurezza delle operazioni distruttive.** I test usano un MySQL effimero di proprietà del singolo run. La CLI
+   import/export resta invece raggiungibile e deve essere disabilitata fail-closed da BAK-40 prima di trattare dati
+   reali; il vecchio flusso di import non offre ancora garanzie sufficienti di staging e recovery.
+4. **Integrità economica.** SEC-13 ammette saldi negativi e valida atomicamente coppie di trasferimento reciproche,
+   distinte e a somma zero. Importi e saldi restano `Double` e l'aggiornamento del saldo è un read-modify-write privo di
+   controllo di concorrenza: questi rischi appartengono agli step dati successivi.
 5. **Evoluzione dello schema.** L'avvio usa `EnsureCreated`; non esistono migration EF. Il seed ingoia tutte le eccezioni
    e contiene un aggiornamento dell'oggetto sbagliato.
 6. **Contratto HTTP.** La validazione è manuale e parziale, quasi tutte le eccezioni diventano 500, l'autenticazione è
@@ -124,7 +125,8 @@ prerequisito.
 La baseline iniziale è [BSL-00 del 21 settembre 2026](evidence/BSL-00_2026-09-21.md); l'esito aggiornato è nel
 [completamento della Fase 0](evidence/PHASE_0_2026-09-21.md).
 
-SEC-10 è documentato nell'[evidenza del 22 settembre 2026](evidence/SEC-10_2026-09-22.md).
+SEC-10 è documentato nell'[evidenza del 22 settembre 2026](evidence/SEC-10_2026-09-22.md). SEC-11, SEC-12 e SEC-13
+sono documentati nell'[evidenza del 23 settembre 2026](evidence/SEC-11_SEC-12_SEC-13_2026-09-23.md).
 
 | Elemento | Risultato al 21 settembre 2026 |
 |---|---|

@@ -1,6 +1,6 @@
 # Contratto API
 
-Documento ricavato dai controller e dal client al 10 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
+Documento ricavato dai controller e dal client, aggiornato al 23 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
 
 ## Convenzioni
 
@@ -109,7 +109,18 @@ Transazione:
 }
 ```
 
-Per un trasferimento, `transactionType.id` è `1` e `walletDestination.id` è obbligatorio.
+`user` e `userInsert` sono campi server-managed: se presenti nel body vengono ignorati e l'owner viene ricavato dal
+token. Nei payload di risposta le due proprietà restano presenti ma valgono `null`, così il contratto JSON legacy non
+espone profili utente.
+
+Per un trasferimento, `transactionType.id` è `1`, `value` deve essere positivo e `walletDestination.id` è obbligatorio.
+Origine e destinazione devono essere portafogli distinti dello stesso utente. Il backend crea due lati reciproci, uno
+negativo sull'origine e uno positivo sulla destinazione; la lista espone soltanto il lato origine. Un movimento non di
+trasferimento non può indicare `walletDestination` e il valore deve essere finito e diverso da zero. Saldi iniziali e
+correnti negativi sono ammessi e non esistono più flag `force` per aggirare la regola.
+
+Per lookup puntuali, una risorsa inesistente e una risorsa appartenente a un altro utente producono lo stesso `404`,
+senza rivelarne l'esistenza.
 
 ## Lista, ordinamento e filtri
 
@@ -153,7 +164,9 @@ I nomi proprietà non validi possono essere ignorati o causare errori a seconda 
 | 121 | utente non trovato o token non valido/scaduto |
 | 201 | nome wallet duplicato |
 | 202 | wallet non trovato |
-| 301 | il wallet diventerebbe negativo |
+| 302 | combinazione di movimento/trasferimento non valida |
 | 401 | tipo di transazione duplicato |
+| 404 | risorsa inesistente o non posseduta |
 
-Non tutte le eccezioni di dominio vengono tradotte in codici HTTP/applicativi: diversi casi arrivano oggi come errore 500.
+Il codice applicativo `404` viene restituito con status HTTP 404. Le combinazioni di movimento non valide conservano
+l'envelope legacy e usano il codice `302`; le eccezioni non ancora mappate possono ancora arrivare come errore 500.

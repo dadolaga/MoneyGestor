@@ -1,10 +1,7 @@
-﻿using logic.Commands.Wallets;
-using logic.Exceptions;
+﻿using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
@@ -18,26 +15,45 @@ namespace logic.Commands.Transaction {
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
-            var transaction = (await database.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.UserInsertId == executorManager.UserId)) ?? throw new UserNotHavePermissionExcpetion();
+            var requestedTransaction = await database.Transactions
+                .Include(transaction => transaction.TransactionDestination)
+                .FirstOrDefaultAsync(transaction =>
+                    transaction.Id == id && transaction.UserId == executorManager.UserId)
+                ?? throw new ObjectNotFoundException("Transaction not found");
 
-            if (transaction.TransactionDestinationId != null) {
-                var transactionDestination = await database.Transactions.FirstAsync(t => t.Id == transaction.TransactionDestinationId);
-
-                var updateDestinationWalletValueCommnad = new UpdateWalletCurrentValueCommand(transactionDestination.WalletId, -transactionDestination.Value, true);
-
-                await updateDestinationWalletValueCommnad.Execute(executorManager);
-
-                database.Transactions.Remove(transactionDestination);
-                await database.SaveChangesAsync();
+            var sourceTransaction = requestedTransaction;
+            global::database.Models.TransactionDb? destinationTransaction = null;
+            if (requestedTransaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id
+                || requestedTransaction.TransactionDestinationId != null) {
+                (sourceTransaction, destinationTransaction) =
+                    TransactionPairPolicy.RequireValidTransferPair(requestedTransaction);
             }
 
-            var updateWalletValueCommnad = new UpdateWalletCurrentValueCommand(transaction.WalletId, -transaction.Value, true);
+            var sourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
+                database,
+                sourceTransaction.WalletId,
+                executorManager.UserId);
+            sourceWallet.CurrentValue -= sourceTransaction.Value;
 
-            await updateWalletValueCommnad.Execute(executorManager);
-            
-            database.Transactions.Remove(transaction);
+            if (destinationTransaction != null) {
+                var destinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
+                    database,
+                    destinationTransaction.WalletId,
+                    executorManager.UserId);
+                destinationWallet.CurrentValue -= destinationTransaction.Value;
+
+                sourceTransaction.TransactionDestinationId = null;
+                destinationTransaction.TransactionDestinationId = null;
+                await database.SaveChangesAsync();
+
+                database.Transactions.Remove(destinationTransaction);
+            }
+
+            database.Transactions.Remove(sourceTransaction);
 
             await database.SaveChangesAsync();
+
+            result = sourceTransaction.Id;
         }
     }
 }

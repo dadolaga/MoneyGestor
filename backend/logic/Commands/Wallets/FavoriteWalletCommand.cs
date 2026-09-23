@@ -5,14 +5,15 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace logic.Commands.Wallets {
     public class FavoriteWalletCommand : ICommand<UInt64> {
         private UInt64 walletId;
-        private Boolean favorite;
+        private Boolean? favorite;
 
-        public FavoriteWalletCommand(UInt64 walletId, Boolean favorite) {
+        public FavoriteWalletCommand(UInt64 walletId, Boolean? favorite = null) {
             this.walletId = walletId;
             this.favorite = favorite;
         }
@@ -20,9 +21,9 @@ namespace logic.Commands.Wallets {
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
-            var wallet = database.Wallets.FirstOrDefault(w => w.Id == walletId && w.UserId == executorManager.UserId) ?? throw new ObjectNotFoundException("Wallet not found");
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, executorManager.UserId);
 
-            wallet.Favorite = favorite;
+            wallet.Favorite = favorite ?? !wallet.Favorite;
 
             database.Update(wallet);
 

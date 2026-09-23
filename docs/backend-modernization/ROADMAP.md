@@ -84,9 +84,9 @@ Scheda: [PHASE_1_SECURITY.md](phases/PHASE_1_SECURITY.md)
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
 | SEC-10 | P0 | completato (22 settembre 2026) | disabilitare logging sensibile e redigere segreti | BSL-00 |
-| SEC-11 | P0 | non iniziato | ownership portafogli, colori e tipi | TST-02 |
-| SEC-12 | P0 | non iniziato | ownership movimenti e preflight bloccante | DEC-01, DEC-09, TST-02 |
-| SEC-13 | P1 | non iniziato | saldi negativi e invarianti dei trasferimenti | DEC-05, SEC-11, SEC-12 |
+| SEC-11 | P0 | completato (23 settembre 2026) | ownership portafogli, colori e tipi | TST-02 |
+| SEC-12 | P0 | completato (23 settembre 2026) | ownership movimenti e preflight bloccante | DEC-01, DEC-09, TST-02 |
+| SEC-13 | P1 | completato (23 settembre 2026) | saldi negativi e invarianti dei trasferimenti | DEC-05, SEC-11, SEC-12 |
 | SEC-14 | P1 | non iniziato | ASP.NET Core Identity, cookie e migrazione account | DEC-02, TST-02 |
 | SEC-15 | P1 | non iniziato | verifica email, recupero, validation anti-abuso e rate limit | DEC-07, DEC-10, SEC-14 |
 

@@ -54,7 +54,11 @@ namespace webserver.Controllers {
 
             using var database = DatabaseFactory.Use();
 
-            var wallet = database.Wallets.Where(w => w.Id == id && w.UserId == executor.UserId).Include(w => w.Color).First();
+            var wallet = await database.Wallets
+                .Where(w => w.Id == id && w.UserId == executor.UserId)
+                .Include(w => w.Color)
+                .FirstOrDefaultAsync()
+                ?? throw new ObjectNotFoundException("Wallet not found");
 
             return OkResponse(wallet.Convert(), "List of wallets");
         }
@@ -87,25 +91,12 @@ namespace webserver.Controllers {
 
         [HttpPut("favorite/{id}")]
         public async Task<IActionResult> SetFavorite([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            Boolean isFavorite;
             var executor = new ExecutorManager(authorization);
-            await executor.LoginUser();
+            var updateFavoiteCommand = new FavoriteWalletCommand(id);
 
-            try {
-                using (var database = DatabaseFactory.Use()) {
-                    var wallet = (await database.Wallets.FirstOrDefaultAsync(w => w.Id == id)) ?? throw new ObjectNotFoundException("wallet not found");
+            await executor.Execute(updateFavoiteCommand);
 
-                    isFavorite = wallet.Favorite;
-                }
-
-                var updateFavoiteCommand = new FavoriteWalletCommand(id, !isFavorite);
-
-                await executor.Execute(updateFavoiteCommand);
-
-                return OkResponse();
-            } catch (ObjectNotFoundException ex) {
-                return ErrorResponse(202, "Wallet not found");
-            }
+            return OkResponse();
         }
     }
 }

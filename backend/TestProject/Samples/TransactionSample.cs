@@ -20,7 +20,6 @@ namespace TestProject.Samples {
         public UInt64? WalletDestinationId { get; init; }
         public Double Value { get; init; }
         public UInt64? UserId { get; init; }
-        public Boolean? ForceInsert { get; init; }
 
         public AddTransactionCommand AddTransactionCommand { get; init; }
 
@@ -32,8 +31,7 @@ namespace TestProject.Samples {
                 String? longDescription = null, 
                 DateOnly? date = null,
                 Double value = DEFAULT_VALUE,
-                UInt64? userId = null,
-                Boolean forceInsert = false) {
+                UInt64? userId = null) {
             Description = description;
             LongDescription = longDescription;
             Date = date ?? DEFAULT_DATE;
@@ -42,7 +40,6 @@ namespace TestProject.Samples {
             WalletDestinationId = walletDestinationId;
             Value = value;
             UserId = userId;
-            ForceInsert = forceInsert;
 
             AddTransactionCommand = new AddTransactionCommand(
                 description: Description, 
@@ -52,8 +49,7 @@ namespace TestProject.Samples {
                 walletDestinationId: WalletDestinationId,
                 value: Value,
                 transactionTypeId: TransactionTypeId,
-                userId: userId,
-                forceInsert: forceInsert);
+                userId: userId);
         }
     }
 }

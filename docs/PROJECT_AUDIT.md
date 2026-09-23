@@ -17,6 +17,12 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > payload dai log delle risposte. TRACE conserva dettaglio tecnico senza password, token, header, body o valori dei
 > parametri SQL; gli eventi EF sono inoltre limitati a `Development`. La sezione SEC-02 sotto resta storica.
 
+> Aggiornamento del 23 settembre 2026: SEC-11..13 hanno centralizzato la policy owner/global per wallet, colori e tipi,
+> uniformato l'owner dei movimenti al principal autenticato, eliminato i profili utente dai payload dei movimenti e
+> introdotto un preflight read-only bloccante. I saldi negativi sono ora ammessi; i trasferimenti richiedono wallet
+> distinti dello stesso owner e una coppia reciproca a somma zero. Le sezioni storiche su questi rischi restano come
+> fotografia dell'audit originario. I tre step sono completati e verificati nell'[evidenza dedicata](backend-modernization/evidence/SEC-11_SEC-12_SEC-13_2026-09-23.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

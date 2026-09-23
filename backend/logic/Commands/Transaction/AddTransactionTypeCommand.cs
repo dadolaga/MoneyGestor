@@ -1,5 +1,7 @@
 ﻿using database.Models;
 using logic.Exceptions;
+using logic.Security;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +30,11 @@ namespace logic.Commands.Transaction {
 
             await database.TransactionTypes.AddAsync(transactionType);
 
-            await database.SaveChangesAsync();
+            try {
+                await database.SaveChangesAsync();
+            } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
+                throw new DuplicateObjectException("This transaction type already exist");
+            }
 
             result = transactionType.Id;
         }

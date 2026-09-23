@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using logic.Exceptions;
+using logic.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace logic.Commands.Wallets {
@@ -22,7 +23,11 @@ namespace logic.Commands.Wallets {
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
-            var wallet = database.Wallets.FirstOrDefault(w => w.Id == this.walletIdToUpdate) ?? throw new ObjectNotFoundException("Wallet not found");
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletIdToUpdate, executorManager.UserId);
+
+            if (colorId != null) {
+                await OwnershipPolicy.RequireAvailableColorAsync(database, colorId.Value, executorManager.UserId);
+            }
 
             if (await database.Wallets.Where(w => w.Id != walletIdToUpdate && w.UserId == executorManager.UserId && w.Name == name).CountAsync() > 0) {
                 throw new DuplicateObjectException("Wallet already exist");
@@ -33,7 +38,13 @@ namespace logic.Commands.Wallets {
 
             database.Update(wallet);
 
-            await database.SaveChangesAsync();
+            try {
+                await database.SaveChangesAsync();
+            } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
+                throw new DuplicateObjectException("Wallet already exist");
+            } catch (DbUpdateException) {
+                throw new ObjectNotFoundException("Color not found");
+            }
 
             result = wallet.Id;
         }

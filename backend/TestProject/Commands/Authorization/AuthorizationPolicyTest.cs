@@ -11,8 +11,8 @@ using TestProject.Utils;
 namespace TestProject.Commands.Authorization;
 
 [TestFixture]
-[Category("KnownSecurityGap")]
-internal class KnownAuthorizationGapTest : ExecutorBase {
+[Category("Security")]
+internal class AuthorizationPolicyTest : ExecutorBase {
     [TearDown]
     public async Task CleanDatabase() {
         using var database = DatabaseFactory.Use();
@@ -25,7 +25,6 @@ internal class KnownAuthorizationGapTest : ExecutorBase {
     }
 
     [Test]
-    [Explicit("Known authorization gap SEC-11: EditWalletCommand loads by ID without checking the owner.")]
     public async Task EditWalletCannotModifyAnotherUsersWallet() {
         var owner = new UserSample();
         var ownerExecutor = await TestUtils.CreateExecutorManagerForUser(owner);
@@ -36,11 +35,10 @@ internal class KnownAuthorizationGapTest : ExecutorBase {
         var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
         var edit = new EditWalletCommand(wallet.AddWalletCommand.Result, name: "forbidden");
 
-        Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await otherExecutor.Execute(edit));
+        Assert.ThrowsAsync<ObjectNotFoundException>(async () => await otherExecutor.Execute(edit));
     }
 
     [Test]
-    [Explicit("Known authorization gap SEC-11: wallet color references are not restricted to global or owned colors.")]
     public async Task WalletCannotReferenceAnotherUsersColor() {
         var colorOwner = new UserSample();
         var colorOwnerExecutor = await TestUtils.CreateExecutorManagerForUser(colorOwner);
@@ -53,12 +51,11 @@ internal class KnownAuthorizationGapTest : ExecutorBase {
         var otherExecutor = await TestUtils.CreateExecutorManagerForUser(otherUser);
         var wallet = new WalletSample(colorId: color.Id);
 
-        Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await otherExecutor.Execute(wallet.AddWalletCommand));
+        Assert.ThrowsAsync<ObjectNotFoundException>(async () => await otherExecutor.Execute(wallet.AddWalletCommand));
         GC.KeepAlive(colorOwnerExecutor);
     }
 
     [Test]
-    [Explicit("Known authorization gap SEC-12: transaction types are not restricted to global or owned types.")]
     public async Task TransactionCannotReferenceAnotherUsersType() {
         var typeOwner = new UserSample();
         var typeOwnerExecutor = await TestUtils.CreateExecutorManagerForUser(typeOwner);
@@ -71,11 +68,10 @@ internal class KnownAuthorizationGapTest : ExecutorBase {
         await otherExecutor.Execute(wallet.AddWalletCommand);
         var transaction = new TransactionSample(type.Result, wallet.AddWalletCommand.Result);
 
-        Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await otherExecutor.Execute(transaction.AddTransactionCommand));
+        Assert.ThrowsAsync<ObjectNotFoundException>(async () => await otherExecutor.Execute(transaction.AddTransactionCommand));
     }
 
     [Test]
-    [Explicit("Known authorization gap SEC-12: transaction owner can currently be supplied by the client.")]
     public async Task TransactionOwnerCannotBeSuppliedByClient() {
         var actor = new UserSample();
         var actorExecutor = await TestUtils.CreateExecutorManagerForUser(actor);

@@ -12,11 +12,17 @@ namespace webserver {
                     Code = 20,
                     Message = "User token expiated"
                 };
+                httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+            } else if (exception is ObjectNotFoundException or UserNotHavePermissionExcpetion) {
+                response = new BaseResponse {
+                    Code = 404,
+                    Message = "Resource not found"
+                };
+                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             } else {
                 return false;
             }
 
-            httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
             await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
 
             return true;

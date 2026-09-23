@@ -55,8 +55,8 @@ namespace logic.Models {
                 Wallet = transactionDb.Wallet.Convert(),
                 WalletDestination = transactionDb.TransactionDestination?.Wallet?.Convert(),
                 TransactionType = transactionDb.TransactionType.Convert(),
-                User = transactionDb.User.Convert(),
-                UserInsert = transactionDb.UserInsert.Convert(),
+                User = null,
+                UserInsert = null,
             };
         }
     }

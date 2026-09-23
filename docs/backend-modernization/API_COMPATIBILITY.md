@@ -29,7 +29,7 @@ adapter di feature, senza spostare regole di dominio nel frontend e senza duplic
 | Sessione | `GET /user/info` | shell rimuove il cookie su errori applicativi |
 | Wallet | CRUD `/wallet` | create dichiara ID ma può ricevere `null` |
 | Tipo | `GET/POST /type` | globali e personali nello stesso array |
-| Movimenti | CRUD `/transaction` | include wallet, tipo e destinazione |
+| Movimenti | CRUD `/transaction` | owner dal token; include wallet, tipo e destinazione, non i profili utente |
 | Lista | `{ length, data[] }` dentro `data` | `offset` significa pagina |
 | Dashboard | `GET /dashboard/all?from&to` | numeri grezzi e categorie type/value |
 
@@ -133,7 +133,13 @@ espongono stack trace, nomi SQL, PII o dettagli interni.
 Le risorse altrui cercate per ID restituiscono 404 per non confermarne l'esistenza. Le policy autorizzative generali
 possono restituire 403 quando l'esistenza della risorsa non è in discussione.
 
-Il legacy mantiene il proprio envelope e mappa gli stessi errori applicativi ai codici storici finché è attivo.
+Il legacy mantiene il proprio envelope finché è attivo. I lookup per ID assenti o non posseduti restituiscono oggi
+HTTP 404 con `{ code: 404, message: "Resource not found" }`; le combinazioni di movimento/trasferimento non valide
+usano il codice applicativo `302` nell'envelope storico.
+
+SEC-11..13 applicano già al legacy la policy di ownership singola: il body non può impostare l'owner, colori e tipi
+privati sono utilizzabili soltanto dal proprietario e i saldi negativi sono ammessi. Un trasferimento richiede importo
+positivo e due wallet distinti dello stesso owner; il server genera la coppia reciproca e la lista espone un solo lato.
 
 ## Autenticazione e account
 

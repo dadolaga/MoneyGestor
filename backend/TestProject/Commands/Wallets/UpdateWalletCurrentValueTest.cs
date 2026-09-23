@@ -69,28 +69,14 @@ namespace TestProject.Commands.Wallets {
         }
 
         [Test]
-        public async Task CorrectInsert_NotEnougthMoney() {
+        public async Task CorrectInsert_AllowsNegativeBalance() {
             Double valueDifference = -(wallet.Value + 12);
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true);
-
-            Assert.ThrowsAsync<WalletGoesToNegative>(async () => await ExecutorManager.Execute(updateValueCommmand));
-
-            using var db = DatabaseFactory.Use();
-            var walletDb = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
-            Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
-            Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));
-            Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value));
-        }
-
-        [Test]
-        public async Task CorrectInsert_NotEnougthMoneyForced() {
-            Double valueDifference = -(wallet.Value + 12);
-            var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true, true);
 
             await ExecutorManager.Execute(updateValueCommmand);
 
             using var db = DatabaseFactory.Use();
-            var walletDb = db.Wallets.First(w => w.Id == updateValueCommmand.Result);
+            var walletDb = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
             Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value + valueDifference));
@@ -104,7 +90,7 @@ namespace TestProject.Commands.Wallets {
             Double valueDifference = 63;
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true);
 
-            Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await secondExecutor.Execute(updateValueCommmand));
+            Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(updateValueCommmand));
 
             using var db = DatabaseFactory.Use();
             var walletDb = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
