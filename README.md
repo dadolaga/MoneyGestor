@@ -83,13 +83,28 @@ Campi principali:
     "user": "moneygestor_user",
     "password": "CHANGE_ME_IN_PRODUCTION",
     "forceUpdate": false
+  },
+  "security": {
+    "allowedOrigins": ["http://localhost:3000"]
+  },
+  "email": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "username": "CHANGE_ME",
+    "password": "CHANGE_ME",
+    "from": "noreply@example.com",
+    "useSsl": true,
+    "frontendBaseUrl": "http://localhost:3000"
   }
 }
 ```
 
 `settings.json` è ignorato da Git. Non inserirlo nei commit e non usare credenziali di produzione nell'esempio.
 
-Nota: `forceUpdate` viene letto dalla configurazione ma, allo stato attuale, non viene applicato dal backend.
+`forceUpdate=true` autorizza l'applicazione controllata delle migration dedicate a Identity. Con migration pendenti e
+flag `false`, lo startup si blocca. In `Production` sono obbligatori SMTP e `DATA_PROTECTION_KEYS_PATH`, che deve
+puntare a storage persistente e protetto. Negli altri ambienti, in assenza della variabile, le chiavi che cifrano cookie
+e token vengono persistite accanto ai binari.
 
 ### Livelli e sicurezza dei log
 

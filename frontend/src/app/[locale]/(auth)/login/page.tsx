@@ -4,14 +4,12 @@ import { useState } from 'react';
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useCookies } from 'react-cookie';
 import { useForm } from 'react-hook-form';
 
 import { CheckboxField, InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useApi from '@/hooks/useApi';
-import type { ResponseError } from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
 
 interface LoginFormValues {
@@ -24,7 +22,6 @@ export default function LoginPage() {
     const t = useTranslations('Auth.login');
     const router = useRouter();
     const api = useApi();
-    const [, setCookie] = useCookies(['token']);
     const [submitError, setSubmitError] = useState<string>();
     const [isPending, setIsPending] = useState(false);
     const form = useForm<LoginFormValues>({ defaultValues: { username: '', password: '', remember: false } });
@@ -32,16 +29,15 @@ export default function LoginPage() {
     const submitHandler = (values: LoginFormValues) => {
         setSubmitError(undefined);
         setIsPending(true);
-        api.user
+        api.account
             .login({ user: values.username, password: values.password, remember: values.remember })
-            .onSuccess((token) => {
-                const expires = new Date();
-                expires.setMonth(expires.getMonth() + 6);
-                setCookie('token', token, { path: '/', expires });
+            .onSuccess(() => {
                 router.replace('/dashboard');
             })
-            .onError((error: ResponseError) => {
-                const message = error.code === 111 ? t('errors.invalidCredentials') : t('errors.generic');
+            .onError((error) => {
+                const message = error.status === 401 || error.status === 423
+                    ? t('errors.invalidCredentials')
+                    : t('errors.generic');
                 setSubmitError(message);
             })
             .onFinish(() => setIsPending(false))
@@ -99,6 +95,15 @@ export default function LoginPage() {
                         </Button>
                     </form>
                     <p className="mb-0 mt-6 text-center text-sm text-muted-foreground">
+                        <Link className="font-medium text-primary hover:underline" href="/forgot-password">
+                            {t('forgotPassword')}
+                        </Link>
+                        {' · '}
+                        <Link className="font-medium text-primary hover:underline" href="/resend-confirmation">
+                            {t('resendConfirmation')}
+                        </Link>
+                    </p>
+                    <p className="mb-0 mt-3 text-center text-sm text-muted-foreground">
                         {t('registerPrompt')}{' '}
                         <Link className="font-medium text-primary hover:underline" href="/register">
                             {t('registerLink')}

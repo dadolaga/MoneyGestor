@@ -23,9 +23,11 @@ La route `/dashboard/wallet` vive ora nel gruppo `(app)` e usa esclusivamente fi
 viste responsive, dialog create/edit, eliminazione e grafico Recharts aggiornano stato React in memoria senza chiamare
 il backend. I componenti wallet legacy MUI/Nivo sono stati rimossi; i trasferimenti restano fuori dalla slice.
 
-La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login e
-registrazione vivono nel route group `(auth)`, quindi non ricevono la shell dashboard: sono disponibili in `/login` e
-`/register` (con gli equivalenti `/it/...`); le precedenti URL dashboard eseguono un redirect temporaneo.
+La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login,
+registrazione, conferma email, reinvio e recupero password vivono nel route group `(auth)`, quindi non ricevono la
+shell dashboard. Il browser usa la sessione Identity tramite cookie HttpOnly e antiforgery: non leggere, salvare o
+inviare token di autenticazione da JavaScript. Le precedenti URL dashboard di login/registrazione eseguono un redirect
+temporaneo.
 
 Vitest, Testing Library, `user-event` e `jest-dom` sono configurati senza forzare peer dependency. Playwright verrà
 aggiunto insieme agli smoke test della prima slice migrata.

@@ -114,16 +114,23 @@ esiste un modello di sharing implicito.
 
 ## Autenticazione attuale
 
-Il login crea un token casuale memorizzato in chiaro nella tabella `login`. Il token dura due ore, oppure trenta giorni con `remember`, e la scadenza viene estesa a ogni richiesta autenticata. Il frontend lo conserva in un cookie leggibile da JavaScript e lo invia come valore grezzo dell'header `Authorization`.
+La nuova `/api/v1/auth` usa ASP.NET Core Identity. Il browser riceve soltanto il cookie cifrato `MoneyGestor.Auth`,
+`HttpOnly`, `SameSite=Lax` e `Secure` in produzione; le mutazioni `/api/v1` richiedono il token antiforgery dedicato.
+Login, sessione, logout, conferma email e recupero password passano dal middleware standard. Gli utenti Identity
+mantengono un mapping univoco verso `UserDb.Id`, così ownership e dati finanziari non cambiano.
 
-Non è usato il middleware ASP.NET Core Authentication/Authorization; ogni endpoint richiama manualmente `ExecutorManager.LoginUser()` oppure esegue un comando che lo richiama.
+Gli hash PBKDF2 legacy sono accettati una sola volta dal password hasher compatibile e riscritti nel formato Identity
+al primo login riuscito. Gli endpoint non versionati restano temporaneamente compatibili col token grezzo: per il
+frontend autenticato un ponte server-side genera l'header legacy senza esporre il token a JavaScript. `/api/v1` non
+accetta tale token.
 
 ## Avvio e configurazione
 
-Il backend esegue `EnsureCreated` e inizializza colori e tipi globali a ogni avvio. Subito dopo esegue un preflight
+Il backend esegue ancora `EnsureCreated` per lo schema storico e inizializza colori e tipi globali a ogni avvio. Lo
+schema Identity ha invece migration EF dedicate, applicate soltanto con `database.forceUpdate=true`; con migration
+pendenti e flag disabilitato lo startup fallisce. Subito dopo esegue un preflight
 read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
-ID tecnici, senza correzioni automatiche o PII. Non sono presenti migration EF. `forceUpdate` è definito nella
-configurazione ma non influenza il flusso di startup.
+ID tecnici, senza correzioni automatiche o PII, e il bootstrap Identity blocca collisioni normalizzate.
 
 Il Compose avvia backend, frontend e, su profilo `tools`, la CLI; MySQL resta esterno.
 

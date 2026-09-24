@@ -7,52 +7,59 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using webserver.Models;
+using webserver.Auth;
+using database.Models;
+using System.Security.Cryptography;
 
 namespace webserver.Controllers {
     [ApiController]
     [Route("user")]
     [EnableCors("CorsPolicy")]
-    public class UserController : MoneyMenagerController {
+    public class UserController(AccountService accounts) : MoneyMenagerController {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] User user) {
-            var executor = new ExecutorManager();
-
-            var addNewUserCommand = new AddNewUserCommand(
-                firstname: user.Firstname,
-                lastname: user.Lastname,
-                username: user.Username,
-                email: user.Email,
-                password: user.Password!);
-
             try {
-                await executor.Execute(addNewUserCommand);
-
-                return CreateResponse(addNewUserCommand.Result, "user");
-            } catch (DuplicateObjectException ex) {
-                if (ex.Message.Contains("username", StringComparison.InvariantCultureIgnoreCase)) {
-                    return ErrorResponse(101, "Duplicate username");
-                } else if (ex.Message.Contains("email", StringComparison.InvariantCultureIgnoreCase)) {
-                    return ErrorResponse(102, "Duplicate email");
-                }
-
-                throw;
+                await accounts.RegisterAsync(new RegisterAccountRequest(
+                    user.Firstname,
+                    user.Lastname,
+                    user.Username,
+                    user.Email,
+                    user.Password!), HttpContext.RequestAborted);
+                var id = await accounts.GetLegacyUserIdAsync(user.Username);
+                return CreateResponse(id ?? 0, "user");
+            } catch (AccountValidationException) {
+                return ErrorResponse(103, "Account validation failed");
             }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Login login) {
-            var executor = new ExecutorManager();
-
-            var loginCommand = new LoginCommand(login.User, login.Password, login.Remember.GetValueOrDefault(false));
-
-            try {
-                await executor.Execute(loginCommand);
-
-                return LoginResponse(loginCommand.Result);
-            } catch (ObjectNotFoundException ex) {
+            var result = await accounts.LoginAsync(
+                new LoginAccountRequest(login.User, login.Password, login.Remember.GetValueOrDefault(false)),
+                issueCookie: false,
+                HttpContext.RequestAborted);
+            if (result != AccountLoginStatus.Succeeded) {
                 return ErrorResponse(111, "Login fail");
             }
+
+            var userId = await accounts.GetLegacyUserIdAsync(login.User);
+            if (userId == null) {
+                return ErrorResponse(111, "Login fail");
+            }
+
+            using var database = DatabaseFactory.Use();
+            var rawLogin = new LoginDb {
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)),
+                Expirated = DateTime.Now.Add(login.Remember.GetValueOrDefault(false)
+                    ? LoginCommand.EXPIRATED_LONG
+                    : LoginCommand.EXPIRATED_SMALL),
+                IsLong = login.Remember.GetValueOrDefault(false),
+                UserId = userId.Value
+            };
+            database.Logins.Add(rawLogin);
+            await database.SaveChangesAsync();
+            return LoginResponse(rawLogin.Token);
         }
 
         [HttpGet("info")]

@@ -5,10 +5,11 @@ API formale `/api/v1` approvata in DEC-03. Va aggiornato insieme a qualsiasi mod
 
 ## Consumer verificati
 
-L'unico consumer presente nel repository è `frontend/src/hooks/useApi.ts`. Il client legacy:
+L'unico consumer presente nel repository è `frontend/src/hooks/useApi.ts`. Dal completamento di SEC-14/15 il client:
 
 - usa `NEXT_PUBLIC_API_URL`, con fallback `http://localhost:5256`;
-- invia il cookie JavaScript `token` come valore grezzo dell'header `Authorization`;
+- usa `withCredentials` e il cookie Identity HttpOnly, senza leggere token di autenticazione;
+- ottiene un token antiforgery prima delle mutazioni `/api/v1/auth`;
 - si aspetta l'envelope `{ code, message, data? }` e considera `code === 0` un successo;
 - costruisce `ResponseError` dai codici applicativi;
 - usa `offset` come indice di pagina;
@@ -23,10 +24,10 @@ adapter di feature, senza spostare regole di dominio nel frontend e senza duplic
 | Area | Contratto osservato | Consumer / nota |
 |---|---|---|
 | Envelope | `{ code: number, message: string, data?: T }` | `useApi.ts` |
-| Auth | `Authorization: <token>` | cookie leggibile dal JavaScript |
+| Auth legacy | `Authorization: <token>` | solo client legacy; il browser usa un ponte interno server-side |
 | Registrazione | `POST /user/add`, ID in `data` | codici 101/102 localizzati dal form |
-| Login | `POST /user/login`, token stringa in `data` | cookie client di sei mesi |
-| Sessione | `GET /user/info` | shell rimuove il cookie su errori applicativi |
+| Login browser | `POST /api/v1/auth/login` | cookie Identity HttpOnly, 2 ore o 30 giorni con `remember` |
+| Sessione browser | `GET /api/v1/auth/session` | logout server-side e revoca tramite security stamp |
 | Wallet | CRUD `/wallet` | create dichiara ID ma può ricevere `null` |
 | Tipo | `GET/POST /type` | globali e personali nello stesso array |
 | Movimenti | CRUD `/transaction` | owner dal token; include wallet, tipo e destinazione, non i profili utente |

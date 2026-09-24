@@ -1,6 +1,6 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 in corso (SEC-10..13 completati)**
+- Stato del documento: **Fase 0 completata; Fase 1 completata (SEC-10..15)**
 - Data dell'ultimo aggiornamento: **23 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
@@ -44,7 +44,7 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-99 casi ordinari fra command, infrastruttura, pipeline HTTP e redazione dei log.
+106 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity e redazione dei log.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 

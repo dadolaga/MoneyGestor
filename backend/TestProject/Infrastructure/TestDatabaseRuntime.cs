@@ -1,5 +1,7 @@
 using database;
+using database.Identity;
 using logic;
+using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Testcontainers.MySql;
 
@@ -58,9 +60,21 @@ internal static class TestDatabaseRuntime {
                 user: username,
                 password: password,
                 enableDatabaseLogging: false);
+            IdentityAccountContext.Initialize(
+                databaseHost: connection.Server,
+                databasePort: port,
+                name: databaseName,
+                databaseUser: username,
+                databasePassword: password);
 
             using (var database = DatabaseFactory.Create()) {
                 await database.Database.EnsureCreatedAsync();
+            }
+
+            var identityOptions = new DbContextOptionsBuilder<IdentityAccountContext>();
+            IdentityAccountContext.Configure(identityOptions);
+            await using (var identityDatabase = new IdentityAccountContext(identityOptions.Options)) {
+                await identityDatabase.Database.MigrateAsync();
             }
 
             await DatabaseInitializer.Init();

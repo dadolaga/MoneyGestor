@@ -44,7 +44,7 @@ internal class LegacyApiCharacterizationTest {
     }
 
     [Test]
-    public async Task RegisterAndLoginUseLegacyEnvelopeAndCamelCaseJson() {
+    public async Task LegacyRegistrationKeepsEnvelopeButRequiresEmailConfirmationBeforeLogin() {
         var registerResponse = await client.PostAsJsonAsync("/user/add", new {
             firstname = "Api",
             lastname = "Test",
@@ -67,11 +67,10 @@ internal class LegacyApiCharacterizationTest {
             remember = false
         });
 
-        Assert.That(loginResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(loginResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         using var loginJson = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync());
-        Assert.That(loginJson.RootElement.GetProperty("code").GetUInt32(), Is.Zero);
-        Assert.That(loginJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login correct"));
-        Assert.That(loginJson.RootElement.GetProperty("data").GetString(), Is.Not.Empty);
+        Assert.That(loginJson.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(111));
+        Assert.That(loginJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login fail"));
     }
 
     [Test]
@@ -105,14 +104,14 @@ internal class LegacyApiCharacterizationTest {
     }
 
     [Test]
-    public async Task CorsAllowsArbitraryOriginInCurrentConfiguration() {
+    public async Task CorsRejectsUnconfiguredOrigin() {
         using var request = new HttpRequestMessage(HttpMethod.Options, "/user/login");
         request.Headers.Add("Origin", "https://example.invalid");
         request.Headers.Add("Access-Control-Request-Method", "POST");
 
         var response = await client.SendAsync(request);
 
-        Assert.That(response.Headers.GetValues("Access-Control-Allow-Origin"), Is.EqualTo(new[] { "*" }));
+        Assert.That(response.Headers.Contains("Access-Control-Allow-Origin"), Is.False);
     }
 
     [Test]

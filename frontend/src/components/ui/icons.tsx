@@ -59,6 +59,7 @@ export const LayoutDashboard = createIcon('lucide:layout-dashboard', 'LayoutDash
 export const List = createIcon('lucide:list', 'List');
 export const LoaderCircle = createIcon('lucide:loader-circle', 'LoaderCircle');
 export const LogIn = createIcon('lucide:log-in', 'LogIn');
+export const LogOut = createIcon('lucide:log-out', 'LogOut');
 export const Menu = createIcon('lucide:menu', 'Menu');
 export const Moon = createIcon('lucide:moon', 'Moon');
 export const PiggyBank = createIcon('lucide:piggy-bank', 'PiggyBank');

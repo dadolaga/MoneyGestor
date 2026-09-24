@@ -11,7 +11,6 @@ import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import useApi from '@/hooks/useApi';
-import type { ResponseError } from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
 
 interface RegistrationFormValues {
@@ -37,8 +36,8 @@ export default function RegisterPage() {
     const submitHandler = (values: RegistrationFormValues) => {
         setSubmitError(undefined);
         setIsPending(true);
-        api.user
-            .add({
+        api.account
+            .register({
                 firstname: values.firstName,
                 lastname: values.lastName,
                 username: values.username,
@@ -49,11 +48,7 @@ export default function RegisterPage() {
                 toast.success(t('success'));
                 router.replace('/login');
             })
-            .onError((error: ResponseError) => {
-                if (error.code === 101) form.setError('username', { message: t('errors.usernameTaken') });
-                else if (error.code === 102) form.setError('email', { message: t('errors.emailTaken') });
-                else setSubmitError(t('errors.generic'));
-            })
+            .onError(() => setSubmitError(t('errors.generic')))
             .onFinish(() => setIsPending(false))
             .execute();
     };
@@ -126,7 +121,7 @@ export default function RegisterPage() {
                             label={t('fields.password')}
                             name="password"
                             rules={{
-                                minLength: { value: 8, message: t('validation.passwordLength') },
+                                minLength: { value: 12, message: t('validation.passwordLength') },
                                 required: t('validation.required'),
                             }}
                         />

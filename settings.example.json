@@ -16,5 +16,17 @@
     "user": "moneygestor_user",
     "password": "CHANGE_ME_IN_PRODUCTION",
     "forceUpdate": false
+  },
+  "security": {
+    "allowedOrigins": ["http://localhost:3000"]
+  },
+  "email": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "username": "CHANGE_ME",
+    "password": "CHANGE_ME",
+    "from": "noreply@example.com",
+    "useSsl": true,
+    "frontendBaseUrl": "http://localhost:3000"
   }
 }

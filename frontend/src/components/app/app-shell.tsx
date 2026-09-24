@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useCookies } from 'react-cookie';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -15,6 +14,7 @@ import {
     Bell,
     LayoutDashboard,
     LogIn,
+    LogOut,
     Menu,
     Search,
     UserPlus,
@@ -48,10 +48,9 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
     const pathname = usePathname();
     const router = useRouter();
     const api = useApi();
-    const [cookies, , removeCookie] = useCookies(['token']);
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const [userName, setUserName] = useState<string>();
-    const [isLoadingSession, setIsLoadingSession] = useState(Boolean(cookies.token));
+    const [isLoadingSession, setIsLoadingSession] = useState(true);
 
     const navigation: NavigationItem[] = [
         { href: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -61,16 +60,12 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
     ];
 
     useEffect(() => {
-        if (!cookies.token) return;
-
         const timeout = window.setTimeout(() => {
-            api.user
-                .info()
+            api.account
+                .session()
                 .onSuccess((user) => setUserName(`${user.firstname} ${user.lastname}`))
                 .onError(() => {
-                    removeCookie('token', { path: '/' });
                     setUserName(undefined);
-                    toast.error(t('sessionExpired'));
                 })
                 .onFinish(() => setIsLoadingSession(false))
                 .execute();
@@ -78,9 +73,9 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
 
         return () => window.clearTimeout(timeout);
         // `useApi` exposes an intentionally lightweight fluent client whose object identity is not stable.
-        // The session is refreshed only when the token changes.
+        // The session is refreshed once when the shell mounts.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cookies.token, removeCookie, t]);
+    }, []);
 
     const navigationLinks = (onNavigate?: () => void) => (
         <nav aria-label={t('primaryNavigation')} className="grid gap-1">
@@ -114,6 +109,17 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
     const registrationClickHandler = useCallback(() => {
         router.push('/register');
     }, [router]);
+
+    const logoutClickHandler = useCallback(() => {
+        api.account
+            .logout()
+            .onSuccess(() => {
+                setUserName(undefined);
+                toast.success(t('logoutSuccess'));
+                router.push('/login');
+            })
+            .execute();
+    }, [api.account, router, t]);
 
     return (
         <div className="min-h-dvh max-h-dvh bg-background text-foreground">
@@ -161,6 +167,9 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
                                 </AvatarFallback>
                             </Avatar>
                             <span className="hidden max-w-36 truncate text-sm font-semibold sm:block">{userName}</span>
+                            <Button aria-label={t('logout')} size="icon" variant="ghost" onClick={logoutClickHandler}>
+                                <LogOut aria-hidden="true" />
+                            </Button>
                         </div>
                     ) : (
                         <div className="flex items-center gap-3">

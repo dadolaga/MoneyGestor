@@ -4,7 +4,6 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios';
 import type { EnqueueSnackbar } from 'notistack';
 import { useSnackbar } from 'notistack';
-import { useCookies } from 'react-cookie';
 
 import type { DateRange } from '@/component/DataPickerNew';
 import type {
@@ -34,13 +33,30 @@ export class ResponseError extends Error {
     }
 }
 
+export interface AccountProfile {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+}
+
+export class AccountResponseError extends Error {
+    status: number;
+
+    constructor(status: number, message: string) {
+        super(message);
+        this.status = status;
+    }
+}
+
 export default function useApi() {
-    const [cookie] = useCookies(['token']);
     const { enqueueSnackbar } = useSnackbar();
 
     const myAxios = useMemo<AxiosInstance>(() => {
         const instance = axios.create({
             baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5256',
+            withCredentials: true,
         });
 
         return instance;
@@ -55,9 +71,6 @@ export default function useApi() {
             const axiosConfig: AxiosRequestConfig<object> = {
                 params: type === 'GET' ? data : undefined,
                 data: data,
-                headers: cookie && {
-                    Authorization: cookie.token,
-                },
             };
 
             switch (type) {
@@ -71,20 +84,62 @@ export default function useApi() {
                     return myAxios.delete(url, axiosConfig);
             }
         },
-        [cookie, myAxios],
+        [myAxios],
+    );
+
+    const accountRequest = useCallback(
+        async <T>(method: 'POST' | 'GET', url: string, data?: object): Promise<AxiosResponse<T>> => {
+            if (method === 'GET') return myAxios.get<T>(url);
+
+            const tokenResponse = await myAxios.get<{ token: string }>('/api/v1/auth/antiforgery');
+            return myAxios.post<T>(url, data, { headers: { 'X-CSRF-TOKEN': tokenResponse.data.token } });
+        },
+        [myAxios],
     );
 
     return {
-        user: {
-            add: (user: User) =>
-                new ApiRequest<number>(() => request<number>('POST', '/user/add', user), enqueueSnackbar),
-
+        account: {
+            register: (user: User) =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/register', user),
+                    enqueueSnackbar,
+                ),
             login: (login: Login) =>
-                new ApiRequest<string>(() => request<string>('POST', '/user/login', login), enqueueSnackbar),
-
-            info: () => new ApiRequest<User>(() => request<User>('GET', '/user/info'), enqueueSnackbar),
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/login', login),
+                    enqueueSnackbar,
+                ),
+            session: () =>
+                new AccountApiRequest<AccountProfile>(
+                    () => accountRequest<AccountProfile>('GET', '/api/v1/auth/session'),
+                    enqueueSnackbar,
+                ),
+            logout: () =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/logout'),
+                    enqueueSnackbar,
+                ),
+            forgotPassword: (email: string) =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/forgot-password', { email }),
+                    enqueueSnackbar,
+                ),
+            resendConfirmation: (email: string) =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/resend-confirmation', { email }),
+                    enqueueSnackbar,
+                ),
+            resetPassword: (email: string, token: string, password: string) =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/reset-password', { email, token, password }),
+                    enqueueSnackbar,
+                ),
+            confirmEmail: (userId: string, token: string) =>
+                new AccountApiRequest<void>(
+                    () => accountRequest<void>('POST', '/api/v1/auth/confirm-email', { userId, token }),
+                    enqueueSnackbar,
+                ),
         },
-
         color: {
             get: () => new ApiRequest<Color[]>(() => request<Color[]>('GET', '/color'), enqueueSnackbar),
         },
@@ -147,6 +202,47 @@ export default function useApi() {
                 ),
         },
     };
+}
+
+export class AccountApiRequest<T_RETURN> {
+    private successFunction: (_data: T_RETURN) => void = () => {};
+    private errorFunction: (_error: AccountResponseError) => void = () => {};
+    private finishFunction: () => void = () => {};
+
+    constructor(
+        private readonly actionFunction: () => Promise<AxiosResponse<T_RETURN>>,
+        private readonly enqueueSnackbar: EnqueueSnackbar,
+    ) {}
+
+    onSuccess(callback: (data: T_RETURN) => void) {
+        this.successFunction = callback;
+        return this;
+    }
+
+    onError(callback: (error: AccountResponseError) => void) {
+        this.errorFunction = callback;
+        return this;
+    }
+
+    onFinish(callback: () => void) {
+        this.finishFunction = callback;
+        return this;
+    }
+
+    execute() {
+        this.actionFunction()
+            .then((response) => this.successFunction(response.data))
+            .catch((error) => {
+                if (error.code === 'ERR_NETWORK') {
+                    this.enqueueSnackbar('Server error', { variant: 'error' });
+                    return;
+                }
+                const status = error?.response?.status ?? 0;
+                const message = error?.response?.data?.detail ?? error?.response?.data?.title ?? 'Unknown error';
+                this.errorFunction(new AccountResponseError(status, message));
+            })
+            .finally(this.finishFunction);
+    }
 }
 
 export class ApiRequest<T_RETURN> {

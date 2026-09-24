@@ -87,14 +87,17 @@ Scheda: [PHASE_1_SECURITY.md](phases/PHASE_1_SECURITY.md)
 | SEC-11 | P0 | completato (23 settembre 2026) | ownership portafogli, colori e tipi | TST-02 |
 | SEC-12 | P0 | completato (23 settembre 2026) | ownership movimenti e preflight bloccante | DEC-01, DEC-09, TST-02 |
 | SEC-13 | P1 | completato (23 settembre 2026) | saldi negativi e invarianti dei trasferimenti | DEC-05, SEC-11, SEC-12 |
-| SEC-14 | P1 | non iniziato | ASP.NET Core Identity, cookie e migrazione account | DEC-02, TST-02 |
-| SEC-15 | P1 | non iniziato | verifica email, recupero, validation anti-abuso e rate limit | DEC-07, DEC-10, SEC-14 |
+| SEC-14 | P1 | completato (23 settembre 2026) | ASP.NET Core Identity, cookie e migrazione account | DEC-02, TST-02 |
+| SEC-15 | P1 | completato (23 settembre 2026) | verifica email, recupero, validation anti-abuso e rate limit | DEC-07, DEC-10, SEC-14 |
 
 SEC-10 può procedere in parallelo con TST-01 perché cambia solo logging e ha verifiche non distruttive. Gli altri fix
 richiedono la rete di sicurezza.
 
 **Gate fase 1:** matrice cross-user verde su ogni endpoint; nessun token/hash/payload finanziario nei log; sessioni
 Identity revocabili; verifica email e recupero provati; riferimenti globali/personali validati; CLI sempre bloccata.
+
+**Gate sicurezza applicativa SEC-10..15 superato il 23 settembre 2026.** Evidenza:
+[SEC-14 e SEC-15](evidence/SEC-14_SEC-15_2026-09-23.md). La disabilitazione CLI BAK-40 resta un gate separato.
 
 ### Fase 2 — persistenza e correttezza economica
 

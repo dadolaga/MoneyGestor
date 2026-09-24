@@ -296,7 +296,7 @@ La sicurezza dei dati finanziari dipende da invarianti uniformi in create/update
 
 ## SEC-14 — ASP.NET Core Identity, cookie e migrazione account
 
-**Stato:** non iniziato
+**Stato:** completato (23 settembre 2026)
 
 **Priorità:** P1
 
@@ -376,7 +376,7 @@ esterni, evitando di evolvere un protocollo di sessione proprietario.
 
 ## SEC-15 — Registrazione verificata, recupero e anti-abuso
 
-**Stato:** non iniziato
+**Stato:** completato (23 settembre 2026)
 
 **Priorità:** P1
 

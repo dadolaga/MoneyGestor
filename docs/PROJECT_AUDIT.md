@@ -23,6 +23,12 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > distinti dello stesso owner e una coppia reciproca a somma zero. Le sezioni storiche su questi rischi restano come
 > fotografia dell'audit originario. I tre step sono completati e verificati nell'[evidenza dedicata](backend-modernization/evidence/SEC-11_SEC-12_SEC-13_2026-09-23.md).
 
+> Aggiornamento del 23 settembre 2026: SEC-14/15 hanno introdotto Identity con mapping stabile agli ID storici,
+> rehash progressivo, cookie HttpOnly, antiforgery, CORS credentialed configurato, logout/revoca, registrazione con
+> verifica email, recupero password, lockout e rate limit anti-enumeration. Il frontend non conserva più token di
+> autenticazione leggibili da JavaScript. Le sezioni storiche su sessioni e cookie restano la fotografia iniziale;
+> vedere l'[evidenza SEC-14/15](backend-modernization/evidence/SEC-14_SEC-15_2026-09-23.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;
