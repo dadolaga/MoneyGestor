@@ -31,7 +31,7 @@ namespace TestProject.Commands.Wallets {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Wallets.ExecuteDeleteAsync();
             await db.Colors.Where(color => color.UserId != null).ExecuteDeleteAsync();
@@ -45,7 +45,7 @@ namespace TestProject.Commands.Wallets {
 
             Assert.ThrowsAsync<TokenExpiatedException>(async () => await ExecutorManager.Execute(wallet.AddWalletCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(0));
         }
 
@@ -53,7 +53,7 @@ namespace TestProject.Commands.Wallets {
         public async Task CorrectInsert() {
             await ExecutorManager.Execute(wallet.AddWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(1));
 
             var dbWallet = await db.Wallets.FirstAsync();
@@ -68,7 +68,7 @@ namespace TestProject.Commands.Wallets {
             var negativeWallet = new WalletSample(value: -2500);
             await ExecutorManager.Execute(negativeWallet.AddWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(1));
 
             var dbWallet = await db.Wallets.FirstAsync();
@@ -85,14 +85,16 @@ namespace TestProject.Commands.Wallets {
             var addWalletCommand = new AddNewWalletCommand(wallet.Name, 89, 2);
             Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(addWalletCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(1));
         }
 
         [Test]
         public async Task ConcurrentDuplicateWalletIsReportedAsStableConflict() {
-            var firstExecutor = new ExecutorManager(login.LoginCommand.Result);
-            var secondExecutor = new ExecutorManager(login.LoginCommand.Result);
+            using var firstDatabase = TestDatabaseRuntime.CreateContext();
+            using var secondDatabase = TestDatabaseRuntime.CreateContext();
+            var firstExecutor = new ExecutorManager(firstDatabase, Clock).WithToken(login.LoginCommand.Result);
+            var secondExecutor = new ExecutorManager(secondDatabase, Clock).WithToken(login.LoginCommand.Result);
             var firstCommand = new AddNewWalletCommand("concurrent-wallet", 10, wallet.ColorId);
             var secondCommand = new AddNewWalletCommand("concurrent-wallet", 20, wallet.ColorId);
 
@@ -116,14 +118,15 @@ namespace TestProject.Commands.Wallets {
                 Assert.That(outcomes.Single(outcome => outcome != null), Is.TypeOf<DuplicateObjectException>());
             });
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count(wallet => wallet.Name == "concurrent-wallet"), Is.EqualTo(1));
         }
 
         [Test]
         public async Task WalletWithSameNameDifferentUser() {
             var secondUser = new UserSample(username: $"{user.Username}_1", email: $"{user.Email}_1");
-            var secondUserExecutor = new ExecutorManager();
+            using var secondUserDatabase = TestDatabaseRuntime.CreateContext();
+            var secondUserExecutor = new ExecutorManager(secondUserDatabase, Clock);
             var secondWallet = new WalletSample();
 
             var secondUserToken = await TestUtils.CreateAndLoginUser(secondUserExecutor, secondUser);
@@ -132,13 +135,13 @@ namespace TestProject.Commands.Wallets {
 
             await secondUserExecutor.Execute(secondWallet.AddWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(2));
         }
 
         [Test]
         public async Task WalletCanUseOwnedPrivateColor() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var color = new database.Models.ColorDb {
                 Name = "Owned",
                 Value = 0x123456,
@@ -150,7 +153,7 @@ namespace TestProject.Commands.Wallets {
             var privateColorWallet = new AddNewWalletCommand("private-color", 10, color.Id);
             await ExecutorManager.Execute(privateColorWallet);
 
-            using var assertionDb = DatabaseFactory.Use();
+            using var assertionDb = TestDatabaseRuntime.CreateContext();
             Assert.That(
                 assertionDb.Wallets.Single(candidate => candidate.Id == privateColorWallet.Result).ColorId,
                 Is.EqualTo(color.Id));
@@ -163,7 +166,7 @@ namespace TestProject.Commands.Wallets {
             Assert.ThrowsAsync<ObjectNotFoundException>(
                 async () => await ExecutorManager.Execute(missingColorWallet));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count(), Is.Zero);
         }
     }

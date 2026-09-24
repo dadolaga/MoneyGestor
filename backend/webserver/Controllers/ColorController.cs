@@ -9,14 +9,12 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("color")]
     [EnableCors("CorsPolicy")]
-    public class ColorController : MoneyMenagerController {
+    public class ColorController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
 
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String? authorization) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization!);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var colorList = database
                 .Colors

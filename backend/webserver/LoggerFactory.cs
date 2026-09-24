@@ -1,35 +1,27 @@
-﻿using Serilog;
+using Serilog;
 using Serilog.Core;
-using System.Runtime.CompilerServices;
 
-namespace webserver {
-    internal class LoggerFactory {
-        private static Logger? logger_;
+namespace webserver;
 
-        public static Logger Create() {
-            const String outputFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u4}] {Message:lj}{NewLine}{Exception}";
+internal static class LoggerFactory {
+    public static Logger Create(LogOptions options) {
+        const String outputFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u4}] {Message:lj}{NewLine}{Exception}";
 
-            if (logger_ == null) {
-                var loggerConfiguration = new LoggerConfiguration();
+        var configuration = new LoggerConfiguration()
+            .MinimumLevel.Is(options.GetLevel());
 
-                loggerConfiguration.MinimumLevel.Is(Settings.Log.Level);
-
-                if (Settings.Log.Output.Console) {
-                    loggerConfiguration.WriteTo.Console(outputTemplate: outputFormat);
-                }
-
-                if (Settings.Log.Output.File) {
-                    loggerConfiguration.WriteTo.File(
-                        path: $"{Path.Combine(Settings.Log.Output.FolderPath!, Settings.Log.Output.LogName!)}_.log",
-                        rollingInterval: RollingInterval.Day,
-                        retainedFileCountLimit: 14,
-                        outputTemplate: outputFormat);
-                }
-
-                logger_ = loggerConfiguration.CreateLogger();
-            }
-
-            return logger_;
+        if (options.Output.Console) {
+            configuration.WriteTo.Console(outputTemplate: outputFormat);
         }
+
+        if (options.Output.File != null) {
+            configuration.WriteTo.File(
+                path: $"{Path.Combine(options.Output.File.Path, options.Output.File.FileName)}_.log",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
+                outputTemplate: outputFormat);
+        }
+
+        return configuration.CreateLogger();
     }
 }

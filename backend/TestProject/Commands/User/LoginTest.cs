@@ -25,7 +25,7 @@ namespace TestProject.Commands.User {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Logins.ExecuteDeleteAsync();
             await db.Users.ExecuteDeleteAsync();
@@ -37,7 +37,7 @@ namespace TestProject.Commands.User {
 
             await ExecutorManager.Execute(loginCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).Count();
 
             Assert.That(loginNumber, Is.EqualTo(1));
@@ -49,7 +49,7 @@ namespace TestProject.Commands.User {
 
             await ExecutorManager.Execute(loginCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).Count();
 
             Assert.That(loginNumber, Is.EqualTo(1));
@@ -61,7 +61,7 @@ namespace TestProject.Commands.User {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(loginCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
             Assert.That(loginNumber, Is.EqualTo(0));
@@ -73,7 +73,7 @@ namespace TestProject.Commands.User {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(loginCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
             Assert.That(loginNumber, Is.EqualTo(0));
@@ -85,7 +85,7 @@ namespace TestProject.Commands.User {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(loginCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
             Assert.That(loginNumber, Is.EqualTo(0));
@@ -97,7 +97,7 @@ namespace TestProject.Commands.User {
 
             await ExecutorManager.Execute(loginCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
@@ -110,7 +110,7 @@ namespace TestProject.Commands.User {
 
             await ExecutorManager.Execute(loginCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
             Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddDays(30)).Within(TimeSpan.FromSeconds(5)));

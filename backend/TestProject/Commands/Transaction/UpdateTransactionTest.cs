@@ -47,7 +47,7 @@ namespace TestProject.Commands.Transaction {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Transactions.ExecuteDeleteAsync();
             await db.Wallets.ExecuteDeleteAsync();
@@ -61,7 +61,7 @@ namespace TestProject.Commands.Transaction {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(updateCommand));
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(0));
         }
 
@@ -89,7 +89,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
@@ -117,7 +117,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
@@ -160,7 +160,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
@@ -204,7 +204,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
@@ -250,7 +250,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
 
             Assert.That(db.Transactions.Count, Is.EqualTo(2));
 
@@ -314,7 +314,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
@@ -367,7 +367,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(updateCommand);
 
-            var db = DatabaseFactory.Use();
+            var db = TestDatabaseRuntime.CreateContext();
 
             Assert.That(db.Transactions.Count, Is.EqualTo(2));
 
@@ -413,7 +413,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<InvalidTransactionException>(async () =>
                 await ExecutorManager.Execute(invalidUpdate));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var stored = db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result);
             Assert.Multiple(() => {
                 Assert.That(db.Transactions.Count(), Is.EqualTo(1));
@@ -437,7 +437,7 @@ namespace TestProject.Commands.Transaction {
                     transaction.AddTransactionCommand.Result,
                     description: "forbidden")));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(
                 db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result).Description,
                 Is.EqualTo(transaction.Description));
@@ -456,7 +456,7 @@ namespace TestProject.Commands.Transaction {
                     transaction.AddTransactionCommand.Result,
                     transactionTypeId: otherType.Result)));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(
                 db.Transactions.Single(candidate => candidate.Id == transaction.AddTransactionCommand.Result).TransactionTypeId,
                 Is.EqualTo(transaction.TransactionTypeId));

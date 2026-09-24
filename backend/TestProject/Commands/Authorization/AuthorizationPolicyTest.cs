@@ -15,7 +15,7 @@ namespace TestProject.Commands.Authorization;
 internal class AuthorizationPolicyTest : ExecutorBase {
     [TearDown]
     public async Task CleanDatabase() {
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         await database.Transactions.ExecuteDeleteAsync();
         await database.Wallets.ExecuteDeleteAsync();
         await database.TransactionTypes.Where(type => type.UserId != null).ExecuteDeleteAsync();
@@ -42,7 +42,7 @@ internal class AuthorizationPolicyTest : ExecutorBase {
     public async Task WalletCannotReferenceAnotherUsersColor() {
         var colorOwner = new UserSample();
         var colorOwnerExecutor = await TestUtils.CreateExecutorManagerForUser(colorOwner);
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         var color = new ColorDb { Name = "Private", Value = 0x112233, UserId = colorOwner.AddNewUserExecutor.Result };
         database.Colors.Add(color);
         await database.SaveChangesAsync();

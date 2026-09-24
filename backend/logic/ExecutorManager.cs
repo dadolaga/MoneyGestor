@@ -15,16 +15,17 @@ namespace logic {
 
         private UInt64? userId;
 
-        public ExecutorManager(String? token = null) {
-            Token = token;
-            DbContext = new MoneyGestorContext();
+        internal TimeProvider TimeProvider { get; }
+
+        public ExecutorManager(MoneyGestorContext dbContext, TimeProvider timeProvider) {
+            DbContext = dbContext;
+            TimeProvider = timeProvider;
             transaction = null;
         }
 
-        ~ExecutorManager() {
-            if (transaction != null) {
-                throw new ExecutorException("Try to destroy an execution manager when not commit or rollback edits");
-            }
+        public ExecutorManager WithToken(String? token) {
+            Token = token;
+            return this;
         }
 
         public async Task Execute<T>(ICommand<T> executor) {
@@ -40,11 +41,11 @@ namespace logic {
                 await executor.Execute(this);
 
                 await transaction.CommitAsync();
-            } catch (Exception ex) {
+            } catch (Exception) {
                 await transaction.RollbackAsync();
                 throw;
             } finally {
-                transaction.Dispose();
+                await transaction.DisposeAsync();
 
                 transaction = null;
             }

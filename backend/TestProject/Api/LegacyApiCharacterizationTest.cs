@@ -5,6 +5,7 @@ using logic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TestProject.Samples;
 using TestProject.Utils;
 
@@ -19,7 +20,11 @@ internal class LegacyApiCharacterizationTest {
     [OneTimeSetUp]
     public void StartHost() {
         factory = new WebApplicationFactory<webserver.Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Testing"));
+            .WithWebHostBuilder(builder => {
+                builder.UseEnvironment("Testing");
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(TestDatabaseRuntime.CreateConfiguration()));
+            });
         client = factory.CreateClient(new WebApplicationFactoryClientOptions {
             AllowAutoRedirect = false,
             BaseAddress = new Uri("https://localhost")
@@ -28,7 +33,7 @@ internal class LegacyApiCharacterizationTest {
 
     [TearDown]
     public async Task CleanDatabase() {
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         await database.Transactions.ExecuteDeleteAsync();
         await database.Wallets.ExecuteDeleteAsync();
         await database.TransactionTypes.Where(type => type.UserId != null).ExecuteDeleteAsync();
@@ -195,7 +200,7 @@ internal class LegacyApiCharacterizationTest {
         using var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
         var transactionId = createJson.RootElement.GetProperty("data").GetUInt64();
 
-        using (var database = DatabaseFactory.Use()) {
+        using (var database = TestDatabaseRuntime.CreateContext()) {
             var stored = await database.Transactions.SingleAsync(transaction => transaction.Id == transactionId);
             Assert.Multiple(() => {
                 Assert.That(stored.UserId, Is.EqualTo(actor.AddNewUserExecutor.Result));

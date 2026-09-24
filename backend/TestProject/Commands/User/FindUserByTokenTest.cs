@@ -1,5 +1,4 @@
 ﻿using logic;
-using logic.Clock;
 using logic.Commands.User;
 using logic.Exceptions;
 using logic.Managers;
@@ -31,7 +30,7 @@ namespace TestProject.Commands.User {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Logins.ExecuteDeleteAsync();
             await db.Users.ExecuteDeleteAsync();
@@ -86,7 +85,7 @@ namespace TestProject.Commands.User {
 
             Assert.That(userId, Is.EqualTo(user.AddNewUserExecutor.Result));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var loginDb = db.Logins.First(l => l.Token == login.LoginCommand.Result);
 
             Assert.That(loginDb.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));

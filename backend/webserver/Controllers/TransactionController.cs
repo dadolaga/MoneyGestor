@@ -14,13 +14,11 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("transaction")]
     [EnableCors("CorsPolicy")]
-    public class TransactionController : MoneyMenagerController {
+    public class TransactionController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
         [HttpGet()]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, [FromQuery] Filter filter) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var listFilter = ListFilterUtils.Convert(filter.Order, filter.Limit, filter.Offset, filter.Where);
 
@@ -48,10 +46,8 @@ namespace webserver.Controllers {
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingle([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var transaction = await database.Transactions.Where(t => t.Id == id && t.UserId == executor.UserId)
                 .Include(t => t.TransactionType)
@@ -72,7 +68,7 @@ namespace webserver.Controllers {
                 return ErrorResponse(10, "Not all mandatory data inserted");
             }
 
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
 
             var insertTransactionCommand = new AddTransactionCommand(
                 description: transaction.Description,
@@ -94,7 +90,7 @@ namespace webserver.Controllers {
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Transaction transaction, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
 
             var updateCommand = new UpdateTransactionCommand(
@@ -120,7 +116,7 @@ namespace webserver.Controllers {
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             var commnad = new DeleteTransactionCommand(id: id);
 
             await executor.Execute(commnad);

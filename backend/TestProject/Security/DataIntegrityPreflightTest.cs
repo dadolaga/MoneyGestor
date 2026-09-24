@@ -13,7 +13,7 @@ namespace TestProject.Security;
 internal sealed class DataIntegrityPreflightTest : DatabaseBase {
     [TearDown]
     public async Task CleanDatabase() {
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         await database.Transactions.ExecuteDeleteAsync();
         await database.Wallets.ExecuteDeleteAsync();
         await database.TransactionTypes.Where(type => type.UserId != null).ExecuteDeleteAsync();
@@ -37,7 +37,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
             value: 10);
         await executor.Execute(transfer.AddTransactionCommand);
 
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         var report = await DataIntegrityPreflight.InspectAsync(database);
 
         Assert.That(report.IsValid, Is.True, report.ToSafeSummary());
@@ -55,7 +55,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
         UInt64 mismatchedTransactionId;
         UInt64 invalidTransferId;
 
-        using (var database = DatabaseFactory.Use()) {
+        using (var database = TestDatabaseRuntime.CreateContext()) {
             var privateColor = new ColorDb {
                 Name = "first-user-color",
                 Value = 0x112233,
@@ -112,7 +112,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
         }
 
         DataIntegrityReport report;
-        using (var database = DatabaseFactory.Use()) {
+        using (var database = TestDatabaseRuntime.CreateContext()) {
             report = await DataIntegrityPreflight.InspectAsync(database);
             var exception = Assert.ThrowsAsync<DataIntegrityException>(async () =>
                 await DataIntegrityPreflight.EnsureValidAsync(database));
@@ -133,7 +133,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
                 Does.Contain(invalidTransferId));
         });
 
-        using var assertionDatabase = DatabaseFactory.Use();
+        using var assertionDatabase = TestDatabaseRuntime.CreateContext();
         Assert.Multiple(() => {
             Assert.That(assertionDatabase.Wallets.Count(), Is.EqualTo(2));
             Assert.That(assertionDatabase.Transactions.Count(), Is.EqualTo(2));

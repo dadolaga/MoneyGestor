@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic {
-    public class DatabaseInitializer {
+    public class DatabaseInitializer(MoneyGestorContext database) {
         public static readonly ColorDb RED = new() { Id = 1, Name = "Red", Value = UInt32.Parse("ffadad", System.Globalization.NumberStyles.HexNumber), UserId = null };
         public static readonly ColorDb ORANGE = new() { Id = 2, Name = "Orange", Value = UInt32.Parse("ffd6a5", System.Globalization.NumberStyles.HexNumber), UserId = null };
         public static readonly ColorDb YELLOW = new() { Id = 3, Name = "Yellow", Value = UInt32.Parse("fdffb6", System.Globalization.NumberStyles.HexNumber), UserId = null };
@@ -21,9 +21,8 @@ namespace logic {
         public static readonly TransactionTypeDb TRANSFER = new() { Id = 1, Name = "Transfer", UserId = null };
         public static readonly TransactionTypeDb ADJUSTMENT = new() { Id = 2, Name = "Adjustment", UserId = null };
 
-        public static async Task Init() {
-            using var database = new MoneyGestorContext();
-            var transaction = database.Database.BeginTransaction();
+        public async Task InitAsync(CancellationToken cancellationToken = default) {
+            await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
 
             await TryToInsertColor(database, RED);
             await TryToInsertColor(database, ORANGE);
@@ -38,7 +37,7 @@ namespace logic {
             await TryToInsertTransactionType(database, TRANSFER);
             await TryToInsertTransactionType(database, ADJUSTMENT);
 
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
         }
 
         private static async Task TryToInsertColor(MoneyGestorContext dbContext, ColorDb color) {

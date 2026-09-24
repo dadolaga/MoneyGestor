@@ -39,7 +39,7 @@ namespace TestProject.Commands.Transaction {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Transactions.ExecuteDeleteAsync();
             await db.Wallets.ExecuteDeleteAsync();
@@ -55,7 +55,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(deleteCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(0));
         }
 
@@ -76,7 +76,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(deleteCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count, Is.EqualTo(0));
         }
 
@@ -96,7 +96,7 @@ namespace TestProject.Commands.Transaction {
         public async Task DeleteTransaction_UpdatesWalletCurrentValue() {
             await ExecutorManager.Execute(transaction.AddTransactionCommand);
 
-            using (var db = DatabaseFactory.Use()) {
+            using (var db = TestDatabaseRuntime.CreateContext()) {
                 var walletAfterTransaction = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
                 Assert.That(walletAfterTransaction.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
             }
@@ -104,7 +104,7 @@ namespace TestProject.Commands.Transaction {
             var deleteCommand = new DeleteTransactionCommand(transaction.AddTransactionCommand.Result);
             await ExecutorManager.Execute(deleteCommand);
 
-            using var dbAfterDelete = DatabaseFactory.Use();
+            using var dbAfterDelete = TestDatabaseRuntime.CreateContext();
             var walletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(walletAfterDelete.CurrentValue, Is.EqualTo(wallet.Value));
         }
@@ -123,7 +123,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
-            using (var db = DatabaseFactory.Use()) {
+            using (var db = TestDatabaseRuntime.CreateContext()) {
                 var sourceWallet = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
                 var destinationWallet = db.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result);
 
@@ -134,7 +134,7 @@ namespace TestProject.Commands.Transaction {
             var deleteCommand = new DeleteTransactionCommand(transferTransaction.AddTransactionCommand.Result);
             await ExecutorManager.Execute(deleteCommand);
 
-            using var dbAfterDelete = DatabaseFactory.Use();
+            using var dbAfterDelete = TestDatabaseRuntime.CreateContext();
             var sourceWalletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
             var destinationWalletAfterDelete = dbAfterDelete.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result);
 
@@ -154,7 +154,7 @@ namespace TestProject.Commands.Transaction {
             await ExecutorManager.Execute(transfer.AddTransactionCommand);
 
             UInt64 destinationTransactionId;
-            using (var database = DatabaseFactory.Use()) {
+            using (var database = TestDatabaseRuntime.CreateContext()) {
                 destinationTransactionId = database.Transactions
                     .Single(candidate => candidate.Id == transfer.AddTransactionCommand.Result)
                     .TransactionDestinationId!.Value;
@@ -162,7 +162,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(new DeleteTransactionCommand(destinationTransactionId));
 
-            using var assertionDatabase = DatabaseFactory.Use();
+            using var assertionDatabase = TestDatabaseRuntime.CreateContext();
             Assert.Multiple(() => {
                 Assert.That(assertionDatabase.Transactions.Count(), Is.Zero);
                 Assert.That(

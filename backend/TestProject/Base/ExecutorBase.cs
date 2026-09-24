@@ -8,8 +8,15 @@ using System.Threading.Tasks;
 namespace TestProject.Base {
     internal class ExecutorBase : DatabaseBase {
         protected ExecutorManager ExecutorManager { get; private set; }
+        private database.MoneyGestorContext database = null!;
 
         [SetUp]
-        public void ExecutorSetup() => ExecutorManager = new ExecutorManager();
+        public void ExecutorSetup() {
+            database = Infrastructure.TestDatabaseRuntime.CreateContext();
+            ExecutorManager = new ExecutorManager(database, Clock);
+        }
+
+        [TearDown]
+        public void ExecutorTearDown() => database.Dispose();
     }
 }

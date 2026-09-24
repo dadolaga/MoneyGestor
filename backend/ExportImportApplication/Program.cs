@@ -3,6 +3,8 @@ using ExportImportApplication;
 using ExportImportApplication.Export;
 using ExportImportApplication.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Text.Json.Nodes;
@@ -13,23 +15,31 @@ internal class Program {
         commandLineManager.Check(args);
 
         var setting = SettingsReader.Read();
-        ApplySettings(setting);
+        ApplyLogSettings(setting.Log);
+        var databaseOptions = CreateDatabaseOptions(setting.Database);
 
         if (commandLineManager.ApplicationType == EApplicationType.Export) {
-            IExport export = new Export(commandLineManager.FilePath ?? "./export.zip");
+            IExport export = new Export(commandLineManager.FilePath ?? "./export.zip", databaseOptions);
             export.Export();
         } else {
-            ImportManager importManager = new(commandLineManager.FilePath ?? "./export.zip");
+            ImportManager importManager = new(commandLineManager.FilePath ?? "./export.zip", databaseOptions);
             importManager.Import();
         }
 
         Log.CloseAndFlush();
     }
 
-    private static void ApplySettings(Settings settings) {
-        ApplyLogSettings(settings.Log);
-
-        MoneyGestorContext.Initialize(settings.Database.Host, settings.Database.Port, settings.Database.Name, settings.Database.User, settings.Database.Password);
+    private static DbContextOptions<MoneyGestorContext> CreateDatabaseOptions(SettingsDatabase settings) {
+        var connectionString = new MySqlConnectionStringBuilder {
+            Server = settings.Host,
+            Port = settings.Port,
+            Database = settings.Name,
+            UserID = settings.User,
+            Password = settings.Password
+        }.ConnectionString;
+        return new DbContextOptionsBuilder<MoneyGestorContext>()
+            .UseMySQL(connectionString)
+            .Options;
     }
 
     private static void ApplyLogSettings(SettingsLog settingsLog) {

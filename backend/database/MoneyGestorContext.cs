@@ -1,6 +1,5 @@
 ﻿using database.Models;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +10,6 @@ using System.Threading.Tasks;
 
 namespace database {
     public class MoneyGestorContext : DbContext {
-        private static String? HOST;
-        private static UInt16? PORT;
-        private static String? NAME;
-        private static String? USER;
-        private static String? PASSWORD;
-        private static Boolean ENABLE_DATABASE_LOGGING = false;
 
         public DbSet<UserDb> Users { get; set; }
         public DbSet<LoginDb> Logins { get; set; }
@@ -25,36 +18,8 @@ namespace database {
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
 
-        public static void Initialize(String host, UInt16 port, String name, String user, String password, Boolean enableDatabaseLogging = false) {
-            HOST = host;
-            PORT = port;
-            NAME = name;
-            USER = user;
-            PASSWORD = password;
-            ENABLE_DATABASE_LOGGING = enableDatabaseLogging;
-        }
-
-        public MoneyGestorContext() {
-            if (NAME == null || USER == null || PASSWORD == null) {
-                Log.Fatal("Database must be initialize before use it");
-                Environment.Exit(1);
-            }
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-            Log.Information("Configuring database connection");
-
-            try {
-                optionsBuilder
-                    .UseMySQL($"Server={HOST};Port={PORT};Database={NAME};Uid={USER};Pwd={PASSWORD};");
-                if (ENABLE_DATABASE_LOGGING) {
-                    optionsBuilder
-                        .LogTo(Log.Verbose, Microsoft.Extensions.Logging.LogLevel.Debug);
-                }
-            } catch (Exception ex) {
-                Log.Fatal("Database configuration failed ({ExceptionType})", ex.GetType().Name);
-                Environment.Exit(1);
-            }
+        public MoneyGestorContext(DbContextOptions<MoneyGestorContext> options)
+            : base(options) {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {

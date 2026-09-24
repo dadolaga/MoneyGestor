@@ -1,5 +1,7 @@
 ﻿using ExportImportApplication.Imports;
 using ExportImportApplication.Models;
+using database;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -13,9 +15,11 @@ using System.Threading.Tasks;
 namespace ExportImportApplication {
     internal class ImportManager {
         private String path;
+        private readonly DbContextOptions<MoneyGestorContext> databaseOptions;
 
-        public ImportManager(String path) {
+        public ImportManager(String path, DbContextOptions<MoneyGestorContext> databaseOptions) {
             this.path = path;
+            this.databaseOptions = databaseOptions;
         }
 
         public void Import() {
@@ -42,7 +46,7 @@ namespace ExportImportApplication {
                 return;
             }
 
-            var import = ImportFactory.CreateExport(exportDetails.Version, tempFolder);
+            var import = ImportFactory.CreateExport(exportDetails.Version, tempFolder, databaseOptions);
 
             if (import == null) {
                 return;

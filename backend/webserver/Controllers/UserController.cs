@@ -15,7 +15,11 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("user")]
     [EnableCors("CorsPolicy")]
-    public class UserController(AccountService accounts) : MoneyMenagerController {
+    public class UserController(
+        AccountService accounts,
+        ExecutorManager executor,
+        MoneyGestorContext database,
+        TimeProvider timeProvider) : MoneyMenagerController {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] User user) {
@@ -48,10 +52,9 @@ namespace webserver.Controllers {
                 return ErrorResponse(111, "Login fail");
             }
 
-            using var database = DatabaseFactory.Use();
             var rawLogin = new LoginDb {
                 Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)),
-                Expirated = DateTime.Now.Add(login.Remember.GetValueOrDefault(false)
+                Expirated = timeProvider.GetLocalNow().DateTime.Add(login.Remember.GetValueOrDefault(false)
                     ? LoginCommand.EXPIRATED_LONG
                     : LoginCommand.EXPIRATED_SMALL),
                 IsLong = login.Remember.GetValueOrDefault(false),
@@ -64,16 +67,16 @@ namespace webserver.Controllers {
 
         [HttpGet("info")]
         public async Task<IActionResult> Info([FromHeader(Name = "Authorization")] String? authorization) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization!);
 
             var findCommand = new FindUserByTokenCommand();
 
             try {
                 await executor.Execute(findCommand);
 
-                using var database = DatabaseFactory.Use();
-
-                var user = await database.Users.FirstAsync(u => u.Id == findCommand.Result);
+                var user = await database.Users
+                    .AsNoTracking()
+                    .FirstAsync(u => u.Id == findCommand.Result);
 
                 user.Password = "";
 

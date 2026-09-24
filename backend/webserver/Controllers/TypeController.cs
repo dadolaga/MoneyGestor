@@ -10,13 +10,11 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("type")]
     [EnableCors("CorsPolicy")]
-    public class TypeController : MoneyMenagerController {
+    public class TypeController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
         [HttpGet()]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var typeList = await database.TransactionTypes.Where(tt => tt.UserId == null || tt.UserId == executor.UserId).ToListAsync();
 
@@ -29,7 +27,7 @@ namespace webserver.Controllers {
                 return ErrorResponse(10, "Not all mandatory data inserted");
             }
 
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
 
             var addTypeCommand = new AddTransactionTypeCommand(type.Name);
 

@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository, aggiornato al 23 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 24 settembre 2026.
 
 ## Vista generale
 
@@ -23,6 +23,10 @@ controller traducono le richieste nei comandi del progetto `logic`; `ExecutorMan
 l'utente dal token ed esegue il comando. Alcune letture interrogano invece `MoneyGestorContext` direttamente dal
 controller.
 
+Dal completamento di ARC-20, `MoneyGestorContext` e `IdentityAccountContext` sono registrati scoped nel container DI.
+Controller, servizi account, middleware legacy ed `ExecutorManager` condividono il context della request; la risoluzione
+del token e la mutazione composta avvengono quindi nella stessa unit of work e nella stessa transazione esplicita.
+
 Questa è la fotografia dell'implementazione corrente. La destinazione frontend già approvata è Next.js App Router con Tailwind CSS, shadcn/ui su Radix e next-intl, senza TanStack; MUI verrà rimosso progressivamente per slice. Architettura di transizione, confini e ordine operativo sono definiti nel [piano di migrazione frontend](FRONTEND_MIGRATION_PLAN.md), mentre [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md) sono i contratti trasversali.
 
 ## Progetti backend
@@ -38,7 +42,9 @@ Contiene `MoneyGestorContext` e le entità persistenti:
 - `TransactionTypeDb`
 - `TransactionDb`
 
-Il provider è `MySql.EntityFrameworkCore`. La stringa di connessione è costruita da valori statici inizializzati all'avvio.
+Il provider è `MySql.EntityFrameworkCore`. Entrambi i context ricevono `DbContextOptions` dal composition root; host,
+porta, database e credenziali provengono da options tipizzate validate all'avvio, senza fallback `root/root` né stato
+statico nel layer di persistenza.
 
 ### `logic`
 
@@ -51,7 +57,9 @@ Contiene:
 - filtri dinamici per lista, ordinamento e paginazione;
 - conversione tra entità database e modelli API.
 
-Ogni `Execute` apre una transazione, aggiorna la scadenza del token quando presente, esegue il comando e fa commit o rollback.
+Ogni `Execute` apre una transazione sul context scoped iniettato, aggiorna la scadenza del token sullo stesso context,
+esegue il comando e fa commit o rollback. `ExecutorManager` non possiede né smaltisce il context; il lifetime è gestito
+dallo scope DI. Il tempo applicativo è fornito da `TimeProvider`, sostituibile nei test.
 
 ### `webserver`
 
@@ -76,8 +84,9 @@ Questa operazione è ad alto impatto e presenta limiti di affidabilità document
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-La suite validata comprende 99 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
+La suite validata comprende 109 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
 ownership, conflitto concorrente, invarianti dei trasferimenti e preflight di integrità introdotti da SEC-11..13.
+ARC-20 aggiunge controlli su validazione options, isolamento degli scope e singolo context per mutazione autenticata.
 L'esecuzione completa richiede Docker ed è registrata nell'evidenza dello step.
 
 ## Modello dati
@@ -125,6 +134,10 @@ frontend autenticato un ponte server-side genera l'header legacy senza esporre i
 accetta tale token.
 
 ## Avvio e configurazione
+
+Il file indicato da `BACKEND_APP_SETTINGS` viene aggiunto alla configurazione ASP.NET Core; le variabili ambiente con
+notazione `Section__Property` possono sovrascriverne i valori. Database, logging, CORS ed email sono bindati a options
+tipizzate e validati all'avvio. I campi di connessione mancanti bloccano lo startup senza stampare credenziali.
 
 Il backend esegue ancora `EnsureCreated` per lo schema storico e inizializza colori e tipi globali a ogni avvio. Lo
 schema Identity ha invece migration EF dedicate, applicate soltanto con `database.forceUpdate=true`; con migration

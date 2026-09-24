@@ -1,18 +1,12 @@
-﻿using database.Models;
-using logic.Clock;
+using database.Models;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace logic.Commands.User {
     public class LoginCommand : ICommand<String> {
         private static readonly UInt32 TOKEN_LENGTH = 16;
         public static readonly TimeSpan EXPIRATED_SMALL = TimeSpan.FromHours(2);
-        public static readonly TimeSpan EXPIRATED_LONG = TimeSpan.FromDays(30); // 1 month
+        public static readonly TimeSpan EXPIRATED_LONG = TimeSpan.FromDays(30);
 
         private readonly String userOrEmail;
         private readonly String password;
@@ -26,8 +20,9 @@ namespace logic.Commands.User {
 
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
-
-            var user = await database.Users.FirstOrDefaultAsync(u => u.Username == userOrEmail || u.Email == userOrEmail) ?? throw new ObjectNotFoundException("User not found");
+            var user = await database.Users
+                .FirstOrDefaultAsync(item => item.Username == userOrEmail || item.Email == userOrEmail)
+                ?? throw new ObjectNotFoundException("User not found");
 
             if (!PasswordHasher.Verify(password, user.Password)) {
                 throw new ObjectNotFoundException("Password not is correct");
@@ -35,15 +30,14 @@ namespace logic.Commands.User {
 
             var login = new LoginDb {
                 Token = TokenGenerator.GenerateRandomBase64Token(TOKEN_LENGTH),
-                Expirated = ClockFactory.Clock().Now.Add(remember ? EXPIRATED_LONG : EXPIRATED_SMALL),
+                Expirated = executorManager.TimeProvider.GetLocalNow().DateTime.Add(
+                    remember ? EXPIRATED_LONG : EXPIRATED_SMALL),
                 IsLong = remember,
                 UserId = user.Id
             };
 
             await database.AddAsync(login);
-
             await database.SaveChangesAsync();
-
             result = login.Token;
         }
     }

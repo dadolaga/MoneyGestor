@@ -38,7 +38,7 @@ namespace TestProject.Commands.Transaction {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Transactions.ExecuteDeleteAsync();
             await db.Wallets.ExecuteDeleteAsync();
@@ -50,7 +50,7 @@ namespace TestProject.Commands.Transaction {
         public async Task CorrectInsert_PositiveValue() {
             await ExecutorManager.Execute(transaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(1));
 
             var transactionDb = db.Transactions.First(t => t.Id == transaction.AddTransactionCommand.Result);
@@ -76,7 +76,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(1));
 
             var transactionDb = db.Transactions.First(t => t.Id == negativeTransaction.AddTransactionCommand.Result);
@@ -102,7 +102,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(1));
             Assert.That(
                 db.Wallets.Single(wallet => wallet.Id == this.wallet.AddWalletCommand.Result).CurrentValue,
@@ -118,7 +118,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var transactionDb = db.Transactions.First(t => t.Id == negativeTransaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(negativeTransaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(negativeTransaction.LongDescription));
@@ -146,7 +146,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(2));
 
             var transactionDb = db.Transactions.First(t => t.Id == transferTransaction.AddTransactionCommand.Result);
@@ -191,7 +191,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(2));
             Assert.That(
                 db.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
@@ -211,7 +211,7 @@ namespace TestProject.Commands.Transaction {
 
             await ExecutorManager.Execute(transferTransaction.AddTransactionCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(2));
 
             var transactionDb = db.Transactions.First(t => t.Id == transferTransaction.AddTransactionCommand.Result);
@@ -258,7 +258,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
                 await secondExecutor.Execute(negativeTransaction.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.EqualTo(0));
         }
 
@@ -272,7 +272,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<InvalidTransactionException>(async () =>
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.Zero);
             Assert.That(db.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).CurrentValue,
                 Is.EqualTo(wallet.Value));
@@ -291,7 +291,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<InvalidTransactionException>(async () =>
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.Zero);
             Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
         }
@@ -307,7 +307,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<InvalidTransactionException>(async () =>
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.Zero);
             Assert.That(db.Wallets.Single().CurrentValue, Is.EqualTo(wallet.Value));
         }
@@ -326,7 +326,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<InvalidTransactionException>(async () =>
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.Zero);
             Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
         }
@@ -347,7 +347,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<ObjectNotFoundException>(async () =>
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Transactions.Count(), Is.Zero);
             Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
         }

@@ -29,6 +29,12 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > autenticazione leggibili da JavaScript. Le sezioni storiche su sessioni e cookie restano la fotografia iniziale;
 > vedere l'[evidenza SEC-14/15](backend-modernization/evidence/SEC-14_SEC-15_2026-09-23.md).
 
+> Aggiornamento del 24 settembre 2026: ARC-20 ha eliminato configurazione database e clock globali, factory e finalizer
+> legacy. I context applicativo e Identity sono scoped e configurati tramite options tipizzate validate; sessione,
+> command e letture della singola request condividono la stessa unit of work. Lo startup non usa più attese sincrone.
+> La sezione storica su stato statico resta la fotografia iniziale; vedere
+> l'[evidenza ARC-20](backend-modernization/evidence/ARC-20_2026-09-24.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

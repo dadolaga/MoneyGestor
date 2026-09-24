@@ -33,7 +33,7 @@ namespace TestProject.Commands.Wallets {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Wallets.ExecuteDeleteAsync();
             await db.Colors.Where(color => color.UserId != null).ExecuteDeleteAsync();
@@ -49,7 +49,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == updateWalletCommand.Result);
 
             Assert.That(walletUpdated.Name, Is.EqualTo(newName));
@@ -64,7 +64,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == updateWalletCommand.Result);
 
             Assert.That(walletUpdated.Name, Is.EqualTo(wallet.Name));
@@ -79,7 +79,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == updateWalletCommand.Result);
 
             Assert.That(walletUpdated.Name, Is.EqualTo(wallet.Name));
@@ -94,7 +94,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(addSecondWallet.AddWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(2));
 
             var updateWalletCommand = new EditWalletCommand(walletIdToUpdate: wallet.AddWalletCommand.Result, name: secondName);
@@ -116,7 +116,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateWallet);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(2));
             Assert.That(db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result).Name, Is.EqualTo(newName));
             Assert.That(db.Wallets.First(w => w.Id == secondWallet.AddWalletCommand.Result).Name, Is.EqualTo(newName));
@@ -127,7 +127,7 @@ namespace TestProject.Commands.Wallets {
             var otherUser = new UserSample(username: "other_user", email: "other@test.me");
             await TestUtils.CreateExecutorManagerForUser(otherUser);
 
-            using (var db = DatabaseFactory.Use()) {
+            using (var db = TestDatabaseRuntime.CreateContext()) {
                 db.Colors.Add(new database.Models.ColorDb {
                     Id = 1000,
                     Name = "Other private color",
@@ -140,7 +140,7 @@ namespace TestProject.Commands.Wallets {
             var update = new EditWalletCommand(wallet.AddWalletCommand.Result, colorId: 1000);
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(update));
 
-            using var assertionDb = DatabaseFactory.Use();
+            using var assertionDb = TestDatabaseRuntime.CreateContext();
             Assert.That(
                 assertionDb.Wallets.Single(candidate => candidate.Id == wallet.AddWalletCommand.Result).ColorId,
                 Is.EqualTo(wallet.ColorId));

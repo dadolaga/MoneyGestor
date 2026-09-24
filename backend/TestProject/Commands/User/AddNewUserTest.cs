@@ -17,7 +17,7 @@ namespace TestProject.Commands.User {
     internal class AddNewUserTest : ExecutorBase {
         [TearDown]
         public void Clear() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             db.Users.ExecuteDelete();
         }
@@ -38,7 +38,7 @@ namespace TestProject.Commands.User {
 
             Assert.IsNotNull(executor.Result);
 
-            using var db = new MoneyGestorContext();
+            using var db = TestDatabaseRuntime.CreateContext();
             var user = db.Users.First(u => u.Id == executor.Result);
 
             Assert.That(user.Id, Is.EqualTo(executor.Result));
@@ -78,7 +78,7 @@ namespace TestProject.Commands.User {
 
             Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(addDuplicateUserExecutor));
 
-            using var db = new MoneyGestorContext();
+            using var db = TestDatabaseRuntime.CreateContext();
             var numberOfUser = db.Users.Count();
 
             Assert.That(numberOfUser, Is.EqualTo(1));
@@ -100,7 +100,7 @@ namespace TestProject.Commands.User {
 
             Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(addDuplicateUserExecutor));
 
-            using var db = new MoneyGestorContext();
+            using var db = TestDatabaseRuntime.CreateContext();
             var numberOfUser = db.Users.Count();
 
             Assert.That(numberOfUser, Is.EqualTo(1));

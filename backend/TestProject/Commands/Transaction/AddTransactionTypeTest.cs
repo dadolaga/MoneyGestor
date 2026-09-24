@@ -31,7 +31,7 @@ namespace TestProject.Commands.Transaction {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.TransactionTypes.Where(tt => tt.UserId != null).ExecuteDeleteAsync();
             await db.Logins.ExecuteDeleteAsync();
@@ -42,7 +42,7 @@ namespace TestProject.Commands.Transaction {
         public async Task CorrectInsert() {
             await ExecutorManager.Execute(transactionType.AddTransactionTypeCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             var transactionTypeDb = await db.TransactionTypes.FirstOrDefaultAsync(tt => tt.Id == transactionType.AddTransactionTypeCommand.Result);
 
@@ -59,7 +59,7 @@ namespace TestProject.Commands.Transaction {
 
             Assert.ThrowsAsync<DuplicateObjectException>(async () => await ExecutorManager.Execute(secondTransactionType));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.TransactionTypes.Count(tt => tt.UserId != null), Is.EqualTo(1));
         }
 
@@ -74,7 +74,7 @@ namespace TestProject.Commands.Transaction {
 
             await secondExecutor.Execute(secondTransactionType);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.TransactionTypes.Count(tt => tt.UserId != null), Is.EqualTo(2));
         }
     }

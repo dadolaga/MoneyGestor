@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TestProject.Samples;
+using TestProject.Infrastructure;
 
 namespace TestProject.Utils {
     internal class TestUtils {
@@ -22,8 +23,12 @@ namespace TestProject.Utils {
             return loginCommand.Result;
         }
 
-        public static async Task<ExecutorManager> CreateExecutorManagerForUser(UserSample user) {
-            var executorManager = new ExecutorManager();
+        public static async Task<ExecutorManager> CreateExecutorManagerForUser(
+            UserSample user,
+            TimeProvider? timeProvider = null) {
+            var executorManager = new ExecutorManager(
+                TestDatabaseRuntime.CreateContext(),
+                timeProvider ?? TimeProvider.System);
 
             await CreateAndLoginUser(executorManager, user);
 

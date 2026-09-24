@@ -8,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 namespace webserver.Auth;
 
 public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
-    public async Task InvokeAsync(HttpContext context, IdentityAccountContext identityDatabase) {
+    public async Task InvokeAsync(
+        HttpContext context,
+        IdentityAccountContext identityDatabase,
+        MoneyGestorContext legacyDatabase,
+        TimeProvider timeProvider) {
         if (!context.Request.Path.StartsWithSegments("/api/v1") &&
             context.User.Identity?.IsAuthenticated == true &&
             !context.Request.Headers.ContainsKey("Authorization")) {
@@ -19,8 +23,7 @@ public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
                 .SingleOrDefaultAsync(context.RequestAborted);
 
             if (legacyUserId != null) {
-                using var legacyDatabase = new MoneyGestorContext();
-                var now = DateTime.Now;
+                var now = timeProvider.GetLocalNow().DateTime;
                 var login = await legacyDatabase.Logins
                     .Where(item => item.UserId == legacyUserId && item.Expirated > now)
                     .OrderByDescending(item => item.Expirated)

@@ -20,11 +20,13 @@ namespace ExportImportApplication.Export {
 
         private readonly String tempFolder;
         private readonly String destinationFile;
+        private readonly DbContextOptions<MoneyGestorContext> databaseOptions;
 
-        public Export(String destinationFile) {
+        public Export(String destinationFile, DbContextOptions<MoneyGestorContext> databaseOptions) {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             tempFolder = Directory.CreateTempSubdirectory($"export_data_{timestamp}").FullName;
             this.destinationFile = destinationFile;
+            this.databaseOptions = databaseOptions;
 
             Log.Debug($"Temporary folder: {tempFolder}");
         }
@@ -35,7 +37,7 @@ namespace ExportImportApplication.Export {
                 Tables = new List<TableDetails>()
             };
 
-            using (var databese = new MoneyGestorContext()) {
+            using (var databese = new MoneyGestorContext(databaseOptions)) {
                 exportDetail.Tables.Add(new TableDetails() {
                     Name = "user",
                     FilePaths = UserExport(databese)

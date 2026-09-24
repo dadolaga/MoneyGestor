@@ -1,18 +1,16 @@
-﻿using logic.Clock;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace TestProject;
 
-namespace TestProject {
-    internal class TestClock : IClock {
-        private DateTime now_;
+internal sealed class TestClock : TimeProvider {
+    private DateTimeOffset utcNow = DateTimeOffset.UtcNow;
 
-        public DateTime Now { get { return now_; } set { now_ = value; } }
-
-        public TestClock() {
-            now_ = DateTime.Now;
+    public DateTime Now {
+        get => TimeZoneInfo.ConvertTime(utcNow, LocalTimeZone).DateTime;
+        set {
+            var offset = LocalTimeZone.GetUtcOffset(value);
+            utcNow = new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Unspecified), offset)
+                .ToUniversalTime();
         }
     }
+
+    public override DateTimeOffset GetUtcNow() => utcNow;
 }

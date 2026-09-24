@@ -33,7 +33,7 @@ namespace TestProject.Commands.Wallets {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Wallets.ExecuteDeleteAsync();
             await db.Logins.ExecuteDeleteAsync();
@@ -47,7 +47,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateValueCommmand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletDb = db.Wallets.First(w => w.Id == updateValueCommmand.Result);
             Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
             Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));
@@ -61,7 +61,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateValueCommmand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletDb = db.Wallets.First(w => w.Id == updateValueCommmand.Result);
             Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
             Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));
@@ -75,7 +75,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(updateValueCommmand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletDb = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
             Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));
@@ -92,7 +92,7 @@ namespace TestProject.Commands.Wallets {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(updateValueCommmand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletDb = db.Wallets.First(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(walletDb.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
             Assert.That(walletDb.Value, Is.EqualTo(wallet.Value));

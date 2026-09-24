@@ -2,6 +2,8 @@ using database;
 using database.Identity;
 using logic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using Testcontainers.MySql;
 
@@ -19,10 +21,52 @@ internal static class TestDatabaseRuntime {
     private static String? currentHost;
     private static UInt16 currentPort;
     private static String? currentContainerId;
+    private static DbContextOptions<MoneyGestorContext>? databaseOptions;
+    private static DbContextOptions<IdentityAccountContext>? identityOptions;
+    private static String? connectionString;
 
     internal static String? RunId => currentRunId;
     internal static String? DatabaseName => currentDatabaseName;
     internal static String? ContainerId => currentContainerId;
+
+    internal static MoneyGestorContext CreateContext() => new(
+        databaseOptions ?? throw new InvalidOperationException("The test database is not running."));
+
+    internal static MoneyGestorContext CreateContext(params IInterceptor[] interceptors) {
+        if (String.IsNullOrWhiteSpace(connectionString)) {
+            throw new InvalidOperationException("The test database is not running.");
+        }
+
+        return new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
+            .UseMySQL(connectionString)
+            .AddInterceptors(interceptors)
+            .Options);
+    }
+
+    internal static IdentityAccountContext CreateIdentityContext() => new(
+        identityOptions ?? throw new InvalidOperationException("The test database is not running."));
+
+    internal static IReadOnlyDictionary<String, String?> CreateConfiguration() {
+        if (lease == null || databaseOptions == null) {
+            throw new InvalidOperationException("The test database is not running.");
+        }
+
+        var connection = new MySqlConnectionStringBuilder(connectionString);
+        return new Dictionary<String, String?> {
+            ["database:host"] = connection.Server,
+            ["database:port"] = connection.Port.ToString(),
+            ["database:name"] = connection.Database,
+            ["database:user"] = connection.UserID,
+            ["database:password"] = connection.Password,
+            ["database:forceUpdate"] = "true",
+            ["log:level"] = "Information",
+            ["log:output:console"] = "false",
+            ["security:allowedOrigins:0"] = "http://localhost:3000",
+            ["email:port"] = "587",
+            ["email:useSsl"] = "true",
+            ["email:frontendBaseUrl"] = "http://localhost:3000"
+        };
+    }
 
     internal static async Task StartAsync() {
         if (container != null) {
@@ -53,31 +97,25 @@ internal static class TestDatabaseRuntime {
                 Port: port,
                 ContainerId: candidate.Id);
 
-            MoneyGestorContext.Initialize(
-                host: connection.Server,
-                port: port,
-                name: databaseName,
-                user: username,
-                password: password,
-                enableDatabaseLogging: false);
-            IdentityAccountContext.Initialize(
-                databaseHost: connection.Server,
-                databasePort: port,
-                name: databaseName,
-                databaseUser: username,
-                databasePassword: password);
+            databaseOptions = new DbContextOptionsBuilder<MoneyGestorContext>()
+                .UseMySQL(connection.ConnectionString)
+                .Options;
+            identityOptions = new DbContextOptionsBuilder<IdentityAccountContext>()
+                .UseMySQL(connection.ConnectionString)
+                .Options;
+            connectionString = connection.ConnectionString;
 
-            using (var database = DatabaseFactory.Create()) {
+            using (var database = CreateContext()) {
                 await database.Database.EnsureCreatedAsync();
             }
 
-            var identityOptions = new DbContextOptionsBuilder<IdentityAccountContext>();
-            IdentityAccountContext.Configure(identityOptions);
-            await using (var identityDatabase = new IdentityAccountContext(identityOptions.Options)) {
+            await using (var identityDatabase = CreateIdentityContext()) {
                 await identityDatabase.Database.MigrateAsync();
             }
 
-            await DatabaseInitializer.Init();
+            await using (var database = CreateContext()) {
+                await new DatabaseInitializer(database).InitAsync();
+            }
 
             container = candidate;
             lease = candidateLease;
@@ -123,5 +161,8 @@ internal static class TestDatabaseRuntime {
         currentHost = null;
         currentPort = 0;
         currentContainerId = null;
+        databaseOptions = null;
+        identityOptions = null;
+        connectionString = null;
     }
 }

@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 namespace webserver.Auth;
 
 public sealed class LegacyIdentityBootstrapper(
+    MoneyGestorContext legacyDatabase,
     IdentityAccountContext identityDatabase,
     ILookupNormalizer normalizer) {
     public async Task RunAsync(CancellationToken cancellationToken = default) {
-        using var legacyDatabase = new MoneyGestorContext();
         var legacyUsers = await legacyDatabase.Users.AsNoTracking().ToListAsync(cancellationToken);
         var mappedIds = (await identityDatabase.Users
             .Select(user => user.LegacyUserId)

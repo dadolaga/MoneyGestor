@@ -33,7 +33,7 @@ namespace TestProject.Commands.Wallets {
 
         [TearDown]
         public async Task Teardown() {
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
 
             await db.Wallets.ExecuteDeleteAsync();
             await db.Logins.ExecuteDeleteAsync();
@@ -46,7 +46,7 @@ namespace TestProject.Commands.Wallets {
 
             await ExecutorManager.Execute(favoriteWalletCommand);
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
 
             Assert.That(walletUpdated.Name, Is.EqualTo(wallet.Name));
@@ -64,7 +64,7 @@ namespace TestProject.Commands.Wallets {
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(favoriteWalletCommand));
 
-            using var db = DatabaseFactory.Use();
+            using var db = TestDatabaseRuntime.CreateContext();
             var walletUpdated = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
 
             Assert.That(walletUpdated.Name, Is.EqualTo(wallet.Name));

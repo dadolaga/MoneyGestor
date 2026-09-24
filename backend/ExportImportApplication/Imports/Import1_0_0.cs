@@ -8,14 +8,19 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ExportImportApplication.Imports {
     internal class Import1_0_0 : ImportBase, IImport {
-        public Import1_0_0(String? baseFolder) : base(baseFolder) {
+        private readonly DbContextOptions<MoneyGestorContext> databaseOptions;
+
+        public Import1_0_0(
+            String? baseFolder,
+            DbContextOptions<MoneyGestorContext> databaseOptions) : base(baseFolder) {
+            this.databaseOptions = databaseOptions;
         }
 
         public void Import(ExportDetails exportDetails) {
             base.exportDetails = exportDetails;
             Log.Information("Starting import process for version 1.0.0...");
 
-            using (context = new database.MoneyGestorContext()) {
+            using (context = new MoneyGestorContext(databaseOptions)) {
                 var originalConnectionString = context.Database.GetConnectionString();
                 var connectionStringBuilder = new MySqlConnectionStringBuilder(originalConnectionString);
                 var originalDatabaseName = connectionStringBuilder.Database;

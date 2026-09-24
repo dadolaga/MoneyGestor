@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Configuration;
 using webserver.Auth;
 
 namespace TestProject.Api;
@@ -28,6 +29,8 @@ internal sealed class AccountSecurityApiTest {
         factory = new WebApplicationFactory<webserver.Program>()
             .WithWebHostBuilder(builder => {
                 builder.UseEnvironment("Testing");
+                builder.ConfigureAppConfiguration((_, configuration) =>
+                    configuration.AddInMemoryCollection(TestDatabaseRuntime.CreateConfiguration()));
                 builder.ConfigureTestServices(services => {
                     services.RemoveAll<IAccountEmailSender>();
                     services.AddSingleton<IAccountEmailSender>(emails);
@@ -42,12 +45,10 @@ internal sealed class AccountSecurityApiTest {
 
     [TearDown]
     public async Task CleanDatabase() {
-        var options = new DbContextOptionsBuilder<IdentityAccountContext>();
-        IdentityAccountContext.Configure(options);
-        await using (var identity = new IdentityAccountContext(options.Options)) {
+        await using (var identity = TestDatabaseRuntime.CreateIdentityContext()) {
             await identity.Users.ExecuteDeleteAsync();
         }
-        using var database = DatabaseFactory.Use();
+        using var database = TestDatabaseRuntime.CreateContext();
         await database.Logins.ExecuteDeleteAsync();
         await database.Users.ExecuteDeleteAsync();
         emails.Clear();
@@ -211,7 +212,7 @@ internal sealed class AccountSecurityApiTest {
 
     [Test]
     public async Task LegacyPasswordIsRehashedByIdentityOnFirstSuccessfulLogin() {
-        using var legacy = DatabaseFactory.Use();
+        using var legacy = TestDatabaseRuntime.CreateContext();
         var legacyUser = new database.Models.UserDb {
             Firstname = "Legacy",
             Lastname = "User",
@@ -304,4 +305,5 @@ internal sealed class AccountSecurityApiTest {
             ResetLink = null;
         }
     }
+
 }

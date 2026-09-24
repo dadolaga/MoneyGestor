@@ -1,114 +1,96 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
-using System.Text.Json.Nodes;
+using MySql.Data.MySqlClient;
+using Serilog.Events;
 
-namespace webserver {
-    public class Settings {
-        public static SettingsLog Log { private set; get; } = new SettingsLog();
-        public static SettingsDatabase Database { private set; get; } = new SettingsDatabase();
-        public static SettingsSecurity Security { private set; get; } = new SettingsSecurity();
-        public static SettingsEmail Email { private set; get; } = new SettingsEmail();
+namespace webserver;
 
-        public static void Load(String? path = null) {
-            path ??= Environment.GetEnvironmentVariable("BACKEND_APP_SETTINGS") ?? "./settings.json";
+public sealed class DatabaseOptions {
+    public const String SectionName = "database";
 
-            Console.WriteLine($"Reading setting file: {Path.GetFullPath(path)}");
+    public String Host { get; set; } = String.Empty;
+    public UInt16 Port { get; set; }
+    public String Name { get; set; } = String.Empty;
+    public String User { get; set; } = String.Empty;
+    public String Password { get; set; } = String.Empty;
+    public Boolean ForceUpdate { get; set; }
 
-            if (!File.Exists(path)) {
-                Console.WriteLine($"JSON file setting not exist, file path: {Path.GetFullPath(path)}");
-                Environment.Exit(1);
-                return;
-            }
+    public String CreateConnectionString() => new MySqlConnectionStringBuilder {
+        Server = Host,
+        Port = Port,
+        Database = Name,
+        UserID = User,
+        Password = Password
+    }.ConnectionString;
 
-            String jsonString = File.ReadAllText(path);
+    internal static Boolean IsValid(DatabaseOptions options) =>
+        !String.IsNullOrWhiteSpace(options.Host) &&
+        options.Port > 0 &&
+        !String.IsNullOrWhiteSpace(options.Name) &&
+        !String.IsNullOrWhiteSpace(options.User) &&
+        !String.IsNullOrWhiteSpace(options.Password);
+}
 
-            var rootNode = JsonNode.Parse(jsonString);
+public sealed class LogOptions {
+    public const String SectionName = "log";
 
-            if (rootNode == null) {
-                Console.WriteLine($"Error when try to read JSON setting file, file path: {Path.GetFullPath(path)}");
-                Environment.Exit(1);
-                return;
-            }
+    public String Level { get; set; } = String.Empty;
+    public LogOutputOptions Output { get; set; } = new();
 
-            // Load log settings
-            Log.Level = rootNode["log"]?["level"] != null ?
-                ((String) rootNode["log"]?["level"]!).ToLower() switch {
-                    "critical" => Serilog.Events.LogEventLevel.Fatal,
-                    "fatal" => Serilog.Events.LogEventLevel.Fatal,
-                    "error" => Serilog.Events.LogEventLevel.Error,
-                    "warning" => Serilog.Events.LogEventLevel.Warning,
-                    "information" => Serilog.Events.LogEventLevel.Information,
-                    "trace" => Serilog.Events.LogEventLevel.Verbose,
-                    "verbose" => Serilog.Events.LogEventLevel.Verbose,
-                    "debug" => Serilog.Events.LogEventLevel.Debug,
-                    _ => Serilog.Events.LogEventLevel.Information
-                } : Serilog.Events.LogEventLevel.Information;
+    public LogEventLevel GetLevel() => Level.Trim().ToLowerInvariant() switch {
+        "critical" or "fatal" => LogEventLevel.Fatal,
+        "error" => LogEventLevel.Error,
+        "warning" => LogEventLevel.Warning,
+        "information" => LogEventLevel.Information,
+        "debug" => LogEventLevel.Debug,
+        "trace" or "verbose" => LogEventLevel.Verbose,
+        _ => throw new InvalidOperationException("The configured log level is invalid.")
+    };
 
-            Log.Output.Console = ((Boolean?) rootNode["log"]?["output"]?["console"]) ?? false;
-
-            if (rootNode["log"]?["output"]?["file"] != null) {
-                JsonNode logConfigFile = rootNode["log"]!["output"]!["file"]!;
-
-                Log.Output.FolderPath = ((String?) logConfigFile["path"]) ?? ".";
-                Log.Output.LogName = ((String?) logConfigFile["fileName"]) ?? "log_file_";
-            }
-
-            // Load databases settings
-            Database.Server = ((String?) rootNode["database"]?["host"]) ?? "localhost";
-            Database.Port = ((UInt16?) rootNode["database"]?["port"]) ?? 3306;
-            Database.DatabaseName = ((String?) rootNode["database"]?["name"]) ?? "money_gestor";
-            Database.User = ((String?) rootNode["database"]?["user"]) ?? "root";
-            Database.Password = ((String?) rootNode["database"]?["password"]) ?? "root";
-            Database.ForceUpdate = ((Boolean?) rootNode["database"]?["forceUpdate"]) ?? false;
-
-            Security.AllowedOrigins = rootNode["security"]?["allowedOrigins"]?.AsArray()
-                .Select(node => (String?)node)
-                .Where(origin => !String.IsNullOrWhiteSpace(origin))
-                .Cast<String>()
-                .ToArray() ?? ["http://localhost:3000"];
-
-            Email.Host = (String?)rootNode["email"]?["host"];
-            Email.Port = ((Int32?)rootNode["email"]?["port"]) ?? 587;
-            Email.Username = (String?)rootNode["email"]?["username"];
-            Email.Password = (String?)rootNode["email"]?["password"];
-            Email.From = (String?)rootNode["email"]?["from"];
-            Email.UseSsl = ((Boolean?)rootNode["email"]?["useSsl"]) ?? true;
-            Email.FrontendBaseUrl = ((String?)rootNode["email"]?["frontendBaseUrl"] ?? "http://localhost:3000").TrimEnd('/');
+    internal static Boolean IsValid(LogOptions options) {
+        try {
+            _ = options.GetLevel();
+        } catch (InvalidOperationException) {
+            return false;
         }
 
-        public class SettingsLog {
-            public Serilog.Events.LogEventLevel Level { internal set; get; }
-            public SettingsOutput Output { internal set; get; } = new SettingsOutput();
-
-            public class SettingsOutput {
-                public Boolean Console { internal set; get; }
-                public Boolean File => FolderPath != null;
-                public String? FolderPath { internal set; get; }
-                public String? LogName { internal set; get; }
-            }
-        }
-
-        public class SettingsDatabase {
-            public String Server {  internal set; get; }
-            public UInt16 Port { internal set; get; }
-            public String DatabaseName { internal set; get; }
-            public String User { internal set; get; }
-            public String Password { internal set; get; }
-            public Boolean ForceUpdate { internal set; get; }
-        }
-
-        public class SettingsSecurity {
-            public String[] AllowedOrigins { internal set; get; } = ["http://localhost:3000"];
-        }
-
-        public class SettingsEmail {
-            public String? Host { internal set; get; }
-            public Int32 Port { internal set; get; } = 587;
-            public String? Username { internal set; get; }
-            public String? Password { internal set; get; }
-            public String? From { internal set; get; }
-            public Boolean UseSsl { internal set; get; } = true;
-            public String FrontendBaseUrl { internal set; get; } = "http://localhost:3000";
-            public Boolean IsConfigured => !String.IsNullOrWhiteSpace(Host) && !String.IsNullOrWhiteSpace(From);
-        }
+        return options.Output.File == null || (
+            !String.IsNullOrWhiteSpace(options.Output.File.Path) &&
+            !String.IsNullOrWhiteSpace(options.Output.File.FileName));
     }
+}
+
+public sealed class LogOutputOptions {
+    public Boolean Console { get; set; }
+    public LogFileOptions? File { get; set; }
+}
+
+public sealed class LogFileOptions {
+    public String Path { get; set; } = String.Empty;
+    public String FileName { get; set; } = String.Empty;
+}
+
+public sealed class SecurityOptions {
+    public const String SectionName = "security";
+
+    public String[] AllowedOrigins { get; set; } = [];
+
+    internal static Boolean IsValid(SecurityOptions options) =>
+        options.AllowedOrigins.Length > 0 &&
+        options.AllowedOrigins.All(origin => Uri.TryCreate(origin, UriKind.Absolute, out _));
+}
+
+public sealed class EmailOptions {
+    public const String SectionName = "email";
+
+    public String? Host { get; set; }
+    public Int32 Port { get; set; } = 587;
+    public String? Username { get; set; }
+    public String? Password { get; set; }
+    public String? From { get; set; }
+    public Boolean UseSsl { get; set; } = true;
+    public String FrontendBaseUrl { get; set; } = String.Empty;
+    public Boolean IsConfigured => !String.IsNullOrWhiteSpace(Host) && !String.IsNullOrWhiteSpace(From);
+
+    internal static Boolean IsValid(EmailOptions options) =>
+        options.Port > 0 &&
+        Uri.TryCreate(options.FrontendBaseUrl, UriKind.Absolute, out _);
 }

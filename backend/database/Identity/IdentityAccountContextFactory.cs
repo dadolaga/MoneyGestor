@@ -5,8 +5,14 @@ namespace database.Identity;
 
 internal sealed class IdentityAccountContextFactory : IDesignTimeDbContextFactory<IdentityAccountContext> {
     public IdentityAccountContext CreateDbContext(String[] args) {
+        var connectionString = Environment.GetEnvironmentVariable("MONEYGESTOR_DESIGN_CONNECTION_STRING");
+        if (String.IsNullOrWhiteSpace(connectionString)) {
+            throw new InvalidOperationException(
+                "MONEYGESTOR_DESIGN_CONNECTION_STRING is required for design-time Identity operations.");
+        }
+
         var options = new DbContextOptionsBuilder<IdentityAccountContext>()
-            .UseMySQL("Server=localhost;Port=3306;Database=moneygestor_design;Uid=design;Pwd=design;")
+            .UseMySQL(connectionString)
             .Options;
 
         return new IdentityAccountContext(options);

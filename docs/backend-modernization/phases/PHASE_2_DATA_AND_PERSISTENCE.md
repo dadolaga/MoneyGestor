@@ -5,7 +5,9 @@ corretti anche con richieste concorrenti. Ogni migration richiede copia di dati,
 
 ## ARC-20 — Options, dependency injection e `DbContext` scoped
 
-**Stato:** non iniziato
+**Stato:** completato il 24 settembre 2026
+
+**Evidenza:** [ARC-20 — Options, DI e DbContext scoped](../evidence/ARC-20_2026-09-24.md)
 
 **Priorità:** P1
 
@@ -13,7 +15,7 @@ corretti anche con richieste concorrenti. Ogni migration richiede copia di dati,
 
 Usare un solo `MoneyGestorContext` scoped per use case/request, configurato con DI, e rimuovere factory/stato statici.
 
-**Situazione attuale**
+**Situazione precedente**
 
 `MoneyGestorContext.Initialize`, `Settings`, `DatabaseFactory` e `ClockFactory` sono statici. `ExecutorManager` crea un
 context, non lo smaltisce e ha un finalizer che può lanciare. `FindUserByTokenCommand` usa un secondo context. Startup

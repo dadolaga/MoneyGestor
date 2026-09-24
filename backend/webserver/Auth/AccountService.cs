@@ -5,14 +5,18 @@ using database.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace webserver.Auth;
 
 public sealed class AccountService(
+    MoneyGestorContext legacyDatabase,
     UserManager<ApplicationIdentityUser> userManager,
     SignInManager<ApplicationIdentityUser> signInManager,
     IAccountEmailSender emailSender,
-    ILogger<AccountService> logger) {
+    ILogger<AccountService> logger,
+    IOptions<EmailOptions> configuredEmail,
+    TimeProvider timeProvider) {
     internal const String IdentityManagedPassword = "IDENTITY_MANAGED";
 
     public async Task RegisterAsync(RegisterAccountRequest request, CancellationToken cancellationToken) {
@@ -24,7 +28,6 @@ public sealed class AccountService(
             return;
         }
 
-        using var legacyDatabase = new MoneyGestorContext();
         if (await legacyDatabase.Users.AnyAsync(
                 user => user.Username.ToUpper() == normalizedUsername || user.Email.ToUpper() == normalizedEmail,
                 cancellationToken)) {
@@ -91,7 +94,7 @@ public sealed class AccountService(
             await signInManager.SignInAsync(user, new Microsoft.AspNetCore.Authentication.AuthenticationProperties {
                 IsPersistent = request.Remember,
                 AllowRefresh = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.Add(request.Remember ? TimeSpan.FromDays(30) : TimeSpan.FromHours(2))
+                ExpiresUtc = timeProvider.GetUtcNow().Add(request.Remember ? TimeSpan.FromDays(30) : TimeSpan.FromHours(2))
             });
         }
         return AccountLoginStatus.Succeeded;
@@ -105,7 +108,6 @@ public sealed class AccountService(
             return null;
         }
 
-        using var legacyDatabase = new MoneyGestorContext();
         return await legacyDatabase.Users
             .Where(user => user.Id == identityUser.LegacyUserId)
             .Select(user => new AccountProfile(user.Id, user.Firstname, user.Lastname, user.Email, user.Username))
@@ -140,7 +142,7 @@ public sealed class AccountService(
         }
 
         var token = EncodeToken(await userManager.GeneratePasswordResetTokenAsync(user));
-        var link = $"{Settings.Email.FrontendBaseUrl}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+        var link = $"{configuredEmail.Value.FrontendBaseUrl.TrimEnd('/')}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
         await emailSender.SendPasswordResetAsync(email, link, cancellationToken);
     }
 
@@ -174,7 +176,7 @@ public sealed class AccountService(
 
     private async Task SendConfirmationAsync(ApplicationIdentityUser user, CancellationToken cancellationToken) {
         var token = EncodeToken(await userManager.GenerateEmailConfirmationTokenAsync(user));
-        var link = $"{Settings.Email.FrontendBaseUrl}/verify-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
+        var link = $"{configuredEmail.Value.FrontendBaseUrl.TrimEnd('/')}/verify-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
         await emailSender.SendConfirmationAsync(user.Email!, link, cancellationToken);
     }
 

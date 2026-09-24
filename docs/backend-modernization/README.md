@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 completata (SEC-10..15)**
-- Data dell'ultimo aggiornamento: **23 settembre 2026**
+- Stato del documento: **Fase 0 completata; Fase 1 completata; ARC-20 completato**
+- Data dell'ultimo aggiornamento: **24 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -44,7 +44,7 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-106 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity e redazione dei log.
+109 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, redazione dei log e lifetime DI.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
@@ -77,16 +77,16 @@ flowchart LR
     FE[Next.js / useApi] -->|HTTP + token grezzo| C[Controller ASP.NET Core]
     C -->|mutazioni| E[ExecutorManager]
     E --> CMD[Command]
-    CMD --> DB[MoneyGestorContext staticamente configurato]
+    CMD --> DB[MoneyGestorContext scoped]
     C -->|letture dirette| DB
     DB --> MYSQL[(MySQL esterno)]
     CLI[ExportImportApplication] --> DB
     CLI --> ZIP[ZIP + CSV + manifest]
 ```
 
-La separazione per progetti è leggibile, ma i confini non sono effettivi: `webserver` referenzia sia `logic` sia
-`database`, i controller eseguono query EF, i DTO vivono in `logic`, la configurazione è statica e
-`ExecutorManager` crea direttamente il `DbContext` senza smaltirlo.
+La separazione per progetti è leggibile, ma i confini applicativi restano incompleti: `webserver` referenzia sia
+`logic` sia `database`, i controller eseguono ancora query EF e i DTO vivono in `logic`. ARC-20 ha però chiuso il
+lifetime infrastrutturale: options validate, context scoped e `TimeProvider` iniettato sono ora implementati.
 
 ## Destinazione proposta
 

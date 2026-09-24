@@ -14,14 +14,14 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("wallet")]
     [EnableCors("CorsPolicy")]
-    public class WalletController : MoneyMenagerController {
+    public class WalletController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
         [HttpPost]
         public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet) {
             if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null) {
                 return ErrorResponse(10, "Not all mandatory data inserted");
             }
 
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
 
             var addWalletCommand = new AddNewWalletCommand(wallet.Name, wallet.Value.Value, wallet.Color.Id.Value);
 
@@ -36,10 +36,8 @@ namespace webserver.Controllers {
 
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var walletList = (await database.Wallets.Where(w => w.UserId == executor.UserId).Include(w => w.Color).ToListAsync())
                 .Select(w => w.Convert());
@@ -49,10 +47,8 @@ namespace webserver.Controllers {
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            using var database = DatabaseFactory.Use();
 
             var wallet = await database.Wallets
                 .Where(w => w.Id == id && w.UserId == executor.UserId)
@@ -65,7 +61,7 @@ namespace webserver.Controllers {
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
 
             var updateCommand = new EditWalletCommand(id, wallet.Name, wallet.Color?.Id);
 
@@ -80,7 +76,7 @@ namespace webserver.Controllers {
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
 
             var deleteCommand = new DeleteWalletCommand(id);
 
@@ -91,7 +87,7 @@ namespace webserver.Controllers {
 
         [HttpPut("favorite/{id}")]
         public async Task<IActionResult> SetFavorite([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
-            var executor = new ExecutorManager(authorization);
+            executor.SetToken(authorization);
             var updateFavoiteCommand = new FavoriteWalletCommand(id);
 
             await executor.Execute(updateFavoiteCommand);
