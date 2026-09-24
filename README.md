@@ -34,6 +34,7 @@ Approfondimenti:
 
 - [Architettura](docs/ARCHITECTURE.md)
 - [Contratto API](docs/API.md)
+- [Autenticazione finale, spiegata in modo semplice](docs/AUTHENTICATION.md)
 - [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
 - [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
 - [Baseline frontend — Fase 0](docs/PHASE_0_BASELINE.md)
