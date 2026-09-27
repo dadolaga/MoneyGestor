@@ -1,0 +1,821 @@
+{
+  "components": {
+    "schemas": {
+      "Color": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "userId": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "value": {
+            "format": "int32",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Login": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "remember": {
+            "nullable": true,
+            "type": "boolean"
+          },
+          "user": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Transaction": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "longDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "userInsert": {
+            "$ref": "#/components/schemas/User"
+          },
+          "value": {
+            "format": "double",
+            "nullable": true,
+            "type": "number"
+          },
+          "wallet": {
+            "$ref": "#/components/schemas/Wallet"
+          },
+          "walletDestination": {
+            "$ref": "#/components/schemas/Wallet"
+          }
+        },
+        "type": "object"
+      },
+      "TransactionType": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "userId": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "User": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "password": {
+            "nullable": true,
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Wallet": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "$ref": "#/components/schemas/Color"
+          },
+          "currentValue": {
+            "format": "double",
+            "nullable": true,
+            "type": "number"
+          },
+          "favorite": {
+            "nullable": true,
+            "type": "boolean"
+          },
+          "id": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "name": {
+            "nullable": true,
+            "type": "string"
+          },
+          "value": {
+            "format": "double",
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "WeatherForecast": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "summary": {
+            "nullable": true,
+            "type": "string"
+          },
+          "temperatureC": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "temperatureF": {
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "AntiforgeryHeader": {
+        "description": "Request token from GET /api/v1/auth/antiforgery.",
+        "in": "header",
+        "name": "X-CSRF-TOKEN",
+        "type": "apiKey"
+      },
+      "LegacyRawToken": {
+        "description": "Deprecated raw token accepted only on legacy endpoints.",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      },
+      "MoneyGestorCookie": {
+        "description": "Identity session cookie; issued by /api/v1/auth/login.",
+        "in": "cookie",
+        "name": "MoneyGestor.Auth",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "Deprecated compatibility contract. The raw Authorization token is temporary.",
+    "title": "MoneyGestor Legacy API",
+    "version": "legacy"
+  },
+  "openapi": "3.0.1",
+  "paths": {
+    "/WeatherForecast": {
+      "get": {
+        "deprecated": true,
+        "operationId": "GetWeatherForecast",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "WeatherForecast"
+        ]
+      }
+    },
+    "/color": {
+      "get": {
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Color"
+        ]
+      }
+    },
+    "/dashboard/all": {
+      "get": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/transaction": {
+      "get": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "query",
+            "name": "Order",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Offset",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Where",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Transaction"
+        ]
+      },
+      "post": {
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Transaction"
+        ]
+      }
+    },
+    "/transaction/{id}": {
+      "delete": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Transaction"
+        ]
+      },
+      "get": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Transaction"
+        ]
+      },
+      "put": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Transaction"
+        ]
+      }
+    },
+    "/type": {
+      "get": {
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Type"
+        ]
+      },
+      "post": {
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionType"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionType"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionType"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Type"
+        ]
+      }
+    },
+    "/user/add": {
+      "post": {
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/info": {
+      "get": {
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/login": {
+      "post": {
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/wallet": {
+      "get": {
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      },
+      "post": {
+        "deprecated": true,
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/wallet/favorite/{id}": {
+      "put": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/wallet/{id}": {
+      "delete": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      },
+      "get": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      },
+      "put": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/*\u002Bjson": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "LegacyRawToken": []
+          }
+        ],
+        "tags": [
+          "Wallet"
+        ]
+      }
+    }
+  }
+}

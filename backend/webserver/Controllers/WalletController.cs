@@ -1,33 +1,27 @@
-﻿using logic;
-using logic.Commands.User;
+using logic;
 using logic.Commands.Wallets;
 using logic.Exceptions;
 using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
-using Mysqlx.Resultset;
-using System.Xml.Linq;
+using webserver.Api.V1;
 
 namespace webserver.Controllers {
     [ApiController]
     [Route("wallet")]
     [EnableCors("CorsPolicy")]
-    public class WalletController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
+    public class WalletController(
+        ExecutorManager executor,
+        IResourceQueryService queries) : MoneyMenagerController {
         [HttpPost]
         public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet) {
-            if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null) {
+            if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null)
                 return ErrorResponse(10, "Not all mandatory data inserted");
-            }
 
             executor.SetToken(authorization);
-
-            var addWalletCommand = new AddNewWalletCommand(wallet.Name, wallet.Value.Value, wallet.Color.Id.Value);
-
+            var command = new AddNewWalletCommand(wallet.Name, wallet.Value.Value, wallet.Color.Id.Value);
             try {
-                await executor.Execute(addWalletCommand);
-
+                await executor.Execute(command);
                 return OkResponse();
             } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplica wallet name");
@@ -38,38 +32,27 @@ namespace webserver.Controllers {
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
             executor.SetToken(authorization);
             await executor.LoginUser();
-
-            var walletList = (await database.Wallets.Where(w => w.UserId == executor.UserId).Include(w => w.Color).ToListAsync())
-                .Select(w => w.Convert());
-
-            return OkResponse(walletList, "List of wallets");
+            var wallets = await queries.GetWalletsAsync(executor.UserId, HttpContext.RequestAborted);
+            return OkResponse(wallets.Select(wallet => LegacyResourceMapper.ToLegacy(wallet, executor.UserId)), "List of wallets");
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
             await executor.LoginUser();
-
-            var wallet = await database.Wallets
-                .Where(w => w.Id == id && w.UserId == executor.UserId)
-                .Include(w => w.Color)
-                .FirstOrDefaultAsync()
+            var wallet = await queries.GetWalletAsync(executor.UserId, id, HttpContext.RequestAborted)
                 ?? throw new ObjectNotFoundException("Wallet not found");
-
-            return OkResponse(wallet.Convert(), "List of wallets");
+            return OkResponse(LegacyResourceMapper.ToLegacy(wallet, executor.UserId), "List of wallets");
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet, UInt32 id) {
             executor.SetToken(authorization);
-
-            var updateCommand = new EditWalletCommand(id, wallet.Name, wallet.Color?.Id);
-
+            var command = new EditWalletCommand(id, wallet.Name, wallet.Color?.Id);
             try {
-                await executor.Execute(updateCommand);
-
+                await executor.Execute(command);
                 return OkResponse();
-            } catch (DuplicateObjectException ex) {
+            } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplicate wallet name");
             }
         }
@@ -77,21 +60,14 @@ namespace webserver.Controllers {
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-
-            var deleteCommand = new DeleteWalletCommand(id);
-
-            await executor.Execute(deleteCommand);
-
+            await executor.Execute(new DeleteWalletCommand(id));
             return OkResponse();
         }
 
         [HttpPut("favorite/{id}")]
         public async Task<IActionResult> SetFavorite([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            var updateFavoiteCommand = new FavoriteWalletCommand(id);
-
-            await executor.Execute(updateFavoiteCommand);
-
+            await executor.Execute(new FavoriteWalletCommand(id));
             return OkResponse();
         }
     }

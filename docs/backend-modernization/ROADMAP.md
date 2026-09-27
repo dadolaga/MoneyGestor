@@ -124,15 +124,16 @@ Scheda: [PHASE_3_API_AND_APPLICATION.md](phases/PHASE_3_API_AND_APPLICATION.md)
 
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
-| API-30 | P1 | in corso | DTO/query/use case v1 per account, wallet, tipi, movimenti e dashboard; color CRUD e adapter legacy restano | ARC-20, DEC-03 |
-| APP-31 | P1 | in corso | policy SQL-translatable per ownership/global riusate da comandi e query; matrice test completa resta | API-30, SEC-13 |
-| API-31 | P1 | in corso | Problem Details centrali, validation DTO e codici v1; matrice contract completa resta | API-30 |
-| API-32 | P1 | in corso | cookie Identity/antiforgery presenti; autenticazione predefinita v1 e logout protetto aggiunti, suite auth resta | SEC-14, ARC-20 |
-| API-33 | P1 | in corso | parser legacy strict allowlist e paginazione v1 deterministica; test query/EXPLAIN restano | API-31 |
-| API-34 | P1 | non iniziato | nuova `/api/v1`, OpenAPI e migrazione frontend | API-31, API-32, API-33, DEC-03 |
+| API-30 | P1 | completato | DTO/query/use case v1 per account, wallet, tipi, movimenti e dashboard; adapter legacy delegano le letture e color CRUD resta legacy | ARC-20, DEC-03 |
+| APP-31 | P1 | completato | policy SQL-translatable per ownership/global riusate da comandi e query; test policy e integrazione | API-30, SEC-13 |
+| API-31 | P1 | completato | Problem Details centrali, validation DTO e codici v1; test HTTP e snapshot contratto | API-30 |
+| API-32 | P1 | completato | Identity cookie, antiforgery, auth predefinita v1; raw token confinato agli adapter legacy | SEC-14, ARC-20 |
+| API-33 | P1 | completato | parser legacy strict allowlist, paginazione v1 stabile e controllo MySQL EXPLAIN sull'indice owner/data | API-31 |
+| API-34 | P1 | completato | snapshot OpenAPI v1/legacy e gate CI; frontend account, wallet, movimenti e dashboard connesso a `/api/v1` | API-31, API-32, API-33, DEC-03 |
 
-**Gate fase 3:** controller senza query EF o autenticazione manuale; nessuna entità EF nell'HTTP; successi e Problem
-Details coperti; OpenAPI `/api/v1` diffata in test; frontend migrato e legacy/raw ritirati solo dopo prova consumer.
+**Gate fase 3:** controller `/api/v1` senza query EF o autenticazione manuale; nessuna entità EF nell'HTTP;
+successi e Problem Details coperti; OpenAPI `/api/v1` confrontata nei test e in CI; frontend migrato. I route legacy
+mantengono gli adapter raw-token durante la finestra di compatibilità documentata.
 
 ### Fase 4 — blocco import/export
 

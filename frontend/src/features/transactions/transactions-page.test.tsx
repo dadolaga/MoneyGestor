@@ -55,17 +55,16 @@ describe('transactions page', () => {
         expect(screen.getByRole('button', { name: 'Next month' })).toBeInTheDocument();
     });
 
-    it('sorts a column in both directions from its header', async () => {
-        const user = userEvent.setup();
+    it('sorts a column in both directions from its header', () => {
         renderPage();
         const table = screen.getByRole('table');
         const amountHeader = within(table).getByRole('button', { name: 'Amount' });
 
-        await user.click(amountHeader);
+        fireEvent.click(amountHeader);
         expect(within(within(table).getAllByRole('row')[1]).getByText('Monthly rent')).toBeInTheDocument();
         expect(within(table).getByRole('columnheader', { name: 'Amount' })).toHaveAttribute('aria-sort', 'ascending');
 
-        await user.click(amountHeader);
+        fireEvent.click(amountHeader);
         expect(within(within(table).getAllByRole('row')[1]).getByText('September salary')).toBeInTheDocument();
         expect(within(table).getByRole('columnheader', { name: 'Amount' })).toHaveAttribute('aria-sort', 'descending');
     });

@@ -14,6 +14,7 @@ public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
         MoneyGestorContext legacyDatabase,
         TimeProvider timeProvider) {
         if (!context.Request.Path.StartsWithSegments("/api/v1") &&
+            !context.Request.Path.Equals("/user/info", StringComparison.OrdinalIgnoreCase) &&
             context.User.Identity?.IsAuthenticated == true &&
             !context.Request.Headers.ContainsKey("Authorization")) {
             var identityId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);

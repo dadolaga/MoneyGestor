@@ -1,6 +1,5 @@
-import { TransactionsPage } from '@/features/transactions/transactions-page';
-import { transactionStateFixtures } from '@/lib/fixtures/finance';
+import { ApiTransactionsPage } from '@/features/api/api-finance-pages';
 
 export default function TransactionPage() {
-    return <TransactionsPage initialState={transactionStateFixtures.ready} />;
+    return <ApiTransactionsPage />;
 }

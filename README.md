@@ -7,8 +7,7 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 ## Stack
 
 - Backend: ASP.NET Core 8, Entity Framework Core e MySQL
-- Frontend attuale: Next.js 15, React 19, TypeScript, Material UI e Nivo
-- Frontend in migrazione: Next.js, Tailwind CSS v4, shadcn/ui con primitive Radix e next-intl; MUI resta nelle route legacy e TanStack è escluso
+- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui con primitive Radix e next-intl; MUI resta nelle route legacy e TanStack è escluso
 - Test backend: NUnit
 - Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
 - Runtime container: Docker Compose
@@ -34,6 +33,7 @@ Approfondimenti:
 
 - [Architettura](docs/ARCHITECTURE.md)
 - [Contratto API](docs/API.md)
+- [OpenAPI v1](docs/openapi/v1.json) e [OpenAPI legacy](docs/openapi/legacy.json)
 - [Autenticazione finale, spiegata in modo semplice](docs/AUTHENTICATION.md)
 - [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
 - [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
@@ -108,6 +108,16 @@ all'adozione una tantum di uno schema storico equivalente dopo backup e prova di
 [runbook database](docs/backend-modernization/DATABASE_DEPLOYMENT.md). In `Production` sono obbligatori SMTP e
 `DATA_PROTECTION_KEYS_PATH`, che deve puntare a storage persistente e protetto. Negli altri ambienti, in assenza della
 variabile, le chiavi che cifrano cookie e token vengono persistite accanto ai binari.
+
+Le specifiche OpenAPI versionate si rigenerano senza avviare il database con:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = 'Testing'
+dotnet run --project backend/webserver/webserver.csproj -- --export-openapi docs/openapi
+```
+
+La CI verifica che gli
+artefatti non abbiano diff non revisionati.
 
 ### Livelli e sicurezza dei log
 
@@ -187,13 +197,11 @@ L'import sostituisce il database applicativo e va considerato distruttivo. Prima
 
 ## Stato delle verifiche
 
-Ultima ricognizione backend: 27 settembre 2026. Frontend: type-check e test ricontrollati il 23 settembre; lint e
-build risalgono alla ricognizione del 17 settembre 2026.
+Ultima ricognizione completa: 27 settembre 2026.
 
-- build .NET Release pulita: completata, 0 errori e 69 warning legacy
+- build .NET: completata senza errori; restano 7 warning nei modelli/controller legacy
 - type-check frontend: completato senza errori
-- lint frontend: completato senza errori; restano 10 warning legacy già censiti
-- test frontend: 20/21 test Vitest/Testing Library completati; il test legacy di ordinamento della tabella movimenti
-  supera il timeout anche in esecuzione isolata, senza modifiche frontend in questo step
-- build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
-- test backend: 131/131 casi verdi, inclusi migration monetaria/data, riconciliazione e concorrenza su MySQL effimero
+- lint frontend: completato senza errori; restano 8 warning legacy già censiti
+- test frontend: 21/21 test Vitest/Testing Library completati con worker process seriale
+- build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack
+- test backend: 142/142 casi superati nella verifica finale, inclusi test API, snapshot OpenAPI, query-plan e concorrenza su MySQL Testcontainers effimero

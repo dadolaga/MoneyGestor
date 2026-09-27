@@ -19,9 +19,10 @@ cambiare gli URL pubblici; la shell condivisa non importa MUI e le feature nuove
 adapter puri vivono nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti
 visuali ricevono dati e stato tramite props usando il tipo discriminato `FeatureState<T>`.
 
-La route `/dashboard/wallet` vive ora nel gruppo `(app)` e usa esclusivamente fixture locali: riepiloghi, ordinamento,
-viste responsive, dialog create/edit, eliminazione e grafico Recharts aggiornano stato React in memoria senza chiamare
-il backend. I componenti wallet legacy MUI/Nivo sono stati rimossi; i trasferimenti restano fuori dalla slice.
+Le route `/dashboard`, `/dashboard/wallet` e `/dashboard/transaction` vivono nel gruppo `(app)` e usano `/api/v1`;
+wallet supporta creazione/modifica, preferiti ed eliminazione, mentre i movimenti usano filtri e paginazione server-side.
+Le fixture restano per preview e test. Il client di risorse è `src/lib/api/client.ts`; `useApi` è mantenuto soltanto
+come adapter callback delle form account legacy.
 
 La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login,
 registrazione, conferma email, reinvio e recupero password vivono nel route group `(auth)`, quindi non ricevono la
@@ -95,7 +96,7 @@ Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la
 
 ## Chiamate API
 
-Le API passano da `useApi`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che modifica uno stato di
+Le risorse v1 passano da `src/lib/api/client.ts`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che modifica uno stato di
 caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
 
 Il wrapper `ApiRequest` non restituisce oggi una Promise dalla funzione `execute`. Finché non verrà rifattorizzato,

@@ -45,11 +45,17 @@ internal sealed class AccountSecurityApiTest {
 
     [TearDown]
     public async Task CleanDatabase() {
+        using (var legacyData = TestDatabaseRuntime.CreateContext()) {
+            await legacyData.Transactions.ExecuteDeleteAsync();
+            await legacyData.Wallets.ExecuteDeleteAsync();
+            await legacyData.TransactionTypes.Where(type => type.UserId != null).ExecuteDeleteAsync();
+            await legacyData.Colors.Where(color => color.UserId != null).ExecuteDeleteAsync();
+            await legacyData.Logins.ExecuteDeleteAsync();
+        }
         await using (var identity = TestDatabaseRuntime.CreateIdentityContext()) {
             await identity.Users.ExecuteDeleteAsync();
         }
         using var database = TestDatabaseRuntime.CreateContext();
-        await database.Logins.ExecuteDeleteAsync();
         await database.Users.ExecuteDeleteAsync();
         emails.Clear();
     }
@@ -123,7 +129,7 @@ internal sealed class AccountSecurityApiTest {
         }
 
         var bridgedLegacySession = await client.GetAsync("/user/info");
-        Assert.That(bridgedLegacySession.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(bridgedLegacySession.StatusCode, Is.EqualTo(HttpStatusCode.OK), await bridgedLegacySession.Content.ReadAsStringAsync());
 
         var logout = await PostAsync("/api/v1/auth/logout", new { }, csrf);
         Assert.That(logout.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -137,6 +143,53 @@ internal sealed class AccountSecurityApiTest {
             password = "VeryStrong123!"
         });
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), await response.Content.ReadAsStringAsync());
+    }
+
+    [Test]
+    public async Task V1ResourceRoutesRequireIdentityAndUseDTOsWithAntiforgery() {
+        var anonymous = await client.GetAsync("/api/v1/wallets");
+        Assert.That(anonymous.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        Assert.That(anonymous.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/problem+json"));
+
+        var csrf = await GetCsrfAsync();
+        await RegisterAndConfirmAsync("resource_user", "resource@test.me", "VeryStrong123!", csrf);
+        var login = await PostAsync("/api/v1/auth/login", new {
+            user = "resource@test.me", password = "VeryStrong123!", remember = false
+        }, csrf);
+        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var withoutCsrf = await client.PostAsJsonAsync("/api/v1/wallets", new {
+            name = "Unsafe", initialValue = 25m, colorId = 1
+        });
+        Assert.That(withoutCsrf.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+
+        var created = await PostAsync("/api/v1/wallets", new {
+            id = 5000,
+            name = "Everyday",
+            initialValue = 25.50m,
+            currentValue = 999999m,
+            favorite = true,
+            colorId = 1,
+            userId = 9000
+        }, csrf);
+        Assert.That(created.StatusCode, Is.EqualTo(HttpStatusCode.Created), await created.Content.ReadAsStringAsync());
+        using var createdJson = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        var walletId = createdJson.RootElement.GetProperty("id").GetUInt64();
+        Assert.That(created.Headers.Location?.ToString(), Does.Contain($"/api/v1/wallets/{walletId}"));
+
+        var list = await client.GetAsync("/api/v1/wallets");
+        Assert.That(list.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        using var listJson = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
+        var wallet = listJson.RootElement.EnumerateArray().Single();
+        Assert.Multiple(() => {
+            Assert.That(wallet.GetProperty("initialValue").GetDecimal(), Is.EqualTo(25.50m));
+            Assert.That(wallet.GetProperty("currentValue").GetDecimal(), Is.EqualTo(25.50m));
+            Assert.That(wallet.GetProperty("favorite").GetBoolean(), Is.False);
+            Assert.That(wallet.TryGetProperty("userId", out _), Is.False);
+        });
+
+        var dashboard = await client.GetAsync("/api/v1/dashboard?from=2026-09-01&to=2026-09-30");
+        Assert.That(dashboard.StatusCode, Is.EqualTo(HttpStatusCode.OK), await dashboard.Content.ReadAsStringAsync());
     }
 
     [Test]

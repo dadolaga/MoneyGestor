@@ -62,7 +62,15 @@ Le etichette dell'interfaccia useranno “movimento”. Route, DTO, classi e nom
 
 Sono fuori scope, anche se visibili nel mockup: ricerca globale, notifiche, categorie, budget, obiettivi, report, export, stato dei movimenti e grafico storico del saldo. Non vanno creati placeholder o dati fittizi per queste funzioni.
 
-Il backend e il suo futuro contratto sono esplicitamente fuori dallo scope. Il restyling non deve incorporare regole di dominio nel frontend né essere progettato attorno alle particolarità dell'API corrente. Durante la migrazione, l'accesso dati esistente può restare dietro adapter sottili; verrà ripensato quando inizierà il lavoro sul backend.
+Il backend era fuori dallo scope del workstream visuale iniziale. Il proprietario ha poi aperto API-30..34: l'integrazione attuale usa il contratto versionato `/api/v1` attraverso adapter Promise, senza spostare regole di dominio nel frontend.
+
+## Aggiornamento integrazione API — 27 settembre 2026
+
+Account/sessione, wallet, tipi/movimenti e dashboard sono collegati a `/api/v1`. Le pagine wallet e movimenti usano le
+risposte live per le operazioni CRUD; la lista movimenti applica ricerca, filtro tipo, ordinamento e pagina sul server.
+Le richieste includono credenziali, cancellation e token antiforgery. Il client legacy di risorse è stato rimosso dalle
+feature; il contratto server legacy resta disponibile per consumer esterni durante la finestra documentata in
+`backend-modernization/API_COMPATIBILITY.md`.
 
 ## Principi di migrazione
 

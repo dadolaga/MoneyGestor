@@ -1,62 +1,25 @@
-﻿using database.Models;
 using logic;
-using logic.Commands.User;
-using logic.Exceptions;
-using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using webserver.Models;
+using webserver.Api.V1;
 
 namespace webserver.Controllers {
     [ApiController]
     [Route("dashboard")]
     [EnableCors("CorsPolicy")]
-    public class DashboardController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
+    public class DashboardController(ExecutorManager executor, IResourceQueryService queries) : MoneyMenagerController {
         [HttpGet("all")]
-        public async Task<IActionResult> All([FromHeader(Name = "Authorization")] String authorization, [FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "to")] DateTimeOffset to) {
+        public async Task<IActionResult> All(
+            [FromHeader(Name = "Authorization")] String authorization,
+            [FromQuery(Name = "from")] DateTimeOffset from,
+            [FromQuery(Name = "to")] DateTimeOffset to) {
             executor.SetToken(authorization);
             await executor.LoginUser();
-
-            var fromDate = DateOnly.FromDateTime(from.DateTime);
-            var toDate = DateOnly.FromDateTime(to.DateTime);
-            Expression<Func<TransactionDb, Boolean>> whereFunction = t =>
-                t.UserId == executor.UserId &&
-                t.TransactionDestinationId == null &&
-                t.Date >= fromDate &&
-                t.Date <= toDate;
-
-            try {
-                var incoming = await database.Transactions.Where(whereFunction).Where(t => t.Value > 0).SumAsync(t => t.Value);
-                var expense = await database.Transactions.Where(whereFunction).Where(t => t.Value < 0).SumAsync(t => t.Value);
-
-                var expenseCategories = (await database.Transactions
-                    .Where(whereFunction)
-                    .Where(t => t.Value < 0)
-                    .Include(t => t.TransactionType)
-                    .GroupBy(t => t.TransactionTypeId)
-                    .ToListAsync())
-                    .Select(gt => new TransactionTypeValue { Type = gt.First().TransactionType.Convert(), Value = gt.Sum(t => t.Value) });
-
-                var incomingCategories = (await database.Transactions
-                    .Where(whereFunction)
-                    .Where(t => t.Value > 0)
-                    .Include(t => t.TransactionType)
-                    .GroupBy(t => t.TransactionTypeId)
-                    .ToListAsync())
-                    .Select(gt => new TransactionTypeValue { Type = gt.First().TransactionType.Convert(), Value = gt.Sum(t => t.Value) });
-
-                return OkResponse(new DashboardOutput {
-                    Incoming = incoming,
-                    Expense = expense,
-                    IncomingCategories = incomingCategories,
-                    ExpenseCategories = expenseCategories
-                });
-
-            } catch (ExecutorException ex) {
-                return ErrorResponse(121, "User not found or token exirated");
-            }
+            var result = await queries.GetDashboardAsync(executor.UserId, new DashboardQuery {
+                From = DateOnly.FromDateTime(from.DateTime),
+                To = DateOnly.FromDateTime(to.DateTime)
+            }, HttpContext.RequestAborted);
+            return OkResponse(LegacyResourceMapper.ToLegacy(result, executor.UserId));
         }
     }
 }

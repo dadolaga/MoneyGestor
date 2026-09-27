@@ -3,9 +3,11 @@
 Questo documento definisce la convivenza tra gli endpoint attuali non versionati, d'ora in poi **legacy**, e la nuova
 API formale `/api/v1` approvata in DEC-03. Va aggiornato insieme a qualsiasi modifica HTTP.
 
-## Consumer verificati
+## Consumer verificati al 27 settembre 2026
 
-L'unico consumer presente nel repository è `frontend/src/hooks/useApi.ts`. Dal completamento di SEC-14/15 il client:
+Il frontend usa `/api/v1` per account/sessione, wallet, tipi/movimenti e dashboard. Le risorse passano dal client
+Promise `frontend/src/lib/api/client.ts`; le form account usano ancora l'adapter callback `frontend/src/hooks/useApi.ts`
+ma chiamano esclusivamente endpoint `/api/v1`. Non restano chiamate frontend a risorse legacy. Il client:
 
 - usa `NEXT_PUBLIC_API_URL`, con fallback `http://localhost:5256`;
 - usa `withCredentials` e il cookie Identity HttpOnly, senza leggere token di autenticazione;
@@ -16,8 +18,12 @@ L'unico consumer presente nel repository è `frontend/src/hooks/useApi.ts`. Dal 
 - invia date dashboard come valori Axios derivati da Day.js/Date;
 - tipizza alcune mutazioni come `number` anche quando il backend restituisce `data: null`.
 
-Le slice wallet e movimenti migrate usano fixture e adapter puri. L'integrazione con `/api/v1` deve avvenire dietro
-adapter di feature, senza spostare regole di dominio nel frontend e senza duplicare la logica fra desktop e mobile.
+Le fixture delle feature rimangono per preview e test, mentre le route live usano dati dal backend. Filtri e paginazione
+dei movimenti usano il contratto tipizzato server-side.
+
+Il contratto legacy rimane per consumer esterni non verificabili da questo repository. Owner della finestra di
+compatibilità: proprietario del repository. Riesame per eventuale ritiro: 27 dicembre 2026; ritiro consentito solo dopo
+la prova d'assenza di consumer esterni e l'osservazione del traffico per la finestra concordata.
 
 ## Contratto legacy da caratterizzare
 
@@ -69,7 +75,8 @@ versione.
 La prima slice esistente comprende le route account e risorse wallet, tipi e movimenti, oltre a letture colori e dashboard
 sotto `/api/v1`. Le risposte e richieste usano DTO; le query proiettano direttamente, riusano policy SQL-translatable
 per owner/global e applicano paginazione `page/pageSize`. Le mutazioni riutilizzano i command esistenti tramite un
-executor valorizzato dal current user Identity; la migrazione dei controller legacy verso use case resta lavoro API-30.
+executor valorizzato dal current user Identity. Gli adapter legacy continuano a leggere il token raw e a mantenere
+l'envelope storico; non duplicano le query v1 e saranno ritirati secondo questa finestra di compatibilità.
 
 ## Piano di migrazione
 

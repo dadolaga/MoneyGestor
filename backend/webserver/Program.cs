@@ -6,22 +6,58 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Serilog;
 using webserver.Auth;
 using webserver.Api.V1;
+using webserver.Api;
 
 namespace webserver;
 
 public class Program {
     public static async Task Main(String[] args) {
+        if (args.Length > 0 && args[0] == "--export-openapi") {
+            var output = args.Length > 1 ? args[1] : "docs/openapi";
+            var exportApplication = BuildApplication(Array.Empty<String>());
+            OpenApiSnapshotWriter.Write(
+                exportApplication.Services.GetRequiredService<Swashbuckle.AspNetCore.Swagger.ISwaggerProvider>(),
+                ResolveOpenApiOutputDirectory(output));
+            await exportApplication.DisposeAsync();
+            return;
+        }
         var app = BuildApplication(args);
         await InitializeApplicationAsync(app);
         await app.RunAsync();
     }
 
+    private static String ResolveOpenApiOutputDirectory(String output) {
+        if (Path.IsPathRooted(output)) return Path.GetFullPath(output);
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent) {
+            if (File.Exists(Path.Combine(directory.FullName, "backend.sln")))
+                return Path.GetFullPath(output, directory.Parent!.FullName);
+        }
+        return Path.GetFullPath(output, Directory.GetCurrentDirectory());
+    }
+
     public static WebApplication BuildApplication(String[] args) {
         var builder = WebApplication.CreateBuilder(args);
         var isTesting = builder.Environment.IsEnvironment("Testing");
+
+        if (isTesting) {
+            builder.Configuration.AddInMemoryCollection(new Dictionary<String, String?> {
+                ["database:host"] = "127.0.0.1",
+                ["database:port"] = "3306",
+                ["database:name"] = "unused_openapi_export",
+                ["database:user"] = "unused",
+                ["database:password"] = "unused",
+                ["database:bootstrapMode"] = "Disabled",
+                ["log:level"] = "Information",
+                ["log:output:console"] = "false",
+                ["security:allowedOrigins:0"] = "http://localhost:3000",
+                ["email:port"] = "587",
+                ["email:frontendBaseUrl"] = "http://localhost:3000"
+            });
+        }
 
         if (!isTesting) {
             AddApplicationSettings(builder);
@@ -57,7 +93,43 @@ public class Program {
             };
         });
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options => {
+            options.SupportNonNullableReferenceTypes();
+            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
+                Title = "MoneyGestor API",
+                Version = "v1",
+                Description = "Cookie-authenticated API. Unsafe requests require the antiforgery header."
+            });
+            options.SwaggerDoc("legacy", new Microsoft.OpenApi.Models.OpenApiInfo {
+                Title = "MoneyGestor Legacy API",
+                Version = "legacy",
+                Description = "Deprecated compatibility contract. The raw Authorization token is temporary."
+            });
+            options.DocInclusionPredicate((document, description) => {
+                var isV1 = description.RelativePath?.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase) == true;
+                return document == "v1" ? isV1 : document == "legacy" && !isV1;
+            });
+            options.AddSecurityDefinition("MoneyGestorCookie", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.Models.ParameterLocation.Cookie,
+                Name = "MoneyGestor.Auth",
+                Description = "Identity session cookie; issued by /api/v1/auth/login."
+            });
+            options.AddSecurityDefinition("AntiforgeryHeader", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Name = "X-CSRF-TOKEN",
+                Description = "Request token from GET /api/v1/auth/antiforgery."
+            });
+            options.AddSecurityDefinition("LegacyRawToken", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                Name = "Authorization",
+                Description = "Deprecated raw token accepted only on legacy endpoints."
+            });
+            options.OperationFilter<ApiContractOperationFilter>();
+            options.SchemaFilter<ApiDtoSchemaFilter>();
+        });
         builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy => {
             var security = builder.Configuration
                 .GetRequiredSection(SecurityOptions.SectionName)
@@ -152,12 +224,15 @@ public class Program {
 
         if (app.Environment.IsDevelopment() || isTesting) {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options => {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "MoneyGestor API v1");
+                options.SwaggerEndpoint("/swagger/legacy/swagger.json", "MoneyGestor Legacy API (deprecated)");
+            });
         }
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
-        app.UseCors("CorsPolicy");
         app.UseRouting();
+        app.UseCors("CorsPolicy");
         app.Use(async (context, next) => {
             var requiresAntiforgery = context.Request.Path.StartsWithSegments("/api/v1") && (
                 HttpMethods.IsPost(context.Request.Method) ||
@@ -179,7 +254,9 @@ public class Program {
                     };
                     problem.Extensions["code"] = "antiforgery_validation_failed";
                     problem.Extensions["traceId"] = context.TraceIdentifier;
-                    await context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
+                    await context.Response.WriteAsync(
+                        JsonSerializer.Serialize(problem, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                        context.RequestAborted);
                     return;
                 }
             }
@@ -193,12 +270,15 @@ public class Program {
                 && context.User.Identity?.IsAuthenticated != true) {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/problem+json";
-                await context.Response.WriteAsJsonAsync(new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
                     Type = "https://api.moneygestor.example/problems/authentication-required",
                     Title = "Authentication required",
                     Status = StatusCodes.Status401Unauthorized,
                     Extensions = { ["code"] = "authentication_required", ["traceId"] = context.TraceIdentifier }
-                });
+                };
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(problem, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                    context.RequestAborted);
                 return;
             }
             await next(context);

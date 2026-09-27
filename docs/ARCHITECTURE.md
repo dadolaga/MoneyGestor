@@ -18,14 +18,12 @@ flowchart LR
     CLI --> ZIP[ZIP con CSV e manifest]
 ```
 
-Il frontend concentra ancora le chiamate HTTP legacy in `frontend/src/hooks/useApi.ts`. La nuova `/api/v1` espone
-letture wallet, colori, tipi e movimenti tramite DTO HTTP e `ResourceQueryService`, con proiezioni EF e paginazione
-`page/pageSize`; le route v1 richiedono cookie Identity e le mutazioni passano dal controllo antiforgery. Il boundary di
-presentazione frontend usa adapter puri per trasformare i DTO in view model di feature e componenti visuali pilotati tramite
-props; fixture locali coprono gli stati `idle`, `loading`, `ready`, `empty` ed `error` senza richiedere il backend. I
-controller legacy traducono le richieste nei comandi del progetto `logic`; `ExecutorManager` apre una transazione EF, risolve
-l'utente dal token ed esegue il comando. Alcune letture interrogano invece `MoneyGestorContext` direttamente dal
-controller.
+Il frontend usa `/api/v1` per account/sessione, wallet, tipi/movimenti e dashboard. Le risorse passano dal client Promise
+in `frontend/src/lib/api/client.ts`, che invia cookie Identity, antiforgery e cancellation; le form account mantengono un
+adapter Promise callback in `frontend/src/hooks/useApi.ts`. I DTO HTTP e `ResourceQueryService` proiettano le query EF,
+inclusi filtri allowlist e paginazione `page/pageSize`. Fixture locali restano per preview e test dei componenti. Le
+route v1 richiedono cookie Identity e le mutazioni passano dal controllo antiforgery. I controller legacy restano
+compatibili durante la finestra documentata e in alcune letture interrogano ancora `MoneyGestorContext` direttamente.
 
 Dal completamento di ARC-20, `MoneyGestorContext` e `IdentityAccountContext` sono registrati scoped nel container DI.
 Controller, servizi account, middleware legacy ed `ExecutorManager` condividono il context della request; la risoluzione
@@ -77,7 +75,9 @@ Espone controller REST per:
 - transazioni;
 - dashboard.
 
-Swagger viene registrato sempre ma pubblicato solo in ambiente Development. Le risposte applicative usano l'envelope descritto in [API.md](API.md).
+Swagger runtime viene pubblicato in Development e Testing. Gli snapshot JSON di v1 e legacy sono generati in modo
+deterministico tramite `--export-openapi` e versionati in [docs/openapi](openapi/); la CI blocca i diff non revisionati.
+La nuova API usa Problem Details, mentre l'envelope descritto in [API.md](API.md) resta circoscritto al legacy.
 
 ### `ExportImportApplication`
 

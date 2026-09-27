@@ -1,33 +1,19 @@
-﻿using logic;
-using logic.Commands.User;
-using logic.Models;
+using logic;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using webserver.Api.V1;
 
 namespace webserver.Controllers {
-
     [ApiController]
     [Route("color")]
     [EnableCors("CorsPolicy")]
-    public class ColorController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
-
+    public class ColorController(ExecutorManager executor, IResourceQueryService queries) : MoneyMenagerController {
         [HttpGet]
-        public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String? authorization) {
-            executor.SetToken(authorization!);
+        public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
+            executor.SetToken(authorization);
             await executor.LoginUser();
-
-            var colorList = database
-                .Colors
-                .Where(c => c.UserId == null || c.UserId == executor.UserId)
-                .ToList()
-                .Select(c => new Color {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Value = c.Value,
-                    UserId = c.UserId
-                });
-
-            return OkResponse(colorList, "Color list");
+            var colors = await queries.GetLegacyColorsAsync(executor.UserId, HttpContext.RequestAborted);
+            return OkResponse(colors, "Color list");
         }
     }
 }

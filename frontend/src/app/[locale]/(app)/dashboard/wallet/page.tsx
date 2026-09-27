@@ -1,6 +1,5 @@
-import { WalletsPage } from '@/features/wallets/wallets-page';
-import { walletStateFixtures } from '@/lib/fixtures/finance';
+import { ApiWalletsPage } from '@/features/api/api-finance-pages';
 
 export default function WalletPage() {
-    return <WalletsPage initialState={walletStateFixtures.ready} />;
+    return <ApiWalletsPage />;
 }

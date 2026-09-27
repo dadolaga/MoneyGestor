@@ -1,9 +1,7 @@
 # Contratto API
 
-Documento ricavato dai controller e dal client, aggiornato al 27 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
-
-La prima slice `/api/v1` è in corso: sono disponibili le route di lettura elencate sotto e gli endpoint account; le
-mutazioni delle risorse e la migrazione del client frontend non sono ancora completate.
+Documento descrittivo dei contratti aggiornato al 27 settembre 2026. Gli snapshot OpenAPI riproducibili sono
+versionati in [docs/openapi](openapi/) e controllati dalla CI.
 
 ## Convenzioni
 
@@ -12,7 +10,7 @@ URL locali:
 - sviluppo backend: `http://localhost:5256`
 - backend Docker: `http://localhost:5000`
 
-Le risposte applicative hanno questa forma:
+Gli endpoint legacy non versionati mantengono questa forma:
 
 ```json
 {
@@ -37,7 +35,8 @@ Gli endpoint protetti richiedono:
 Authorization: <token>
 ```
 
-Il valore è il token grezzo, non `Bearer <token>`.
+Il valore legacy è il token grezzo, non `Bearer <token>`. `/api/v1` usa invece cookie Identity e non accetta il token
+grezzo.
 
 ## Endpoint
 
@@ -64,7 +63,7 @@ Il valore è il token grezzo, non `Bearer <token>`.
 
 Esiste inoltre il controller di esempio `/WeatherForecast`, non usato dal frontend.
 
-## Nuova API `/api/v1` (slice in corso)
+## Nuova API `/api/v1`
 
 Le route richiedono il cookie Identity HttpOnly, eccetto i flussi account esplicitamente anonimi. Le richieste POST,
 PUT, PATCH e DELETE sotto `/api/v1` richiedono anche `X-CSRF-TOKEN`, ottenuto da `GET /api/v1/auth/antiforgery`.
@@ -82,13 +81,16 @@ Gli errori usano `application/problem+json`, con `code` stabile e `traceId`.
 | PUT | `/api/v1/wallets/{id}/favorite` | sì | imposta preferito |
 | GET/POST | `/api/v1/transaction-types` | sì | lista / creazione tipo |
 | GET | `/api/v1/transaction-types/{id}` | sì | tipo singolo |
-| GET/POST | `/api/v1/transactions?page=1&pageSize=50` | sì | pagina / creazione movimento |
+| GET | `/api/v1/transactions?page=1&pageSize=50` | sì | pagina movimenti con filtri allowlist |
+| POST | `/api/v1/transactions` | sì | creazione movimento |
 | GET/PATCH/DELETE | `/api/v1/transactions/{id}` | sì | dettaglio / modifica parziale / rimozione |
 | GET | `/api/v1/dashboard?from=2026-09-01&to=2026-09-30` | sì | totali e categorie per data civile |
 
 Le risposte resource sono DTO dedicati; non includono entità database o campi owner. La lista movimenti esclude il
 lato destinazione del trasferimento e ordina per data e ID decrescenti. `page` parte da 1 e `pageSize` è compreso fra
-1 e 100.
+1 e 100. `GET /api/v1/transactions` supporta inoltre `from`, `to`, `walletId`, `typeId`, `kind` (`Income`, `Expense`,
+`Transfer`), `search`, `sortBy` (`Date`, `Description`, `Value`, `Type`, `Wallet`) e `direction` (`Ascending`,
+`Descending`). Ogni ordinamento termina con l'ID per mantenere stabili le pagine.
 
 ## Payload essenziali
 

@@ -10,6 +10,7 @@ using webserver.Models;
 using webserver.Auth;
 using database.Models;
 using System.Security.Cryptography;
+using webserver.Api.V1;
 
 namespace webserver.Controllers {
     [ApiController]
@@ -19,7 +20,9 @@ namespace webserver.Controllers {
         AccountService accounts,
         ExecutorManager executor,
         MoneyGestorContext database,
-        TimeProvider timeProvider) : MoneyMenagerController {
+        TimeProvider timeProvider,
+        IApiCurrentUser currentUser,
+        IResourceQueryService queries) : MoneyMenagerController {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] User user) {
@@ -67,21 +70,22 @@ namespace webserver.Controllers {
 
         [HttpGet("info")]
         public async Task<IActionResult> Info([FromHeader(Name = "Authorization")] String? authorization) {
-            executor.SetToken(authorization!);
-
-            var findCommand = new FindUserByTokenCommand();
-
             try {
-                await executor.Execute(findCommand);
+                UInt64 userId;
+                if (String.IsNullOrWhiteSpace(authorization) && User.Identity?.IsAuthenticated == true) {
+                    userId = await currentUser.RequireIdAsync(User);
+                } else {
+                    executor.SetToken(authorization!);
+                    var findCommand = new FindUserByTokenCommand();
+                    await executor.Execute(findCommand);
+                    userId = findCommand.Result;
+                }
 
-                var user = await database.Users
-                    .AsNoTracking()
-                    .FirstAsync(u => u.Id == findCommand.Result);
-
-                user.Password = "";
+                var user = await queries.GetLegacyUserAsync(userId, HttpContext.RequestAborted)
+                    ?? throw new ObjectNotFoundException("User not found");
 
                 return OkResponse(user, "User information");
-            } catch (ExecutorException ex) {
+            } catch (ExecutorException) {
                 return ErrorResponse(121, "User not found or token exirated");
             }
         }

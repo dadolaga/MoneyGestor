@@ -12,7 +12,9 @@ public sealed class MoneyAmountAttribute : ValidationAttribute {
     }
 }
 
-public sealed record ColorResponse(UInt64 Id, String? Name, UInt32 Value);
+public sealed record ColorResponse(UInt64 Id, String? Name, UInt32 Value) {
+    public Boolean IsGlobal { get; init; }
+}
 public sealed record WalletResponse(UInt64 Id, String Name, Decimal InitialValue, Decimal CurrentValue, Boolean Favorite, ColorResponse Color);
 public sealed record TransactionTypeResponse(UInt64 Id, String Name, Boolean IsGlobal);
 public sealed record TransactionWalletResponse(UInt64 Id, String Name, ColorResponse Color);
@@ -72,4 +74,26 @@ public sealed record UpdateTransactionRequest(
 public sealed class PageQuery {
     [Range(1, Int32.MaxValue)] public Int32 Page { get; init; } = 1;
     [Range(1, 100)] public Int32 PageSize { get; init; } = 50;
+}
+
+public enum MovementKind { Income, Expense, Transfer }
+public enum TransactionOrderBy { Date, Description, Value, Type, Wallet }
+public enum SortDirection { Ascending, Descending }
+
+public sealed class TransactionListQuery : IValidatableObject {
+    [Range(1, Int32.MaxValue)] public Int32 Page { get; init; } = 1;
+    [Range(1, 100)] public Int32 PageSize { get; init; } = 50;
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? WalletId { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? TypeId { get; init; }
+    [EnumDataType(typeof(MovementKind))] public MovementKind? Kind { get; init; }
+    [StringLength(100)] public String? Search { get; init; }
+    [EnumDataType(typeof(TransactionOrderBy))] public TransactionOrderBy SortBy { get; init; } = TransactionOrderBy.Date;
+    [EnumDataType(typeof(SortDirection))] public SortDirection Direction { get; init; } = SortDirection.Descending;
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
+        if (From.HasValue && To.HasValue && From.Value > To.Value)
+            yield return new ValidationResult("invalid_date_range", [nameof(To)]);
+    }
 }

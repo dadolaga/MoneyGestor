@@ -5,7 +5,7 @@ ASP.NET Core. La logica di dominio non deve essere duplicata fra contratto legac
 
 ## API-30 — DTO espliciti e use case/query service
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — DTO v1, query service e adapter di lettura legacy condiviso
 
 **Priorità:** P1
 
@@ -79,7 +79,7 @@ DTO dedicati eliminano over-posting e stabilizzano il contratto mentre la persis
 
 ## APP-31 — Policy di dominio e ownership riusabili
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — policy di ownership/global riusate dai command e dalle query, test SQL/API presenti
 
 **Priorità:** P1
 
@@ -148,7 +148,7 @@ Nuovi use case devono riutilizzare la stessa regola e non reintrodurre IDOR.
 
 ## API-31 — Validazione e Problem Details centrali
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — mapping centrale, validation DTO e contract test attivi
 
 **Priorità:** P1
 
@@ -218,7 +218,7 @@ Il frontend ha bisogno di errori deterministici/localizzabili; gli operatori dev
 
 ## API-32 — Cookie Identity, antiforgery e authorization
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — Identity cookie, antiforgery e fallback authorization verificati sulle API v1
 
 **Priorità:** P1
 
@@ -291,7 +291,7 @@ La protezione manuale è facile da dimenticare e mescola HTTP/logica/transazioni
 
 ## API-33 — Filtri allowlist e paginazione deterministica
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — parser allowlist, paging stabile e controllo MySQL EXPLAIN sull'indice owner/data
 
 **Priorità:** P1
 
@@ -349,7 +349,7 @@ Input malformati generano 500; query costose e proprietà interne sono esposte; 
 - contract test legacy e `/api/v1`;
 - test malformed/overflow/max;
 - dataset con chiavi uguali e richieste ripetute restituisce pagine stabili;
-- `EXPLAIN` per query critiche su dataset realistico;
+- controllo `EXPLAIN` MySQL per il filtro owner/data della lista movimenti; un benchmark con cardinalità di produzione richiede una fixture rappresentativa e resta parte della fase performance;
 - frontend pagination tests.
 
 **Criteri di completamento**
@@ -361,7 +361,7 @@ Input malformati generano 500; query costose e proprietà interne sono esposte; 
 
 ## API-34 — Nuova `/api/v1`, OpenAPI e migrazione frontend
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026 — snapshot OpenAPI, gate CI, client e slice frontend integrate con `/api/v1`
 
 **Priorità:** P1
 

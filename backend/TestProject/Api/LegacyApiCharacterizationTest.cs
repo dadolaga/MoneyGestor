@@ -121,7 +121,7 @@ internal class LegacyApiCharacterizationTest {
 
     [Test]
     public async Task SwaggerDescribesLegacyRoutesInTestingEnvironment() {
-        var response = await client.GetAsync("/swagger/v1/swagger.json");
+        var response = await client.GetAsync("/swagger/legacy/swagger.json");
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());

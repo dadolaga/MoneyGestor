@@ -1,0 +1,15 @@
+{
+  "ApiFinance": {
+    "requestFailed": "The request could not be completed. Please try again.",
+    "signInAgain": "Your session expired. Sign in again to continue.",
+    "wallets": {
+      "title": "Wallets", "description": "Manage your wallets and current balances.", "create": "Add wallet", "edit": "Edit", "name": "Name", "initialBalance": "Opening balance", "color": "Color", "save": "Save", "cancel": "Cancel", "favorite": "Add to favorites", "unfavorite": "Remove favorite", "delete": "Delete", "deleteTitle": "Delete wallet?", "deleteDescription": "Delete {name}? This action cannot be undone.", "empty": "No wallets yet. Add your first wallet above."
+    },
+    "transactions": {
+      "title": "Movements", "description": "Create and review income, expenses and transfers.", "create": "Add movement", "edit": "Edit", "descriptionField": "Description", "amount": "Amount", "date": "Date", "type": "Type", "wallet": "Wallet", "kind": "Movement type", "destination": "Destination wallet", "save": "Save", "cancel": "Cancel", "delete": "Delete", "deleteTitle": "Delete movement?", "deleteDescription": "Delete {name}? This action cannot be undone.", "search": "Search movements", "kindFilter": "Filter by movement type", "allKinds": "All types", "income": "Income", "expense": "Expense", "transfer": "Transfer", "untitled": "Untitled movement", "empty": "No movements match these filters.", "perPage": "Per page", "previous": "Previous", "next": "Next"
+    },
+    "dashboard": {
+      "title": "Dashboard", "description": "Your totals and categories for the selected period.", "from": "From", "to": "To", "incoming": "Income", "expense": "Expenses", "categories": "Categories", "loading": "Loading…", "empty": "No data for this period.", "requestFailed": "Unable to load dashboard data."
+    }
+  }
+}

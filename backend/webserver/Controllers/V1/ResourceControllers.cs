@@ -68,8 +68,8 @@ public sealed class TransactionTypesController(IApiCurrentUser currentUser, IRes
 [ApiController, Authorize, Route("api/v1/transactions")]
 public sealed class TransactionsController(IApiCurrentUser currentUser, IResourceQueryService queries, IResourceCommandService commands) : ControllerBase {
     [HttpGet]
-    public async Task<ActionResult<PageResponse<TransactionResponse>>> Get([FromQuery] PageQuery page, CancellationToken cancellationToken) =>
-        Ok(await queries.GetTransactionsAsync(await currentUser.RequireIdAsync(User), page, cancellationToken));
+    public async Task<ActionResult<PageResponse<TransactionResponse>>> Get([FromQuery] TransactionListQuery query, CancellationToken cancellationToken) =>
+        Ok(await queries.GetTransactionsAsync(await currentUser.RequireIdAsync(User), query, cancellationToken));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSingle(UInt64 id, CancellationToken cancellationToken) =>
