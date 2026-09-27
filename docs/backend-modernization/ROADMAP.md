@@ -106,7 +106,7 @@ Scheda: [PHASE_2_DATA_AND_PERSISTENCE.md](phases/PHASE_2_DATA_AND_PERSISTENCE.md
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
 | ARC-20 | P1 | completato (24 settembre 2026) | Options, DI e `DbContext` scoped | SEC-10, TST-02 |
-| DB-21 | P1 | non iniziato | bootstrap da zero, migration baseline e seed osservabile | ARC-20 |
+| DB-21 | P1 | completato (24 settembre 2026) | bootstrap da zero, migration baseline e seed osservabile | ARC-20 |
 | DAT-22 | P1 | non iniziato | migrazione `Double` → `decimal`/`DECIMAL` | DEC-04, DEC-09, DB-21, SEC-13 |
 | DAT-23 | P1 | non iniziato | `DateOnly`/`DATE` e constraint di dominio | DEC-05, DEC-06, DEC-09, DB-21 |
 | DAT-24 | P1 | non iniziato | concorrenza saldo e riconciliazione | DAT-22, DAT-23 |

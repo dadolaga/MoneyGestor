@@ -35,6 +35,12 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > La sezione storica su stato statico resta la fotografia iniziale; vedere
 > l'[evidenza ARC-20](backend-modernization/evidence/ARC-20_2026-09-24.md).
 
+> Aggiornamento del 24 settembre 2026: DB-21 ha introdotto la baseline EF dello schema storico, bootstrap configurabile
+> e adozione fail-closed basata sul confronto completo di `INFORMATION_SCHEMA`. `EnsureCreated` è rimosso dallo startup;
+> il seed globale è ora idempotente, transazionale e non assorbe errori. Backup, restore, deployment e rollback sono
+> descritti nel [runbook database](backend-modernization/DATABASE_DEPLOYMENT.md); vedere anche
+> l'[evidenza DB-21](backend-modernization/evidence/DB-21_2026-09-24.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

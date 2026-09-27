@@ -86,6 +86,7 @@ public class Program {
         builder.Services.AddScoped<IPasswordHasher<ApplicationIdentityUser>, LegacyCompatiblePasswordHasher>();
         builder.Services.AddScoped<AccountService>();
         builder.Services.AddScoped<LegacyIdentityBootstrapper>();
+        builder.Services.AddScoped<LegacyDatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
         builder.Services.AddScoped<ExecutorManager>();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -186,23 +187,28 @@ public class Program {
         }
 
         var legacyDatabase = services.GetRequiredService<MoneyGestorContext>();
-        await legacyDatabase.Database.EnsureCreatedAsync(cancellationToken);
-        await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
-        await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase);
+        var bootstrapOutcome = await services.GetRequiredService<LegacyDatabaseBootstrapper>()
+            .BootstrapAsync(databaseOptions.BootstrapMode, cancellationToken);
 
         var identityDatabase = services.GetRequiredService<IdentityAccountContext>();
         var pendingMigrations = (await identityDatabase.Database
             .GetPendingMigrationsAsync(cancellationToken)).ToArray();
-        if (pendingMigrations.Length > 0 && !databaseOptions.ForceUpdate) {
+        if (pendingMigrations.Length > 0 && databaseOptions.BootstrapMode == DatabaseBootstrapMode.Disabled) {
             throw new InvalidOperationException(
-                "Identity database migrations are pending. Review them and set database.forceUpdate=true for the controlled deployment.");
+                $"{pendingMigrations.Length} Identity migration(s) are pending while database bootstrap is disabled.");
         }
         if (pendingMigrations.Length > 0) {
             await identityDatabase.Database.MigrateAsync(cancellationToken);
         }
+
+        await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
+        await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase);
         await services.GetRequiredService<LegacyIdentityBootstrapper>().RunAsync(cancellationToken);
 
-        Log.Information("Database initialized");
+        Log.Information(
+            "Database initialized ({BootstrapOutcome}, {IdentityMigrationCount} Identity migration(s) applied)",
+            bootstrapOutcome,
+            pendingMigrations.Length);
     }
 
     internal static Boolean ShouldEnableDatabaseLogging(
@@ -225,7 +231,8 @@ public class Program {
     private static void AddValidatedOptions(IServiceCollection services, IConfiguration configuration) {
         services.AddOptions<DatabaseOptions>()
             .Bind(configuration.GetSection(DatabaseOptions.SectionName))
-            .Validate(DatabaseOptions.IsValid, "Database host, port, name, user and password are required.")
+            .Validate(DatabaseOptions.IsValid,
+                "Database host, port, name, user and password are required; bootstrapMode must be valid.")
             .ValidateOnStart();
         services.AddOptions<LogOptions>()
             .Bind(configuration.GetSection(LogOptions.SectionName))

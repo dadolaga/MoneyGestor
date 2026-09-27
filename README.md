@@ -83,7 +83,7 @@ Campi principali:
     "name": "moneygestor_db",
     "user": "moneygestor_user",
     "password": "CHANGE_ME_IN_PRODUCTION",
-    "forceUpdate": false
+    "bootstrapMode": "Disabled"
   },
   "security": {
     "allowedOrigins": ["http://localhost:3000"]
@@ -102,10 +102,12 @@ Campi principali:
 
 `settings.json` è ignorato da Git. Non inserirlo nei commit e non usare credenziali di produzione nell'esempio.
 
-`forceUpdate=true` autorizza l'applicazione controllata delle migration dedicate a Identity. Con migration pendenti e
-flag `false`, lo startup si blocca. In `Production` sono obbligatori SMTP e `DATA_PROTECTION_KEYS_PATH`, che deve
-puntare a storage persistente e protetto. Negli altri ambienti, in assenza della variabile, le chiavi che cifrano cookie
-e token vengono persistite accanto ai binari.
+`database.bootstrapMode` è `Disabled` per default: con database assente o migration pendenti lo startup si blocca senza
+applicare DDL. `Migrate` crea/applica gli schemi MoneyGestor e Identity; `MigrateAndAdoptLegacy` è riservato
+all'adozione una tantum di uno schema storico equivalente dopo backup e prova di restore. La procedura completa è nel
+[runbook database](docs/backend-modernization/DATABASE_DEPLOYMENT.md). In `Production` sono obbligatori SMTP e
+`DATA_PROTECTION_KEYS_PATH`, che deve puntare a storage persistente e protetto. Negli altri ambienti, in assenza della
+variabile, le chiavi che cifrano cookie e token vengono persistite accanto ai binari.
 
 ### Livelli e sicurezza dei log
 
@@ -194,4 +196,4 @@ build risalgono alla ricognizione del 17 settembre 2026.
 - test frontend: 20/21 test Vitest/Testing Library completati; il test legacy di ordinamento della tabella movimenti
   supera il timeout anche in esecuzione isolata, senza modifiche frontend in questo step
 - build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
-- test backend: 109/109 casi ordinari completati senza errori su MySQL effimero; nessun caso `Explicit`
+- test backend: 118/118 casi ordinari completati senza errori su MySQL effimero; nessun caso `Explicit`

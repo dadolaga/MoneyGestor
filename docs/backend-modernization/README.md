@@ -1,6 +1,6 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 completata; ARC-20 completato**
+- Stato del documento: **Fase 0 completata; Fase 1 completata; ARC-20 e DB-21 completati**
 - Data dell'ultimo aggiornamento: **24 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
@@ -32,6 +32,7 @@ Documenti operativi:
 - [Decisioni architetturali approvate](DECISIONS_REQUIRED.md)
 - [Compatibilità API e frontend](API_COMPATIBILITY.md)
 - [Roadmap e dipendenze](ROADMAP.md)
+- [Runbook database: deployment, adozione e recovery](DATABASE_DEPLOYMENT.md)
 - [Fase 0 — baseline e rete di sicurezza](phases/PHASE_0_BASELINE_AND_SAFETY.md)
 - [Fase 1 — hardening di sicurezza](phases/PHASE_1_SECURITY.md)
 - [Fase 2 — persistenza e correttezza economica](phases/PHASE_2_DATA_AND_PERSISTENCE.md)
@@ -44,7 +45,7 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-109 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, redazione dei log e lifetime DI.
+118 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log e lifetime DI.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
@@ -60,8 +61,9 @@ La base è però fragile per dati reali o uso multiutente. Le priorità conferma
 4. **Integrità economica.** SEC-13 ammette saldi negativi e valida atomicamente coppie di trasferimento reciproche,
    distinte e a somma zero. Importi e saldi restano `Double` e l'aggiornamento del saldo è un read-modify-write privo di
    controllo di concorrenza: questi rischi appartengono agli step dati successivi.
-5. **Evoluzione dello schema.** L'avvio usa `EnsureCreated`; non esistono migration EF. Il seed ingoia tutte le eccezioni
-   e contiene un aggiornamento dell'oggetto sbagliato.
+5. **Evoluzione dello schema.** DB-21 ha introdotto baseline e migration EF, bootstrap fail-closed, adozione strutturale
+   dello schema legacy e seed transazionale. Le modifiche future devono aggiungere migration forward e seguire il
+   runbook di deployment/recovery.
 6. **Contratto HTTP.** La validazione è manuale e parziale, quasi tutte le eccezioni diventano 500, l'autenticazione è
    ripetuta negli action method e filtri/ordinamenti riflettono liberamente sulle entità persistenti.
 7. **Qualità verificabile.** La Fase 0 ha aggiunto i primi test HTTP e rimosso Playwright con la vulnerabilità

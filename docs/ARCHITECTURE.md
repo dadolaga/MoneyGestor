@@ -84,9 +84,10 @@ Questa operazione è ad alto impatto e presenta limiti di affidabilità document
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-La suite validata comprende 109 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
+La suite validata comprende 118 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
 ownership, conflitto concorrente, invarianti dei trasferimenti e preflight di integrità introdotti da SEC-11..13.
-ARC-20 aggiunge controlli su validazione options, isolamento degli scope e singolo context per mutazione autenticata.
+ARC-20 aggiunge controlli su validazione options, isolamento degli scope e singolo context per mutazione autenticata;
+DB-21 copre creazione, migration no-op, adozione/rifiuto della baseline, modalità disabilitata e rollback del seed.
 L'esecuzione completa richiede Docker ed è registrata nell'evidenza dello step.
 
 ## Modello dati
@@ -139,9 +140,12 @@ Il file indicato da `BACKEND_APP_SETTINGS` viene aggiunto alla configurazione AS
 notazione `Section__Property` possono sovrascriverne i valori. Database, logging, CORS ed email sono bindati a options
 tipizzate e validati all'avvio. I campi di connessione mancanti bloccano lo startup senza stampare credenziali.
 
-Il backend esegue ancora `EnsureCreated` per lo schema storico e inizializza colori e tipi globali a ogni avvio. Lo
-schema Identity ha invece migration EF dedicate, applicate soltanto con `database.forceUpdate=true`; con migration
-pendenti e flag disabilitato lo startup fallisce. Subito dopo esegue un preflight
+DB-21 ha sostituito `EnsureCreated` con migration EF versionate per lo schema MoneyGestor e mantiene le migration
+Identity nello stesso database. `database.bootstrapMode` governa entrambi i context: `Disabled` è fail-closed,
+`Migrate` crea/applica gli schemi e `MigrateAndAdoptLegacy` registra la baseline soltanto dopo un confronto strutturale
+completo e senza DDL sullo schema esistente. Il seed globale è un upsert transazionale, idempotente e fail-fast. Il
+[runbook di deployment e recovery](backend-modernization/DATABASE_DEPLOYMENT.md) descrive privilegi, backup, adozione
+e rollback. Subito dopo lo startup esegue un preflight
 read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
 ID tecnici, senza correzioni automatiche o PII, e il bootstrap Identity blocca collisioni normalizzate.
 

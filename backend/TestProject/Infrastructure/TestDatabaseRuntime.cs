@@ -43,8 +43,66 @@ internal static class TestDatabaseRuntime {
             .Options);
     }
 
+    internal static MoneyGestorContext CreateIsolatedContext(
+        String databaseName,
+        params IInterceptor[] interceptors) {
+        EnsureIsolatedDatabaseName(databaseName);
+        var connection = new MySqlConnectionStringBuilder(
+            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            Database = databaseName
+        };
+        return new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
+            .UseMySQL(connection.ConnectionString)
+            .AddInterceptors(interceptors)
+            .Options);
+    }
+
+    internal static String CreateIsolatedDatabaseName() {
+        if (String.IsNullOrWhiteSpace(currentDatabaseName)) {
+            throw new InvalidOperationException("The test database is not running.");
+        }
+        return $"{currentDatabaseName}_db21_{Guid.NewGuid():N}"[..63];
+    }
+
+    internal static async Task DropIsolatedDatabaseAsync(String databaseName) {
+        EnsureIsolatedDatabaseName(databaseName);
+        var connection = new MySqlConnectionStringBuilder(
+            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            Database = String.Empty
+        };
+        await using var server = new MySqlConnection(connection.ConnectionString);
+        await server.OpenAsync();
+        await using var command = new MySqlCommand($"DROP DATABASE IF EXISTS `{databaseName}`", server);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    internal static async Task<Boolean> IsolatedDatabaseExistsAsync(String databaseName) {
+        EnsureIsolatedDatabaseName(databaseName);
+        var connection = new MySqlConnectionStringBuilder(
+            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            Database = String.Empty
+        };
+        await using var server = new MySqlConnection(connection.ConnectionString);
+        await server.OpenAsync();
+        await using var command = new MySqlCommand(
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @name", server);
+        command.Parameters.AddWithValue("@name", databaseName);
+        return Convert.ToInt32(await command.ExecuteScalarAsync()) == 1;
+    }
+
     internal static IdentityAccountContext CreateIdentityContext() => new(
         identityOptions ?? throw new InvalidOperationException("The test database is not running."));
+
+    internal static IdentityAccountContext CreateIsolatedIdentityContext(String databaseName) {
+        EnsureIsolatedDatabaseName(databaseName);
+        var connection = new MySqlConnectionStringBuilder(
+            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            Database = databaseName
+        };
+        return new IdentityAccountContext(new DbContextOptionsBuilder<IdentityAccountContext>()
+            .UseMySQL(connection.ConnectionString)
+            .Options);
+    }
 
     internal static IReadOnlyDictionary<String, String?> CreateConfiguration() {
         if (lease == null || databaseOptions == null) {
@@ -58,7 +116,7 @@ internal static class TestDatabaseRuntime {
             ["database:name"] = connection.Database,
             ["database:user"] = connection.UserID,
             ["database:password"] = connection.Password,
-            ["database:forceUpdate"] = "true",
+            ["database:bootstrapMode"] = "Migrate",
             ["log:level"] = "Information",
             ["log:output:console"] = "false",
             ["security:allowedOrigins:0"] = "http://localhost:3000",
@@ -82,6 +140,8 @@ internal static class TestDatabaseRuntime {
             .WithDatabase(databaseName)
             .WithUsername(username)
             .WithPassword(password)
+            .WithEnvironment("MYSQL_ROOT_PASSWORD", password)
+            .WithEnvironment("MYSQL_ROOT_HOST", "%")
             .WithLabel(RunIdLabel, runId)
             .Build();
 
@@ -90,6 +150,17 @@ internal static class TestDatabaseRuntime {
 
             var connection = new MySqlConnectionStringBuilder(candidate.GetConnectionString());
             var port = checked((UInt16)connection.Port);
+            var rootConnection = new MySqlConnectionStringBuilder(connection.ConnectionString) {
+                Database = String.Empty,
+                UserID = "root",
+                Password = password
+            };
+            await using (var root = new MySqlConnection(rootConnection.ConnectionString)) {
+                await root.OpenAsync();
+                await using var grant = new MySqlCommand(
+                    $"GRANT ALL PRIVILEGES ON *.* TO `{username}`@`%`", root);
+                await grant.ExecuteNonQueryAsync();
+            }
             var candidateLease = new TestDatabaseLease(
                 RunId: runId,
                 DatabaseName: databaseName,
@@ -105,8 +176,9 @@ internal static class TestDatabaseRuntime {
                 .Options;
             connectionString = connection.ConnectionString;
 
-            using (var database = CreateContext()) {
-                await database.Database.EnsureCreatedAsync();
+            await using (var database = CreateContext()) {
+                await new LegacyDatabaseBootstrapper(database)
+                    .BootstrapAsync(DatabaseBootstrapMode.Migrate);
             }
 
             await using (var identityDatabase = CreateIdentityContext()) {
@@ -164,5 +236,15 @@ internal static class TestDatabaseRuntime {
         databaseOptions = null;
         identityOptions = null;
         connectionString = null;
+    }
+
+    private static void EnsureIsolatedDatabaseName(String databaseName) {
+        var requiredPrefix = $"{currentDatabaseName}_db21_";
+        if (!testMode || String.IsNullOrWhiteSpace(currentRunId) ||
+            String.IsNullOrWhiteSpace(currentDatabaseName) ||
+            !databaseName.StartsWith(requiredPrefix, StringComparison.Ordinal) ||
+            databaseName.Length > 64) {
+            throw new InvalidOperationException("Refusing to operate on an unowned DB-21 test database.");
+        }
     }
 }

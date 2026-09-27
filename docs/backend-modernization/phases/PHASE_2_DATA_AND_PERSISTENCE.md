@@ -88,7 +88,9 @@ Lifetime esplicito abilita test isolati, transazioni reali, pooling controllato,
 
 ## DB-21 — Bootstrap da zero, migration baseline e seed osservabile
 
-**Stato:** non iniziato
+**Stato:** completato il 24 settembre 2026
+
+**Evidenza:** [DB-21 — Bootstrap, baseline e seed osservabile](../evidence/DB-21_2026-09-24.md)
 
 **Priorità:** P1
 
@@ -97,7 +99,7 @@ Lifetime esplicito abilita test isolati, transazioni reali, pooling controllato,
 Permettere alla singola istanza applicativa di creare un database assente, applicare migration EF versionate e
 completare un seed idempotente/fail-fast prima di accettare traffico.
 
-**Situazione attuale**
+**Situazione precedente**
 
 L'host usa `EnsureCreated`; non esiste cartella migrations. `forceUpdate` è inutilizzato. Il seed ingoia eccezioni e
 aggiorna `dbContext` al posto del tipo globale.
