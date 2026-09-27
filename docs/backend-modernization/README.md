@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fase 0 completata; Fase 1 completata; ARC-20 e DB-21 completati**
-- Data dell'ultimo aggiornamento: **24 settembre 2026**
+- Stato del documento: **Fasi 0-3 completate; Fase 4 in corso**
+- Data dell'ultimo aggiornamento: **27 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -37,7 +37,8 @@ Documenti operativi:
 - [Fase 1 — hardening di sicurezza](phases/PHASE_1_SECURITY.md)
 - [Fase 2 — persistenza e correttezza economica](phases/PHASE_2_DATA_AND_PERSISTENCE.md)
 - [Fase 3 — contratto API e architettura applicativa](phases/PHASE_3_API_AND_APPLICATION.md)
-- [Fase 4 — blocco import/export](phases/PHASE_4_IMPORT_EXPORT.md)
+- [Fase 4 — backup MySQL e recovery controllato](phases/PHASE_4_IMPORT_EXPORT.md)
+- [Runbook backup e recovery](DATABASE_RECOVERY.md)
 - [Fase 5 — qualità operativa e piattaforma](phases/PHASE_5_OPERATIONS_AND_DELIVERY.md)
 
 ## Sintesi esecutiva
@@ -45,7 +46,7 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-131 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log, lifetime DI e
+144 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log, lifetime DI e
 concorrenza economica.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
@@ -56,9 +57,9 @@ La base è però fragile per dati reali o uso multiutente. Le priorità conferma
 2. **Protezione dei segreti.** SEC-10 ha rimosso il sensitive-data logging EF, il token dalle eccezioni e i payload dai
    log HTTP. Gli eventi SQL senza valori sono ora limitati a `Development + Trace`; restano da mantenere queste
    garanzie negli step successivi.
-3. **Sicurezza delle operazioni distruttive.** I test usano un MySQL effimero di proprietà del singolo run. La CLI
-   import/export resta invece raggiungibile e deve essere disabilitata fail-closed da BAK-40 prima di trattare dati
-   reali; il vecchio flusso di import non offre ancora garanzie sufficienti di staging e recovery.
+3. **Sicurezza delle operazioni distruttive.** I test usano un MySQL effimero di proprietà del singolo run. DEC-08 ora
+   approva dump nativo verificabile e restore isolato; la vecchia CLI ZIP/CSV resta fail-closed. Cutover e rollback
+   richiedono il recovery drill documentato nella Fase 4.
 4. **Integrità economica.** SEC-13 ammette saldi negativi e valida atomicamente coppie di trasferimento reciproche,
    distinte e a somma zero. DAT-22..24 hanno completato `decimal`/`DECIMAL(19,2)`, data civile `DateOnly`/`DATE`, token
    saldo, lock ordinati, retry bounded e riconciliazione read-only fail-closed.
@@ -83,7 +84,8 @@ flowchart LR
     CMD --> DB[MoneyGestorContext scoped]
     C -->|letture dirette| DB
     DB --> MYSQL[(MySQL esterno)]
-    CLI[ExportImportApplication] --> DB
+    CLI[CLI ZIP/CSV legacy disabilitata]
+    OPS[Script admin mysqldump/mysql] --> DB
     CLI --> ZIP[ZIP + CSV + manifest]
 ```
 
@@ -114,7 +116,7 @@ Caratteristiche della destinazione:
 - nuova API `/api/v1` con DTO separati dalle entità EF, risposte tipizzate e Problem Details;
 - `decimal` e colonne `DECIMAL`, date di dominio esplicite, migration versionate e seed idempotente osservabile;
 - saldo denormalizzato mantenuto inizialmente per compatibilità, ma protetto dalla concorrenza e riconciliabile;
-- import/export bloccato prima di settings, file o database finché non verrà riaperta la decisione di prodotto;
+- CLI ZIP/CSV legacy fail-closed e script amministrativi MySQL distinti dal deployment applicativo;
 - test unitari rapidi, integration test MySQL isolati e contract test HTTP;
 - logging strutturato senza segreti e con sink/livelli/rolling/retention da file di configurazione;
 - health check, metriche minime e pipeline CI senza container MySQL nel deployment applicativo.
@@ -139,7 +141,7 @@ sono documentati nell'[evidenza del 23 settembre 2026](evidence/SEC-11_SEC-12_SE
 | Build pulita | `dotnet build backend/backend.sln --no-restore -t:Rebuild`: 0 errori, 78 warning |
 | Test eseguiti | 73/73 verdi in tre run consecutivi e nel run conclusivo su MySQL 8.4 effimero |
 | Migration EF | assenti |
-| Test HTTP / CLI | 5 test HTTP/Swagger; test CLI assenti perché la feature resta bloccata da DEC-08 |
+| Test HTTP / CLI | Baseline storica: 5 test HTTP/Swagger; BAK-40 ora aggiunge test di processo fail-closed |
 | CI | assente |
 | Database in Compose | assente, MySQL è esterno |
 | Vulnerabilità osservata | nessuna nel nuovo audit NuGet top-level/transitivo |

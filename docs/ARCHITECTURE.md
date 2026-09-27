@@ -14,8 +14,8 @@ flowchart LR
     EX --> CMD[Command applicativi]
     CMD --> EF[MoneyGestorContext]
     EF --> DB[(MySQL esterno)]
-    CLI[ExportImportApplication] --> EF
-    CLI --> ZIP[ZIP con CSV e manifest]
+    LegacyCLI[CLI ZIP/CSV storica disabilitata]
+    OPS[Script admin mysqldump/mysql] --> DB
 ```
 
 Il frontend usa `/api/v1` per account/sessione, wallet, tipi/movimenti e dashboard. Le risorse passano dal client Promise
@@ -81,15 +81,16 @@ La nuova API usa Problem Details, mentre l'envelope descritto in [API.md](API.md
 
 ### `ExportImportApplication`
 
-CLI per esportare le tabelle in CSV, aggiungere `export_detail.json` e creare un archivio ZIP. L'import crea un database sostitutivo, popola le tabelle e rimuove il precedente database se l'operazione termina con successo.
-
-Questa operazione è ad alto impatto e presenta limiti di affidabilità documentati in [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
+Il vecchio entry point ZIP/CSV restituisce sempre `feature_disabled` prima di leggere settings, file o database ed è
+rimosso da Compose. Il nuovo backup amministrativo si trova in `ops/database`: usa strumenti MySQL nativi per creare un
+dump consistente e ripristinarlo soltanto in staging. Il cutover è manuale, con database precedente preservato per
+rollback. Per formato, credenziali, runbook e limiti vedere [DATABASE_RECOVERY.md](backend-modernization/DATABASE_RECOVERY.md).
 
 ### `TestProject`
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-La suite validata comprende 118 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
+La suite validata al 27 settembre 2026 comprende 144 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
 ownership, conflitto concorrente, invarianti dei trasferimenti e preflight di integrità introdotti da SEC-11..13.
 ARC-20 aggiunge controlli su validazione options, isolamento degli scope e singolo context per mutazione autenticata;
 DB-21 copre creazione, migration no-op, adozione/rifiuto della baseline, modalità disabilitata e rollback del seed.

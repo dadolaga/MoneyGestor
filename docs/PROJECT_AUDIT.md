@@ -35,6 +35,11 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > La sezione storica su stato statico resta la fotografia iniziale; vedere
 > l'[evidenza ARC-20](backend-modernization/evidence/ARC-20_2026-09-24.md).
 
+> Aggiornamento del 27 settembre 2026: DEC-08 è stata sostituita dal proprietario. La CLI storica ZIP/CSV resta
+> disabilitata; la Fase 4 sta introducendo backup MySQL nativo con manifest, restore staging e recovery drill. Per
+> l'operatività corrente fanno fede la [roadmap backend](backend-modernization/ROADMAP.md) e il
+> [runbook recovery](backend-modernization/DATABASE_RECOVERY.md); i rilievi BAK storici sotto restano fotografia.
+
 > Aggiornamento del 24 settembre 2026: DB-21 ha introdotto la baseline EF dello schema storico, bootstrap configurabile
 > e adozione fail-closed basata sul confronto completo di `INFORMATION_SCHEMA`. `EnsureCreated` è rimosso dallo startup;
 > il seed globale è ora idempotente, transazionale e non assorbe errori. Backup, restore, deployment e rollback sono

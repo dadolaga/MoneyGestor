@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ExportImportApplication;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -62,20 +61,6 @@ internal sealed class SafeLoggingTest {
             Assert.That(renderedLog, Does.Not.Contain(password));
             Assert.That(renderedLog, Does.Not.Contain(token));
             Assert.That(renderedLog, Does.Not.Contain(description));
-        });
-    }
-
-    [Test]
-    public void ImportFailureLogContainsExceptionTypeButNotExceptionMessage() {
-        const String secretInException = "SEC10_IMPORT_SECRET_SENTINEL";
-
-        SafeLog.Error("Import", new InvalidDataException(secretInException));
-
-        var renderedLog = sink.RenderedLog;
-        Assert.Multiple(() => {
-            Assert.That(renderedLog, Does.Contain("Import"));
-            Assert.That(renderedLog, Does.Contain(nameof(InvalidDataException)));
-            Assert.That(renderedLog, Does.Not.Contain(secretInException));
         });
     }
 

@@ -1,229 +1,71 @@
-# Fase 4 — blocco import/export
+# Fase 4 — backup MySQL e recovery controllato
 
-DEC-08 sospende l'intera funzionalità. Questa fase contiene un solo intervento eseguibile: rendere la CLI fail-closed e
-assente dal deployment. Formato, import staging e recovery drill non vanno modernizzati finché il proprietario non
-riapre una decisione di prodotto.
+DEC-08 è stata sostituita il 27 settembre 2026. L'ambito approvato è il backup logico dell'intero schema MySQL e il
+restore isolato con cutover e rollback operati esplicitamente. La CLI ZIP/CSV storica resta disabilitata; i nuovi
+strumenti sono script amministrativi separati e non fanno parte del runtime applicativo. Runbook: [DATABASE_RECOVERY.md](../DATABASE_RECOVERY.md).
 
-## BAK-40 — Disabilitazione fail-closed della CLI
+## BAK-40 — Disabilitazione fail-closed della CLI ZIP/CSV legacy
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026
 
-**Priorità:** P0
+Il vecchio entry point termina sempre con exit code 2 e `feature_disabled` prima di leggere argomenti, configurazione,
+filesystem, rete o database. Non c'è flag o variabile di riattivazione. Il servizio `importexport` è rimosso da Compose.
+La ricerca dei consumer copre codice, docs, script e workflow del repository; eventuali automazioni esterne vanno
+dismesse prima del rilascio.
 
-**Obiettivo**
+File: `backend/ExportImportApplication/Program.cs`, `docker-compose.yml`, test processo
+`LegacyImportExportCliDisabledTest.cs`, README e guide operative.
 
-Impedire qualsiasi export/import prima che il processo legga configurazione, apra MySQL o tocchi archivi.
+Completamento: processi export/import/arbitrary args producono lo stesso rifiuto, senza settings o file; Compose e
+release non distribuiscono il servizio legacy. Verifica manuale e build prima di aggiornare lo stato.
 
-**Situazione attuale**
+## BAK-41 — Dump consistente e formato manifestato
 
-`ExportImportApplication` espone operazioni che possono leggere dati e sostituire database/tabelle. Non esistono una
-barriera di prodotto affidabile, dry-run completo o test di recovery sufficienti.
+**Stato:** in corso
 
-**Motivazione**
+Il requisito approvato è il recovery dell'intero schema self-hosted, incluse tabelle MoneyGestor legacy e ASP.NET
+Identity. Il formato `moneygestor-mysql-logical-backup` v1 è una directory `.mgbak` con `database.sql` e `manifest.json`.
+Il manifest contiene origine, versione MySQL, collation, inventory tabelle, lunghezza, SHA-256 e indicazione dei dati
+sensibili. `mysqldump --single-transaction` richiede tutte le tabelle InnoDB e DDL sospeso durante l'operazione.
 
-Il proprietario ha deciso di bloccare la feature. Lasciare un percorso eseguibile sarebbe un rischio distruttivo senza
-beneficio corrente.
+File: `ops/database/MoneyGestor.DatabaseTools.psm1`, `New-MoneyGestorBackup.ps1` e
+`docs/backend-modernization/DATABASE_RECOVERY.md`.
 
-**Prerequisiti**
+Lo SHA-256 rileva corruzione accidentale, non autentica il backup. Il file contiene PII e hash password; cifratura del
+volume, permessi, trasferimento e retention sono responsabilità dell'operatore. Non si inventa cifratura proprietaria.
 
-- DEC-08;
-- TST-01 per eseguire in sicurezza gli eventuali test che dimostrano l'assenza di accesso DB.
+Completamento: dump e manifest pubblicati atomicamente solo a conclusione; hash/byte length verificabili; round-trip su
+MySQL 8.4; verifica dell'inventory e delle tabelle supportate.
 
-**File coinvolti**
+## BAK-42 — Restore staging, cutover e rollback
 
-- entry point e progetto `backend/ExportImportApplication`;
-- `docker-compose.yml` e file di deployment/release;
-- documentazione e script che invocano la CLI;
-- test di processo/guardia senza accesso a settings o MySQL.
+**Stato:** in corso
 
-**Istruzioni operative**
+Il restore accetta solo un backup v1 integro e un nuovo schema col prefisso `mg_restore_`. Non modifica o elimina il DB
+sorgente e rifiuta target già esistenti. Dopo restore confronta inventory, migration history e `mysqlcheck`. Solo dopo
+la convalida l'operatore può fermare l'applicazione, cambiare il nome database nella configurazione protetta e avviare
+lo smoke check. Il DB precedente resta integro come rollback. Non si usa `RENAME TABLE` come falso swap atomico.
 
-1. Inserire come prima istruzione effettiva dell'entry point un blocco non aggirabile che termina con exit code non zero
-   e messaggio stabile `feature_disabled`.
-2. Il blocco deve avvenire prima del binding di `IMPORT_EXPORT_APP_SETTINGS`, della lettura di `settings.json`, della
-   costruzione del `DbContext` e di qualunque accesso a file/archivi.
-3. Non prevedere un flag pubblico, variabile ambiente o argomento “temporaneo” che riabiliti la feature.
-4. Rimuovere il servizio/command CLI da Compose, immagini, workflow, script e procedure di release. Il progetto può
-   compilare come riferimento storico, ma non viene pubblicato come artefatto eseguibile supportato.
-5. Aggiornare help e documentazione: import/export non disponibile; MySQL resta esterno e la protezione dei dati segue
-   procedure DB indipendenti da questa CLI.
-6. Aggiungere un test di processo con settings inesistenti e MySQL irraggiungibile: deve ottenere sempre lo stesso
-   rifiuto senza tentativi di connessione o creazione file.
-7. Cercare tutti i consumer nel repository e documentare eventuali riferimenti esterni che il proprietario dovrà
-   dismettere.
+File: `ops/database/Restore-MoneyGestorToStaging.ps1` e `DATABASE_RECOVERY.md`.
 
-**Vincoli**
-
-- nessuna lettura di `settings.json` nei test o nel percorso bloccato;
-- nessun accesso a database, filesystem di backup o rete;
-- nessuna cancellazione immediata del codice storico senza ricerca consumer dedicata;
-- il blocco non sostituisce una strategia di backup MySQL operativa futura.
-
-**Rischi**
-
-- un secondo entry point o script può aggirare il blocco;
-- pipeline esterne non presenti nel repository possono continuare a invocare vecchi binari;
-- un test che si limita all'exit code potrebbe non rilevare side effect precedenti.
-
-**Verifiche**
-
-- test di processo con sentinelle su configurazione, rete e directory temporanea;
-- ricerca repository di `ExportImportApplication`, comandi import/export e relativo servizio Compose;
-- build soluzione;
-- ispezione degli artefatti di publish/release;
-- log senza path sensibili, connection string o contenuto degli archivi.
-
-**Criteri di completamento**
-
-- ogni comando termina fail-closed prima di qualunque side effect;
-- nessun deployment o workflow distribuisce/esegue la CLI;
-- documentazione dichiara chiaramente la feature non disponibile;
-- riabilitazione possibile soltanto con una modifica di codice e nuova decisione approvata.
-
-## BAK-41 — Formato ed export consistente
-
-**Stato:** bloccato da DEC-08
-
-**Priorità:** P1
-
-**Obiettivo**
-
-Definire eventualmente un formato portabile e un export consistente, ma solo dopo una nuova decisione di prodotto.
-
-**Situazione attuale**
-
-Il formato storico non offre garanzie sufficienti; la feature è disabilitata.
-
-**Motivazione**
-
-Non è corretto investire in un formato senza sapere se il bisogno futuro sarà backup, portabilità utente o tooling di
-sviluppo.
-
-**Prerequisiti**
-
-- nuova decisione che sostituisce DEC-08 e definisce scopo, dati, sicurezza, compatibilità e retention;
-- DB-21, DAT-22 e DAT-23 completati se il nuovo requisito include dati persistenti.
-
-**File coinvolti**
-
-- da ridefinire nella nuova decisione; nessun file autorizzato ora.
-
-**Istruzioni operative**
-
-1. Non implementare questo step.
-2. Alla riapertura, riscrivere la scheda in base al requisito reale e rivalutare formato, cifratura, consistenza e
-   compatibilità.
-
-**Vincoli**
-
-- BAK-40 resta attivo finché il nuovo workstream non supera i propri gate.
-
-**Rischi**
-
-- riutilizzare il formato storico per inerzia può ricreare i rischi già rilevati.
-
-**Verifiche**
-
-- nessuna finché lo step è bloccato.
-
-**Criteri di completamento**
-
-- non applicabili finché manca una nuova decisione approvata.
-
-## BAK-42 — Import staging e recovery
-
-**Stato:** bloccato da DEC-08
-
-**Priorità:** P0 se la feature verrà riaperta
-
-**Obiettivo**
-
-Progettare eventualmente validazione, staging e recovery senza mettere a rischio il database attivo.
-
-**Situazione attuale**
-
-L'import storico può rinominare tabelle e rimuovere database prima di avere completato una validazione/caricamento
-affidabile; BAK-40 lo rende non eseguibile.
-
-**Motivazione**
-
-Un import futuro non potrà essere riabilitato senza un nuovo disegno e failure injection completa.
-
-**Prerequisiti**
-
-- nuova decisione che sostituisce DEC-08;
-- BAK-41 riscritto e completato;
-- strategia di cutover adatta alla singola istanza e al MySQL self-hosted.
-
-**File coinvolti**
-
-- da ridefinire; nessun file autorizzato ora.
-
-**Istruzioni operative**
-
-1. Non implementare o riabilitare l'import.
-2. Alla riapertura, progettare da zero preflight, staging separato, verifica, cutover, rollback e failure injection.
-
-**Vincoli**
-
-- nessuna modifica al database attivo finché il workstream futuro non è verificato end-to-end.
-
-**Rischi**
-
-- una semplice transazione EF non rende atomico il rename/swap di un intero database MySQL.
-
-**Verifiche**
-
-- nessuna finché lo step è bloccato.
-
-**Criteri di completamento**
-
-- non applicabili finché manca una nuova decisione approvata.
+Completamento: test end-to-end su DB effimero, failure injection, rifiuto target preesistente, staging validato e prova
+di cutover/rollback senza perdita o modifica del sorgente.
 
 ## BAK-43 — Operatività e recovery drill
 
-**Stato:** bloccato da DEC-08
+**Stato:** in corso
 
-**Priorità:** P1 se la feature verrà riaperta
+`Invoke-MoneyGestorRecoveryDrill.ps1` automatizza backup e restore a partire solo da schema sacrificabile `mg_drill_*`;
+il test crea un secondo schema `mg_restore_*` e non elimina database. La guida definisce maintenance, cambio
+configurativo, smoke check applicativo, rollback, storage, retention e registrazione di RPO/RTO osservati. MySQL non
+entra in Compose e il drill non deve usare database di produzione.
 
-**Obiettivo**
+Completamento: eseguire davvero il drill su MySQL 8.4 effimero o ambiente dedicato, incluso smoke test app e rollback;
+salvare evidenza datata con durata osservata e revisione dell'esito. Un runbook o uno script non costituiscono prova
+dell'avvenuto recovery.
 
-Definire eventualmente runbook, storage e prove di recovery della nuova feature.
+## Gate della fase
 
-**Situazione attuale**
-
-Non esiste una feature supportata da esercitare; MySQL non è e non sarà incluso nel Compose applicativo.
-
-**Motivazione**
-
-Un recovery drill ha senso solo dopo avere definito lo scopo e implementato in sicurezza formato e import.
-
-**Prerequisiti**
-
-- nuova decisione che sostituisce DEC-08;
-- BAK-41 e BAK-42 riscritti e completati.
-
-**File coinvolti**
-
-- da ridefinire; nessun file autorizzato ora.
-
-**Istruzioni operative**
-
-1. Non aggiungere container MySQL, volumi backup o job CLI al deployment corrente.
-2. Alla riapertura, definire RPO/RTO, owner, storage, cifratura, retention e drill su infrastruttura self-hosted reale.
-
-**Vincoli**
-
-- Compose può contenere componenti applicativi, mai il MySQL di produzione.
-
-**Rischi**
-
-- confondere un export applicativo con un backup DB verificato crea una falsa garanzia di recovery.
-
-**Verifiche**
-
-- nessuna finché lo step è bloccato.
-
-**Criteri di completamento**
-
-- non applicabili finché manca una nuova decisione approvata.
+La fase è completa solo quando BAK-40..43 hanno evidenza verificabile, incluso round-trip e rollback su database
+isolato. Il database sorgente non viene mai eliminato automaticamente e non si fanno claim di RPO/RTO prima di
+misurarli.

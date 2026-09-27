@@ -21,7 +21,8 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 |   |-- logic/                    # comandi, regole applicative e autenticazione
 |   |-- webserver/                # REST API ASP.NET Core
 |   |-- TestProject/              # test NUnit con MySQL 8.4 effimero via Docker
-|   `-- ExportImportApplication/  # backup e ripristino ZIP/CSV
+|   `-- ExportImportApplication/  # entry point storico fail-closed; ZIP/CSV disabilitato
+|-- ops/database/                # backup e restore staging MySQL amministrativi
 |-- frontend/                     # applicazione Next.js
 |-- docs/                         # architettura, API, audit, migrazione e design
 |-- docker-compose.yml
@@ -36,6 +37,7 @@ Approfondimenti:
 - [OpenAPI v1](docs/openapi/v1.json) e [OpenAPI legacy](docs/openapi/legacy.json)
 - [Autenticazione finale, spiegata in modo semplice](docs/AUTHENTICATION.md)
 - [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
+- [Backup e recovery MySQL](docs/backend-modernization/DATABASE_RECOVERY.md)
 - [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
 - [Baseline frontend — Fase 0](docs/PHASE_0_BASELINE.md)
 - [Sistema visuale condiviso](docs/UI_DESIGN_SYSTEM.md)
@@ -183,18 +185,19 @@ Docker deve essere disponibile:
 dotnet test .\backend\TestProject\TestProject.csproj
 ```
 
-## Import ed export
+## Backup e recovery del database
 
-La CLI legge `IMPORT_EXPORT_APP_SETTINGS`, oppure `./settings.json` se la variabile non è impostata.
+La vecchia CLI ZIP/CSV è disabilitata fail-closed e non è inclusa in Compose. I backup amministrativi usano i client
+MySQL 8.4 e un login-path protetto; seguire il [runbook backup e recovery](docs/backend-modernization/DATABASE_RECOVERY.md).
+Il formato include l'intero schema MoneyGestor e Identity, quindi contiene dati personali e hash credenziali. Conservare
+i dump solo su storage cifrato e con accesso ristretto.
 
 ```powershell
-$env:IMPORT_EXPORT_APP_SETTINGS = (Resolve-Path .\settings.json)
-dotnet run --project .\backend\ExportImportApplication\ExportImportApplication.csproj -- export --path .\backup.zip
-dotnet run --project .\backend\ExportImportApplication\ExportImportApplication.csproj -- import --path .\backup.zip
+mysql_config_editor set --login-path=moneygestor-backup --host=127.0.0.1 --port=3306 --user=moneygestor_ops --password
+pwsh -File ./ops/database/New-MoneyGestorBackup.ps1 -Database moneygestor_db -LoginPath moneygestor-backup -OutputDirectory E:\MoneyGestorBackups
 ```
 
-L'import sostituisce il database applicativo e va considerato distruttivo. Prima di affidarsi a questa funzione, consulta i limiti documentati nell'[audit](docs/PROJECT_AUDIT.md#importexport-e-integrita-dei-dati).
-
+Il restore crea esclusivamente uno schema `mg_restore_*`; non modifica il database sorgente e non effettua cutover automatico.
 ## Stato delle verifiche
 
 Ultima ricognizione completa: 27 settembre 2026.
@@ -204,4 +207,4 @@ Ultima ricognizione completa: 27 settembre 2026.
 - lint frontend: completato senza errori; restano 8 warning legacy già censiti
 - test frontend: 21/21 test Vitest/Testing Library completati con worker process seriale
 - build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack
-- test backend: 142/142 casi superati nella verifica finale, inclusi test API, snapshot OpenAPI, query-plan e concorrenza su MySQL Testcontainers effimero
+- test backend: 144/144 casi superati nella verifica finale, inclusi test API, snapshot OpenAPI, query-plan e concorrenza su MySQL Testcontainers effimero

@@ -1,8 +1,8 @@
 # Roadmap di modernizzazione backend
 
-Le decisioni DEC-01..10 sono approvate, DEC-00 è **completato** dal 20 settembre 2026 e la Fase 0 è **completata** dal
-21 settembre 2026. Gli step successivi restano non iniziati, salvo BAK-41..43 che sono bloccati dalla decisione di
-prodotto. La numerazione esprime dipendenze, non stime temporali.
+Le decisioni DEC-01..10 sono approvate; DEC-08 è stata sostituita il 27 settembre 2026. DEC-00 è **completato** dal 20
+settembre 2026 e la Fase 0 è **completata** dal 21 settembre 2026. La numerazione esprime dipendenze, non stime
+temporali.
 
 ## Legenda
 
@@ -41,10 +41,10 @@ flowchart TD
     A30 --> A31[API-31 errori/validation]
     A31 --> A33[API-33 filtri/paginazione]
     A32 --> A34[API-34 OpenAPI/versione/frontend]
-    D00 --> B40[BAK-40 blocco fail-closed CLI]
-    B40 -. riapertura decisione prodotto .-> B41[BAK-41 formato/export bloccato]
-    B41 -.-> B42[BAK-42 import staging/recovery bloccato]
-    B42 -.-> B43[BAK-43 drill operativo bloccato]
+    D00 --> B40[BAK-40 blocco CLI ZIP/CSV legacy]
+    B40 --> B41[BAK-41 dump nativo con manifest]
+    B41 --> B42[BAK-42 restore staging e rollback]
+    B42 --> B43[BAK-43 recovery drill]
     A34 --> O50[OBS-50 osservabilità]
     D24 --> O51[PERF-51 query/performance]
     A34 --> O52[PLT-52 .NET 10/dipendenze]
@@ -74,8 +74,8 @@ DEC-01..10 applicate; vulnerabilità transitiva nota rimossa o eccezione formale
 
 **Gate superato il 21 settembre 2026.** Evidenza: [completamento Fase 0](evidence/PHASE_0_2026-09-21.md).
 
-**Fast-track obbligatorio per la CLI:** DEC-08 ne impone la disabilitazione. Eseguire BAK-40 subito dopo TST-01 e prima
-di usare la CLI o trattare dati reali; fino ad allora non eseguire `ExportImportApplication` in alcun ambiente.
+**Fast-track obbligatorio per la CLI legacy:** DEC-08 ne impone la disabilitazione. BAK-40 disabilita il programma ZIP/CSV
+storico; per i nuovi backup usare esclusivamente gli script MySQL versionati descritti nella scheda Fase 4 e nel runbook.
 
 ### Fase 1 — hardening di sicurezza
 
@@ -135,22 +135,23 @@ Scheda: [PHASE_3_API_AND_APPLICATION.md](phases/PHASE_3_API_AND_APPLICATION.md)
 successi e Problem Details coperti; OpenAPI `/api/v1` confrontata nei test e in CI; frontend migrato. I route legacy
 mantengono gli adapter raw-token durante la finestra di compatibilità documentata.
 
-### Fase 4 — blocco import/export
+### Fase 4 — backup MySQL e recovery controllato
 
 Scheda: [PHASE_4_IMPORT_EXPORT.md](phases/PHASE_4_IMPORT_EXPORT.md)
 
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
-| BAK-40 | P0 | non iniziato | disabilitazione fail-closed della CLI | DEC-08, TST-01 |
-| BAK-41 | P1 | bloccato | formato robusto ed export consistente | nuova decisione di prodotto |
-| BAK-42 | P0 | bloccato | import staging, swap e recovery | nuova decisione di prodotto |
-| BAK-43 | P1 | bloccato | operatività e recovery drill | nuova decisione di prodotto |
+| BAK-40 | P0 | completato (27 settembre 2026) | disabilitazione fail-closed della CLI ZIP/CSV legacy | DEC-08, TST-01 |
+| BAK-41 | P1 | in corso | dump MySQL consistente e archivio manifestato | BAK-40, DEC-08 |
+| BAK-42 | P0 | in corso | restore staging, validazione, cutover manuale e rollback | BAK-41 |
+| BAK-43 | P1 | in corso | runbook ed esercitazione recovery su database effimero/self-hosted | BAK-42 |
 
-BAK-41..43 non vanno implementati finché il proprietario non riapre DEC-08 chiarendo lo scopo della funzionalità.
-Il codice storico può restare come riferimento temporaneo, ma non deve essere raggiungibile da Compose o release.
+La decisione DEC-08 è stata riaperta e sostituita il 27 settembre 2026. L'implementazione nuova usa gli strumenti MySQL
+8.4 nativi, non riattiva la CLI ZIP/CSV storica e non viene pubblicata come servizio applicativo.
 
-**Gate fase 4:** ogni comando CLI fallisce prima di leggere settings, aprire MySQL o toccare archivi; nessun servizio
-import/export è presente nel deployment. Il gate non richiede round-trip o restore finché la feature resta bloccata.
+**Gate fase 4:** CLI legacy dimostrata fail-closed; backup hash-verificato; restore staging confrontato e validato;
+rollback eseguito senza perdita del database sorgente; runbook provato con evidenza su ambiente isolato. Non dichiarare
+la fase completa finché l'esercitazione BAK-43 non è stata realmente eseguita.
 
 ### Fase 5 — qualità operativa e piattaforma
 

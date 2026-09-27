@@ -1,8 +1,9 @@
 # Decisioni architetturali approvate
 
-Stato: le decisioni DEC-01..10 sono state approvate dal proprietario il **20 settembre 2026**. Non sono più gate
-aperti: costituiscono vincoli per l'implementazione. Qualsiasi modifica successiva deve aggiornare questa pagina, la
-roadmap, il contratto API e le schede di fase interessate.
+Stato: le decisioni DEC-01..10 sono state approvate dal proprietario il **20 settembre 2026**; DEC-08 è stata aggiornata
+il **27 settembre 2026** per definire backup MySQL e recovery controllato. Le decisioni attive costituiscono vincoli
+per l'implementazione. Qualsiasi modifica successiva deve aggiornare questa pagina, la roadmap, il contratto API e le
+schede di fase interessate.
 
 ## Matrice
 
@@ -15,7 +16,7 @@ roadmap, il contratto API e le schede di fase interessate.
 | DEC-05 | saldi negativi ammessi | niente controllo fondi insufficienti; trasferimenti comunque rigorosi |
 | DEC-06 | data civile oggi; eventuale istante come estensione futura | `DateOnly`/`DATE`/`YYYY-MM-DD` |
 | DEC-07 | una istanza backend, MySQL self-hosted esterno, bootstrap da zero | migration prima del serving; nessun container MySQL |
-| DEC-08 | import/export completamente bloccato per ora | CLI fail-closed; BAK-41..43 sospesi |
+| DEC-08 | backup DB nativo MySQL e restore in staging con cutover manuale | CLI ZIP/CSV legacy resta disabilitata; script operativi versionati |
 | DEC-09 | anomalia dati = eccezione e stop | report tecnico sicuro, nessuna correzione automatica |
 | DEC-10 | registrazione pubblica con verifica email | Identity, anti-abuso, recupero account e anti-enumeration |
 
@@ -131,17 +132,26 @@ La policy di logging è interamente configurabile da file: livelli per categoria
 rolling, limite dimensione, retention e opzioni diagnostiche. I default sono sicuri; dati sensibili restano vietati
 anche quando aumenta il livello. I segreti continuano a provenire da environment/secret store, non dal file versionato.
 
-## DEC-08 — import/export bloccato
+## DEC-08 — backup MySQL e recovery controllato
 
-**Stato:** approvata il 20 settembre 2026.
+**Stato:** sostituita dal proprietario il 27 settembre 2026; il perimetro operativo aggiornato è approvato.
 
-La funzionalità CLI di import/export è completamente disabilitata finché il proprietario non apre una nuova decisione
-di prodotto. Il blocco deve essere fail-closed e avvenire prima di leggere settings, aprire MySQL o toccare file di
-backup. Il servizio CLI non deve essere avviabile da Compose o da procedure di release.
+L'obiettivo è proteggere e recuperare l'intero schema MySQL self-hosted di MoneyGestor, incluse le tabelle legacy e
+ASP.NET Identity, con strumenti amministrativi espliciti. L'archivio è un dump logico `mysqldump` versionato da un
+manifest con inventory tabelle, versione server, collation, dimensione e SHA-256. Il dump usa snapshot transazionale
+InnoDB; le modifiche DDL devono essere sospese durante l'operazione. Gli hash verificano corruzione, non autenticità.
 
-Il codice può essere mantenuto temporaneamente come riferimento, chiaramente non supportato e non raggiungibile. Non si
-investe ora nel formato, nello staging o nei recovery drill: BAK-41..43 sono bloccati per decisione di prodotto. Una
-riapertura dovrà prima definire se si tratta di backup/restore, portabilità dati o strumento di sviluppo.
+Il vecchio formato ZIP/CSV e la vecchia CLI restano permanentemente disabilitati. I nuovi script PowerShell non fanno
+parte del runtime web né di Compose. Le credenziali arrivano da un MySQL login-path con privilegi minimi, mai da
+argomenti password o settings.json. Gli archivi contengono dati personali e hash delle credenziali: storage, trasporto e
+retention devono essere protetti con controlli e cifratura del volume forniti dall'operatore; il progetto non inventa
+cifratura proprietaria.
+
+Il restore crea soltanto un database staging con prefisso `mg_restore_`, non modifica né elimina quello sorgente, e
+valida hash, inventory, migration history e `mysqlcheck`. Il cutover avviene in maintenance con arresto dell'app, cambio
+esplicito del nome database nella configurazione deployment e smoke check. Il database originale resta intatto per il
+rollback: MySQL non offre uno swap atomico di schema che giustifichi una rinomina distruttiva automatica. Non sono
+previsti backup schedulati dal backend o un servizio MySQL in Compose.
 
 ## DEC-09 — anomalie dati: eccezione e stop
 
