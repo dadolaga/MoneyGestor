@@ -41,6 +41,15 @@ namespace logic {
             return this;
         }
 
+        /// <summary>Supplies a user ID resolved by the authenticated application boundary, without accepting client identity data.</summary>
+        public ExecutorManager UseAuthenticatedUser(UInt64 authenticatedUserId) {
+            if (Token != null || userId != null || authenticatedUserId == 0) {
+                throw new InvalidOperationException("An authenticated user can only be assigned to a fresh executor.");
+            }
+            userId = authenticatedUserId;
+            return this;
+        }
+
         public async Task Execute<T>(ICommand<T> executor) {
             if (transaction != null) {
                 throw new ExecutorException("Transaction already started");

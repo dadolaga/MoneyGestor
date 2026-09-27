@@ -29,9 +29,7 @@ public sealed class AuthController(
         try {
             await accounts.RegisterAsync(request, cancellationToken);
         } catch (AccountValidationException exception) {
-            return ValidationProblem(new ValidationProblemDetails(new Dictionary<String, String[]> {
-                ["account"] = exception.Errors.ToArray()
-            }) { Title = "Account validation failed", Status = StatusCodes.Status400BadRequest });
+            return ValidationFailure("Account validation failed", "account", exception.Errors.ToArray());
         }
 
         return Accepted(new { message = "If the account can be created, a confirmation email will be sent." });
@@ -47,14 +45,8 @@ public sealed class AuthController(
         var result = await accounts.LoginAsync(request, issueCookie: true, cancellationToken);
         return result switch {
             AccountLoginStatus.Succeeded => NoContent(),
-            AccountLoginStatus.LockedOut => Problem(
-                statusCode: StatusCodes.Status423Locked,
-                title: "Account temporarily locked",
-                detail: "Too many failed login attempts."),
-            _ => Problem(
-                statusCode: StatusCodes.Status401Unauthorized,
-                title: "Login failed",
-                detail: "The credentials are invalid or the email is not confirmed.")
+            AccountLoginStatus.LockedOut => CodedProblem(StatusCodes.Status423Locked, "account_locked", "Account temporarily locked"),
+            _ => CodedProblem(StatusCodes.Status401Unauthorized, "invalid_credentials", "Login failed")
         };
     }
 
@@ -66,7 +58,7 @@ public sealed class AuthController(
     }
 
     [HttpPost("logout")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> Logout() {
         await accounts.LogoutAsync();
         return NoContent();
@@ -126,21 +118,39 @@ public sealed class AuthController(
         } catch (AccountTokenException) {
             return InvalidToken();
         } catch (AccountValidationException exception) {
-            return ValidationProblem(new ValidationProblemDetails(new Dictionary<String, String[]> {
-                ["password"] = exception.Errors.ToArray()
-            }) { Title = "Password validation failed", Status = StatusCodes.Status400BadRequest });
+            return ValidationFailure("Password validation failed", "password", exception.Errors.ToArray());
         }
     }
 
     private Boolean Permit(String operation, String identity, Int32 limit, TimeSpan window) =>
         abuseGuard.Permit(operation, HttpContext.Connection.RemoteIpAddress?.ToString(), identity, limit, window);
 
-    private ObjectResult RateLimited() => Problem(
-        statusCode: StatusCodes.Status429TooManyRequests,
-        title: "Too many requests",
-        detail: "Try again later.");
+    private ObjectResult RateLimited() => CodedProblem(StatusCodes.Status429TooManyRequests, "rate_limit_exceeded", "Too many requests");
 
-    private ObjectResult InvalidToken() => Problem(
-        statusCode: StatusCodes.Status400BadRequest,
-        title: "Invalid or expired token");
+    private ObjectResult InvalidToken() => CodedProblem(StatusCodes.Status400BadRequest, "invalid_token", "Invalid or expired token");
+
+    private ObjectResult ValidationFailure(String title, String field, String[] errors) {
+        var problem = new ValidationProblemDetails(new Dictionary<String, String[]> { [field] = errors }) {
+            Type = "https://api.moneygestor.example/problems/validation-failed",
+            Title = title,
+            Status = StatusCodes.Status400BadRequest
+        };
+        AddProblemMetadata(problem, "validation_failed");
+        return new ObjectResult(problem) { StatusCode = StatusCodes.Status400BadRequest, ContentTypes = { "application/problem+json" } };
+    }
+
+    private ObjectResult CodedProblem(Int32 status, String code, String title) {
+        var problem = new ProblemDetails {
+            Type = $"https://api.moneygestor.example/problems/{code}",
+            Status = status,
+            Title = title
+        };
+        AddProblemMetadata(problem, code);
+        return new ObjectResult(problem) { StatusCode = status, ContentTypes = { "application/problem+json" } };
+    }
+
+    private void AddProblemMetadata(ProblemDetails problem, String code) {
+        problem.Extensions["code"] = code;
+        problem.Extensions["traceId"] = HttpContext.TraceIdentifier;
+    }
 }

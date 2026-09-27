@@ -1,182 +1,77 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using logic.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Org.BouncyCastle.Crypto;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using logic.Exceptions;
+using logic.Models;
 
 namespace logic.Managers {
     public static class ListManager {
-        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, String propertyName, Boolean descending, Boolean first = true) {
-            var type = typeof(T);
-            var parameter = Expression.Parameter(type, "p");
-            Expression propertyAccess = parameter;
-
-            foreach (var part in propertyName.Split('.')) {
-                PropertyInfo? property = propertyAccess.Type.GetProperty(part, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-
-                if (property == null) {
-                    return (IOrderedQueryable<T>) source;
-                }
-
-                propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
-            }
-
-            var orderByExp = Expression.Lambda(propertyAccess, parameter);
-
-            String methodName = first
-                ? (descending ? "OrderByDescending" : "OrderBy")
-                : (descending ? "ThenByDescending" : "ThenBy");
-
-            var resultExp = Expression.Call(
-                typeof(Queryable),
-                methodName,
-                new System.Type[] { type, propertyAccess.Type },
-                source.Expression,
-                Expression.Quote(orderByExp)
-            );
-
-            return (IOrderedQueryable<T>) source.Provider.CreateQuery<T>(resultExp);
+        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, String name, Boolean descending, Boolean first = true) {
+            var property = typeof(T).GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                ?? throw new ListFilterValidationException("order", "unknown_field");
+            var parameter = Expression.Parameter(typeof(T), "item");
+            var selector = Expression.Lambda(Expression.Property(parameter, property), parameter);
+            var method = first ? (descending ? "OrderByDescending" : "OrderBy") : (descending ? "ThenByDescending" : "ThenBy");
+            var call = Expression.Call(typeof(Queryable), method, [typeof(T), property.PropertyType], source.Expression, Expression.Quote(selector));
+            return (IOrderedQueryable<T>)source.Provider.CreateQuery<T>(call);
         }
 
-        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) => source.OrderByPropertyName(order.Name, order.Descendent, first);
+        public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) =>
+            source.OrderByPropertyName(order.Name, order.Descendent, first);
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, IList<Order> orders) {
-            if (orders == null || orders.Count == 0) {
-                throw new ArgumentException("Orders list cannot be empty to return an IOrderedQueryable.", nameof(orders));
-            }
-
-            IQueryable<T> currentSource = source;
-            Boolean first = true;
-
-            foreach (var order in orders) {
-                currentSource = currentSource.OrderByPropertyName(order, first);
-                first = false;
-            }
-
-            return (IOrderedQueryable<T>) currentSource;
+            IOrderedQueryable<T>? ordered = null;
+            foreach (var order in orders) ordered = (ordered ?? source).OrderByPropertyName(order, ordered == null);
+            return ordered ?? throw new ArgumentException("At least one order is required.", nameof(orders));
         }
 
         public static IQueryable<T> WhereByFilter<T>(this IQueryable<T> source, Where where) {
-            var type = typeof(T);
-            var parameter = Expression.Parameter(type, "p");
-            Expression propertyAccess = parameter;
-
-            foreach (var part in where.Name.Split('.')) {
-                PropertyInfo? property = propertyAccess.Type.GetProperty(part,
-                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-
-                if (property == null) {
-                    return source;
-                }
-
-                propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
-            }
-
-            var comparison = CreateComparisonExpression(where, propertyAccess);
-
-            if (comparison == null) {
-                return source;
-            }
-
-            var lambda = Expression.Lambda(comparison, parameter);
-
-            var resultExp = Expression.Call(
-                typeof(Queryable),
-                "Where",
-                new System.Type[] { type },
-                source.Expression,
-                Expression.Quote(lambda)
-            );
-
-            return source.Provider.CreateQuery<T>(resultExp);
-        }
-
-        public static IQueryable<T> WhereByFilter<T>(this IQueryable<T> source, IEnumerable<Where> wheres) {
-            foreach (var where in wheres) {
-                source = source.WhereByFilter(where);
-            }
-
-            return source;
-        }
-
-        public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> source, ListFilter filter) =>
-            filter.Orders.Count > 0 ?
-                source.WhereByFilter(filter.Wheres).OrderByPropertyName(filter.Orders).Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit) :
-                source.WhereByFilter(filter.Wheres).Skip((Int32) (filter.Offset * filter.Limit)).Take((Int32) filter.Limit);
-
-        private static Expression? CreateComparisonExpression(Where where, Expression propreryAccess) {
+            var property = typeof(T).GetProperty(where.Name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                ?? throw new ListFilterValidationException("where", "unknown_field");
+            var parameter = Expression.Parameter(typeof(T), "item");
+            Expression member = Expression.Property(parameter, property);
+            var memberType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             if (where.ComparatorType == EComparatorType.LIKE) {
-                Expression? andExpression = null;
-
-                if (propreryAccess.Type == typeof(String)) {
-                    foreach (var value in where.Value.Split(" ")) {
-                        var expressionSplittedValue = CreateValue(propreryAccess.Type, value);
-
-                        if (expressionSplittedValue == null) {
-                            return null;
-                        }
-
-                        MethodInfo? containsMethod = typeof(String).GetMethod("Contains", new[] { typeof(String) });
-                        var containExpression = Expression.Call(propreryAccess, containsMethod, expressionSplittedValue);
-
-                        andExpression = andExpression == null ? containExpression : Expression.And(andExpression, containExpression);
-                    }
-                } else {
-                    var expressionSplittedValue = CreateValue(propreryAccess.Type, where.Value);
-                }
-
-                return andExpression!;
+                if (memberType != typeof(String)) throw new ListFilterValidationException("where", "comparator_not_supported");
+                var contains = Expression.Call(member, nameof(String.Contains), Type.EmptyTypes, Expression.Constant(where.Value));
+                return source.Where(Expression.Lambda<Func<T, Boolean>>(contains, parameter));
             }
 
-            var expressoinValue = CreateValue(propreryAccess.Type, where.Value);
-
-            if (expressoinValue == null) {
-                return null;
-            }
-
-            if (where.ComparatorType == EComparatorType.EQUAL) {
-                return Expression.Equal(propreryAccess, expressoinValue);
-            }
-
-            if (where.ComparatorType == EComparatorType.NOT_EQUAL) {
-                return Expression.NotEqual(propreryAccess, expressoinValue);
-            }
-
-            if (where.ComparatorType == EComparatorType.LESS) {
-                return Expression.LessThan(propreryAccess, expressoinValue);
-            }
-
-            if (where.ComparatorType == EComparatorType.GREATHER) {
-                return Expression.GreaterThan(propreryAccess, expressoinValue);
-            }
-
-            return null;
-        }
-
-        private static UnaryExpression? CreateValue(System.Type type, String stringValue) {
+            Object parsed;
             try {
-                System.Type conversionType = Nullable.GetUnderlyingType(type) ?? type;
-
-                Object? convertedValue = Convert.ChangeType(stringValue, conversionType);
-                var valueWrapper = new ParameterWrapper { Value = convertedValue };
-                var constantWrapper = Expression.Constant(valueWrapper);
-                var valueAccess = Expression.Property(constantWrapper, nameof(ParameterWrapper.Value));
-
-                return Expression.Convert(valueAccess, type);
-            } catch {
-                return null;
+                parsed = memberType == typeof(DateOnly)
+                    ? DateOnly.ParseExact(where.Value, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    : Convert.ChangeType(where.Value, memberType, CultureInfo.InvariantCulture)!;
+            } catch (Exception exception) when (exception is FormatException or InvalidCastException or OverflowException or ArgumentOutOfRangeException) {
+                throw new ListFilterValidationException("where", "invalid_value");
             }
+            Expression right = Expression.Constant(parsed, memberType);
+            if (memberType != property.PropertyType) right = Expression.Convert(right, property.PropertyType);
+            Expression predicate = where.ComparatorType switch {
+                EComparatorType.EQUAL => Expression.Equal(member, right),
+                EComparatorType.NOT_EQUAL => Expression.NotEqual(member, right),
+                EComparatorType.LESS when memberType != typeof(String) => Expression.LessThan(member, right),
+                EComparatorType.GREATHER when memberType != typeof(String) => Expression.GreaterThan(member, right),
+                _ => throw new ListFilterValidationException("where", "comparator_not_supported")
+            };
+            return source.Where(Expression.Lambda<Func<T, Boolean>>(predicate, parameter));
         }
 
-        private class ParameterWrapper {
-            public Object? Value { get; set; }
+        public static IQueryable<T> WhereByFilter<T>(this IQueryable<T> source, IEnumerable<Where> wheres) =>
+            wheres.Aggregate(source, (query, filter) => query.WhereByFilter(filter));
+
+        public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> source, ListFilter filter) {
+            var query = source.WhereByFilter(filter.Wheres);
+            IOrderedQueryable<T> ordered;
+            if (filter.Orders.Count == 0) {
+                ordered = query.OrderByPropertyName("Id", descending: false);
+            } else {
+                ordered = query.OrderByPropertyName(filter.Orders);
+                if (!filter.Orders.Any(order => order.Name.Equals("Id", StringComparison.OrdinalIgnoreCase)))
+                    ordered = ordered.OrderByPropertyName("Id", descending: false, first: false);
+            }
+            var skip = checked((Int32)((UInt64)filter.Offset * filter.Limit));
+            return ordered.Skip(skip).Take(checked((Int32)filter.Limit));
         }
     }
 }

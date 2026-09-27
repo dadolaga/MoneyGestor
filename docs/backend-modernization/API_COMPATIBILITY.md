@@ -66,6 +66,11 @@ parziale. Il token grezzo viene redatto da ogni log e accettato solo da questo r
 Legacy e `/api/v1` delegano agli stessi use case e policy. Non esistono implementazioni di dominio duplicate per
 versione.
 
+La prima slice esistente comprende le route account e risorse wallet, tipi e movimenti, oltre a letture colori e dashboard
+sotto `/api/v1`. Le risposte e richieste usano DTO; le query proiettano direttamente, riusano policy SQL-translatable
+per owner/global e applicano paginazione `page/pageSize`. Le mutazioni riutilizzano i command esistenti tramite un
+executor valorizzato dal current user Identity; la migrazione dei controller legacy verso use case resta lavoro API-30.
+
 ## Piano di migrazione
 
 ### Finestra 1 — hardening e fondamenta

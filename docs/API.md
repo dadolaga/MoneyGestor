@@ -2,6 +2,9 @@
 
 Documento ricavato dai controller e dal client, aggiornato al 27 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
 
+La prima slice `/api/v1` è in corso: sono disponibili le route di lettura elencate sotto e gli endpoint account; le
+mutazioni delle risorse e la migrazione del client frontend non sono ancora completate.
+
 ## Convenzioni
 
 URL locali:
@@ -60,6 +63,32 @@ Il valore è il token grezzo, non `Bearer <token>`.
 | GET | `/dashboard/all?from=...&to=...` | sì | totali e categorie |
 
 Esiste inoltre il controller di esempio `/WeatherForecast`, non usato dal frontend.
+
+## Nuova API `/api/v1` (slice in corso)
+
+Le route richiedono il cookie Identity HttpOnly, eccetto i flussi account esplicitamente anonimi. Le richieste POST,
+PUT, PATCH e DELETE sotto `/api/v1` richiedono anche `X-CSRF-TOKEN`, ottenuto da `GET /api/v1/auth/antiforgery`.
+Gli errori usano `application/problem+json`, con `code` stabile e `traceId`.
+
+| Metodo | Percorso | Autenticazione | Risultato |
+|---|---|---:|---|
+| GET | `/api/v1/auth/antiforgery` | no | token antiforgery |
+| POST | `/api/v1/auth/register`, `/login`, `/confirm-email`, `/resend-confirmation`, `/forgot-password`, `/reset-password` | no | account/sessione |
+| GET | `/api/v1/auth/session` | sì | profilo minimo |
+| POST | `/api/v1/auth/logout` | sì | 204 |
+| GET | `/api/v1/colors` | sì | colori accessibili |
+| GET/POST | `/api/v1/wallets` | sì | lista / creazione |
+| GET/PUT/DELETE | `/api/v1/wallets/{id}` | sì | dettaglio / modifica / rimozione |
+| PUT | `/api/v1/wallets/{id}/favorite` | sì | imposta preferito |
+| GET/POST | `/api/v1/transaction-types` | sì | lista / creazione tipo |
+| GET | `/api/v1/transaction-types/{id}` | sì | tipo singolo |
+| GET/POST | `/api/v1/transactions?page=1&pageSize=50` | sì | pagina / creazione movimento |
+| GET/PATCH/DELETE | `/api/v1/transactions/{id}` | sì | dettaglio / modifica parziale / rimozione |
+| GET | `/api/v1/dashboard?from=2026-09-01&to=2026-09-30` | sì | totali e categorie per data civile |
+
+Le risposte resource sono DTO dedicati; non includono entità database o campi owner. La lista movimenti esclude il
+lato destinazione del trasferimento e ordina per data e ID decrescenti. `page` parte da 1 e `pageSize` è compreso fra
+1 e 100.
 
 ## Payload essenziali
 
@@ -132,6 +161,7 @@ senza rivelarne l'esistenza.
 `GET /transaction` accetta:
 
 - `limit`: elementi per pagina; default 100;
+- massimo `limit`: 100;
 - `offset`: indice della pagina, non offset di riga;
 - `order`: proprietà separate da `+`; il prefisso `!` indica discendente;
 - `where`: clausole AND separate da `&`.
@@ -154,7 +184,10 @@ GET /transaction?limit=15&offset=0&order=!date+description&where=description~spe
 
 Nel valore decodificato di `where`, `%26` è `&` e combina le clausole. Axios applica il percent-encoding quando riceve l'oggetto `params`; costruendo manualmente la URL è necessario farlo esplicitamente.
 
-I nomi proprietà non validi possono essere ignorati o causare errori a seconda del percorso di ordinamento; il parser non gestisce espressioni annidate o OR.
+Il parser legacy accetta soltanto `Id`, `Description`, `LongDescription`, `Date`, `Value`, `TransactionTypeId` e
+`WalletId`; filtri malformati, proprietà sconosciute, conversioni non valide e limiti fuori range vengono rifiutati
+come errore di validazione. Le espressioni annidate e OR non sono supportate. L'ordinamento aggiunge `Id` come chiave
+finale stabile. Per `/api/v1/transactions` il contratto usa invece `page/pageSize` con ordinamento stabile per data e ID.
 
 ## Codici applicativi osservati
 

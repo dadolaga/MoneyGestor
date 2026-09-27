@@ -6,20 +6,24 @@ Questa descrizione fotografa il repository, aggiornato al 27 settembre 2026.
 
 ```mermaid
 flowchart LR
-    UI[Next.js / React] -->|HTTP + token grezzo| API[ASP.NET Core Controllers]
-    API --> EX[ExecutorManager]
+    UI[Next.js / React] -->|HTTP legacy + token grezzo| LEGACY[Controller legacy]
+    UI -->|cookie Identity + antiforgery| V1[Controller /api/v1]
+    LEGACY --> EX[ExecutorManager]
+    V1 --> APP[DTO / query services]
+    APP --> EF[MoneyGestorContext]
     EX --> CMD[Command applicativi]
     CMD --> EF[MoneyGestorContext]
-    API --> EF
     EF --> DB[(MySQL esterno)]
     CLI[ExportImportApplication] --> EF
     CLI --> ZIP[ZIP con CSV e manifest]
 ```
 
-Il frontend concentra ancora le chiamate HTTP legacy in `frontend/src/hooks/useApi.ts`. Il nuovo boundary di
-presentazione usa adapter puri per trasformare i DTO in view model di feature e componenti visuali pilotati tramite
+Il frontend concentra ancora le chiamate HTTP legacy in `frontend/src/hooks/useApi.ts`. La nuova `/api/v1` espone
+letture wallet, colori, tipi e movimenti tramite DTO HTTP e `ResourceQueryService`, con proiezioni EF e paginazione
+`page/pageSize`; le route v1 richiedono cookie Identity e le mutazioni passano dal controllo antiforgery. Il boundary di
+presentazione frontend usa adapter puri per trasformare i DTO in view model di feature e componenti visuali pilotati tramite
 props; fixture locali coprono gli stati `idle`, `loading`, `ready`, `empty` ed `error` senza richiedere il backend. I
-controller traducono le richieste nei comandi del progetto `logic`; `ExecutorManager` apre una transazione EF, risolve
+controller legacy traducono le richieste nei comandi del progetto `logic`; `ExecutorManager` apre una transazione EF, risolve
 l'utente dal token ed esegue il comando. Alcune letture interrogano invece `MoneyGestorContext` direttamente dal
 controller.
 
@@ -53,6 +57,7 @@ Contiene:
 - autenticazione e generazione token;
 - hashing password PBKDF2;
 - comandi applicativi per utenti, wallet e transazioni;
+- policy di ownership riusabili e traducibili in SQL per wallet, colori, tipi e movimenti;
 - gestione atomica tramite `ExecutorManager`;
 - filtri dinamici per lista, ordinamento e paginazione;
 - conversione tra entità database e modelli API.

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using webserver.Auth;
+using webserver.Api.V1;
 
 namespace webserver;
 
@@ -39,7 +40,22 @@ public class Program {
         AddValidatedOptions(builder.Services, builder.Configuration);
         AddDatabaseServices(builder.Services, builder.Environment);
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options => {
+            options.InvalidModelStateResponseFactory = context => {
+                if (!context.HttpContext.Request.Path.StartsWithSegments("/api/v1"))
+                    return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState));
+                var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState) {
+                    Type = "https://api.moneygestor.example/problems/validation-failed",
+                    Title = "Request validation failed",
+                    Status = StatusCodes.Status400BadRequest
+                };
+                problem.Extensions["code"] = "validation_failed";
+                problem.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+                return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem) {
+                    ContentTypes = { "application/problem+json" }
+                };
+            };
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy => {
@@ -85,6 +101,9 @@ public class Program {
             .AddDefaultTokenProviders();
         builder.Services.AddScoped<IPasswordHasher<ApplicationIdentityUser>, LegacyCompatiblePasswordHasher>();
         builder.Services.AddScoped<AccountService>();
+        builder.Services.AddScoped<IApiCurrentUser, ApiCurrentUser>();
+        builder.Services.AddScoped<IResourceQueryService, ResourceQueryService>();
+        builder.Services.AddScoped<IResourceCommandService, ResourceCommandService>();
         builder.Services.AddScoped<LegacyIdentityBootstrapper>();
         builder.Services.AddScoped<LegacyDatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
@@ -138,6 +157,7 @@ public class Program {
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
         app.UseCors("CorsPolicy");
+        app.UseRouting();
         app.Use(async (context, next) => {
             var requiresAntiforgery = context.Request.Path.StartsWithSegments("/api/v1") && (
                 HttpMethods.IsPost(context.Request.Method) ||
@@ -151,16 +171,38 @@ public class Program {
                         .ValidateRequestAsync(context);
                 } catch (Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException) {
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await context.Response.WriteAsJsonAsync(new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                    context.Response.ContentType = "application/problem+json";
+                    var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                        Type = "https://api.moneygestor.example/problems/antiforgery-validation-failed",
                         Status = StatusCodes.Status400BadRequest,
                         Title = "Invalid antiforgery token"
-                    });
+                    };
+                    problem.Extensions["code"] = "antiforgery_validation_failed";
+                    problem.Extensions["traceId"] = context.TraceIdentifier;
+                    await context.Response.WriteAsJsonAsync(problem, cancellationToken: context.RequestAborted);
                     return;
                 }
             }
             await next(context);
         });
         app.UseAuthentication();
+        app.Use(async (context, next) => {
+            if (context.Request.Path.StartsWithSegments("/api/v1")
+                && context.GetEndpoint() != null
+                && context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() == null
+                && context.User.Identity?.IsAuthenticated != true) {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/problem+json";
+                await context.Response.WriteAsJsonAsync(new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                    Type = "https://api.moneygestor.example/problems/authentication-required",
+                    Title = "Authentication required",
+                    Status = StatusCodes.Status401Unauthorized,
+                    Extensions = { ["code"] = "authentication_required", ["traceId"] = context.TraceIdentifier }
+                });
+                return;
+            }
+            await next(context);
+        });
         app.UseMiddleware<LegacyCookieBridgeMiddleware>();
         app.UseAuthorization();
         app.MapControllers();

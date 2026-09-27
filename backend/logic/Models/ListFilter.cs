@@ -1,103 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
+using logic.Exceptions;
 
 namespace logic.Models {
-    public class ListFilterUtils {
+    /// <summary>Parses the legacy list contract. Offset deliberately remains a zero-based page number.</summary>
+    public static class ListFilterUtils {
         public const UInt32 DEFAULT_LIMIT = 100;
+        public const UInt32 MAX_LIMIT = 100;
+        private static readonly HashSet<String> Fields = new(StringComparer.OrdinalIgnoreCase) {
+            "Id", "Description", "LongDescription", "Date", "Value", "TransactionTypeId", "WalletId"
+        };
 
         public static ListFilter Convert(String? order, UInt32? limit, UInt32? offset, String? where) {
-            var listFilter = new ListFilter {
-                Limit = limit.GetValueOrDefault(DEFAULT_LIMIT),
-                Offset = offset.GetValueOrDefault(0),
-                Orders = ConvertOrder(order).ToList(),
-                Wheres = ConvertWhere(where).ToList()
-            };
+            var pageSize = limit.GetValueOrDefault(DEFAULT_LIMIT);
+            var page = offset.GetValueOrDefault(0);
+            if (pageSize is 0 or > MAX_LIMIT || (UInt64)page * pageSize > Int32.MaxValue) {
+                throw new ListFilterValidationException("limit", "out_of_range");
+            }
 
-            return listFilter;
+            var orders = ParseOrder(order);
+            var wheres = ParseWhere(where);
+            return new ListFilter { Limit = pageSize, Offset = page, Orders = orders, Wheres = wheres };
         }
 
-        private static IEnumerable<Order> ConvertOrder(String? order) {
-            const Char propretiesDelimiter = '+';
-            const Char descendentChar = '!';
-
-            if (order != null && order.Length > 0) {
-                foreach (var propriety in order.Split(propretiesDelimiter)) {
-                    Boolean isDescendent = propriety[0] == descendentChar;
-
-                    yield return new Order {
-                        Name = isDescendent ? propriety[1..] : propriety,
-                        Descendent = isDescendent
-                    };
-                }
+        private static IList<Order> ParseOrder(String? order) {
+            var result = new List<Order>();
+            if (String.IsNullOrWhiteSpace(order)) return result;
+            foreach (var raw in order.Split('+')) {
+                var desc = raw.StartsWith('!');
+                var name = desc ? raw[1..] : raw;
+                RequireField(name, "order");
+                if (result.Any(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    throw new ListFilterValidationException("order", "duplicate_field");
+                result.Add(new Order { Name = name, Descendent = desc });
             }
+            return result;
         }
 
-        private static IEnumerable<Where> ConvertWhere(String? where) {
-            const Char andComparator = '&';
-            const Char equalComparator = '=';
-            const Char likeComparator = '~';
-            const Char notEqualComparator = '!';
-            const Char lessComparator = '<';
-            const Char greatherComparator = '>';
-
-            if (where != null && where.Length > 0) {
-                foreach (var whereClause in where.Split(andComparator)) {
-                    EComparatorType comparatorType = EComparatorType.EQUAL;
-                    String[] splittedString = [];
-
-                    if (whereClause.Contains(equalComparator)) {
-                        splittedString = whereClause.Split(equalComparator);
-                        comparatorType = EComparatorType.EQUAL;
-                    } else if (whereClause.Contains(likeComparator)) {
-                        splittedString = whereClause.Split(likeComparator);
-                        comparatorType = EComparatorType.LIKE;
-                    } else if (whereClause.Contains(notEqualComparator)) {
-                        splittedString = whereClause.Split(notEqualComparator);
-                        comparatorType = EComparatorType.NOT_EQUAL;
-                    } else if (whereClause.Contains(lessComparator)) {
-                        splittedString = whereClause.Split(lessComparator);
-                        comparatorType = EComparatorType.LESS;
-                    } else if (whereClause.Contains(greatherComparator)) {
-                        splittedString = whereClause.Split(greatherComparator);
-                        comparatorType = EComparatorType.GREATHER;
-                    }
-
-                    yield return new Where {
-                        Name = splittedString[0],
-                        ComparatorType = comparatorType,
-                        Value = splittedString[1]
-                    };
-                }
+        private static IList<Where> ParseWhere(String? where) {
+            var result = new List<Where>();
+            if (String.IsNullOrWhiteSpace(where)) return result;
+            foreach (var clause in where.Split('&')) {
+                var index = clause.IndexOfAny(['=', '~', '!', '<', '>']);
+                if (index <= 0 || index == clause.Length - 1 || clause.IndexOfAny(['=', '~', '!', '<', '>'], index + 1) >= 0)
+                    throw new ListFilterValidationException("where", "malformed_filter");
+                var name = clause[..index];
+                RequireField(name, "where");
+                var comparator = clause[index] switch {
+                    '=' => EComparatorType.EQUAL,
+                    '~' => EComparatorType.LIKE,
+                    '!' => EComparatorType.NOT_EQUAL,
+                    '<' => EComparatorType.LESS,
+                    '>' => EComparatorType.GREATHER,
+                    _ => throw new ListFilterValidationException("where", "unsupported_comparator")
+                };
+                var value = clause[(index + 1)..];
+                if (value.Length > 256) throw new ListFilterValidationException("where", "value_too_long");
+                result.Add(new Where { Name = name, ComparatorType = comparator, Value = value });
             }
+            return result;
+        }
+
+        private static void RequireField(String name, String field) {
+            if (!Fields.Contains(name)) throw new ListFilterValidationException(field, "unknown_field");
         }
     }
 
-    public enum EComparatorType {
-        EQUAL,
-        LIKE,
-        NOT_EQUAL,
-        LESS,
-        GREATHER,
-    }
-
+    public enum EComparatorType { EQUAL, LIKE, NOT_EQUAL, LESS, GREATHER }
     public class ListFilter {
         public UInt32 Limit { get; set; }
         public UInt32 Offset { get; set; }
-        public IList<Order> Orders { get; set; }
-        public IList<Where> Wheres { get; set; }
+        public IList<Order> Orders { get; set; } = new List<Order>();
+        public IList<Where> Wheres { get; set; } = new List<Where>();
     }
-
-    public class Order {
-        public String Name { get; set; }
-        public Boolean Descendent { get; set; }
-    }
-
-    public class Where {
-        public String Name { get; set; }
-        public EComparatorType ComparatorType { get; set; }
-        public String Value { get; set; }
-    }
+    public class Order { public String Name { get; set; } = ""; public Boolean Descendent { get; set; } }
+    public class Where { public String Name { get; set; } = ""; public EComparatorType ComparatorType { get; set; } public String Value { get; set; } = ""; }
 }
