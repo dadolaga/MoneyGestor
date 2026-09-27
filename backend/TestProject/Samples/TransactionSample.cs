@@ -5,7 +5,7 @@ namespace TestProject.Samples;
 internal class TransactionSample {
     private const String DEFAULT_DESCRIPTION = "Test transaction";
     private static readonly DateOnly DEFAULT_DATE = new(2026, 01, 2);
-    private const Double DEFAULT_VALUE = 32.24;
+    private const Decimal DEFAULT_VALUE = 32.24m;
 
     public String? Description { get; init; }
     public String? LongDescription { get; init; }
@@ -13,7 +13,7 @@ internal class TransactionSample {
     public UInt64 TransactionTypeId { get; init; }
     public UInt64 WalletId { get; init; }
     public UInt64? WalletDestinationId { get; init; }
-    public Double Value { get; init; }
+    public Decimal Value { get; init; }
     public UInt64? UserId { get; init; }
     public AddTransactionCommand AddTransactionCommand { get; init; }
 
@@ -24,7 +24,7 @@ internal class TransactionSample {
         String? description = DEFAULT_DESCRIPTION,
         String? longDescription = null,
         DateOnly? date = null,
-        Double value = DEFAULT_VALUE,
+        Decimal value = DEFAULT_VALUE,
         UInt64? userId = null) {
         Description = description;
         LongDescription = longDescription;

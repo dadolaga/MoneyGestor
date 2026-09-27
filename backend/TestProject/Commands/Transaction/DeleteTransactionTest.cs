@@ -111,7 +111,7 @@ namespace TestProject.Commands.Transaction {
 
         [Test]
         public async Task DeleteTransfer_UpdatesWalletCurrentValuesCorrectly() {
-            const Double transferValue = 50;
+            const Decimal transferValue = 50m;
             var secondWallet = new WalletSample(name: "my_second_wallet");
             await ExecutorManager.Execute(secondWallet.AddWalletCommand);
 

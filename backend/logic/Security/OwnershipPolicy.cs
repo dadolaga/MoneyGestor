@@ -13,6 +13,26 @@ internal static class OwnershipPolicy {
         await database.Wallets.FirstOrDefaultAsync(wallet => wallet.Id == walletId && wallet.UserId == userId)
             ?? throw new ObjectNotFoundException("Wallet not found");
 
+    internal static async Task LockOwnedWalletsAsync(
+        MoneyGestorContext database,
+        UInt64 userId,
+        params UInt64[] walletIds) {
+        foreach (var walletId in walletIds.Distinct().OrderBy(id => id)) {
+            var wallets = await database.Wallets
+                .FromSqlInterpolated($$"""
+                    SELECT * FROM `wallet`
+                    WHERE `Id` = {{walletId}} AND `UserId` = {{userId}}
+                    FOR UPDATE
+                    """)
+                .AsTracking()
+                .ToListAsync();
+            var wallet = wallets.SingleOrDefault();
+            if (wallet == null) {
+                throw new ObjectNotFoundException("Wallet not found");
+            }
+        }
+    }
+
     internal static async Task<ColorDb> RequireAvailableColorAsync(
         MoneyGestorContext database,
         UInt64 colorId,

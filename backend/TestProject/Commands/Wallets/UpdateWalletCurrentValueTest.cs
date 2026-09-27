@@ -42,7 +42,7 @@ namespace TestProject.Commands.Wallets {
 
         [Test]
         public async Task CorrectInsert_NewValue() {
-            const Double newValue = 302;
+            const Decimal newValue = 302m;
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, newValue, false);
 
             await ExecutorManager.Execute(updateValueCommmand);
@@ -56,7 +56,7 @@ namespace TestProject.Commands.Wallets {
 
         [Test]
         public async Task CorrectInsert_DifferentValue() {
-            const Double valueDifference = 12;
+            const Decimal valueDifference = 12m;
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true);
 
             await ExecutorManager.Execute(updateValueCommmand);
@@ -70,7 +70,7 @@ namespace TestProject.Commands.Wallets {
 
         [Test]
         public async Task CorrectInsert_AllowsNegativeBalance() {
-            Double valueDifference = -(wallet.Value + 12);
+            Decimal valueDifference = -(wallet.Value + 12m);
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true);
 
             await ExecutorManager.Execute(updateValueCommmand);
@@ -87,7 +87,7 @@ namespace TestProject.Commands.Wallets {
             var secondUser = new UserSample(username: $"{user.Username}_1", email: $"{user.Email}_1");
             var secondExecutor = await TestUtils.CreateExecutorManagerForUser(secondUser);
 
-            Double valueDifference = 63;
+            Decimal valueDifference = 63m;
             var updateValueCommmand = new UpdateWalletCurrentValueCommand(wallet.AddWalletCommand.Result, valueDifference, true);
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(updateValueCommmand));

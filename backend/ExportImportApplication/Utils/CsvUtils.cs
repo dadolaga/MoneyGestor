@@ -19,17 +19,17 @@ namespace ExportImportApplication.Utils {
         public static String ToCsv(this UInt64? value)
             => value?.ToString() ?? "NULL";
 
-        public static String ToCsv(this Double value)
-            => value.ToString();
-
-        public static String ToCsv(this Double? value)
-            => value?.ToString() ?? "NULL";
+        public static String ToCsv(this Decimal value)
+            => value.ToString(CultureInfo.InvariantCulture);
 
         public static String ToCsv(this Boolean value)
             => value ? "true" : "false";
 
         public static String ToCsv(this DateTime value)
             => value.ToString("O"); // Export to ISO8601
+
+        public static String ToCsv(this DateOnly value)
+            => value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         public static String ToCsv(this Decimal? value)
             => value.HasValue ? value.Value.ToString(System.Globalization.CultureInfo.InvariantCulture).Replace(",", ".") : "NULL";
@@ -58,12 +58,16 @@ namespace ExportImportApplication.Utils {
                 return (T) (Object) UInt32.Parse(value);
             }
 
-            if (notNullType == typeof(Double)) {
-                return (T) (Object) Double.Parse(value);
+            if (notNullType == typeof(Decimal)) {
+                return (T) (Object) Decimal.Parse(value, CultureInfo.InvariantCulture);
             }
 
             if (notNullType == typeof(DateTime)) {
                 return (T) (Object) DateTime.ParseExact(value, "O", CultureInfo.InvariantCulture);
+            }
+
+            if (notNullType == typeof(DateOnly)) {
+                return (T) (Object) DateOnly.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             }
 
             if (notNullType == typeof(Boolean)) {

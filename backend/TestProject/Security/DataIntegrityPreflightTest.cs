@@ -87,7 +87,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
 
             var mismatchedTransaction = new TransactionDb {
                 Description = "must-not-enter-report",
-                Date = new DateTime(2026, 9, 22),
+                Date = new DateOnly(2026, 9, 22),
                 TransactionTypeId = secondUserType.Id,
                 UserId = firstUser.AddNewUserExecutor.Result,
                 UserInsertId = secondUser.AddNewUserExecutor.Result,
@@ -95,7 +95,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
                 Value = 5
             };
             var invalidTransfer = new TransactionDb {
-                Date = new DateTime(2026, 9, 22),
+                Date = new DateOnly(2026, 9, 22),
                 TransactionTypeId = DatabaseInitializer.TRANSFER.Id,
                 UserId = firstUser.AddNewUserExecutor.Result,
                 UserInsertId = firstUser.AddNewUserExecutor.Result,

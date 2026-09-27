@@ -9,8 +9,8 @@ namespace logic.Models {
     public class Wallet {
         public UInt64? Id { get; set; }
         public String? Name { get; set; }
-        public Double? Value { get; set; }
-        public Double? CurrentValue { get; set; }
+        public Decimal? Value { get; set; }
+        public Decimal? CurrentValue { get; set; }
         public Boolean? Favorite { get; set; }
         public Color? Color { get; set; }
     }

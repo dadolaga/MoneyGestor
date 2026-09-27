@@ -100,7 +100,8 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
-            Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
+            Assert.That(login.Expirated,
+                Is.EqualTo(Clock.GetUtcNow().UtcDateTime.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
             Assert.That(login.IsLong, Is.False);
         }
 
@@ -113,7 +114,8 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var login = db.Logins.Where(l => l.UserId == user.AddNewUserExecutor.Result).First();
 
-            Assert.That(login.Expirated, Is.EqualTo(Clock.Now.AddDays(30)).Within(TimeSpan.FromSeconds(5)));
+            Assert.That(login.Expirated,
+                Is.EqualTo(Clock.GetUtcNow().UtcDateTime.AddDays(30)).Within(TimeSpan.FromSeconds(5)));
             Assert.That(login.IsLong, Is.True);
         }
     }

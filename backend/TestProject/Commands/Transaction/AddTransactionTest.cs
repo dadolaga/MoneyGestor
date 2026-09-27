@@ -56,7 +56,7 @@ namespace TestProject.Commands.Transaction {
             var transactionDb = db.Transactions.First(t => t.Id == transaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(transaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(transaction.Date));
             Assert.That(transactionDb.Value, Is.EqualTo(transaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -72,7 +72,7 @@ namespace TestProject.Commands.Transaction {
             var negativeTransaction = new TransactionSample(
                 transactionTypeId: transactionType.AddTransactionTypeCommand.Result,
                 walletId: wallet.AddWalletCommand.Result,
-                value: -21.12);
+                value: -21.12m);
 
             await ExecutorManager.Execute(negativeTransaction.AddTransactionCommand);
 
@@ -82,7 +82,7 @@ namespace TestProject.Commands.Transaction {
             var transactionDb = db.Transactions.First(t => t.Id == negativeTransaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(negativeTransaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(negativeTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(negativeTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(negativeTransaction.Date));
             Assert.That(transactionDb.Value, Is.EqualTo(negativeTransaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -122,7 +122,7 @@ namespace TestProject.Commands.Transaction {
             var transactionDb = db.Transactions.First(t => t.Id == negativeTransaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(negativeTransaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(negativeTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(negativeTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(negativeTransaction.Date));
             Assert.That(transactionDb.Value, Is.EqualTo(negativeTransaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -152,7 +152,7 @@ namespace TestProject.Commands.Transaction {
             var transactionDb = db.Transactions.First(t => t.Id == transferTransaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(transferTransaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transferTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
             Assert.That(transactionDb.Value, Is.EqualTo(-transferTransaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -166,7 +166,7 @@ namespace TestProject.Commands.Transaction {
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
             Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
             Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transferTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
             Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
             Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -217,7 +217,7 @@ namespace TestProject.Commands.Transaction {
             var transactionDb = db.Transactions.First(t => t.Id == transferTransaction.AddTransactionCommand.Result);
             Assert.That(transactionDb.Description, Is.EqualTo(transferTransaction.Description));
             Assert.That(transactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transferTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
             Assert.That(transactionDb.Value, Is.EqualTo(-transferTransaction.Value));
             Assert.That(transactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(transactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -233,7 +233,7 @@ namespace TestProject.Commands.Transaction {
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
             Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
             Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(transactionDb.Date), Is.EqualTo(transferTransaction.Date));
+            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
             Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
             Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -314,7 +314,7 @@ namespace TestProject.Commands.Transaction {
 
         [TestCase(0)]
         [TestCase(-10)]
-        public async Task TransferRequiresPositiveValue(Double invalidValue) {
+        public async Task TransferRequiresPositiveValue(Decimal invalidValue) {
             var secondWallet = new WalletSample(name: "second-wallet");
             await ExecutorManager.Execute(secondWallet.AddWalletCommand);
             var invalid = new TransactionSample(

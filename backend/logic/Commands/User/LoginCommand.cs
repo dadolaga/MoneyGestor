@@ -30,7 +30,7 @@ namespace logic.Commands.User {
 
             var login = new LoginDb {
                 Token = TokenGenerator.GenerateRandomBase64Token(TOKEN_LENGTH),
-                Expirated = executorManager.TimeProvider.GetLocalNow().DateTime.Add(
+                Expirated = executorManager.TimeProvider.GetUtcNow().UtcDateTime.Add(
                     remember ? EXPIRATED_LONG : EXPIRATED_SMALL),
                 IsLong = remember,
                 UserId = user.Id

@@ -23,6 +23,44 @@ namespace database {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            modelBuilder.Entity<WalletDb>()
+                .Property(wallet => wallet.Value)
+                .HasPrecision(19, 2);
+
+            modelBuilder.Entity<WalletDb>()
+                .Property(wallet => wallet.CurrentValue)
+                .HasPrecision(19, 2);
+
+            modelBuilder.Entity<WalletDb>()
+                .Property(wallet => wallet.BalanceVersion)
+                .IsConcurrencyToken();
+
+            modelBuilder.Entity<TransactionDb>()
+                .Property(transaction => transaction.Value)
+                .HasPrecision(19, 2);
+
+            modelBuilder.Entity<TransactionDb>()
+                .Property(transaction => transaction.Date)
+                .HasColumnType("date")
+                .HasConversion(
+                    date => date.ToDateTime(TimeOnly.MinValue),
+                    value => DateOnly.FromDateTime(value));
+
+            modelBuilder.Entity<TransactionDb>()
+                .Property(transaction => transaction.Description)
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<TransactionDb>()
+                .Property(transaction => transaction.LongDescription)
+                .HasMaxLength(4000);
+
+            modelBuilder.Entity<TransactionDb>()
+                .ToTable("transaction", table =>
+                    table.HasCheckConstraint("CK_transaction_Value_NonZero", "`Value` <> 0"));
+
+            modelBuilder.Entity<TransactionDb>()
+                .HasIndex(transaction => new { transaction.UserId, transaction.Date });
+
             // Set primary key
             modelBuilder.Entity<UserDb>()
                 .HasKey(u => u.Id);

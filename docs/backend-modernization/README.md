@@ -45,7 +45,8 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-118 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log e lifetime DI.
+131 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log, lifetime DI e
+concorrenza economica.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
 
@@ -59,8 +60,8 @@ La base è però fragile per dati reali o uso multiutente. Le priorità conferma
    import/export resta invece raggiungibile e deve essere disabilitata fail-closed da BAK-40 prima di trattare dati
    reali; il vecchio flusso di import non offre ancora garanzie sufficienti di staging e recovery.
 4. **Integrità economica.** SEC-13 ammette saldi negativi e valida atomicamente coppie di trasferimento reciproche,
-   distinte e a somma zero. Importi e saldi restano `Double` e l'aggiornamento del saldo è un read-modify-write privo di
-   controllo di concorrenza: questi rischi appartengono agli step dati successivi.
+   distinte e a somma zero. DAT-22..24 hanno completato `decimal`/`DECIMAL(19,2)`, data civile `DateOnly`/`DATE`, token
+   saldo, lock ordinati, retry bounded e riconciliazione read-only fail-closed.
 5. **Evoluzione dello schema.** DB-21 ha introdotto baseline e migration EF, bootstrap fail-closed, adozione strutturale
    dello schema legacy e seed transazionale. Le modifiche future devono aggiungere migration forward e seguire il
    runbook di deployment/recovery.

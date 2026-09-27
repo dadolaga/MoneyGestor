@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 namespace logic.Commands.Wallets {
     public class UpdateWalletCurrentValueCommand : ICommand<UInt64> {
         private UInt64 walletId;
-        private Double value;
+        private Decimal value;
         private Boolean isDifferenze;
 
-        public UpdateWalletCurrentValueCommand(UInt64 walletId, Double value, Boolean isDifferenze = false) {
+        public UpdateWalletCurrentValueCommand(UInt64 walletId, Decimal value, Boolean isDifferenze = false) {
             this.walletId = walletId;
             this.value = value;
             this.isDifferenze = isDifferenze;
@@ -20,13 +20,22 @@ namespace logic.Commands.Wallets {
 
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
+            logic.Security.MonetaryValuePolicy.RequireValid(value);
+            await logic.Security.OwnershipPolicy.LockOwnedWalletsAsync(
+                database,
+                executorManager.UserId,
+                walletId);
 
             var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 walletId,
                 executorManager.UserId);
 
-            wallet.CurrentValue = isDifferenze ? (wallet.CurrentValue + value) : value;
+            if (isDifferenze) {
+                logic.Security.WalletBalancePolicy.Apply(wallet, value);
+            } else {
+                logic.Security.WalletBalancePolicy.Set(wallet, value);
+            }
 
             database.Update(wallet);
 

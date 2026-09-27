@@ -41,6 +41,11 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > descritti nel [runbook database](backend-modernization/DATABASE_DEPLOYMENT.md); vedere anche
 > l'[evidenza DB-21](backend-modernization/evidence/DB-21_2026-09-24.md).
 
+> Aggiornamento del 27 settembre 2026: DAT-22..24 hanno migrato importi e saldi a `decimal`/`DECIMAL(19,2)`, la data
+> civile dei movimenti a `DateOnly`/`DATE` e i timestamp di sessione a UTC. La migration è preceduta da un preflight
+> fail-closed; `BalanceVersion`, lock ordinati e retry bounded proteggono i saldi concorrenti, mentre la riconciliazione
+> read-only segnala divergenze senza repair. Vedere l'[evidenza DAT-22..24](backend-modernization/evidence/DAT-22_DAT-23_DAT-24_2026-09-27.md).
+
 Ordine consigliato:
 
 1. autorizzazione e protezione dei dati;

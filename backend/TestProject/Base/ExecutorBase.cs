@@ -13,7 +13,10 @@ namespace TestProject.Base {
         [SetUp]
         public void ExecutorSetup() {
             database = Infrastructure.TestDatabaseRuntime.CreateContext();
-            ExecutorManager = new ExecutorManager(database, Clock);
+            ExecutorManager = new ExecutorManager(
+                database,
+                Clock,
+                TestDatabaseRuntime.CreateContext);
         }
 
         [TearDown]

@@ -12,11 +12,11 @@ namespace logic.Commands.Transaction {
         private DateOnly date;
         private UInt64 walletId;
         private UInt64? walletDestinationId;
-        private Double value;
+        private Decimal value;
         private UInt64 transactionTypeId;
         private UInt64? userId;
 
-        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Double value, UInt64 transactionTypeId, UInt64? userId, UInt64? walletDestinationId = null) {
+        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Decimal value, UInt64 transactionTypeId, UInt64? userId, UInt64? walletDestinationId = null) {
             this.description = description;
             this.longDescription = longDescription;
             this.date = date;
@@ -35,9 +35,7 @@ namespace logic.Commands.Transaction {
                 throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
             }
 
-            if (!Double.IsFinite(value) || value == 0) {
-                throw new InvalidTransactionException("Transaction value must be finite and non-zero");
-            }
+            MonetaryValuePolicy.RequireValid(value, allowZero: false);
 
             var transactionType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(
                 database,
@@ -64,13 +62,18 @@ namespace logic.Commands.Transaction {
                 throw new InvalidTransactionException("Only transfers can specify a destination wallet");
             }
 
+            await OwnershipPolicy.LockOwnedWalletsAsync(
+                database,
+                ownerId,
+                walletDestination == null ? [wallet.Id] : [wallet.Id, walletDestination.Id]);
+
             var sourceValue = isTransfer ? -value : value;
 
             try {
                 var transaction = new TransactionDb {
                     Description = description,
                     LongDescription = longDescription,
-                    Date = date.ToDateTime(TimeOnly.MinValue),
+                    Date = date,
                     WalletId = walletId,
                     TransactionTypeId = transactionTypeId,
                     UserId = ownerId,
@@ -78,7 +81,7 @@ namespace logic.Commands.Transaction {
                     Value = sourceValue,
                 };
 
-                wallet.CurrentValue += sourceValue;
+                WalletBalancePolicy.Apply(wallet, sourceValue);
                 database.Transactions.Add(transaction);
                 await database.SaveChangesAsync();
 
@@ -86,7 +89,7 @@ namespace logic.Commands.Transaction {
                     var transactionDestination = new TransactionDb {
                         Description = description,
                         LongDescription = longDescription,
-                        Date = date.ToDateTime(TimeOnly.MinValue),
+                        Date = date,
                         WalletId = walletDestination.Id,
                         TransactionTypeId = transactionTypeId,
                         UserId = ownerId,
@@ -95,7 +98,7 @@ namespace logic.Commands.Transaction {
                         Value = value,
                     };
 
-                    walletDestination.CurrentValue += value;
+                    WalletBalancePolicy.Apply(walletDestination, value);
                     database.Transactions.Add(transactionDestination);
                     await database.SaveChangesAsync();
 
@@ -106,6 +109,8 @@ namespace logic.Commands.Transaction {
                 }
 
                 result = transaction.Id;
+            } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsRetryable(exception)) {
+                throw;
             } catch (DbUpdateException) {
                 throw new ObjectNotFoundException("Transaction reference not found");
             }

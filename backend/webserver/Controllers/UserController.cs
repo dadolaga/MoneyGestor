@@ -54,7 +54,7 @@ namespace webserver.Controllers {
 
             var rawLogin = new LoginDb {
                 Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)),
-                Expirated = timeProvider.GetLocalNow().DateTime.Add(login.Remember.GetValueOrDefault(false)
+                Expirated = timeProvider.GetUtcNow().UtcDateTime.Add(login.Remember.GetValueOrDefault(false)
                     ? LoginCommand.EXPIRATED_LONG
                     : LoginCommand.EXPIRATED_SMALL),
                 IsLong = login.Remember.GetValueOrDefault(false),

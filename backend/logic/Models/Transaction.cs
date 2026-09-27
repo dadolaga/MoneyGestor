@@ -10,12 +10,12 @@ namespace logic.Models {
         public UInt64? Id { get; set; }
         public String? Description { get; set; }
         public String? LongDescription { get; set; }
-        public DateTime? Date { get; set; }
+        public DateTimeOffset? Date { get; set; }
         public TransactionType? TransactionType { get; set; }
         public User? User { get; set; }
         public User? UserInsert { get; set; }
         public Wallet? Wallet { get; set; }
         public Wallet? WalletDestination { get; set; }
-        public Double? Value { get; set; }
+        public Decimal? Value { get; set; }
     }
 }

@@ -173,7 +173,9 @@ esistenti.
 
 ## DAT-22 — Migrazione monetaria a `decimal`
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026
+
+**Evidenza:** [DAT-22, DAT-23 e DAT-24](../evidence/DAT-22_DAT-23_DAT-24_2026-09-27.md)
 
 **Priorità:** P1
 
@@ -181,7 +183,7 @@ esistenti.
 
 Eliminare `Double` da tutti i valori monetari e convertire lo schema senza perdita non approvata.
 
-**Situazione attuale**
+**Situazione precedente**
 
 Wallet, movimenti, dashboard, command, DTO e CSV usano `Double`; lo schema non dichiara precisione/scala.
 
@@ -249,7 +251,9 @@ La rappresentazione binaria e somme ripetute non sono adeguate a saldi finanziar
 
 ## DAT-23 — Date esplicite e constraint strutturali
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026
+
+**Evidenza:** [DAT-22, DAT-23 e DAT-24](../evidence/DAT-22_DAT-23_DAT-24_2026-09-27.md)
 
 **Priorità:** P1
 
@@ -257,7 +261,7 @@ La rappresentazione binaria e somme ripetute non sono adeguate a saldi finanziar
 
 Separare data civile dei movimenti da timestamp UTC e applicare constraint DB compatibili con le regole approvate.
 
-**Situazione attuale**
+**Situazione precedente**
 
 Il movimento attraversa `DateTime?` → `DateOnly` → `DateTime` midnight. Dashboard riceve timestamp inclusivi. Sessioni e
 manifest usano tempo locale. Mancano constraint per coppie/range e lunghezze.
@@ -322,7 +326,9 @@ Evitare spostamenti di giorno, filtri di fine giornata errati e dati strutturalm
 
 ## DAT-24 — Concorrenza dei saldi e riconciliazione
 
-**Stato:** non iniziato
+**Stato:** completato il 27 settembre 2026
+
+**Evidenza:** [DAT-22, DAT-23 e DAT-24](../evidence/DAT-22_DAT-23_DAT-24_2026-09-27.md)
 
 **Priorità:** P1
 
@@ -330,7 +336,7 @@ Evitare spostamenti di giorno, filtri di fine giornata errati e dati strutturalm
 
 Impedire lost update e fornire un controllo ripetibile fra saldo memorizzato e ledger.
 
-**Situazione attuale**
+**Situazione precedente**
 
 `UpdateWalletCurrentValueCommand` esegue read-modify-write senza concurrency token. `CurrentValue` è denormalizzato e
 non esiste riconciliazione.

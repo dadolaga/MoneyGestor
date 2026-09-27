@@ -3,14 +3,14 @@ using logic.Models;
 
 namespace webserver.Models {
     public class DashboardOutput {
-        public Double Incoming { get; set; }
-        public Double Expense { get; set; }
+        public Decimal Incoming { get; set; }
+        public Decimal Expense { get; set; }
         public IEnumerable<TransactionTypeValue> IncomingCategories { get; set; }
         public IEnumerable<TransactionTypeValue> ExpenseCategories { get; set; }
     }
 
     public class TransactionTypeValue {
         public TransactionType Type { get; set; }
-        public Double Value { get; set; }
+        public Decimal Value { get; set; }
     }
 }

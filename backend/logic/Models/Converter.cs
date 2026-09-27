@@ -50,7 +50,8 @@ namespace logic.Models {
                 Id = transactionDb.Id,
                 Description = transactionDb.Description,
                 LongDescription = transactionDb.LongDescription,
-                Date = transactionDb.Date,
+                Date = new DateTimeOffset(
+                    transactionDb.Date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)),
                 Value = transactionDb.Value,
                 Wallet = transactionDb.Wallet.Convert(),
                 WalletDestination = transactionDb.TransactionDestination?.Wallet?.Convert(),

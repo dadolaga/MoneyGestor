@@ -88,7 +88,8 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var loginDb = db.Logins.First(l => l.Token == login.LoginCommand.Result);
 
-            Assert.That(loginDb.Expirated, Is.EqualTo(Clock.Now.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
+            Assert.That(loginDb.Expirated,
+                Is.EqualTo(Clock.GetUtcNow().UtcDateTime.AddHours(2)).Within(TimeSpan.FromSeconds(5)));
         }
     }
 }

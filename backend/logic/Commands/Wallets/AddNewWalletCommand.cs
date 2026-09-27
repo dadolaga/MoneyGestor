@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 namespace logic.Commands.Wallets {
     public class AddNewWalletCommand : ICommand<UInt64> {
         private String name;
-        private Double value;
+        private Decimal value;
         private UInt64 colorId;
 
-        public AddNewWalletCommand(String name, Double value, UInt64 colorId) {
+        public AddNewWalletCommand(String name, Decimal value, UInt64 colorId) {
             this.name = name;
             this.value = value;
             this.colorId = colorId;
@@ -24,6 +24,7 @@ namespace logic.Commands.Wallets {
             executorManager.CheckUserLogged();
 
             var database = executorManager.DbContext;
+            MonetaryValuePolicy.RequireValid(value);
 
             await OwnershipPolicy.RequireAvailableColorAsync(database, colorId, executorManager.UserId);
 
@@ -35,6 +36,7 @@ namespace logic.Commands.Wallets {
                 Name = name,
                 Value = value,
                 CurrentValue = value,
+                BalanceVersion = 0,
                 Favorite = false,
                 ColorId = colorId,
                 UserId = executorManager.UserId

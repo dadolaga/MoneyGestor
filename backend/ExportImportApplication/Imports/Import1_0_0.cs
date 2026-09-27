@@ -225,8 +225,8 @@ namespace ExportImportApplication.Imports {
                 context.Wallets.Add(new database.Models.WalletDb {
                     Id = row[0].ParseCsv<UInt64>(),
                     Name = row[1].ParseCsv<String>(),
-                    Value = row[2].ParseCsv<Double>(),
-                    CurrentValue = row[3].ParseCsv<Double>(),
+                    Value = row[2].ParseCsv<Decimal>(),
+                    CurrentValue = row[3].ParseCsv<Decimal>(),
                     Favorite = row[4].ParseCsv<Boolean>(),
                     ColorId = row[5].ParseCsv<UInt64>(),
                     UserId = row[6].ParseCsv<UInt64>(),
@@ -253,12 +253,12 @@ namespace ExportImportApplication.Imports {
                     Id = row[0].ParseCsv<UInt64>(),
                     Description = row[1].ParseCsv<String?>(),
                     LongDescription = row[2].ParseCsv<String?>(),
-                    Date = row[3].ParseCsv<DateTime>(),
+                    Date = row[3].ParseCsv<DateOnly>(),
                     TransactionTypeId = row[4].ParseCsv<UInt64>(),
                     UserId = row[5].ParseCsv<UInt64>(),
                     UserInsertId = row[6].ParseCsv<UInt64>(),
                     WalletId = row[7].ParseCsv<UInt64>(),
-                    Value = row[8].ParseCsv<Double>(),
+                    Value = row[8].ParseCsv<Decimal>(),
                 });
                 count++;
             }

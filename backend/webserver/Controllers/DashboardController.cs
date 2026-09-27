@@ -15,11 +15,17 @@ namespace webserver.Controllers {
     [EnableCors("CorsPolicy")]
     public class DashboardController(ExecutorManager executor, database.MoneyGestorContext database) : MoneyMenagerController {
         [HttpGet("all")]
-        public async Task<IActionResult> All([FromHeader(Name = "Authorization")] String authorization, [FromQuery(Name = "from")] DateTime from, [FromQuery(Name = "to")] DateTime to) {
+        public async Task<IActionResult> All([FromHeader(Name = "Authorization")] String authorization, [FromQuery(Name = "from")] DateTimeOffset from, [FromQuery(Name = "to")] DateTimeOffset to) {
             executor.SetToken(authorization);
             await executor.LoginUser();
 
-            Expression<Func<TransactionDb, Boolean>> whereFunction = t => t.UserId == executor.UserId && t.TransactionDestinationId == null && t.Date >= from && t.Date <= to;
+            var fromDate = DateOnly.FromDateTime(from.DateTime);
+            var toDate = DateOnly.FromDateTime(to.DateTime);
+            Expression<Func<TransactionDb, Boolean>> whereFunction = t =>
+                t.UserId == executor.UserId &&
+                t.TransactionDestinationId == null &&
+                t.Date >= fromDate &&
+                t.Date <= toDate;
 
             try {
                 var incoming = await database.Transactions.Where(whereFunction).Where(t => t.Value > 0).SumAsync(t => t.Value);

@@ -1,6 +1,6 @@
 # Contratto API
 
-Documento ricavato dai controller e dal client, aggiornato al 23 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
+Documento ricavato dai controller e dal client, aggiornato al 27 settembre 2026. Non sostituisce una specifica OpenAPI versionata.
 
 ## Convenzioni
 
@@ -118,6 +118,11 @@ Origine e destinazione devono essere portafogli distinti dello stesso utente. Il
 negativo sull'origine e uno positivo sulla destinazione; la lista espone soltanto il lato origine. Un movimento non di
 trasferimento non può indicare `walletDestination` e il valore deve essere finito e diverso da zero. Saldi iniziali e
 correnti negativi sono ammessi e non esistono più flag `force` per aggirare la regola.
+
+Gli importi sono numeri JSON mappati a `decimal`/`DECIMAL(19,2)`: sono ammessi al massimo due decimali e i valori fuori
+scala o range vengono rifiutati senza arrotondamento implicito. La data del movimento è persistita come data civile
+MySQL `DATE`; l'adapter legacy continua ad accettare il timestamp storico e ne conserva la componente di calendario
+senza conversioni dipendenti dal fuso della macchina. I filtri dashboard `from`/`to` sono inclusivi per data civile.
 
 Per lookup puntuali, una risorsa inesistente e una risorsa appartenente a un altro utente producono lo stesso `404`,
 senza rivelarne l'esistenza.

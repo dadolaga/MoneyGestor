@@ -55,6 +55,30 @@ La baseline SQL revisionata è conservata in
 [`evidence/DB-21_CreateLegacySchema.sql`](evidence/DB-21_CreateLegacySchema.sql). Non applicarla manualmente a uno
 schema legacy esistente: per quel caso usare il preflight di adozione.
 
+## Migration DAT-22/DAT-23/DAT-24
+
+`20260927112400_DataPrecisionDatesAndBalanceConcurrency` è una migration di manutenzione in-place: converte i tre
+campi monetari a `DECIMAL(19,2)`, la data movimento a `DATE`, aggiunge `wallet.BalanceVersion`, limita le descrizioni,
+aggiunge il check sul valore non zero e l'indice dashboard `(UserId, Date)`. Non usa dual write: durante l'applicazione
+le scritture devono essere ferme e deve essere attiva una sola istanza.
+
+Prima del DDL, `LegacyDatabaseBootstrapper` esegue un preflight read-only quando la migration è pendente. L'upgrade si
+ferma se rileva importi fuori range o con più di due decimali, date con ora non zero, descrizioni fuori limite oppure
+un saldo diverso da `Value + SUM(movimenti)`. Il report contiene soltanto classe, conteggio e ID tecnici; non arrotonda,
+tronca o ripara dati.
+
+Procedura obbligatoria:
+
+1. fermare le scritture e creare un backup consistente esterno;
+2. ripristinarlo in staging, applicare la migration e registrare durata/lock sul volume rappresentativo;
+3. verificare row count, importi, date e riconciliazione; provare il ritorno alla baseline sulla copia;
+4. applicare in produzione con `Migrate` o con lo script revisionato;
+5. eseguire nuovamente la riconciliazione prima di riaprire il traffico.
+
+Il `Down` ricrea `double` e `datetime(6)` ed è destinato solo al rollback immediato in finestra, prima di nuove
+scritture. Dopo la riapertura, un rollback applicativo richiede restore del backup: la riconversione a `double` non è
+considerata un percorso di recovery affidabile per nuovi dati monetari.
+
 ## Rollback e recovery
 
 - L'adozione baseline non cambia dati o schema. Se fallisce, correggere la divergenza solo dopo analisi; non inserire
@@ -63,6 +87,8 @@ schema legacy esistente: per quel caso usare il preflight di adozione.
 - Per una migration futura, usare il rollback EF soltanto se il relativo `Down` è stato revisionato e provato sulla
   copia di staging. In caso di DDL parzialmente applicato o rollback non sicuro, fermare il backend, ricreare il
   database e ripristinare il backup verificato.
+- Per DAT-22..24 il test automatico prova forward e `Down` preservando le righe su una copia MySQL effimera; il drill
+  su backup e volume reali resta un gate operativo del deployment e non è sostituito dalla suite locale.
 - Dopo il restore, lasciare `bootstrapMode=Disabled`, confrontare schema/history e integrità, quindi riaprire il
   traffico. Il backup è valido solo se il restore di prova ha verificato conteggi, vincoli e funzionalità critiche.
 

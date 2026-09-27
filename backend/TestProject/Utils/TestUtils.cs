@@ -28,7 +28,8 @@ namespace TestProject.Utils {
             TimeProvider? timeProvider = null) {
             var executorManager = new ExecutorManager(
                 TestDatabaseRuntime.CreateContext(),
-                timeProvider ?? TimeProvider.System);
+                timeProvider ?? TimeProvider.System,
+                TestDatabaseRuntime.CreateContext);
 
             await CreateAndLoginUser(executorManager, user);
 

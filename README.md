@@ -187,7 +187,7 @@ L'import sostituisce il database applicativo e va considerato distruttivo. Prima
 
 ## Stato delle verifiche
 
-Ultima ricognizione backend: 24 settembre 2026. Frontend: type-check e test ricontrollati il 23 settembre; lint e
+Ultima ricognizione backend: 27 settembre 2026. Frontend: type-check e test ricontrollati il 23 settembre; lint e
 build risalgono alla ricognizione del 17 settembre 2026.
 
 - build .NET Release pulita: completata, 0 errori e 69 warning legacy
@@ -196,4 +196,4 @@ build risalgono alla ricognizione del 17 settembre 2026.
 - test frontend: 20/21 test Vitest/Testing Library completati; il test legacy di ordinamento della tabella movimenti
   supera il timeout anche in esecuzione isolata, senza modifiche frontend in questo step
 - build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack nell'ambiente isolato
-- test backend: 118/118 casi ordinari completati senza errori su MySQL effimero; nessun caso `Explicit`
+- test backend: 131/131 casi verdi, inclusi migration monetaria/data, riconciliazione e concorrenza su MySQL effimero

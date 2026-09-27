@@ -56,6 +56,9 @@ public sealed class LegacyDatabaseBootstrapper(MoneyGestorContext database) {
 
         EnsureSchemaChangesEnabled(mode,
             $"{pendingMigrations.Length} database migration(s) are pending while database bootstrap is disabled.");
+        if (pendingMigrations.Contains(DataEvolutionPreflight.MigrationId, StringComparer.Ordinal) && hasBaseline) {
+            await DataEvolutionPreflight.EnsureValidAsync(database, cancellationToken);
+        }
         await database.Database.MigrateAsync(cancellationToken);
 
         return hasBaseline && !appliedMigrations.Contains(BaselineMigrationId)

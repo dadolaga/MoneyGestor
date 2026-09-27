@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository, aggiornato al 24 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 27 settembre 2026.
 
 ## Vista generale
 
@@ -114,6 +114,8 @@ esiste un modello di sharing implicito.
 
 - Un wallet nasce con `Value` e `CurrentValue` uguali.
 - Un movimento normale somma il proprio valore a `CurrentValue`.
+- Importi e saldi sono `decimal` in .NET e `DECIMAL(19,2)` in MySQL; oltre due decimali non vengono arrotondati.
+- La data di business del movimento è `DateOnly`/MySQL `DATE`; sessioni e timestamp operativi usano UTC.
 - I saldi iniziali e correnti possono essere negativi; non esistono bypass `force` nei comandi pubblici o interni.
 - Un trasferimento accetta un importo positivo e viene rappresentato da due transazioni reciproche: valore negativo
   nel wallet origine e positivo nel wallet destinazione, con wallet distinti dello stesso owner e somma zero.
@@ -121,6 +123,11 @@ esiste un modello di sharing implicito.
 - Colori e tipi con `UserId = null` sono globali.
 - Colori e tipi privati possono essere associati soltanto a risorse dello stesso utente.
 - I tipi globali iniziali sono `Transfer` (ID 1) e `Adjustment` (ID 2).
+
+`CurrentValue` resta denormalizzato, protetto da `BalanceVersion` come token di concorrenza. Le mutazioni bloccano
+wallet e movimenti in ordine stabile, ritentano al massimo cinque volte l'intera unit of work con un context nuovo e
+riconciliano in sola lettura `Value + SUM(movimenti)`. Le anomalie producono report con soli ID tecnici e non vengono
+mai riparate automaticamente.
 
 ## Autenticazione attuale
 

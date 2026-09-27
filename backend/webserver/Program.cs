@@ -88,6 +88,8 @@ public class Program {
         builder.Services.AddScoped<LegacyIdentityBootstrapper>();
         builder.Services.AddScoped<LegacyDatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
+        builder.Services.AddScoped<Func<MoneyGestorContext>>(services =>
+            () => services.GetRequiredService<IDbContextFactory<MoneyGestorContext>>().CreateDbContext());
         builder.Services.AddScoped<ExecutorManager>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<AccountAbuseGuard>();
@@ -249,7 +251,7 @@ public class Program {
     }
 
     private static void AddDatabaseServices(IServiceCollection services, IWebHostEnvironment environment) {
-        services.AddDbContext<MoneyGestorContext>((serviceProvider, options) => {
+        services.AddDbContextFactory<MoneyGestorContext>((serviceProvider, options) => {
             var database = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
             var logging = serviceProvider.GetRequiredService<IOptions<LogOptions>>().Value;
             options.UseMySQL(database.CreateConnectionString());
@@ -257,6 +259,8 @@ public class Program {
                 options.LogTo(Log.Verbose, Microsoft.Extensions.Logging.LogLevel.Debug);
             }
         });
+        services.AddScoped(services =>
+            services.GetRequiredService<IDbContextFactory<MoneyGestorContext>>().CreateDbContext());
         services.AddDbContext<IdentityAccountContext>((serviceProvider, options) => {
             var database = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
             options.UseMySQL(database.CreateConnectionString());

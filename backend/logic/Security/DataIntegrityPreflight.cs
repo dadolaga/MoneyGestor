@@ -86,6 +86,12 @@ public static class DataIntegrityPreflight {
 
         AddIssue(issues, "transfer_pair_invariant", invalidTransfers);
 
+        var reconciliation = await new BalanceReconciliationService(database).InspectAsync();
+        AddIssue(
+            issues,
+            "wallet_balance_mismatch",
+            reconciliation.Differences.Select(difference => difference.WalletId));
+
         return new DataIntegrityReport(issues);
     }
 

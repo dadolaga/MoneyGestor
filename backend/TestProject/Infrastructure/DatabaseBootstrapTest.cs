@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 
 namespace TestProject.Infrastructure;
@@ -120,7 +122,8 @@ internal sealed class DatabaseBootstrapTest {
     public async Task AdoptEquivalentLegacySchemaPreservesData() {
         var databaseName = OwnDatabase();
         await using (var legacy = TestDatabaseRuntime.CreateIsolatedContext(databaseName)) {
-            await legacy.Database.EnsureCreatedAsync();
+            await legacy.GetService<IMigrator>()
+                .MigrateAsync(LegacyDatabaseBootstrapper.BaselineMigrationId);
             legacy.Users.Add(new UserDb {
                 Id = 41,
                 Firstname = "Legacy",
@@ -130,6 +133,7 @@ internal sealed class DatabaseBootstrapTest {
                 Password = "legacy-hash"
             });
             await legacy.SaveChangesAsync();
+            await legacy.Database.ExecuteSqlRawAsync("DROP TABLE `__EFMigrationsHistory`");
         }
 
         await using var database = TestDatabaseRuntime.CreateIsolatedContext(databaseName);
@@ -205,6 +209,78 @@ internal sealed class DatabaseBootstrapTest {
         Assert.Multiple(() => {
             Assert.That(colorCount, Is.Zero);
             Assert.That(typeCount, Is.Zero);
+        });
+    }
+
+    [Test]
+    public async Task DataEvolutionPreflightRejectsLossyDecimalConversion() {
+        var databaseName = OwnDatabase();
+        await using (var legacy = TestDatabaseRuntime.CreateIsolatedContext(databaseName)) {
+            await legacy.GetService<IMigrator>()
+                .MigrateAsync(LegacyDatabaseBootstrapper.BaselineMigrationId);
+            await legacy.Database.ExecuteSqlRawAsync("""
+                INSERT INTO `user` (`Firstname`, `Lastname`, `Email`, `Username`, `Password`)
+                VALUES ('test', 'test', 'dat22@example.test', 'dat22', 'hash')
+                """);
+            await legacy.Database.ExecuteSqlRawAsync("""
+                INSERT INTO `color` (`Name`, `Value`, `UserId`)
+                VALUES ('global', 1, NULL)
+                """);
+            await legacy.Database.ExecuteSqlRawAsync("""
+                INSERT INTO `wallet` (`Name`, `Value`, `CurrentValue`, `Favorite`, `ColorId`, `UserId`)
+                VALUES ('lossy', 1.234, 1.234, false, 1, 1)
+                """);
+        }
+
+        await using var database = TestDatabaseRuntime.CreateIsolatedContext(databaseName);
+        Assert.That(
+            async () => await new LegacyDatabaseBootstrapper(database)
+                .BootstrapAsync(DatabaseBootstrapMode.Migrate),
+            Throws.InstanceOf<DataEvolutionException>()
+                .With.Message.Contains("wallet_value_not_decimal_19_2"));
+        Assert.That(await database.Database.GetPendingMigrationsAsync(),
+            Does.Contain(DataEvolutionPreflight.MigrationId));
+    }
+
+    [Test]
+    public async Task DataEvolutionMigrationRollsBackToBaselineWithoutDeletingRows() {
+        var databaseName = OwnDatabase();
+        await using var database = TestDatabaseRuntime.CreateIsolatedContext(databaseName);
+        var migrator = database.GetService<IMigrator>();
+        await migrator.MigrateAsync(LegacyDatabaseBootstrapper.BaselineMigrationId);
+        await database.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `user` (`Firstname`, `Lastname`, `Email`, `Username`, `Password`)
+            VALUES ('test', 'test', 'rollback@example.test', 'rollback', 'hash')
+            """);
+        await database.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `color` (`Name`, `Value`, `UserId`) VALUES ('global', 1, NULL);
+            INSERT INTO `transaction_type` (`Name`, `UserId`) VALUES ('normal', NULL);
+            INSERT INTO `wallet` (`Name`, `Value`, `CurrentValue`, `Favorite`, `ColorId`, `UserId`)
+            VALUES ('wallet', 1.25, 2.50, false, 1, 1);
+            INSERT INTO `transaction`
+                (`Description`, `LongDescription`, `Date`, `TransactionTypeId`, `UserId`, `UserInsertId`, `WalletId`, `Value`)
+            VALUES ('row', NULL, '2024-02-29 00:00:00', 1, 1, 1, 1, 1.25)
+            """);
+
+        await new LegacyDatabaseBootstrapper(database).BootstrapAsync(DatabaseBootstrapMode.Migrate);
+        await migrator.MigrateAsync(LegacyDatabaseBootstrapper.BaselineMigrationId);
+
+        await using var command = database.Database.GetDbConnection().CreateCommand();
+        command.CommandText = """
+            SELECT
+                (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'wallet' AND COLUMN_NAME = 'Value'),
+                (SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction' AND COLUMN_NAME = 'Date'),
+                (SELECT COUNT(*) FROM `transaction`)
+            """;
+        await database.Database.OpenConnectionAsync();
+        await using var reader = await command.ExecuteReaderAsync();
+        Assert.That(await reader.ReadAsync(), Is.True);
+        Assert.Multiple(() => {
+            Assert.That(reader.GetString(0), Is.EqualTo("double"));
+            Assert.That(reader.GetString(1), Is.EqualTo("datetime(6)"));
+            Assert.That(reader.GetInt32(2), Is.EqualTo(1));
         });
     }
 

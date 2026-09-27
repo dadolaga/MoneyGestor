@@ -14,7 +14,7 @@ namespace logic.Commands.User {
                 .FirstOrDefaultAsync()
                 ?? throw new ExecutorException("User not found for the supplied authentication token");
 
-            var now = executorManager.TimeProvider.GetLocalNow().DateTime;
+            var now = executorManager.TimeProvider.GetUtcNow().UtcDateTime;
             result = login.Expirated < now
                 ? throw new TokenExpiatedException("Token is expirated")
                 : login.UserId;

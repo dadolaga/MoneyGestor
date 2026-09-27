@@ -15,11 +15,10 @@ namespace logic.Commands.Transaction {
         internal override async Task Execute(ExecutorManager executorManager) {
             var database = executorManager.DbContext;
 
-            var requestedTransaction = await database.Transactions
-                .Include(transaction => transaction.TransactionDestination)
-                .FirstOrDefaultAsync(transaction =>
-                    transaction.Id == id && transaction.UserId == executorManager.UserId)
-                ?? throw new ObjectNotFoundException("Transaction not found");
+            var requestedTransaction = await TransactionPairPolicy.LockOwnedTransactionAsync(
+                database,
+                id,
+                executorManager.UserId);
 
             var sourceTransaction = requestedTransaction;
             global::database.Models.TransactionDb? destinationTransaction = null;
@@ -29,18 +28,25 @@ namespace logic.Commands.Transaction {
                     TransactionPairPolicy.RequireValidTransferPair(requestedTransaction);
             }
 
+            await OwnershipPolicy.LockOwnedWalletsAsync(
+                database,
+                executorManager.UserId,
+                destinationTransaction == null
+                    ? [sourceTransaction.WalletId]
+                    : [sourceTransaction.WalletId, destinationTransaction.WalletId]);
+
             var sourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 sourceTransaction.WalletId,
                 executorManager.UserId);
-            sourceWallet.CurrentValue -= sourceTransaction.Value;
+            WalletBalancePolicy.Apply(sourceWallet, -sourceTransaction.Value);
 
             if (destinationTransaction != null) {
                 var destinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                     database,
                     destinationTransaction.WalletId,
                     executorManager.UserId);
-                destinationWallet.CurrentValue -= destinationTransaction.Value;
+                WalletBalancePolicy.Apply(destinationWallet, -destinationTransaction.Value);
 
                 sourceTransaction.TransactionDestinationId = null;
                 destinationTransaction.TransactionDestinationId = null;

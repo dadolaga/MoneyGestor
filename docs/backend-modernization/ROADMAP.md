@@ -107,13 +107,16 @@ Scheda: [PHASE_2_DATA_AND_PERSISTENCE.md](phases/PHASE_2_DATA_AND_PERSISTENCE.md
 |---|---:|---|---|---|
 | ARC-20 | P1 | completato (24 settembre 2026) | Options, DI e `DbContext` scoped | SEC-10, TST-02 |
 | DB-21 | P1 | completato (24 settembre 2026) | bootstrap da zero, migration baseline e seed osservabile | ARC-20 |
-| DAT-22 | P1 | non iniziato | migrazione `Double` → `decimal`/`DECIMAL` | DEC-04, DEC-09, DB-21, SEC-13 |
-| DAT-23 | P1 | non iniziato | `DateOnly`/`DATE` e constraint di dominio | DEC-05, DEC-06, DEC-09, DB-21 |
-| DAT-24 | P1 | non iniziato | concorrenza saldo e riconciliazione | DAT-22, DAT-23 |
+| DAT-22 | P1 | completato (27 settembre 2026) | migrazione `Double` → `decimal`/`DECIMAL` | DEC-04, DEC-09, DB-21, SEC-13 |
+| DAT-23 | P1 | completato (27 settembre 2026) | `DateOnly`/`DATE` e constraint di dominio | DEC-05, DEC-06, DEC-09, DB-21 |
+| DAT-24 | P1 | completato (27 settembre 2026) | concorrenza saldo e riconciliazione | DAT-22, DAT-23 |
 
 **Gate fase 2:** nessun `Double` monetario; migration up/down provate su copia; seed fallisce in modo osservabile;
 saldo concorrente non perde aggiornamenti; report di riconciliazione pulito, altrimenti migration/avvio bloccati con
 eccezione DEC-09.
+
+**Gate fase 2 superato il 27 settembre 2026.** Evidenza:
+[DAT-22, DAT-23 e DAT-24](evidence/DAT-22_DAT-23_DAT-24_2026-09-27.md).
 
 ### Fase 3 — API e applicazione
 

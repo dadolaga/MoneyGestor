@@ -23,7 +23,7 @@ public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
                 .SingleOrDefaultAsync(context.RequestAborted);
 
             if (legacyUserId != null) {
-                var now = timeProvider.GetLocalNow().DateTime;
+                var now = timeProvider.GetUtcNow().UtcDateTime;
                 var login = await legacyDatabase.Logins
                     .Where(item => item.UserId == legacyUserId && item.Expirated > now)
                     .OrderByDescending(item => item.Expirated)

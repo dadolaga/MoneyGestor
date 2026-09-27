@@ -73,7 +73,7 @@ namespace webserver.Controllers {
             var insertTransactionCommand = new AddTransactionCommand(
                 description: transaction.Description,
                 longDescription: transaction.LongDescription,
-                date: DateOnly.FromDateTime(transaction.Date.Value),
+                date: DateOnly.FromDateTime(transaction.Date.Value.DateTime),
                 walletId: transaction.Wallet.Id.Value,
                 value: transaction.Value.Value,
                 transactionTypeId: transaction.TransactionType.Id.Value,
@@ -97,7 +97,7 @@ namespace webserver.Controllers {
                 id: id,
                 description: transaction.Description,
                 longDescription: transaction.LongDescription,
-                date: transaction.Date != null ? DateOnly.FromDateTime(transaction.Date.Value) : null,
+                date: transaction.Date != null ? DateOnly.FromDateTime(transaction.Date.Value.DateTime) : null,
                 walletId: transaction.Wallet?.Id,
                 walletDestinationId: transaction.WalletDestination?.Id,
                 value: transaction.Value,

@@ -3,9 +3,11 @@ using logic.Commands;
 using logic.Commands.User;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore.Storage;
+using logic.Security;
 
 namespace logic {
     public class ExecutorManager {
+        private const Int32 MaxAttempts = 5;
         public String? Token { get; private set; }
         public UInt64 UserId => userId ?? throw new ExecutorException("User not already logged");
         public MoneyGestorContext DbContext { get; private set; }
@@ -14,11 +16,22 @@ namespace logic {
         private IDbContextTransaction? transaction;
 
         private UInt64? userId;
+        private readonly MoneyGestorContext primaryDbContext;
+        private readonly Func<MoneyGestorContext>? contextFactory;
 
         internal TimeProvider TimeProvider { get; }
 
-        public ExecutorManager(MoneyGestorContext dbContext, TimeProvider timeProvider) {
+        public ExecutorManager(MoneyGestorContext dbContext, TimeProvider timeProvider)
+            : this(dbContext, timeProvider, null) {
+        }
+
+        public ExecutorManager(
+            MoneyGestorContext dbContext,
+            TimeProvider timeProvider,
+            Func<MoneyGestorContext>? contextFactory) {
             DbContext = dbContext;
+            primaryDbContext = dbContext;
+            this.contextFactory = contextFactory;
             TimeProvider = timeProvider;
             transaction = null;
         }
@@ -33,21 +46,40 @@ namespace logic {
                 throw new ExecutorException("Transaction already started");
             }
 
-            transaction = await DbContext.Database.BeginTransactionAsync();
+            for (var attempt = 1; attempt <= MaxAttempts; attempt++) {
+                MoneyGestorContext? retryContext = null;
+                if (attempt > 1) {
+                    retryContext = contextFactory?.Invoke()
+                        ?? throw new InvalidOperationException(
+                            "A fresh database context factory is required to retry a concurrent operation.");
+                    DbContext = retryContext;
+                }
 
-            try {
-                await LoginUser();
+                try {
+                    transaction = await DbContext.Database.BeginTransactionAsync();
+                    await LoginUser();
+                    await executor.Execute(this);
+                    await transaction.CommitAsync();
+                    return;
+                } catch (Exception exception) {
+                    if (transaction != null) {
+                        await transaction.RollbackAsync();
+                    }
 
-                await executor.Execute(this);
-
-                await transaction.CommitAsync();
-            } catch (Exception) {
-                await transaction.RollbackAsync();
-                throw;
-            } finally {
-                await transaction.DisposeAsync();
-
-                transaction = null;
+                    if (attempt == MaxAttempts || !DatabaseUpdatePolicy.IsRetryable(exception)) {
+                        throw;
+                    }
+                    await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt));
+                } finally {
+                    if (transaction != null) {
+                        await transaction.DisposeAsync();
+                        transaction = null;
+                    }
+                    if (retryContext != null) {
+                        await retryContext.DisposeAsync();
+                    }
+                    DbContext = primaryDbContext;
+                }
             }
         }
 

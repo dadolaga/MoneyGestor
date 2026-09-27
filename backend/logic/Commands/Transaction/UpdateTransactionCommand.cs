@@ -13,7 +13,7 @@ namespace logic.Commands.Transaction {
         private DateOnly? date;
         private UInt64? walletId;
         private UInt64? walletDestinationId;
-        private Double? value;
+        private Decimal? value;
         private UInt64? transactionTypeId;
         private UInt64? userId;
         private Boolean overwriteNull;
@@ -24,7 +24,7 @@ namespace logic.Commands.Transaction {
                 DateOnly? date = null,
                 UInt64? walletId = null,
                 UInt64? walletDestinationId = null,
-                Double? value = null,
+                Decimal? value = null,
                 UInt64? transactionTypeId = null,
                 UInt64? userId = null,
                 Boolean overwriteNull = false) {
@@ -44,10 +44,10 @@ namespace logic.Commands.Transaction {
             var database = executorManager.DbContext;
             var ownerId = executorManager.UserId;
 
-            var requestedTransaction = await database.Transactions
-                .Include(transaction => transaction.TransactionDestination)
-                .FirstOrDefaultAsync(transaction => transaction.Id == id && transaction.UserId == ownerId)
-                ?? throw new ObjectNotFoundException("Transaction to update not found");
+            var requestedTransaction = await TransactionPairPolicy.LockOwnedTransactionAsync(
+                database,
+                id,
+                ownerId);
 
             if (userId != null && userId != ownerId) {
                 throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
@@ -67,14 +67,15 @@ namespace logic.Commands.Transaction {
             var finalSourceWalletId = walletId ?? sourceTransaction.WalletId;
             var finalSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, finalSourceWalletId, ownerId);
             WalletDb? finalDestinationWallet = null;
-            Double finalValue;
+            Decimal finalValue;
 
             if (finalIsTransfer) {
                 var finalDestinationWalletId = walletDestinationId
                     ?? (!overwriteNull ? destinationTransaction?.WalletId : null);
                 finalValue = value ?? Math.Abs(sourceTransaction.Value);
 
-                if (finalDestinationWalletId == null || !Double.IsFinite(finalValue) || finalValue <= 0) {
+                MonetaryValuePolicy.RequireValid(finalValue, allowZero: false);
+                if (finalDestinationWalletId == null || finalValue <= 0) {
                     throw new InvalidTransactionException("Transfers require a destination wallet and a positive value");
                 }
 
@@ -94,9 +95,7 @@ namespace logic.Commands.Transaction {
                 finalValue = value ?? (destinationTransaction == null
                     ? sourceTransaction.Value
                     : Math.Abs(sourceTransaction.Value));
-                if (!Double.IsFinite(finalValue) || finalValue == 0) {
-                    throw new InvalidTransactionException("Transaction value must be finite and non-zero");
-                }
+                MonetaryValuePolicy.RequireValid(finalValue, allowZero: false);
             }
 
             var oldSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
@@ -111,16 +110,26 @@ namespace logic.Commands.Transaction {
                     ownerId);
             }
 
+            await OwnershipPolicy.LockOwnedWalletsAsync(
+                database,
+                ownerId,
+                new[] {
+                    sourceTransaction.WalletId,
+                    destinationTransaction?.WalletId,
+                    finalSourceWallet.Id,
+                    finalDestinationWallet?.Id
+                }.Where(wallet => wallet.HasValue).Select(wallet => wallet!.Value).ToArray());
+
             var finalDescription = overwriteNull ? description : description ?? sourceTransaction.Description;
             var finalLongDescription = overwriteNull
                 ? longDescription
                 : longDescription ?? sourceTransaction.LongDescription;
-            var finalDate = date?.ToDateTime(TimeOnly.MinValue) ?? sourceTransaction.Date;
+            var finalDate = date ?? sourceTransaction.Date;
 
             try {
-                oldSourceWallet.CurrentValue -= sourceTransaction.Value;
+                WalletBalancePolicy.Apply(oldSourceWallet, -sourceTransaction.Value);
                 if (destinationTransaction != null && oldDestinationWallet != null) {
-                    oldDestinationWallet.CurrentValue -= destinationTransaction.Value;
+                    WalletBalancePolicy.Apply(oldDestinationWallet, -destinationTransaction.Value);
                 }
 
                 sourceTransaction.Description = finalDescription;
@@ -134,7 +143,7 @@ namespace logic.Commands.Transaction {
                 if (!finalIsTransfer) {
                     sourceTransaction.Value = finalValue;
                     sourceTransaction.TransactionDestinationId = null;
-                    finalSourceWallet.CurrentValue += finalValue;
+                    WalletBalancePolicy.Apply(finalSourceWallet, finalValue);
 
                     if (destinationTransaction != null) {
                         destinationTransaction.TransactionDestinationId = null;
@@ -144,8 +153,8 @@ namespace logic.Commands.Transaction {
                     await database.SaveChangesAsync();
                 } else {
                     sourceTransaction.Value = -finalValue;
-                    finalSourceWallet.CurrentValue -= finalValue;
-                    finalDestinationWallet!.CurrentValue += finalValue;
+                    WalletBalancePolicy.Apply(finalSourceWallet, -finalValue);
+                    WalletBalancePolicy.Apply(finalDestinationWallet!, finalValue);
 
                     if (destinationTransaction == null) {
                         destinationTransaction = new TransactionDb {
@@ -171,6 +180,8 @@ namespace logic.Commands.Transaction {
                 }
 
                 result = sourceTransaction.Id;
+            } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsRetryable(exception)) {
+                throw;
             } catch (DbUpdateException) {
                 throw new ObjectNotFoundException("Transaction reference not found");
             }

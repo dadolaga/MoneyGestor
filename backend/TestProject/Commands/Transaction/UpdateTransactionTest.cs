@@ -72,7 +72,7 @@ namespace TestProject.Commands.Transaction {
             var newDate = transaction.Date.AddDays(-1);
             var newTransactionType = transactionTypeSecond.AddTransactionTypeCommand.Result;
             var newWallet = walletSecond.AddWalletCommand.Result;
-            var newValue = transaction.Value + 1.01;
+            var newValue = transaction.Value + 1.01m;
 
             await ExecutorManager.Execute(transaction.AddTransactionCommand);
 
@@ -95,7 +95,7 @@ namespace TestProject.Commands.Transaction {
             var updateTransactionDb = db.Transactions.First();
             Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -123,7 +123,7 @@ namespace TestProject.Commands.Transaction {
             var updateTransactionDb = db.Transactions.First();
             Assert.That(updateTransactionDb.Description, Is.EqualTo(transaction.Description));
             Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(transaction.Date));
+            Assert.That(updateTransactionDb.Date, Is.EqualTo(transaction.Date));
             Assert.That(updateTransactionDb.Value, Is.EqualTo(transaction.Value));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -142,7 +142,7 @@ namespace TestProject.Commands.Transaction {
             var newDate = transaction.Date.AddDays(-1);
             var newTransactionType = transactionTypeSecond.AddTransactionTypeCommand.Result;
             var newWallet = walletSecond.AddWalletCommand.Result;
-            var newValue = transaction.Value + 1.01;
+            var newValue = transaction.Value + 1.01m;
 
             await ExecutorManager.Execute(transaction.AddTransactionCommand);
 
@@ -166,7 +166,7 @@ namespace TestProject.Commands.Transaction {
             var updateTransactionDb = db.Transactions.First();
             Assert.That(updateTransactionDb.Description, Is.Null);
             Assert.That(updateTransactionDb.LongDescription, Is.Null);
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -210,7 +210,7 @@ namespace TestProject.Commands.Transaction {
             var updateTransactionDb = db.Transactions.First();
             Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -232,7 +232,7 @@ namespace TestProject.Commands.Transaction {
             var newTransactionType = DatabaseInitializer.TRANSFER.Id;
             var newWallet = walletSecond.AddWalletCommand.Result;
             var newWalletDestination = wallet.AddWalletCommand.Result;
-            var newValue = transaction.Value + 1.01;
+            var newValue = transaction.Value + 1.01m;
 
             await ExecutorManager.Execute(transaction.AddTransactionCommand);
 
@@ -257,7 +257,7 @@ namespace TestProject.Commands.Transaction {
             var baseTransactionDb = db.Transactions.First(t => t.Id == transaction.AddTransactionCommand.Result);
             Assert.That(baseTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(baseTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(baseTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(baseTransactionDb.Value, Is.EqualTo(-newValue));
             Assert.That(baseTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(baseTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -271,7 +271,7 @@ namespace TestProject.Commands.Transaction {
             var destinationTransactionDb = db.Transactions.First(t => t.Id == baseTransactionDb.TransactionDestinationId);
             Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(baseTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -290,7 +290,7 @@ namespace TestProject.Commands.Transaction {
             var newDate = transaction.Date.AddDays(-1);
             var newTransactionType = transactionTypeSecond.AddTransactionTypeCommand.Result;
             var newWallet = walletSecond.AddWalletCommand.Result;
-            var newValue = transaction.Value + 1.01;
+            var newValue = transaction.Value + 1.01m;
 
             var transferTransaction = new TransactionSample(
                 transactionTypeId: DatabaseInitializer.TRANSFER.Id,
@@ -320,7 +320,7 @@ namespace TestProject.Commands.Transaction {
             var updateTransactionDb = db.Transactions.First();
             Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(updateTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -343,7 +343,7 @@ namespace TestProject.Commands.Transaction {
             var newTransactionType = DatabaseInitializer.TRANSFER.Id;
             var newWallet = walletSecond.AddWalletCommand.Result;
             var newWalletDestination = wallet.AddWalletCommand.Result;
-            var newValue = transaction.Value + 1.01;
+            var newValue = transaction.Value + 1.01m;
 
             var transferTransaction = new TransactionSample(
                 transactionTypeId: DatabaseInitializer.TRANSFER.Id,
@@ -374,7 +374,7 @@ namespace TestProject.Commands.Transaction {
             var baseTransactionDb = db.Transactions.First(t => t.Id == transferTransaction.AddTransactionCommand.Result);
             Assert.That(baseTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(baseTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(baseTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(baseTransactionDb.Value, Is.EqualTo(-newValue));
             Assert.That(baseTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(baseTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
@@ -388,7 +388,7 @@ namespace TestProject.Commands.Transaction {
             var destinationTransactionDb = db.Transactions.First(t => t.Id == baseTransactionDb.TransactionDestinationId);
             Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
             Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(DateOnly.FromDateTime(baseTransactionDb.Date), Is.EqualTo(newDate));
+            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
             Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
             Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
             Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
