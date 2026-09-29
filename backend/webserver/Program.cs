@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Diagnostics;
 using Serilog;
 using webserver.Auth;
 using webserver.Api.V1;
@@ -15,7 +16,16 @@ using webserver.Api;
 namespace webserver;
 
 public class Program {
-    public static async Task Main(String[] args) {
+    public static async Task<Int32> Main(String[] args) {
+        if (args.Length > 0 && args[0] == "--healthcheck") {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            try {
+                using var response = await client.GetAsync("http://127.0.0.1:8080/health/ready");
+                return response.IsSuccessStatusCode ? 0 : 1;
+            } catch {
+                return 1;
+            }
+        }
         if (args.Length > 0 && args[0] == "--export-openapi") {
             var output = args.Length > 1 ? args[1] : "docs/openapi";
             var exportApplication = BuildApplication(Array.Empty<String>());
@@ -23,11 +33,12 @@ public class Program {
                 exportApplication.Services.GetRequiredService<Swashbuckle.AspNetCore.Swagger.ISwaggerProvider>(),
                 ResolveOpenApiOutputDirectory(output));
             await exportApplication.DisposeAsync();
-            return;
+            return 0;
         }
         var app = BuildApplication(args);
         await InitializeApplicationAsync(app);
         await app.RunAsync();
+        return 0;
     }
 
     private static String ResolveOpenApiOutputDirectory(String output) {
@@ -52,7 +63,7 @@ public class Program {
                 ["database:password"] = "unused",
                 ["database:bootstrapMode"] = "Disabled",
                 ["log:level"] = "Information",
-                ["log:output:console"] = "false",
+                ["log:output:console"] = "true",
                 ["security:allowedOrigins:0"] = "http://localhost:3000",
                 ["email:port"] = "587",
                 ["email:frontendBaseUrl"] = "http://localhost:3000"
@@ -70,10 +81,17 @@ public class Program {
 
             Log.Logger = LoggerFactory.Create(logOptions);
             builder.Host.UseSerilog();
-            Log.Information("Start application with version {Version}", "0.0.1-alpha");
+            Log.ForContext("EventId", 1000)
+                .ForContext("EventName", "ApplicationConfigured")
+                .Information("MoneyGestor API configured ({Version})", "0.0.1-alpha");
         }
 
         AddValidatedOptions(builder.Services, builder.Configuration);
+        builder.Services.AddSingleton<ObservabilityMetrics>();
+        builder.Services.AddSingleton<AuthFailureAggregator>();
+        builder.Services.AddHostedService(provider => provider.GetRequiredService<AuthFailureAggregator>());
+        builder.Services.AddHealthChecks()
+            .AddCheck<DatabaseReadinessHealthCheck>("database", tags: ["ready"]);
         AddDatabaseServices(builder.Services, builder.Environment);
 
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options => {
@@ -229,6 +247,19 @@ public class Program {
                 options.SwaggerEndpoint("/swagger/legacy/swagger.json", "MoneyGestor Legacy API (deprecated)");
             });
         }
+        app.UseMiddleware<RequestCorrelationMiddleware>();
+        if (!isTesting) {
+            app.UseSerilogRequestLogging(options => {
+                options.MessageTemplate = "HTTP {RequestMethod} responded {StatusCode} in {Elapsed:0.0000} ms (TraceId: {TraceId}, CorrelationId: {CorrelationId})";
+                options.EnrichDiagnosticContext = (diagnosticContext, httpContext) => {
+                    diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
+                    diagnosticContext.Set("CorrelationId", httpContext.Items["CorrelationId"]?.ToString() ?? String.Empty);
+                    if (httpContext.Items["ExternalCorrelationId"] is String externalId)
+                        diagnosticContext.Set("ExternalCorrelationId", externalId);
+                };
+            });
+        }
+        app.UseMiddleware<ObservabilityMetricsMiddleware>();
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
         app.UseRouting();
@@ -287,13 +318,27 @@ public class Program {
         app.UseAuthorization();
         app.MapControllers();
 
-        if (!isTesting) {
-            app.UseSerilogRequestLogging(options => {
-                options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms (TraceId: {TraceId})";
-                options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
-                    diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
+        app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+            Predicate = _ => false,
+            ResponseWriter = WriteHealthResponse
+        });
+        app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
+            Predicate = check => check.Tags.Contains("ready"),
+            ResponseWriter = WriteHealthResponse
+        });
+        var observability = app.Services.GetRequiredService<IOptions<ObservabilityOptions>>().Value;
+        if (observability.MetricsEnabled) {
+            app.MapGet(observability.MetricsPath, (ObservabilityMetrics metrics, HttpContext context) => {
+                context.Response.Headers.CacheControl = "no-store";
+                return Results.Text(metrics.RenderPrometheus(), "text/plain; version=0.0.4; charset=utf-8");
             });
         }
+
+        var appLogger = app.Services.GetRequiredService<ILogger<Program>>();
+        app.Lifetime.ApplicationStarted.Register(() =>
+            appLogger.LogInformation(new EventId(1001, "ApplicationStarted"), "MoneyGestor API started"));
+        app.Lifetime.ApplicationStopping.Register(() =>
+            appLogger.LogInformation(new EventId(1002, "ApplicationStopping"), "MoneyGestor API stopping"));
 
         return app;
     }
@@ -310,6 +355,10 @@ public class Program {
             throw new InvalidOperationException("Email delivery must be configured in Production.");
         }
 
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var bootstrapStarted = Stopwatch.GetTimestamp();
+        logger.LogInformation(new EventId(1100, "DatabaseBootstrapStarted"),
+            "Database bootstrap started ({BootstrapMode})", databaseOptions.BootstrapMode);
         var legacyDatabase = services.GetRequiredService<MoneyGestorContext>();
         var bootstrapOutcome = await services.GetRequiredService<LegacyDatabaseBootstrapper>()
             .BootstrapAsync(databaseOptions.BootstrapMode, cancellationToken);
@@ -326,19 +375,30 @@ public class Program {
         }
 
         await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
-        await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase);
+        try {
+            await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase);
+        } catch (logic.Exceptions.DataIntegrityException exception) {
+            logger.LogCritical(new EventId(1102, "DataIntegrityMismatch"),
+                "Data integrity preflight detected {IssueCount} issue groups", exception.Report.Issues.Count);
+            throw;
+        }
         await services.GetRequiredService<LegacyIdentityBootstrapper>().RunAsync(cancellationToken);
 
-        Log.Information(
-            "Database initialized ({BootstrapOutcome}, {IdentityMigrationCount} Identity migration(s) applied)",
-            bootstrapOutcome,
-            pendingMigrations.Length);
+        logger.LogInformation(new EventId(1101, "DatabaseBootstrapCompleted"),
+            "Database bootstrap completed ({BootstrapOutcome}, {IdentityMigrationCount} Identity migration(s) applied) in {ElapsedMilliseconds} ms",
+            bootstrapOutcome, pendingMigrations.Length, Stopwatch.GetElapsedTime(bootstrapStarted).TotalMilliseconds);
     }
 
     internal static Boolean ShouldEnableDatabaseLogging(
         Boolean isDevelopment,
         Serilog.Events.LogEventLevel configuredLevel) =>
         isDevelopment && configuredLevel == Serilog.Events.LogEventLevel.Verbose;
+
+    private static Task WriteHealthResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report) {
+        context.Response.Headers.CacheControl = "no-store";
+        context.Response.ContentType = "application/json";
+        return context.Response.WriteAsync(JsonSerializer.Serialize(new { status = report.Status.ToString() }));
+    }
 
     private static void AddApplicationSettings(WebApplicationBuilder builder) {
         var path = Environment.GetEnvironmentVariable("BACKEND_APP_SETTINGS") ?? "./settings.json";
@@ -348,7 +408,7 @@ public class Program {
         }
 
         builder.Configuration
-            .AddJsonFile(fullPath, optional: false, reloadOnChange: false)
+            .AddJsonFile(fullPath, optional: false, reloadOnChange: true)
             .AddEnvironmentVariables();
     }
 
@@ -370,6 +430,10 @@ public class Program {
             .Bind(configuration.GetSection(EmailOptions.SectionName))
             .Validate(EmailOptions.IsValid, "Email port and frontend base URL must be valid.")
             .ValidateOnStart();
+        services.AddOptions<ObservabilityOptions>()
+            .Bind(configuration.GetSection(ObservabilityOptions.SectionName))
+            .Validate(ObservabilityOptions.IsValid, "Observability configuration is invalid.")
+            .ValidateOnStart();
     }
 
     private static void AddDatabaseServices(IServiceCollection services, IWebHostEnvironment environment) {
@@ -377,7 +441,7 @@ public class Program {
             var database = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
             var logging = serviceProvider.GetRequiredService<IOptions<LogOptions>>().Value;
             options.UseMySQL(database.CreateConnectionString());
-            if (ShouldEnableDatabaseLogging(environment.IsDevelopment(), logging.GetLevel())) {
+            if (logging.DiagnosticEfLogging && ShouldEnableDatabaseLogging(environment.IsDevelopment(), logging.GetLevel())) {
                 options.LogTo(Log.Verbose, Microsoft.Extensions.Logging.LogLevel.Debug);
             }
         });

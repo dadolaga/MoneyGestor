@@ -36,6 +36,8 @@ public sealed class LogOptions {
 
     public String Level { get; set; } = String.Empty;
     public LogOutputOptions Output { get; set; } = new();
+    public Dictionary<String, String> Override { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Boolean DiagnosticEfLogging { get; set; }
 
     public LogEventLevel GetLevel() => Level.Trim().ToLowerInvariant() switch {
         "critical" or "fatal" => LogEventLevel.Fatal,
@@ -54,9 +56,18 @@ public sealed class LogOptions {
             return false;
         }
 
-        return options.Output.File == null || (
+        var validFile = options.Output.File == null || (
             !String.IsNullOrWhiteSpace(options.Output.File.Path) &&
-            !String.IsNullOrWhiteSpace(options.Output.File.FileName));
+            !String.IsNullOrWhiteSpace(options.Output.File.FileName) &&
+            Enum.TryParse<Serilog.RollingInterval>(options.Output.File.RollingInterval, true, out var interval) &&
+            Enum.IsDefined(interval) &&
+            options.Output.File.RetainedFileCountLimit > 0 &&
+            options.Output.File.FileSizeLimitBytes > 0 &&
+            !Path.GetInvalidFileNameChars().Any(options.Output.File.FileName.Contains));
+        return validFile &&
+            options.Override.All(entry => !String.IsNullOrWhiteSpace(entry.Key) &&
+                Enum.TryParse<LogEventLevel>(entry.Value, true, out var level) && Enum.IsDefined(level)) &&
+            (options.Output.Console || options.Output.File != null);
     }
 }
 
@@ -68,6 +79,26 @@ public sealed class LogOutputOptions {
 public sealed class LogFileOptions {
     public String Path { get; set; } = String.Empty;
     public String FileName { get; set; } = String.Empty;
+    public String RollingInterval { get; set; } = "Day";
+    public Int32 RetainedFileCountLimit { get; set; } = 14;
+    public Int64 FileSizeLimitBytes { get; set; } = 104857600;
+    public Boolean RollOnFileSizeLimit { get; set; } = true;
+}
+
+public sealed class ObservabilityOptions {
+    public const String SectionName = "observability";
+    public Int32 DatabaseReadinessTimeoutSeconds { get; set; } = 2;
+    public Boolean MetricsEnabled { get; set; } = true;
+    public String MetricsPath { get; set; } = "/metrics";
+
+    internal static Boolean IsValid(ObservabilityOptions options) =>
+        options.DatabaseReadinessTimeoutSeconds is >= 1 and <= 30 &&
+        !String.IsNullOrWhiteSpace(options.MetricsPath) &&
+        options.MetricsPath.Length <= 128 &&
+        options.MetricsPath.StartsWith('/') && !options.MetricsPath.StartsWith("//") &&
+        options.MetricsPath is not "/health/live" and not "/health/ready" &&
+        options.MetricsPath.Skip(1).All(character =>
+            Char.IsAsciiLetterOrDigit(character) || character is '/' or '-' or '_');
 }
 
 public sealed class SecurityOptions {

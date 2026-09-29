@@ -31,6 +31,13 @@ del token e la mutazione composta avvengono quindi nella stessa unit of work e n
 
 Questa è la fotografia dell'implementazione corrente. La destinazione frontend già approvata è Next.js App Router con Tailwind CSS, shadcn/ui su Radix e next-intl, senza TanStack; MUI verrà rimosso progressivamente per slice. Architettura di transizione, confini e ordine operativo sono definiti nel [piano di migrazione frontend](FRONTEND_MIGRATION_PLAN.md), mentre [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md) sono i contratti trasversali.
 
+OBS-50 aggiunge middleware di correlazione basato su Activity.TraceId e correlation ID server-side, log request senza
+URL o payload, /health/live indipendente dal database e /health/ready con SELECT 1 limitato da timeout. /metrics
+espone metriche Prometheus aggregate senza label ad alta cardinalita; i retry concorrenti incrementano una metrica e
+producono eventi strutturati. Serilog legge livelli, override e policy dei file da settings.json; EF SQL diagnostic e
+sempre vincolato a Development + Trace + opzione esplicita. Vedere l'evidenza OBS-50 in
+[backend-modernization/evidence](backend-modernization/evidence/OBS-50_2026-09-29.md).
+
 ## Progetti backend
 
 ### `database`

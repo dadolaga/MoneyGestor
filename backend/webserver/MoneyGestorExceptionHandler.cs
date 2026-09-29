@@ -1,10 +1,12 @@
 using logic.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.Common;
+using Microsoft.EntityFrameworkCore;
 using webserver.Controllers;
 
 namespace webserver {
-    public sealed class MoneyGestorExceptionHandler(ILogger<MoneyGestorExceptionHandler> logger) : IExceptionHandler {
+    public sealed class MoneyGestorExceptionHandler(ILogger<MoneyGestorExceptionHandler> logger, ObservabilityMetrics metrics) : IExceptionHandler {
         public async ValueTask<Boolean> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken) {
             if (exception is OperationCanceledException && context.RequestAborted.IsCancellationRequested) return true;
             var isV1 = context.Request.Path.StartsWithSegments("/api/v1");
@@ -36,6 +38,8 @@ namespace webserver {
                 _ => (500, "unexpected_error", "An unexpected error occurred", null)
             };
             if (status == 500) {
+                if (exception.GetBaseException() is DbException or DbUpdateException)
+                    metrics.RecordDatabaseFailure();
                 logger.LogError(exception, "Unhandled API error ({TraceId})", context.TraceIdentifier);
             }
             context.Response.StatusCode = status;

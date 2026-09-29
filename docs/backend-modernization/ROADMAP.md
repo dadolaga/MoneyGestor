@@ -159,7 +159,7 @@ Scheda: [PHASE_5_OPERATIONS_AND_DELIVERY.md](phases/PHASE_5_OPERATIONS_AND_DELIV
 
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
-| OBS-50 | P2 | non iniziato | logging configurabile, health, metriche e tracing minimo | API-34 |
+| OBS-50 | P2 | completato (29 settembre 2026) | logging configurabile, health, metriche e tracing minimo | API-34 |
 | PERF-51 | P2 | non iniziato | query, async, cancellation e resource lifetime | DAT-24, API-34 |
 | PLT-52 | P1 | non iniziato | allineamento dipendenze e .NET 10 LTS | API-34, DB-21 |
 | CI-53 | P1 | non iniziato | CI, container C# e release/migration workflow | BAK-40, OBS-50, PERF-51, PLT-52 |

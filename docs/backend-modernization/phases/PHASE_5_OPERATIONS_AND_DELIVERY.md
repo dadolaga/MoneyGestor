@@ -5,7 +5,7 @@ il debito tecnico residuo. Ottimizzazioni e upgrade non devono precedere i fix d
 
 ## OBS-50 — Logging configurabile, health e metriche minime
 
-**Stato:** non iniziato
+**Stato:** completato (29 settembre 2026)
 
 **Priorità:** P2
 
@@ -16,7 +16,7 @@ file di configurazione.
 
 **Situazione attuale**
 
-Serilog e request logging esistono, ma non ci sono correlation contract, liveness/readiness, metriche o eventi stabili.
+Serilog e request logging sono stati estesi con correlazione, health check, metriche aggregate e eventi operativi stabili. L'implementazione e descritta nell'[evidenza OBS-50](../evidence/OBS-50_2026-09-29.md).
 
 **Motivazione**
 
@@ -34,7 +34,7 @@ Deploy, migration e autenticazione non possono essere gestiti affidabilmente con
 - exception/auth/session/use case critici
 - file di configurazione e relativi example privi di segreti
 - Docker/Compose del solo componente applicativo
-- test osservabilità e documentazione runbook.
+- documentazione runbook (i test di fault injection sono rinviati alla pipeline CI-53).
 
 **Istruzioni operative**
 
@@ -81,6 +81,29 @@ Deploy, migration e autenticazione non possono essere gestiti affidabilmente con
 - operazioni critiche hanno start/result/duration sicuri;
 - livelli, destinazioni e conservazione cambiano senza ricompilare;
 - dashboard/alert minimi o runbook di consultazione definiti.
+
+**Implementazione OBS-50 (29 settembre 2026)**
+
+- X-Trace-ID e X-Correlation-ID sono generati dal server; un X-Correlation-ID entrante viene accettato nei log solo
+  se contiene 1-64 caratteri ASCII alfanumerici, punto, trattino o underscore. Gli errori espongono il TraceId.
+- /health/live verifica solo il processo; /health/ready esegue SELECT 1 con timeout configurabile. Le risposte non
+  includono eccezioni o dettagli di connessione.
+- /metrics espone contatori e istogramma Prometheus senza label variabili: richieste, errori HTTP, rifiuti auth,
+  errori probe DB, retry concorrenti e durata request.
+- Gli auth failure vengono emessi come conteggio aggregato ogni minuto. Bootstrap/migration, mismatch di integrita,
+  retry concorrenti, avvio e arresto usano EventId/EventName stabili.
+- Livello globale e override categoria, console/file, directory, nome, rolling giornaliero, limite dimensione e retention
+  sono in settings.json; modificarli richiede riavviare il processo. log.diagnosticEfLogging resta subordinato a
+  Development e al livello Trace. Errori del sink file vengono segnalati su stderr da Serilog SelfLog.
+- OpenTelemetry non e stato aggiunto: non e stato scelto un collector/exporter.
+
+Runbook operativo: verificare /health/live per processo e /health/ready per DB; scrutare i counter /metrics e i
+log filtrando EventName, TraceId o CorrelationId. Un readiness rosso indica indisponibilita DB senza dettagli;
+verificare la connettivita MySQL lato operatore. Un sink file non scrivibile deve essere corretto sul volume/directory e
+l'applicazione riavviata. Limitare /metrics alla rete di scraping nel reverse proxy/firewall.
+
+Verifica: dotnet build backend/backend.sln --no-restore passa con 0 errori e 15 warning legacy complessivi (7 nel progetto webserver). Test di fault
+injection DB, scan sentinelle, prova rolling/retention e misurazione load non sono stati eseguiti in questo step.
 
 ## PERF-51 — Query, async, cancellation e lifetime risorse
 

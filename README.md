@@ -123,10 +123,16 @@ artefatti non abbiano diff non revisionati.
 
 ### Livelli e sicurezza dei log
 
-Il livello `Trace`/`Verbose` abilita gli eventi SQL di EF solo quando il backend gira in ambiente `Development`.
-I valori dei parametri SQL, le password, i token, gli header `Authorization`, i body e i dati delle risposte non vengono
-mai scritti nei log, a nessun livello. In `Production` il logging EF resta disabilitato anche se il livello configurato è
-`Trace`. I file ruotano ogni giorno e vengono conservati per un massimo di 14 file.
+I livelli Serilog, gli override di categoria, i sink console/file, directory, nome, rolling, limite dimensione e
+retention sono configurati in settings.json (schema: settings.example.json) e diventano effettivi al riavvio. Il
+sink file usa rolling giornaliero e size limit; errori del sink sono inoltrati a stderr. log.diagnosticEfLogging abilita
+gli eventi SQL solo con ambiente Development e livello Trace/Verbose. In nessun livello vengono scritti valori
+parametri SQL, password, token, header Authorization, body o dati delle risposte.
+
+L'API espone /health/live (solo processo), /health/ready (query MySQL SELECT 1 con timeout configurabile) e
+/metrics (metriche Prometheus senza label utente o risorsa). Limitare /metrics alla rete di scraping. Ogni risposta
+include X-Trace-ID e X-Correlation-ID; gli errori usano lo stesso trace ID nel campo traceId. Consultare il
+[runbook OBS-50](docs/backend-modernization/evidence/OBS-50_2026-09-29.md) per segnali e risposta ai guasti.
 
 ## Avvio locale
 

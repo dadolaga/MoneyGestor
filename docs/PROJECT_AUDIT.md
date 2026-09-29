@@ -242,3 +242,9 @@ Creare un MySQL effimero per test (container dedicato con nome casuale), separar
 - Aggiungere test frontend e controller.
 - Rendere le build indipendenti da download runtime non controllati.
 - Aggiungere CI con build, lint, test e audit dipendenze.
+
+
+> Aggiornamento del 29 settembre 2026: OBS-50 ha completato logging configurabile, correlation ID, readiness/liveness,
+> metriche aggregate senza label ad alta cardinalita e healthcheck Docker. La build backend passa con 7 warning gia
+> presenti; test fault-injection e misurazione load restano da eseguire. Vedere la [roadmap](backend-modernization/ROADMAP.md)
+> e l'[evidenza OBS-50](backend-modernization/evidence/OBS-50_2026-09-29.md).

@@ -4,10 +4,19 @@
     "output": {
       "console": true,
       "file": {
-        "path": "../log/backend/",
-        "fileName": "backend"
+        "path": "./log/backend/",
+        "fileName": "backend",
+        "rollingInterval": "Day",
+        "retainedFileCountLimit": 14,
+        "fileSizeLimitBytes": 104857600,
+        "rollOnFileSizeLimit": true
       }
-    }
+    },
+    "override": {
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    },
+    "diagnosticEfLogging": false
   },
   "database": {
     "host": "localhost",
@@ -18,7 +27,9 @@
     "bootstrapMode": "Disabled"
   },
   "security": {
-    "allowedOrigins": ["http://localhost:3000"]
+    "allowedOrigins": [
+      "http://localhost:3000"
+    ]
   },
   "email": {
     "host": "smtp.example.com",
@@ -28,5 +39,10 @@
     "from": "noreply@example.com",
     "useSsl": true,
     "frontendBaseUrl": "http://localhost:3000"
+  },
+  "observability": {
+    "databaseReadinessTimeoutSeconds": 2,
+    "metricsEnabled": true,
+    "metricsPath": "/metrics"
   }
 }

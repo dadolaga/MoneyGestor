@@ -19,4 +19,6 @@ RUN mkdir -p /app/log
 
 EXPOSE 8080
 
+HEALTHCHECK --interval=30s --timeout=6s --start-period=60s --retries=3 CMD ["dotnet", "webserver.dll", "--healthcheck"]
+
 ENTRYPOINT ["dotnet", "webserver.dll"]

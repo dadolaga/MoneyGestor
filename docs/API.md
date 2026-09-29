@@ -10,6 +10,16 @@ URL locali:
 - sviluppo backend: `http://localhost:5256`
 - backend Docker: `http://localhost:5000`
 
+## Health, metriche e correlazione
+
+- GET /health/live riporta solo lo stato del processo e non interroga MySQL.
+- GET /health/ready verifica la raggiungibilita del database con SELECT 1; la risposta espone solo Healthy o Unhealthy,
+  mai dettagli di connessione.
+- GET /metrics pubblica contatori e istogramma Prometheus a cardinalita fissa. La configurazione puo disabilitarlo o
+  cambiare percorso; limitarne l'accesso alla rete di scraping.
+- Ogni risposta include X-Trace-ID e X-Correlation-ID. Un X-Correlation-ID in ingresso e registrato solo se valido;
+  il server genera comunque i propri ID. Le risposte Problem Details mantengono traceId coerente con X-Trace-ID.
+
 Gli endpoint legacy non versionati mantengono questa forma:
 
 ```json

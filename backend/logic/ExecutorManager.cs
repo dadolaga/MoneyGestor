@@ -4,6 +4,7 @@ using logic.Commands.User;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore.Storage;
 using logic.Security;
+using Microsoft.Extensions.Logging;
 
 namespace logic {
     public class ExecutorManager {
@@ -18,6 +19,7 @@ namespace logic {
         private UInt64? userId;
         private readonly MoneyGestorContext primaryDbContext;
         private readonly Func<MoneyGestorContext>? contextFactory;
+        private readonly ILogger<ExecutorManager>? logger;
 
         internal TimeProvider TimeProvider { get; }
 
@@ -28,10 +30,12 @@ namespace logic {
         public ExecutorManager(
             MoneyGestorContext dbContext,
             TimeProvider timeProvider,
-            Func<MoneyGestorContext>? contextFactory) {
+            Func<MoneyGestorContext>? contextFactory,
+            ILogger<ExecutorManager>? logger = null) {
             DbContext = dbContext;
             primaryDbContext = dbContext;
             this.contextFactory = contextFactory;
+            this.logger = logger;
             TimeProvider = timeProvider;
             transaction = null;
         }
@@ -78,6 +82,9 @@ namespace logic {
                     if (attempt == MaxAttempts || !DatabaseUpdatePolicy.IsRetryable(exception)) {
                         throw;
                     }
+                    ConcurrencyRetryMetrics.RecordRetry();
+                    logger?.LogWarning(new EventId(1301, "ConcurrencyRetry"),
+                        "Retrying a concurrent write (Attempt {Attempt})", attempt + 1);
                     await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt));
                 } finally {
                     if (transaction != null) {
