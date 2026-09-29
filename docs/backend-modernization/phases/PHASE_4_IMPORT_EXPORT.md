@@ -21,7 +21,7 @@ release non distribuiscono il servizio legacy. Verifica manuale e build prima di
 
 ## BAK-41 — Dump consistente e formato manifestato
 
-**Stato:** in corso
+**Stato:** completato il 29 settembre 2026
 
 Il requisito approvato è il recovery dell'intero schema self-hosted, incluse tabelle MoneyGestor legacy e ASP.NET
 Identity. Il formato `moneygestor-mysql-logical-backup` v1 è una directory `.mgbak` con `database.sql` e `manifest.json`.
@@ -39,10 +39,10 @@ MySQL 8.4; verifica dell'inventory e delle tabelle supportate.
 
 ## BAK-42 — Restore staging, cutover e rollback
 
-**Stato:** in corso
+**Stato:** completato il 29 settembre 2026
 
 Il restore accetta solo un backup v1 integro e un nuovo schema col prefisso `mg_restore_`. Non modifica o elimina il DB
-sorgente e rifiuta target già esistenti. Dopo restore confronta inventory, migration history e `mysqlcheck`. Solo dopo
+sorgente e rifiuta target già esistenti. Dopo restore confronta inventory, migration history e `CHECK TABLE`. Solo dopo
 la convalida l'operatore può fermare l'applicazione, cambiare il nome database nella configurazione protetta e avviare
 lo smoke check. Il DB precedente resta integro come rollback. Non si usa `RENAME TABLE` come falso swap atomico.
 
@@ -53,19 +53,19 @@ di cutover/rollback senza perdita o modifica del sorgente.
 
 ## BAK-43 — Operatività e recovery drill
 
-**Stato:** in corso
+**Stato:** completato il 29 settembre 2026
 
 `Invoke-MoneyGestorRecoveryDrill.ps1` automatizza backup e restore a partire solo da schema sacrificabile `mg_drill_*`;
 il test crea un secondo schema `mg_restore_*` e non elimina database. La guida definisce maintenance, cambio
 configurativo, smoke check applicativo, rollback, storage, retention e registrazione di RPO/RTO osservati. MySQL non
 entra in Compose e il drill non deve usare database di produzione.
 
-Completamento: eseguire davvero il drill su MySQL 8.4 effimero o ambiente dedicato, incluso smoke test app e rollback;
-salvare evidenza datata con durata osservata e revisione dell'esito. Un runbook o uno script non costituiscono prova
-dell'avvenuto recovery.
+Completamento: drill eseguito su MySQL 8.4 effimero, con API sorgente e staging avviate e rollback verificato;
+registrare il drill in [evidenza datata BAK-41..43](../evidence/BAK-41_43_2026-09-29.md).
+
 
 ## Gate della fase
 
-La fase è completa solo quando BAK-40..43 hanno evidenza verificabile, incluso round-trip e rollback su database
+La fase è completata il 29 settembre 2026: BAK-40..43 hanno evidenza verificabile, incluso round-trip e rollback su database
 isolato. Il database sorgente non viene mai eliminato automaticamente e non si fanno claim di RPO/RTO prima di
 misurarli.

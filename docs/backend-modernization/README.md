@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fasi 0-3 completate; Fase 4 in corso**
-- Data dell'ultimo aggiornamento: **27 settembre 2026**
+- Stato del documento: **Fasi 0-4 completate**
+- Data dell'ultimo aggiornamento: **29 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole

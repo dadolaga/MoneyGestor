@@ -2,7 +2,7 @@ Set-StrictMode -Version Latest
 if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'PowerShell 7 or later is required.' }
 
 function Assert-MySqlTooling {
-    foreach ($name in @('mysql', 'mysqldump', 'mysqlcheck')) {
+    foreach ($name in @('mysql', 'mysqldump')) {
         if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
             throw "Required MySQL 8.4 client utility '$name' was not found in PATH."
         }
@@ -27,7 +27,11 @@ function Invoke-MySqlProcess {
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
-    $start.RedirectStandardInput = $true
+    $start.RedirectStandardInput = [bool]$InputPath
+    foreach ($name in @('HOME', 'MYSQL_HOME', 'MYSQL_TEST_LOGIN_FILE')) {
+        $value = [Environment]::GetEnvironmentVariable($name)
+        if ($value) { $start.Environment[$name] = $value }
+    }
     foreach ($argument in $Arguments) { [void] $start.ArgumentList.Add($argument) }
 
     $process = [Diagnostics.Process]::new()
@@ -46,7 +50,7 @@ function Invoke-MySqlProcess {
     } catch {
         $inputError = $_.Exception
     } finally {
-        $process.StandardInput.Close()
+        if ($InputPath) { $process.StandardInput.Close() }
     }
     $process.WaitForExit()
     $result = [pscustomobject]@{

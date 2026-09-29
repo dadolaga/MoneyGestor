@@ -142,16 +142,16 @@ Scheda: [PHASE_4_IMPORT_EXPORT.md](phases/PHASE_4_IMPORT_EXPORT.md)
 | ID | Priorità | Stato | Titolo | Prerequisiti |
 |---|---:|---|---|---|
 | BAK-40 | P0 | completato (27 settembre 2026) | disabilitazione fail-closed della CLI ZIP/CSV legacy | DEC-08, TST-01 |
-| BAK-41 | P1 | in corso | dump MySQL consistente e archivio manifestato | BAK-40, DEC-08 |
-| BAK-42 | P0 | in corso | restore staging, validazione, cutover manuale e rollback | BAK-41 |
-| BAK-43 | P1 | in corso | runbook ed esercitazione recovery su database effimero/self-hosted | BAK-42 |
+| BAK-41 | P1 | completato (29 settembre 2026) | dump MySQL consistente e archivio manifestato | BAK-40, DEC-08 |
+| BAK-42 | P0 | completato (29 settembre 2026) | restore staging, validazione, cutover manuale e rollback | BAK-41 |
+| BAK-43 | P1 | completato (29 settembre 2026) | runbook ed esercitazione recovery su database effimero/self-hosted | BAK-42 |
 
 La decisione DEC-08 è stata riaperta e sostituita il 27 settembre 2026. L'implementazione nuova usa gli strumenti MySQL
 8.4 nativi, non riattiva la CLI ZIP/CSV storica e non viene pubblicata come servizio applicativo.
 
 **Gate fase 4:** CLI legacy dimostrata fail-closed; backup hash-verificato; restore staging confrontato e validato;
-rollback eseguito senza perdita del database sorgente; runbook provato con evidenza su ambiente isolato. Non dichiarare
-la fase completa finché l'esercitazione BAK-43 non è stata realmente eseguita.
+rollback eseguito senza perdita del database sorgente; runbook provato con evidenza su ambiente isolato. La fase è completata il 29 settembre 2026; vedere l'evidenza [BAK-41..43](evidence/BAK-41_43_2026-09-29.md).
+
 
 ### Fase 5 — qualità operativa e piattaforma
 

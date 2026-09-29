@@ -62,9 +62,12 @@ try {
     $historyCount = Invoke-MgSql -LoginPath $LoginPath -Server $Server -Port $Port -Sql "SELECT COUNT(*) FROM ``$StagingDatabase``.__EFMigrationsHistory;"
     if ([Int64]$historyCount -lt 1) { throw 'Restored database has no EF migration history.' }
 
-    $checkArgs = $serverArgs + @('--check', $StagingDatabase)
-    $check = Invoke-MySqlProcess -Executable 'mysqlcheck' -Arguments $checkArgs
-    if ($check.ExitCode -ne 0) { throw "mysqlcheck failed (exit $($check.ExitCode)): $($check.StandardError.Trim())" }
+    foreach ($table in $snapshot.Tables) {
+        $checkRows = Invoke-MgSql -LoginPath $LoginPath -Server $Server -Port $Port `
+            -Sql "CHECK TABLE ``$StagingDatabase``.``$table``;"
+        $statusRows = @($checkRows -split "`r?`n" | Where-Object { $_ -match "\tstatus\tOK$" })
+        if ($statusRows.Count -ne 1) { throw "CHECK TABLE did not report status OK for '$table'." }
+    }
     Write-Output "validated_staging_database=$StagingDatabase"
     Write-Output 'The source database was not modified. Keep this schema isolated until the application smoke check passes.'
 } catch {

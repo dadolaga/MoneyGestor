@@ -148,7 +148,7 @@ retention devono essere protetti con controlli e cifratura del volume forniti da
 cifratura proprietaria.
 
 Il restore crea soltanto un database staging con prefisso `mg_restore_`, non modifica né elimina quello sorgente, e
-valida hash, inventory, migration history e `mysqlcheck`. Il cutover avviene in maintenance con arresto dell'app, cambio
+valida hash, inventory, migration history e `CHECK TABLE`. Il cutover avviene in maintenance con arresto dell'app, cambio
 esplicito del nome database nella configurazione deployment e smoke check. Il database originale resta intatto per il
 rollback: MySQL non offre uno swap atomico di schema che giustifichi una rinomina distruttiva automatica. Non sono
 previsti backup schedulati dal backend o un servizio MySQL in Compose.

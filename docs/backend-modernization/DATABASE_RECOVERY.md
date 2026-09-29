@@ -6,7 +6,7 @@ storica è disabilitata.
 
 ## Perimetro e protezione
 
-Gli script richiedono PowerShell 7 e i client MySQL 8.4 (`mysql`, `mysqldump`, `mysqlcheck`) disponibili in `PATH`.
+Gli script richiedono PowerShell 7 e i client MySQL 8.4 (`mysql`, `mysqldump`) disponibili in `PATH`.
 
 Il dump include tutte le tabelle dello schema configurato, incluse ASP.NET Identity, utenti legacy, hash password,
 movimenti, migration history, trigger, eventi e routine. Non contiene account/grant globali MySQL, configurazione server,
@@ -22,7 +22,7 @@ creare un database staging. Conservare il login-path con i permessi filesystem d
 di `mysql_config_editor` non è cifratura.
 
 ```powershell
-mysql_config_editor set --login-path=moneygestor-backup --host=127.0.0.1 --port=3306 --user=moneygestor_ops --password
+mysql_config_editor set --login-path=client --host=127.0.0.1 --port=3306 --user=moneygestor_ops --password
 ```
 
 Il comando richiede la password interattivamente. Configurare TLS/verifica certificato secondo la topologia MySQL
@@ -37,7 +37,7 @@ continuare grazie a `--single-transaction`; tabelle non InnoDB sono rifiutate. I
 ```powershell
 pwsh -File ./ops/database/New-MoneyGestorBackup.ps1 `
   -Database moneygestor_db `
-  -LoginPath moneygestor-backup `
+  -LoginPath client `
   -Server 127.0.0.1 `
   -Port 3306 `
   -OutputDirectory E:\MoneyGestorBackups
@@ -58,13 +58,13 @@ Proteggere/replicare insieme `database.sql` e `manifest.json`. Una copia isolata
 pwsh -File ./ops/database/Restore-MoneyGestorToStaging.ps1 `
   -BackupPath E:\MoneyGestorBackups\moneygestor-20260927T120000Z.mgbak `
   -StagingDatabase mg_restore_drill_20260927 `
-  -LoginPath moneygestor-backup `
+  -LoginPath client `
   -Server 127.0.0.1 `
   -Port 3306
 ```
 
 Prima del cutover il tool verifica format version, percorso fisso, dimensione, SHA, charset/collation ammessi, inventory
-tabelle, migration history e `mysqlcheck`. Non esegue migration e non fa switch automatico. Un fallimento lascia il DB
+tabelle, migration history e `CHECK TABLE`. Non esegue migration e non fa switch automatico. Un fallimento lascia il DB
 live inalterato e lo staging non promosso.
 
 ## Cutover e rollback
@@ -95,7 +95,7 @@ Preparare un server MySQL 8.4 effimero o un'istanza self-hosted dedicata, più u
 ```powershell
 pwsh -File ./ops/database/Invoke-MoneyGestorRecoveryDrill.ps1 `
   -DrillSourceDatabase mg_restore_fixture01 `
-  -LoginPath moneygestor-backup `
+  -LoginPath client `
   -Server 127.0.0.1 `
   -Port 3306 `
   -OutputDirectory E:\MoneyGestorDrill

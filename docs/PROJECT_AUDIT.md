@@ -36,7 +36,7 @@ Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La m
 > l'[evidenza ARC-20](backend-modernization/evidence/ARC-20_2026-09-24.md).
 
 > Aggiornamento del 27 settembre 2026: DEC-08 è stata sostituita dal proprietario. La CLI storica ZIP/CSV resta
-> disabilitata; la Fase 4 sta introducendo backup MySQL nativo con manifest, restore staging e recovery drill. Per
+> disabilitata; la Fase 4 di backup MySQL, restore staging e recovery drill è completata il 29 settembre 2026. Per
 > l'operatività corrente fanno fede la [roadmap backend](backend-modernization/ROADMAP.md) e il
 > [runbook recovery](backend-modernization/DATABASE_RECOVERY.md); i rilievi BAK storici sotto restano fotografia.
 

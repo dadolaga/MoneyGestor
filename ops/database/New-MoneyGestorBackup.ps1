@@ -12,6 +12,7 @@ Import-Module (Join-Path $PSScriptRoot 'MoneyGestor.DatabaseTools.psm1') -Force
 Assert-MySqlTooling
 Assert-SchemaName $Database
 if ($LoginPath -notmatch '^[A-Za-z0-9_-]{1,64}$') { throw 'LoginPath must be a MySQL login-path name.' }
+if ($LoginPath -ne 'client') { throw 'mysqldump requires the protected shared MySQL login path named client.' }
 
 $output = [IO.Path]::GetFullPath($OutputDirectory)
 [IO.Directory]::CreateDirectory($output) | Out-Null
@@ -28,9 +29,9 @@ if (Test-Path -LiteralPath $partialPath) { throw 'Refusing to reuse an existing 
 try {
     $dumpPath = Join-Path $partialPath 'database.sql'
     $arguments = @(
-        '--login-path=' + $LoginPath,
-        '--host=' + $Server,
-        '--port=' + $Port,
+        '--login-path=client',
+        ('--host=' + $Server),
+        ('--port=' + $Port),
         '--single-transaction',
         '--quick',
         '--skip-lock-tables',
@@ -40,11 +41,16 @@ try {
         '--hex-blob',
         '--no-tablespaces',
         '--set-gtid-purged=OFF',
-        '--result-file=' + $dumpPath,
+        '--result-file',
+        $dumpPath,
         $Database
     )
     $dump = Invoke-MySqlProcess -Executable 'mysqldump' -Arguments $arguments
-    if ($dump.ExitCode -ne 0) { throw "mysqldump failed (exit $($dump.ExitCode)): $($dump.StandardError.Trim())" }
+    if ($dump.ExitCode -ne 0) {
+        $diagnostic = $dump.StandardError.Trim()
+        if (-not $diagnostic -and $dump.StandardOutput -match '^Usage: mysqldump') { $diagnostic = 'mysqldump printed usage; verify its arguments.' }
+        throw "mysqldump failed (exit $($dump.ExitCode)): $diagnostic"
+    }
     if (-not (Test-Path -LiteralPath $dumpPath) -or (Get-Item -LiteralPath $dumpPath).Length -eq 0) {
         throw 'mysqldump completed without producing a non-empty SQL dump.'
     }
