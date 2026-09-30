@@ -1,12 +1,12 @@
-﻿using System;
+﻿using logic.Exceptions;
+using logic.Security;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using logic.Exceptions;
-using logic.Security;
-using Microsoft.EntityFrameworkCore;
 
 namespace logic.Commands.Wallets {
     public class FavoriteWalletCommand : ICommand<UInt64> {

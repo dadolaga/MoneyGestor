@@ -1,4 +1,3 @@
-using System.Text;
 using database;
 using database.Identity;
 using database.Models;
@@ -6,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace webserver.Auth;
 

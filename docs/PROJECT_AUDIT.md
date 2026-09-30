@@ -175,7 +175,7 @@ Direzione: dependency injection per `DbContext`, migration EF versionate, seed i
 - Proprietà sconosciute vengono talvolta ignorate; il primo ordinamento sconosciuto può causare un cast non valido.
 - Limiti molto grandi possono causare overflow nella conversione a `Int32` o query costose.
 - Manca una specifica OpenAPI persistita/versionata e non ci sono test HTTP dei controller.
-- `WeatherForecastController` è codice template ancora esposto.
+- `WeatherForecastController` era codice template esposto; è stato rimosso con QUA-54 il 30 settembre 2026.
 
 ## Frontend
 

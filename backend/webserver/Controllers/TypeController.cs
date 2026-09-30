@@ -9,7 +9,7 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("type")]
     [EnableCors("CorsPolicy")]
-    public class TypeController(ExecutorManager executor, IResourceQueryService queries) : MoneyMenagerController {
+    public class TypeController(ExecutorManager executor, IResourceQueryService queries) : MoneyManagerController {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
             executor.SetToken(authorization);

@@ -7,7 +7,7 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("dashboard")]
     [EnableCors("CorsPolicy")]
-    public class DashboardController(ExecutorManager executor, IResourceQueryService queries) : MoneyMenagerController {
+    public class DashboardController(ExecutorManager executor, IResourceQueryService queries) : MoneyManagerController {
         [HttpGet("all")]
         public async Task<IActionResult> All(
             [FromHeader(Name = "Authorization")] String authorization,

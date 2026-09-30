@@ -1,12 +1,12 @@
-using System.Data.Common;
-using System.Diagnostics;
 using database;
 using database.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using logic;
 using logic.Commands.Wallets;
 using logic.Exceptions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Data.Common;
+using System.Diagnostics;
 using TestProject.Base;
 using TestProject.Infrastructure;
 using webserver.Api.V1;

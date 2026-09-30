@@ -48,6 +48,7 @@ Approfondimenti:
 
 PERF-51 ha completato l'ottimizzazione misurata della dashboard e la propagazione della cancellazione nelle operazioni EF.
 PLT-52 ha portato il backend a .NET 10 LTS con pacchetti centralizzati e restore lockati.
+QUA-54 ha portato la rebuild backend a zero warning, attivato warning-as-errors e rimosso il template WeatherForecast e il profilo CLI con path personale.
 Dettagli e limiti nella [roadmap backend](docs/backend-modernization/ROADMAP.md).
 
 ## Prerequisiti

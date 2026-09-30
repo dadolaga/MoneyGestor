@@ -1,4 +1,5 @@
-﻿using database;
+using database;
+using database.Models;
 using logic;
 using logic.Commands.User;
 using logic.Exceptions;
@@ -6,11 +7,10 @@ using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using webserver.Models;
-using webserver.Auth;
-using database.Models;
 using System.Security.Cryptography;
 using webserver.Api.V1;
+using webserver.Auth;
+using webserver.Models;
 
 namespace webserver.Controllers {
     [ApiController]
@@ -22,7 +22,7 @@ namespace webserver.Controllers {
         MoneyGestorContext database,
         TimeProvider timeProvider,
         IApiCurrentUser currentUser,
-        IResourceQueryService queries) : MoneyMenagerController {
+        IResourceQueryService queries) : MoneyManagerController {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] User user) {

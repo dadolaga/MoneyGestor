@@ -11,7 +11,7 @@ namespace webserver.Controllers {
     [ApiController]
     [Route("transaction")]
     [EnableCors("CorsPolicy")]
-    public class TransactionController(ExecutorManager executor, IResourceQueryService queries) : MoneyMenagerController {
+    public class TransactionController(ExecutorManager executor, IResourceQueryService queries) : MoneyManagerController {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, [FromQuery] Filter filter) {
             executor.SetToken(authorization);

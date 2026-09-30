@@ -1,13 +1,13 @@
 using database;
 using database.Identity;
 using logic;
+using logic.Managers;
+using logic.Models;
 using logic.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using System.Linq.Expressions;
-using logic.Models;
-using logic.Managers;
+using System.Security.Claims;
 
 namespace webserver.Api.V1;
 
@@ -36,17 +36,18 @@ public interface IResourceQueryService {
 }
 
 public sealed class ResourceQueryService(MoneyGestorContext database) : IResourceQueryService {
+    // Required FK navigations are translated to SQL joins in these EF queries.
     private static Expression<Func<global::database.Models.TransactionDb, TransactionResponse>> TransactionProjection() => transaction => new TransactionResponse(
         transaction.Id, transaction.Description, transaction.LongDescription, transaction.Date, transaction.Value,
-        new TransactionTypeResponse(transaction.TransactionType.Id, transaction.TransactionType.Name, transaction.TransactionType.UserId == null),
-        new TransactionWalletResponse(transaction.Wallet.Id, transaction.Wallet.Name,
-            new ColorResponse(transaction.Wallet.Color.Id, transaction.Wallet.Color.Name, transaction.Wallet.Color.Value) { IsGlobal = transaction.Wallet.Color.UserId == null }),
+        new TransactionTypeResponse(transaction.TransactionType!.Id, transaction.TransactionType!.Name, transaction.TransactionType!.UserId == null),
+        new TransactionWalletResponse(transaction.Wallet!.Id, transaction.Wallet!.Name,
+            new ColorResponse(transaction.Wallet!.Color!.Id, transaction.Wallet!.Color!.Name, transaction.Wallet!.Color!.Value) { IsGlobal = transaction.Wallet!.Color!.UserId == null }),
         transaction.TransactionDestination == null ? null : new TransactionWalletResponse(
-            transaction.TransactionDestination.Wallet.Id,
-            transaction.TransactionDestination.Wallet.Name,
-            new ColorResponse(transaction.TransactionDestination.Wallet.Color.Id,
-                transaction.TransactionDestination.Wallet.Color.Name, transaction.TransactionDestination.Wallet.Color.Value) {
-                IsGlobal = transaction.TransactionDestination.Wallet.Color.UserId == null
+            transaction.TransactionDestination.Wallet!.Id,
+            transaction.TransactionDestination.Wallet!.Name,
+            new ColorResponse(transaction.TransactionDestination.Wallet!.Color!.Id,
+                transaction.TransactionDestination.Wallet!.Color!.Name, transaction.TransactionDestination.Wallet!.Color!.Value) {
+                IsGlobal = transaction.TransactionDestination.Wallet!.Color!.UserId == null
             }));
 
     public async Task<IReadOnlyList<ColorResponse>> GetColorsAsync(UInt64 userId, CancellationToken cancellationToken) =>
@@ -60,14 +61,14 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .OrderBy(wallet => wallet.Id)
             .Select(wallet => new WalletResponse(
                 wallet.Id, wallet.Name, wallet.Value, wallet.CurrentValue, wallet.Favorite,
-                new ColorResponse(wallet.Color.Id, wallet.Color.Name, wallet.Color.Value) { IsGlobal = wallet.Color.UserId == null }))
+                new ColorResponse(wallet.Color!.Id, wallet.Color!.Name, wallet.Color!.Value) { IsGlobal = wallet.Color!.UserId == null }))
             .ToListAsync(cancellationToken);
 
     public Task<WalletResponse?> GetWalletAsync(UInt64 userId, UInt64 id, CancellationToken cancellationToken) =>
         OwnershipQueryPolicy.OwnedWallets(database, userId).AsNoTracking()
             .Where(wallet => wallet.Id == id)
             .Select(wallet => new WalletResponse(wallet.Id, wallet.Name, wallet.Value, wallet.CurrentValue, wallet.Favorite,
-                new ColorResponse(wallet.Color.Id, wallet.Color.Name, wallet.Color.Value) { IsGlobal = wallet.Color.UserId == null }))
+                new ColorResponse(wallet.Color!.Id, wallet.Color!.Name, wallet.Color!.Value) { IsGlobal = wallet.Color!.UserId == null }))
             .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<TransactionTypeResponse>> GetTransactionTypesAsync(UInt64 userId, CancellationToken cancellationToken) =>
@@ -113,11 +114,11 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
                 ? rows.OrderBy(transaction => transaction.Value)
                 : rows.OrderByDescending(transaction => transaction.Value),
             TransactionOrderBy.Type => query.Direction == SortDirection.Ascending
-                ? rows.OrderBy(transaction => transaction.TransactionType.Name)
-                : rows.OrderByDescending(transaction => transaction.TransactionType.Name),
+                ? rows.OrderBy(transaction => transaction.TransactionType!.Name)
+                : rows.OrderByDescending(transaction => transaction.TransactionType!.Name),
             TransactionOrderBy.Wallet => query.Direction == SortDirection.Ascending
-                ? rows.OrderBy(transaction => transaction.Wallet.Name)
-                : rows.OrderByDescending(transaction => transaction.Wallet.Name),
+                ? rows.OrderBy(transaction => transaction.Wallet!.Name)
+                : rows.OrderByDescending(transaction => transaction.Wallet!.Name),
             _ => query.Direction == SortDirection.Ascending
                 ? rows.OrderBy(transaction => transaction.Date)
                 : rows.OrderByDescending(transaction => transaction.Date)
@@ -166,8 +167,8 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .Where(transaction => transaction.TransactionDestinationId == null && transaction.Date >= from && transaction.Date <= to);
         var aggregates = await transactions.GroupBy(transaction => new {
                 transaction.TransactionTypeId,
-                transaction.TransactionType.Name,
-                transaction.TransactionType.UserId
+                transaction.TransactionType!.Name,
+                transaction.TransactionType!.UserId
             })
             .Select(group => new {
                 group.Key.TransactionTypeId,

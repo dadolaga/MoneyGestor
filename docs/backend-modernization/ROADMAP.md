@@ -162,7 +162,9 @@ Scheda: [PHASE_5_OPERATIONS_AND_DELIVERY.md](phases/PHASE_5_OPERATIONS_AND_DELIV
 | PERF-51 | P2 | completato (29 settembre 2026) | query, async, cancellation e resource lifetime | DAT-24, API-34 |
 | PLT-52 | P1 | completato (30 settembre 2026) | allineamento dipendenze e .NET 10 LTS | API-34, DB-21 |
 | CI-53 | P1 | in corso (container hardening 30 settembre 2026; GitHub Actions rinviate) | CI, container C# e release/migration workflow | BAK-40, OBS-50, PERF-51, PLT-52 |
-| QUA-54 | P3 | non iniziato | warning zero e rimozione codice legacy/template | CI-53 |
+| QUA-54 | P3 | completato (30 settembre 2026; gate CI remoto rinviato con CI-53) | warning zero e rimozione codice legacy/template | CI-53 |
+
+**Evidenza QUA-54:** [pulizia backend e verifiche](evidence/QUA-54_2026-09-30.md).
 
 **Evidenza CI-53:** [container e release manuale](evidence/CI-53_2026-09-30.md).
 

@@ -1,4 +1,4 @@
-﻿using database.Models;
+using database.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace logic.Models {
                 Value = walletDb.Value,
                 CurrentValue = walletDb.CurrentValue,
                 Favorite = walletDb.Favorite,
-                Color = walletDb.Color.Convert()
+                Color = (walletDb.Color ?? throw new InvalidOperationException("Wallet color was not loaded")).Convert()
             };
         }
 
@@ -53,9 +53,9 @@ namespace logic.Models {
                 Date = new DateTimeOffset(
                     transactionDb.Date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)),
                 Value = transactionDb.Value,
-                Wallet = transactionDb.Wallet.Convert(),
+                Wallet = (transactionDb.Wallet ?? throw new InvalidOperationException("Transaction wallet was not loaded")).Convert(),
                 WalletDestination = transactionDb.TransactionDestination?.Wallet?.Convert(),
-                TransactionType = transactionDb.TransactionType.Convert(),
+                TransactionType = (transactionDb.TransactionType ?? throw new InvalidOperationException("Transaction type was not loaded")).Convert(),
                 User = null,
                 UserInsert = null,
             };

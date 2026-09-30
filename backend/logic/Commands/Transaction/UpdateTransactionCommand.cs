@@ -1,4 +1,4 @@
-﻿using database.Models;
+using database.Models;
 using logic.Exceptions;
 using logic.Security;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +50,7 @@ namespace logic.Commands.Transaction {
                 ownerId, cancellationToken);
 
             if (userId != null && userId != ownerId) {
-                throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
+                throw new UserPermissionException("Transaction owner cannot be supplied by the client");
             }
 
             TransactionDb sourceTransaction = requestedTransaction;
@@ -151,9 +151,11 @@ namespace logic.Commands.Transaction {
 
                     await database.SaveChangesAsync(cancellationToken);
                 } else {
+                    var destinationWallet = finalDestinationWallet
+                        ?? throw new InvalidOperationException("Transfer destination wallet was not resolved");
                     sourceTransaction.Value = -finalValue;
                     WalletBalancePolicy.Apply(finalSourceWallet, -finalValue);
-                    WalletBalancePolicy.Apply(finalDestinationWallet!, finalValue);
+                    WalletBalancePolicy.Apply(destinationWallet, finalValue);
 
                     if (destinationTransaction == null) {
                         destinationTransaction = new TransactionDb {
@@ -165,7 +167,7 @@ namespace logic.Commands.Transaction {
                     destinationTransaction.Description = finalDescription;
                     destinationTransaction.LongDescription = finalLongDescription;
                     destinationTransaction.Date = finalDate;
-                    destinationTransaction.WalletId = finalDestinationWallet.Id;
+                    destinationTransaction.WalletId = destinationWallet.Id;
                     destinationTransaction.TransactionTypeId = DatabaseInitializer.TRANSFER.Id;
                     destinationTransaction.UserId = ownerId;
                     destinationTransaction.UserInsertId = ownerId;

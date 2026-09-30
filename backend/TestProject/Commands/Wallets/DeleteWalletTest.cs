@@ -1,6 +1,6 @@
 ﻿using logic;
-using logic.Commands.Wallets;
 using logic.Commands.Transaction;
+using logic.Commands.Wallets;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;

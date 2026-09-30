@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using webserver.Models;
 
 namespace webserver.Controllers {
-    public class MoneyMenagerController : ControllerBase {
+    public class MoneyManagerController : ControllerBase {
         protected IActionResult CreateResponse(UInt64 id, String objectName = "") => OkResponse(id, objectName);
 
         protected IActionResult ListResponse<T>(IList<T> list, Int32 length, String tableName = "") => OkResponse(new ListOutput<T> { Length = length, Data = list }, $"List of {tableName}");
 
-        protected IActionResult ErrorResponse(UInt32 code, String message) => Response(code, message, statusCode: 400);
+        protected IActionResult ErrorResponse(UInt32 code, String message) => BuildResponse(code, message, statusCode: 400);
 
-        protected IActionResult OkResponse(Object? data = null, String message = "") => Response(0, message, data);
+        protected IActionResult OkResponse(Object? data = null, String message = "") => BuildResponse(0, message, data);
 
-        private IActionResult Response(UInt32 code, String? message = "", Object? data = null, UInt16 statusCode = 200) {
+        private IActionResult BuildResponse(UInt32 code, String? message = "", Object? data = null, UInt16 statusCode = 200) {
             Log.Debug(
                 "HTTP response {StatusCode} with application code {Code} for {Route} (TraceId: {TraceId})",
                 statusCode,

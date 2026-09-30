@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using System.Diagnostics;
 using Serilog;
-using webserver.Auth;
-using webserver.Api.V1;
+using System.Diagnostics;
+using System.Text.Json;
 using webserver.Api;
+using webserver.Api.V1;
+using webserver.Auth;
 
 namespace webserver;
 

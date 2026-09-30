@@ -12,7 +12,7 @@ namespace webserver.Controllers {
     [EnableCors("CorsPolicy")]
     public class WalletController(
         ExecutorManager executor,
-        IResourceQueryService queries) : MoneyMenagerController {
+        IResourceQueryService queries) : MoneyManagerController {
         [HttpPost]
         public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet) {
             if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null)

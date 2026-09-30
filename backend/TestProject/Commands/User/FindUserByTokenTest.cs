@@ -1,4 +1,4 @@
-﻿using logic;
+using logic;
 using logic.Commands.User;
 using logic.Exceptions;
 using logic.Managers;
@@ -68,7 +68,7 @@ namespace TestProject.Commands.User {
 
             var findUserCommand = new FindUserByTokenCommand();
 
-            Assert.ThrowsAsync<TokenExpiatedException>(async () => await ExecutorManager.Execute(findUserCommand));
+            Assert.ThrowsAsync<TokenExpiredException>(async () => await ExecutorManager.Execute(findUserCommand));
         }
 
         [Test]

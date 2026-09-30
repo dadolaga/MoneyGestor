@@ -467,7 +467,7 @@ read-only. Criticità:
 - il parser web è manuale, statico e usa default pericolosi (`root`/`root`) se mancano campi;
 - il parser web e quello CLI sono due implementazioni diverse dello stesso schema;
 - `forceUpdate` non ha effetto;
-- `launchSettings.json` della CLI contiene un path assoluto personale;
+- `launchSettings.json` della CLI conteneva un path assoluto personale (rimosso con QUA-54);
 - Docker backend ora usa digest multi-platform fissati, healthcheck e utente non-root; Compose applica filesystem read-only e capability drop; il frontend attende backend healthy.
 - Compose non avvia MySQL per scelta; il deployment single-instance e documentato, la CI remota e rinviata e non c'e gate automatico di merge.
 - la CLI container non monta una directory backup;
@@ -480,17 +480,12 @@ scelta.
 
 ## Qualità del codice e manutenibilità
 
-Problemi confermati ma non prioritari rispetto a sicurezza/dati:
+La lista seguente registra la baseline storica. QUA-54 ha eliminato i typo elencati, WeatherForecast, ExportManager, i costruttori serialization obsoleti e i warning di compilazione. Il UserManager personalizzato era già stato rimosso; le istanze ASP.NET Identity sono ancora in uso. Le voci residue richiedono interventi distinti:
 
-- nomi con errori (`MoneyMenagerController`, `TokenExpiatedException`, `UserNotHavePermissionExcpetion`, `GREATHER`);
-- codice template esposto (`WeatherForecastController`, `WeatherForecast`, `webserver.http`);
-- `UserManager` e `ExportManager` legacy/inutilizzati;
-- numerosi `using` non usati e riferimenti a namespace interni/transitivi;
 - campi mutabili che possono essere `readonly`;
 - catch con variabili inutilizzate o catch vuoti;
 - magic ID `1/2` per tipi globali e stringhe di messaggio usate per decidere il codice errore;
-- convenzioni asincrone/naming incoerenti;
-- eccezioni con costruttori di serializzazione formatter obsoleti.
+- convenzioni asincrone/naming incoerenti.
 
 Pulire in step separati dopo la rete di sicurezza. Rinominare tipi pubblici può generare diff ampi e non deve essere
 mescolato a fix funzionali.

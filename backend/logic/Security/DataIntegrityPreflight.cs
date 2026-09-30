@@ -6,12 +6,13 @@ namespace logic.Security;
 
 public static class DataIntegrityPreflight {
     public static async Task<DataIntegrityReport> InspectAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
+        // Required FK navigations are SQL joins here; nullable types also cover unloaded in-memory entities.
         var wallets = await database.Wallets
             .AsNoTracking()
             .Select(wallet => new {
                 wallet.Id,
                 wallet.UserId,
-                ColorOwnerId = wallet.Color.UserId
+                ColorOwnerId = wallet.Color!.UserId
             })
             .ToListAsync(cancellationToken);
 
@@ -22,9 +23,9 @@ public static class DataIntegrityPreflight {
                 transaction.UserId,
                 transaction.UserInsertId,
                 transaction.WalletId,
-                WalletOwnerId = transaction.Wallet.UserId,
+                WalletOwnerId = transaction.Wallet!.UserId,
                 transaction.TransactionTypeId,
-                TypeOwnerId = transaction.TransactionType.UserId,
+                TypeOwnerId = transaction.TransactionType!.UserId,
                 transaction.Value,
                 transaction.TransactionDestinationId
             })

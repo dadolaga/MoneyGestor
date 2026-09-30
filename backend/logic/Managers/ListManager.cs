@@ -1,8 +1,8 @@
+using logic.Exceptions;
+using logic.Models;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using logic.Exceptions;
-using logic.Models;
 
 namespace logic.Managers {
     public static class ListManager {
@@ -17,7 +17,7 @@ namespace logic.Managers {
         }
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) =>
-            source.OrderByPropertyName(order.Name, order.Descendent, first);
+            source.OrderByPropertyName(order.Name, order.Descending, first);
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, IList<Order> orders) {
             IOrderedQueryable<T>? ordered = null;
@@ -51,7 +51,7 @@ namespace logic.Managers {
                 EComparatorType.EQUAL => Expression.Equal(member, right),
                 EComparatorType.NOT_EQUAL => Expression.NotEqual(member, right),
                 EComparatorType.LESS when memberType != typeof(String) => Expression.LessThan(member, right),
-                EComparatorType.GREATHER when memberType != typeof(String) => Expression.GreaterThan(member, right),
+                EComparatorType.GREATER when memberType != typeof(String) => Expression.GreaterThan(member, right),
                 _ => throw new ListFilterValidationException("where", "comparator_not_supported")
             };
             return source.Where(Expression.Lambda<Func<T, Boolean>>(predicate, parameter));

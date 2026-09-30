@@ -71,8 +71,6 @@ grezzo.
 | DELETE | `/transaction/{id}` | sì | elimina transazione |
 | GET | `/dashboard/all?from=...&to=...` | sì | totali e categorie |
 
-Esiste inoltre il controller di esempio `/WeatherForecast`, non usato dal frontend.
-
 ## Nuova API `/api/v1`
 
 Le route richiedono il cookie Identity HttpOnly, eccetto i flussi account esplicitamente anonimi. Le richieste POST,

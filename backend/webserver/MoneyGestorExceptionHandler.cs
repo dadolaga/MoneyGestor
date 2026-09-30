@@ -1,8 +1,8 @@
 using logic.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 using webserver.Controllers;
 
 namespace webserver {
@@ -12,8 +12,8 @@ namespace webserver {
             var isV1 = context.Request.Path.StartsWithSegments("/api/v1");
             if (!isV1) {
                 var (legacy, legacyStatus) = exception switch {
-                    TokenExpiatedException => (new BaseResponse { Code = 20, Message = "User token expiated" }, 403),
-                    ObjectNotFoundException or UserNotHavePermissionExcpetion => (new BaseResponse { Code = 404, Message = "Resource not found" }, 404),
+                    TokenExpiredException => (new BaseResponse { Code = 20, Message = "User token expiated" }, 403),
+                    ObjectNotFoundException or UserPermissionException => (new BaseResponse { Code = 404, Message = "Resource not found" }, 404),
                     ListFilterValidationException or MandatoryParamException => (new BaseResponse { Code = 10, Message = "Invalid request" }, 400),
                     InvalidTransactionException => (new BaseResponse { Code = 302, Message = "Invalid transaction" }, 400),
                     NotValidForDeleteException => (new BaseResponse { Code = 202, Message = "Resource cannot be deleted" }, 409),
@@ -31,7 +31,7 @@ namespace webserver {
                 ListFilterValidationException filter => (400, "validation_failed", "Request validation failed",
                     new Dictionary<String, String[]> { [filter.Field] = [filter.Reason] }),
                 MandatoryParamException => (400, "validation_failed", "Request validation failed", (IDictionary<String, String[]>?)null),
-                ObjectNotFoundException or UserNotHavePermissionExcpetion => (404, "resource_not_found", "Resource not found", null),
+                ObjectNotFoundException or UserPermissionException => (404, "resource_not_found", "Resource not found", null),
                 DuplicateObjectException or NotValidForDeleteException => (409, "resource_conflict", "Resource conflict", null),
                 InvalidTransactionException => (422, "domain_rule_violated", "Domain rule violated", null),
                 UnauthorizedAccessException => (401, "authentication_required", "Authentication required", null),

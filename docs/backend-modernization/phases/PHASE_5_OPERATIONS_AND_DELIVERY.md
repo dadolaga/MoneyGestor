@@ -360,7 +360,7 @@ Hardening Docker e release manuale sono in scope e in corso. Le GitHub Actions, 
 
 ## QUA-54 — Warning zero e rimozione legacy/template
 
-**Stato:** non iniziato
+**Stato:** completato localmente (30 settembre 2026); gate GitHub CI rinviato con CI-53
 
 **Priorità:** P3
 
@@ -368,10 +368,10 @@ Hardening Docker e release manuale sono in scope e in corso. Le GitHub Actions, 
 
 Eliminare warning e codice morto dopo la stabilizzazione, senza nascondere difetti con soppressioni generiche.
 
-**Situazione attuale**
+**Baseline iniziale**
 
-79 warning in rebuild; navigation/DTO non inizializzati; exception serialization obsoleta; variabili/using inutilizzati;
-`WeatherForecast`, `UserManager`, `ExportManager`, typo nei nomi e path personale launch settings.
+Baseline QUA-54 misurata: 41 warning in rebuild, soprattutto navigation/DTO non inizializzati e API obsolete;
+`WeatherForecast`, `ExportManager`, typo nei nomi e path personale launch settings. Il `UserManager` custom era già stato rimosso; quello di ASP.NET Identity resta necessario.
 
 **Motivazione**
 
@@ -427,3 +427,5 @@ Un baseline pulito rende ogni nuovo warning un segnale e riduce il rumore/manute
 - template/dead code e path personale rimossi;
 - warning-as-errors attivo senza soppressioni indiscriminate;
 - documentazione descrive soltanto componenti esistenti.
+
+**Esito (30 settembre 2026):** rebuild a 0 warning e 0 errori con warning-as-errors attivo, suite completa 147/147, snapshot OpenAPI verificati, smoke Docker ready/live HTTP 200. WeatherForecast, ExportManager, path personale e typo rimossi. Il `UserManager` custom era già stato rimosso; ASP.NET Identity `UserManager` è in uso. La CI GitHub rimane rinviata dal proprietario in CI-53. [Evidenza QUA-54](../evidence/QUA-54_2026-09-30.md).

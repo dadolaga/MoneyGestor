@@ -16,7 +16,7 @@ namespace logic.Commands.User {
 
             var now = executorManager.TimeProvider.GetUtcNow().UtcDateTime;
             result = login.Expirated < now
-                ? throw new TokenExpiatedException("Token is expirated")
+                ? throw new TokenExpiredException("Token is expirated")
                 : login.UserId;
             login.Expirated = now.Add(login.IsLong
                 ? LoginCommand.EXPIRATED_LONG

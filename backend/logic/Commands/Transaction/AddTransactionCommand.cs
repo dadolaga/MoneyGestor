@@ -1,4 +1,4 @@
-﻿using database.Models;
+using database.Models;
 using logic.Exceptions;
 using logic.Security;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +32,7 @@ namespace logic.Commands.Transaction {
             var ownerId = executorManager.UserId;
 
             if (userId != null && userId != ownerId) {
-                throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
+                throw new UserPermissionException("Transaction owner cannot be supplied by the client");
             }
 
             MonetaryValuePolicy.RequireValid(value, allowZero: false);

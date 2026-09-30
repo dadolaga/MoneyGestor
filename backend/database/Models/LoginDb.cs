@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -10,10 +10,10 @@ namespace database.Models {
     [Table("login")]
     public class LoginDb {
         public UInt64 Id { get; set; }
-        public String Token { get; set; }
+        public String Token { get; set; } = String.Empty;
         public Boolean IsLong { get; set; }
         public DateTime Expirated { get; set; }
         public UInt64 UserId { get; set; }
-        public UserDb User { get; set; }
+        public UserDb? User { get; set; }
     }
 }

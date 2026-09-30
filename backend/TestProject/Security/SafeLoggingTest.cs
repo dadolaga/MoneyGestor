@@ -86,7 +86,7 @@ internal sealed class SafeLoggingTest {
         });
     }
 
-    private sealed class TestController : MoneyMenagerController {
+    private sealed class TestController : MoneyManagerController {
         internal IActionResult Respond(Object payload) => OkResponse(payload, "safe message");
     }
 

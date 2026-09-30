@@ -1,4 +1,4 @@
-﻿using logic;
+using logic;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -129,7 +129,8 @@ namespace TestProject.Commands.Transaction {
             Assert.That(transactionDb.TransactionTypeId, Is.EqualTo(negativeTransaction.TransactionTypeId));
             Assert.That(transactionDb.WalletId, Is.EqualTo(negativeTransaction.WalletId));
 
-            var walletDb = (await db.Transactions.Include(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id)).Wallet;
+            var walletDb = (await db.Transactions.Include(t => t.Wallet).FirstAsync(t => t.Id == transactionDb.Id)).Wallet
+                ?? throw new InvalidOperationException("Transaction wallet was not loaded");
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value + negativeTransaction.Value));
         }
 

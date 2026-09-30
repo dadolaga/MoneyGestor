@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+using System.Security.Cryptography;
 
 public static class PasswordHasher {
     // Constants for PBKDF2 settings
@@ -19,13 +18,7 @@ public static class PasswordHasher {
         Byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
 
         // Hash the password using the salt and iterations
-        using var algorithm = new Rfc2898DeriveBytes(
-            password,
-            salt,
-            Iterations,
-            HashAlgorithmName.SHA256
-        );
-        Byte[] key = algorithm.GetBytes(KeySize);
+        Byte[] key = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, KeySize);
 
         return $"{Iterations}{Separator}{Convert.ToBase64String(salt)}{Separator}{Convert.ToBase64String(key)}";
     }
@@ -46,13 +39,7 @@ public static class PasswordHasher {
         Byte[] salt = Convert.FromBase64String(parts[1]);
         Byte[] key = Convert.FromBase64String(parts[2]);
 
-        using var algorithm = new Rfc2898DeriveBytes(
-            password,
-            salt,
-            iterations,
-            HashAlgorithmName.SHA256
-        );
-        Byte[] keyCheck = algorithm.GetBytes(KeySize);
+        Byte[] keyCheck = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, KeySize);
 
         return CryptographicOperations.FixedTimeEquals(key, keyCheck);
     }

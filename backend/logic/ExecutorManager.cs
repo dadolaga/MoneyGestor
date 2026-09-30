@@ -2,8 +2,8 @@ using database;
 using logic.Commands;
 using logic.Commands.User;
 using logic.Exceptions;
-using Microsoft.EntityFrameworkCore.Storage;
 using logic.Security;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace logic {

@@ -1,4 +1,4 @@
-﻿using logic;
+using logic;
 using logic.Commands.Wallets;
 using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +43,7 @@ namespace TestProject.Commands.Wallets {
         public async Task UserHaveExiratedToken() {
             Clock.Now = Clock.Now.AddHours(5);
 
-            Assert.ThrowsAsync<TokenExpiatedException>(async () => await ExecutorManager.Execute(wallet.AddWalletCommand));
+            Assert.ThrowsAsync<TokenExpiredException>(async () => await ExecutorManager.Execute(wallet.AddWalletCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count, Is.EqualTo(0));

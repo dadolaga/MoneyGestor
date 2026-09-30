@@ -87,8 +87,10 @@ Espone controller REST per:
 - dashboard.
 
 Swagger runtime viene pubblicato in Development e Testing. Gli snapshot JSON di v1 e legacy sono generati in modo
-deterministico tramite `--export-openapi` e versionati in [docs/openapi](openapi/); la CI blocca i diff non revisionati.
+deterministico tramite `--export-openapi` e versionati in [docs/openapi](openapi/); il test snapshot blocca i diff non revisionati nella suite locale; la CI GitHub resta rinviata.
 La nuova API usa Problem Details, mentre l'envelope descritto in [API.md](API.md) resta circoscritto al legacy.
+
+QUA-54 ha rimosso il controller template WeatherForecast, il gestore export inutilizzato e il profilo di avvio CLI con path personale. Tutti i progetti backend compilano con warning trattati come errori.
 
 ### `ExportImportApplication`
 
@@ -101,7 +103,7 @@ rollback. Per formato, credenziali, runbook e limiti vedere [DATABASE_RECOVERY.m
 
 Suite NUnit per command, guardie infrastrutturali e pipeline HTTP. Gli integration test usano un container MySQL 8.4
 effimero per run, con database, credenziali e porta casuali; non esiste fallback verso un database locale condiviso.
-La suite validata al 27 settembre 2026 comprende 144 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
+La suite QUA-54 validata al 30 settembre 2026 comprende 147 casi verdi. I casi cross-user fanno parte della suite ordinaria insieme ai test di
 ownership, conflitto concorrente, invarianti dei trasferimenti e preflight di integrità introdotti da SEC-11..13.
 ARC-20 aggiunge controlli su validazione options, isolamento degli scope e singolo context per mutazione autenticata;
 DB-21 copre creazione, migration no-op, adozione/rifiuto della baseline, modalità disabilitata e rollback del seed.

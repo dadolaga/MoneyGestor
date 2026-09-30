@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -14,6 +14,6 @@ namespace database.Models {
         public UInt32 Value { get; set; }
         public UInt64? UserId { get; set; }
         public UserDb? User { get; set; }
-        public ICollection<WalletDb> Wallets { get; set; }
+        public ICollection<WalletDb> Wallets { get; set; } = new List<WalletDb>();
     }
 }

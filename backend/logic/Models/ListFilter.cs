@@ -1,5 +1,5 @@
-using System.Globalization;
 using logic.Exceptions;
+using System.Globalization;
 
 namespace logic.Models {
     /// <summary>Parses the legacy list contract. Offset deliberately remains a zero-based page number.</summary>
@@ -31,7 +31,7 @@ namespace logic.Models {
                 RequireField(name, "order");
                 if (result.Any(item => item.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
                     throw new ListFilterValidationException("order", "duplicate_field");
-                result.Add(new Order { Name = name, Descendent = desc });
+                result.Add(new Order { Name = name, Descending = desc });
             }
             return result;
         }
@@ -50,7 +50,7 @@ namespace logic.Models {
                     '~' => EComparatorType.LIKE,
                     '!' => EComparatorType.NOT_EQUAL,
                     '<' => EComparatorType.LESS,
-                    '>' => EComparatorType.GREATHER,
+                    '>' => EComparatorType.GREATER,
                     _ => throw new ListFilterValidationException("where", "unsupported_comparator")
                 };
                 var value = clause[(index + 1)..];
@@ -65,13 +65,13 @@ namespace logic.Models {
         }
     }
 
-    public enum EComparatorType { EQUAL, LIKE, NOT_EQUAL, LESS, GREATHER }
+    public enum EComparatorType { EQUAL, LIKE, NOT_EQUAL, LESS, GREATER }
     public class ListFilter {
         public UInt32 Limit { get; set; }
         public UInt32 Offset { get; set; }
         public IList<Order> Orders { get; set; } = new List<Order>();
         public IList<Where> Wheres { get; set; } = new List<Where>();
     }
-    public class Order { public String Name { get; set; } = ""; public Boolean Descendent { get; set; } }
+    public class Order { public String Name { get; set; } = ""; public Boolean Descending { get; set; } }
     public class Where { public String Name { get; set; } = ""; public EComparatorType ComparatorType { get; set; } public String Value { get; set; } = ""; }
 }

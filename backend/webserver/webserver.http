@@ -1,6 +1,9 @@
 @webserver_HostAddress = http://localhost:5256
 
-GET {{webserver_HostAddress}}/weatherforecast/
+GET {{webserver_HostAddress}}/health/live
 Accept: application/json
 
 ###
+
+GET {{webserver_HostAddress}}/health/ready
+Accept: application/json

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TestProject.Samples;
 using TestProject.Infrastructure;
+using TestProject.Samples;
 
 namespace TestProject.Utils {
     internal class TestUtils {

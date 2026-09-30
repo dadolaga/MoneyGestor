@@ -87,6 +87,6 @@ internal class AuthorizationPolicyTest : ExecutorBase {
             wallet.AddWalletCommand.Result,
             userId: otherUser.AddNewUserExecutor.Result);
 
-        Assert.ThrowsAsync<UserNotHavePermissionExcpetion>(async () => await actorExecutor.Execute(transaction.AddTransactionCommand));
+        Assert.ThrowsAsync<UserPermissionException>(async () => await actorExecutor.Execute(transaction.AddTransactionCommand));
     }
 }

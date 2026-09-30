@@ -164,29 +164,6 @@
           }
         },
         "type": "object"
-      },
-      "WeatherForecast": {
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "format": "date",
-            "type": "string"
-          },
-          "summary": {
-            "nullable": true,
-            "type": "string"
-          },
-          "temperatureC": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "temperatureF": {
-            "format": "int32",
-            "readOnly": true,
-            "type": "integer"
-          }
-        },
-        "type": "object"
       }
     },
     "securitySchemes": {
@@ -217,46 +194,6 @@
   },
   "openapi": "3.0.4",
   "paths": {
-    "/WeatherForecast": {
-      "get": {
-        "deprecated": true,
-        "operationId": "GetWeatherForecast",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  },
-                  "type": "array"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  },
-                  "type": "array"
-                }
-              },
-              "text/plain": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": "OK"
-          }
-        },
-        "tags": [
-          "WeatherForecast"
-        ]
-      }
-    },
     "/color": {
       "get": {
         "deprecated": true,
@@ -849,9 +786,6 @@
     },
     {
       "name": "Wallet"
-    },
-    {
-      "name": "WeatherForecast"
     },
     {
       "name": "webserver"

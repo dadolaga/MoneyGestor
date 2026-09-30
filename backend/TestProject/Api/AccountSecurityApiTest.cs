@@ -1,6 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 using database;
 using database.Identity;
 using logic;
@@ -9,9 +6,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Configuration;
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using webserver.Auth;
 
 namespace TestProject.Api;
