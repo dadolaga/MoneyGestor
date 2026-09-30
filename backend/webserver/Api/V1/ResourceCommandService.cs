@@ -54,7 +54,7 @@ public sealed class ResourceCommandService(ExecutorManager executor) : IResource
 
     public async Task<UInt64> CreateTransactionAsync(UInt64 userId, CreateTransactionRequest request, CancellationToken cancellationToken = default) {
         executor.UseAuthenticatedUser(userId);
-        var command = new AddTransactionCommand(request.Description, request.LongDescription, request.Date,
+        var command = new AddTransactionCommand(request.Description, request.LongDescription, request.Date!.Value,
             request.WalletId, request.Value, request.TypeId, userId: null, request.DestinationWalletId);
         await executor.Execute(command, cancellationToken);
         return command.Result;
@@ -64,7 +64,9 @@ public sealed class ResourceCommandService(ExecutorManager executor) : IResource
         executor.UseAuthenticatedUser(userId);
         var command = new UpdateTransactionCommand(id, request.Description, request.LongDescription, request.Date,
             request.WalletId, request.DestinationWalletId, request.Value, request.TypeId, userId: null,
-            overwriteNull: false);
+            overwriteNull: false,
+            overwriteDescription: request.DescriptionSpecified,
+            overwriteLongDescription: request.LongDescriptionSpecified);
         await executor.Execute(command, cancellationToken);
         return command.Result;
     }

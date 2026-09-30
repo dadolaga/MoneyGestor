@@ -23,13 +23,15 @@ public sealed class ApiDtoSchemaFilter : ISchemaFilter {
             if (!mutableSchema.Properties.TryGetValue(propertyName, out var propertySchema)) continue;
 
             var parameterAttributes = parameter.GetCustomAttributes(true);
-            var required = parameterAttributes.OfType<RequiredAttribute>().Any()
+            var hasRequiredAttribute = parameterAttributes.OfType<RequiredAttribute>().Any();
+            var required = hasRequiredAttribute
                 || Nullability.Create(parameter).ReadState == NullabilityState.NotNull;
             if (required) {
                 mutableSchema.Required ??= new HashSet<String>(StringComparer.Ordinal);
                 mutableSchema.Required.Add(propertyName);
             }
             if (propertySchema is not OpenApiSchema mutablePropertySchema) continue;
+            if (hasRequiredAttribute) mutablePropertySchema.Type &= ~JsonSchemaType.Null;
 
             var length = parameterAttributes.OfType<StringLengthAttribute>().FirstOrDefault();
             if (length is not null) {

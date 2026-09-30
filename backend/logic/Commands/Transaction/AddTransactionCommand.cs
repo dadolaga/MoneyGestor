@@ -36,6 +36,7 @@ namespace logic.Commands.Transaction {
             }
 
             MonetaryValuePolicy.RequireValid(value, allowZero: false);
+            BusinessDatePolicy.RequireValid(date);
 
             var transactionType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(
                 database,

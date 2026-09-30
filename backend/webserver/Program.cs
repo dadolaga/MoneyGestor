@@ -29,10 +29,16 @@ public class Program {
         if (args.Length > 0 && args[0] == "--export-openapi") {
             var output = args.Length > 1 ? args[1] : "docs/openapi";
             var exportApplication = BuildApplication(Array.Empty<String>());
-            OpenApiSnapshotWriter.Write(
-                exportApplication.Services.GetRequiredService<Swashbuckle.AspNetCore.Swagger.ISwaggerProvider>(),
-                ResolveOpenApiOutputDirectory(output));
-            await exportApplication.DisposeAsync();
+            try {
+                exportApplication.Urls.Add("http://127.0.0.1:0");
+                await exportApplication.StartAsync();
+                OpenApiSnapshotWriter.Write(
+                    exportApplication.Services.GetRequiredService<Swashbuckle.AspNetCore.Swagger.ISwaggerProvider>(),
+                    ResolveOpenApiOutputDirectory(output));
+            } finally {
+                await exportApplication.StopAsync();
+                await exportApplication.DisposeAsync();
+            }
             return 0;
         }
         var app = BuildApplication(args);

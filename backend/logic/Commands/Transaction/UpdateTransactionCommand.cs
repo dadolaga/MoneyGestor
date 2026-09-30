@@ -17,6 +17,8 @@ namespace logic.Commands.Transaction {
         private UInt64? transactionTypeId;
         private UInt64? userId;
         private Boolean overwriteNull;
+        private Boolean overwriteDescription;
+        private Boolean overwriteLongDescription;
 
         public UpdateTransactionCommand(UInt64 id,
                 String? description = null,
@@ -27,7 +29,9 @@ namespace logic.Commands.Transaction {
                 Decimal? value = null,
                 UInt64? transactionTypeId = null,
                 UInt64? userId = null,
-                Boolean overwriteNull = false) {
+                Boolean overwriteNull = false,
+                Boolean overwriteDescription = false,
+                Boolean overwriteLongDescription = false) {
             this.id = id;
             this.description = description;
             this.longDescription = longDescription;
@@ -38,6 +42,8 @@ namespace logic.Commands.Transaction {
             this.transactionTypeId = transactionTypeId;
             this.userId = userId;
             this.overwriteNull = overwriteNull;
+            this.overwriteDescription = overwriteDescription;
+            this.overwriteLongDescription = overwriteLongDescription;
         }
 
         internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
@@ -119,11 +125,12 @@ namespace logic.Commands.Transaction {
                     finalDestinationWallet?.Id
                 }.Where(wallet => wallet.HasValue).Select(wallet => wallet!.Value).ToArray());
 
-            var finalDescription = overwriteNull ? description : description ?? sourceTransaction.Description;
-            var finalLongDescription = overwriteNull
+            var finalDescription = overwriteNull || overwriteDescription ? description : description ?? sourceTransaction.Description;
+            var finalLongDescription = overwriteNull || overwriteLongDescription
                 ? longDescription
                 : longDescription ?? sourceTransaction.LongDescription;
             var finalDate = date ?? sourceTransaction.Date;
+            BusinessDatePolicy.RequireValid(finalDate);
 
             try {
                 WalletBalancePolicy.Apply(oldSourceWallet, -sourceTransaction.Value);

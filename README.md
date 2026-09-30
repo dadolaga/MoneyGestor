@@ -2,14 +2,14 @@
 
 MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti, portafogli, movimenti, trasferimenti tra portafogli, categorie e riepiloghi mensili.
 
-> Stato: progetto in sviluppo. Prima di usarlo con dati reali, consulta l'[audit tecnico](docs/PROJECT_AUDIT.md), in particolare le sezioni su autorizzazione, import/export e gestione degli importi.
+> Stato: progetto in sviluppo. Prima di usarlo con dati reali, consulta la [revisione backend corrente](docs/BACKEND_REVIEW_2026-09-30.md) e il [runbook di rilascio](docs/backend-modernization/RELEASE_RUNBOOK.md).
 
 ## Stack
 
 - Backend: ASP.NET Core 10 LTS, Entity Framework Core 10 e MySQL 8.4 LTS (provider Oracle Connector/NET)
 - Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui con primitive Radix e next-intl; MUI resta nelle route legacy e TanStack è escluso
 - Test backend: NUnit
-- Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
+- Strumenti: script amministrativi MySQL per backup e restore; la CLI ZIP/CSV storica è disabilitata
 - Runtime container: Docker Compose
 
 ## Struttura
@@ -36,7 +36,7 @@ Approfondimenti:
 - [Contratto API](docs/API.md)
 - [OpenAPI v1](docs/openapi/v1.json) e [OpenAPI legacy](docs/openapi/legacy.json)
 - [Autenticazione finale, spiegata in modo semplice](docs/AUTHENTICATION.md)
-- [Audit e roadmap consigliata](docs/PROJECT_AUDIT.md)
+- [Audit storico](docs/PROJECT_AUDIT.md) e [revisione backend corrente](docs/BACKEND_REVIEW_2026-09-30.md)
 - [Backup e recovery MySQL](docs/backend-modernization/DATABASE_RECOVERY.md)
 - [Piano di migrazione frontend](docs/FRONTEND_MIGRATION_PLAN.md)
 - [Baseline frontend — Fase 0](docs/PHASE_0_BASELINE.md)
@@ -213,13 +213,16 @@ pwsh -File ./ops/database/New-MoneyGestorBackup.ps1 -Database moneygestor_db -Lo
 ```
 
 Il restore crea esclusivamente uno schema `mg_restore_*`; non modifica il database sorgente e non effettua cutover automatico.
+
 ## Stato delle verifiche
 
-Ultima ricognizione completa: 27 settembre 2026.
+Verifica backend locale del 30 settembre 2026:
 
-- build .NET: completata senza errori; restano 7 warning nei modelli/controller legacy
-- type-check frontend: completato senza errori
-- lint frontend: completato senza errori; restano 8 warning legacy già censiti
-- test frontend: 21/21 test Vitest/Testing Library completati con worker process seriale
-- build frontend: completata; restano warning legacy e warning non bloccanti della cache Webpack
-- test backend: 144/144 casi superati nella verifica finale, inclusi test API, snapshot OpenAPI, query-plan e concorrenza su MySQL Testcontainers effimero
+- `dotnet restore backend/backend.sln --locked-mode`: riuscito;
+- build Debug e Release della soluzione: 0 errori e 0 warning;
+- test account/API mirati: 13/13 superati su MySQL Testcontainers effimero;
+- test del preflight integrità: 2/2 superati su MySQL Testcontainers effimero;
+- suite completa: interrotta dopo che Docker ha iniziato a restituire `Internal Server Error`; gli ultimi cambi compilano ma attendono una nuova run dei test quando il servizio torna disponibile;
+- run GitHub Actions dopo l'aggiornamento a .NET 10: non verificata.
+
+Le verifiche frontend registrate prima di questa revisione restano nelle rispettive evidenze di migrazione. Il dettaglio delle correzioni backend è nella [revisione del 30 settembre](docs/BACKEND_REVIEW_2026-09-30.md).

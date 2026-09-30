@@ -87,8 +87,8 @@ Espone controller REST per:
 - dashboard.
 
 Swagger runtime viene pubblicato in Development e Testing. Gli snapshot JSON di v1 e legacy sono generati in modo
-deterministico tramite `--export-openapi` e versionati in [docs/openapi](openapi/); il test snapshot blocca i diff non revisionati nella suite locale; la CI GitHub resta rinviata.
-La nuova API usa Problem Details, mentre l'envelope descritto in [API.md](API.md) resta circoscritto al legacy.
+deterministico tramite `--export-openapi` e versionati in [docs/openapi](openapi/); il test snapshot blocca i diff non revisionati nella suite locale; il workflow GitHub esistente esegue build, test e controllo degli snapshot. La sua esecuzione remota dopo l'aggiornamento a .NET 10 resta da verificare.
+La nuova API usa Problem Details, mentre l'envelope descritto in [API.md](API.md) resta circoscritto al legacy. La registrazione condivide ora una transazione MySQL fra MoneyGestorContext e IdentityAccountContext.
 
 QUA-54 ha rimosso il controller template WeatherForecast, il gestore export inutilizzato e il profilo di avvio CLI con path personale. Tutti i progetti backend compilano con warning trattati come errori.
 

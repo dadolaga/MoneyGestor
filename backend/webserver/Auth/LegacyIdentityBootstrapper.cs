@@ -10,13 +10,23 @@ public sealed class LegacyIdentityBootstrapper(
     IdentityAccountContext identityDatabase,
     ILookupNormalizer normalizer) {
     public async Task RunAsync(CancellationToken cancellationToken = default) {
-        var legacyUsers = await legacyDatabase.Users.AsNoTracking().ToListAsync(cancellationToken);
-        var mappedIds = (await identityDatabase.Users
-            .Select(user => user.LegacyUserId)
-            .ToListAsync(cancellationToken)).ToHashSet();
+        var unmappedUsers = await legacyDatabase.Users
+            .FromSqlRaw("""
+                SELECT legacyUser.*
+                FROM `user` AS legacyUser
+                LEFT JOIN `AspNetUsers` AS identityUser ON identityUser.`LegacyUserId` = legacyUser.`Id`
+                WHERE identityUser.`Id` IS NULL
+                """)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+        if (unmappedUsers.Count == 0)
+            return;
 
-        var incompleteRegistrations = legacyUsers
-            .Where(user => user.Password == AccountService.IdentityManagedPassword && !mappedIds.Contains(user.Id))
+        var legacyUsers = await legacyDatabase.Users.AsNoTracking()
+            .Select(user => new { user.Id, user.Username, user.Email })
+            .ToListAsync(cancellationToken);
+        var incompleteRegistrations = unmappedUsers
+            .Where(user => user.Password == AccountService.IdentityManagedPassword)
             .Select(user => user.Id)
             .ToArray();
         if (incompleteRegistrations.Length > 0) {
@@ -40,7 +50,7 @@ public sealed class LegacyIdentityBootstrapper(
                 $"Identity migration blocked by normalized account collisions. User IDs: {String.Join(';', usernameCollisions.Concat(emailCollisions))}");
         }
 
-        foreach (var legacyUser in legacyUsers.Where(user => !mappedIds.Contains(user.Id))) {
+        foreach (var legacyUser in unmappedUsers) {
             identityDatabase.Users.Add(new ApplicationIdentityUser {
                 Id = Guid.NewGuid().ToString("N"),
                 LegacyUserId = legacyUser.Id,

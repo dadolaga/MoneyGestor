@@ -6,91 +6,46 @@ namespace logic.Security;
 
 public static class DataIntegrityPreflight {
     public static async Task<DataIntegrityReport> InspectAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
-        // Required FK navigations are SQL joins here; nullable types also cover unloaded in-memory entities.
-        var wallets = await database.Wallets
-            .AsNoTracking()
-            .Select(wallet => new {
-                wallet.Id,
-                wallet.UserId,
-                ColorOwnerId = wallet.Color!.UserId
-            })
-            .ToListAsync(cancellationToken);
+        // Project only offending IDs. Healthy datasets stay in MySQL rather than being materialized at startup.
+        var walletColorMismatch = await database.Wallets.AsNoTracking()
+            .Where(wallet => wallet.Color!.UserId != null && wallet.Color.UserId != wallet.UserId)
+            .Select(wallet => wallet.Id).ToArrayAsync(cancellationToken);
+        var ownerMismatch = await database.Transactions.AsNoTracking()
+            .Where(transaction => transaction.UserId != transaction.UserInsertId)
+            .Select(transaction => transaction.Id).ToArrayAsync(cancellationToken);
+        var walletOwnerMismatch = await database.Transactions.AsNoTracking()
+            .Where(transaction => transaction.UserId != transaction.Wallet!.UserId)
+            .Select(transaction => transaction.Id).ToArrayAsync(cancellationToken);
+        var typeOwnerMismatch = await database.Transactions.AsNoTracking()
+            .Where(transaction => transaction.TransactionType!.UserId != null
+                && transaction.TransactionType.UserId != transaction.UserId)
+            .Select(transaction => transaction.Id).ToArrayAsync(cancellationToken);
 
-        var transactions = await database.Transactions
-            .AsNoTracking()
-            .Select(transaction => new {
-                transaction.Id,
-                transaction.UserId,
-                transaction.UserInsertId,
-                transaction.WalletId,
-                WalletOwnerId = transaction.Wallet!.UserId,
-                transaction.TransactionTypeId,
-                TypeOwnerId = transaction.TransactionType!.UserId,
-                transaction.Value,
-                transaction.TransactionDestinationId
-            })
-            .ToListAsync(cancellationToken);
+        var transferTypeId = DatabaseInitializer.TRANSFER.Id;
+        var invalidTransfers = await database.Transactions.AsNoTracking()
+            .Where(transaction =>
+                (transaction.TransactionTypeId == transferTypeId && transaction.TransactionDestinationId == null)
+                || (transaction.TransactionTypeId != transferTypeId && transaction.TransactionDestinationId != null)
+                || (transaction.TransactionTypeId == transferTypeId && transaction.TransactionDestinationId != null
+                    && (transaction.TransactionDestination == null
+                        || transaction.TransactionDestination.TransactionDestinationId != transaction.Id
+                        || transaction.TransactionDestination.TransactionTypeId != transferTypeId
+                        || transaction.TransactionDestination.UserId != transaction.UserId
+                        || transaction.TransactionDestination.UserInsertId != transaction.UserInsertId
+                        || transaction.TransactionDestination.WalletId == transaction.WalletId
+                        || transaction.Value == 0
+                        || transaction.TransactionDestination.Value != -transaction.Value)))
+            .Select(transaction => transaction.Id).ToArrayAsync(cancellationToken);
 
         var issues = new List<DataIntegrityIssue>();
-        AddIssue(
-            issues,
-            "wallet_color_owner_mismatch",
-            wallets.Where(wallet => wallet.ColorOwnerId != null && wallet.ColorOwnerId != wallet.UserId)
-                .Select(wallet => wallet.Id));
-        AddIssue(
-            issues,
-            "transaction_owner_mismatch",
-            transactions.Where(transaction => transaction.UserId != transaction.UserInsertId)
-                .Select(transaction => transaction.Id));
-        AddIssue(
-            issues,
-            "transaction_wallet_owner_mismatch",
-            transactions.Where(transaction => transaction.UserId != transaction.WalletOwnerId)
-                .Select(transaction => transaction.Id));
-        AddIssue(
-            issues,
-            "transaction_type_owner_mismatch",
-            transactions.Where(transaction =>
-                    transaction.TypeOwnerId != null && transaction.TypeOwnerId != transaction.UserId)
-                .Select(transaction => transaction.Id));
-
-        var transactionsById = transactions.ToDictionary(transaction => transaction.Id);
-        var invalidTransfers = new HashSet<UInt64>();
-
-        foreach (var transaction in transactions) {
-            var isTransfer = transaction.TransactionTypeId == DatabaseInitializer.TRANSFER.Id;
-            var hasPair = transaction.TransactionDestinationId != null;
-
-            if (isTransfer != hasPair) {
-                invalidTransfers.Add(transaction.Id);
-                continue;
-            }
-
-            if (!isTransfer) {
-                continue;
-            }
-
-            if (!transactionsById.TryGetValue(transaction.TransactionDestinationId!.Value, out var pair)
-                || pair.TransactionDestinationId != transaction.Id
-                || pair.TransactionTypeId != DatabaseInitializer.TRANSFER.Id
-                || pair.UserId != transaction.UserId
-                || pair.UserInsertId != transaction.UserInsertId
-                || pair.WalletId == transaction.WalletId
-                || transaction.Value == 0
-                || pair.Value != -transaction.Value) {
-                invalidTransfers.Add(transaction.Id);
-                if (pair != null) {
-                    invalidTransfers.Add(pair.Id);
-                }
-            }
-        }
-
+        AddIssue(issues, "wallet_color_owner_mismatch", walletColorMismatch);
+        AddIssue(issues, "transaction_owner_mismatch", ownerMismatch);
+        AddIssue(issues, "transaction_wallet_owner_mismatch", walletOwnerMismatch);
+        AddIssue(issues, "transaction_type_owner_mismatch", typeOwnerMismatch);
         AddIssue(issues, "transfer_pair_invariant", invalidTransfers);
 
         var reconciliation = await new BalanceReconciliationService(database).InspectAsync(cancellationToken);
-        AddIssue(
-            issues,
-            "wallet_balance_mismatch",
+        AddIssue(issues, "wallet_balance_mismatch",
             reconciliation.Differences.Select(difference => difference.WalletId));
 
         return new DataIntegrityReport(issues);
@@ -98,9 +53,8 @@ public static class DataIntegrityPreflight {
 
     public static async Task EnsureValidAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
         var report = await InspectAsync(database, cancellationToken);
-        if (!report.IsValid) {
+        if (!report.IsValid)
             throw new DataIntegrityException(report);
-        }
     }
 
     private static void AddIssue(
@@ -108,8 +62,7 @@ public static class DataIntegrityPreflight {
         String code,
         IEnumerable<UInt64> entityIds) {
         var ids = entityIds.Distinct().OrderBy(id => id).ToArray();
-        if (ids.Length > 0) {
+        if (ids.Length > 0)
             issues.Add(new DataIntegrityIssue(code, ids));
-        }
     }
 }

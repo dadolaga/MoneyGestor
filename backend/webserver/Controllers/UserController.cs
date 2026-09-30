@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.ComponentModel.DataAnnotations;
 using webserver.Api.V1;
 using webserver.Auth;
 using webserver.Models;
@@ -18,6 +19,7 @@ namespace webserver.Controllers {
     [EnableCors("CorsPolicy")]
     public class UserController(
         AccountService accounts,
+        AccountAbuseGuard abuseGuard,
         ExecutorManager executor,
         MoneyGestorContext database,
         TimeProvider timeProvider,
@@ -26,14 +28,17 @@ namespace webserver.Controllers {
 
         [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] User user) {
+            var request = new RegisterAccountRequest(
+                user.Firstname, user.Lastname, user.Username, user.Email, user.Password!);
+            var validation = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(request, new ValidationContext(request), validation, true))
+                return ErrorResponse(103, "Account validation failed");
+            if (!abuseGuard.Permit("register", HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    request.Email, 5, TimeSpan.FromHours(1)))
+                return RateLimited();
+
             try {
-                await accounts.RegisterAsync(new RegisterAccountRequest(
-                    user.Firstname,
-                    user.Lastname,
-                    user.Username,
-                    user.Email,
-                    user.Password!), HttpContext.RequestAborted);
-                var id = await accounts.GetLegacyUserIdAsync(user.Username);
+                var id = await accounts.RegisterAsync(request, HttpContext.RequestAborted);
                 return CreateResponse(id ?? 0, "user");
             } catch (AccountValidationException) {
                 return ErrorResponse(103, "Account validation failed");
@@ -42,6 +47,12 @@ namespace webserver.Controllers {
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Login login) {
+            if (String.IsNullOrWhiteSpace(login.User) || String.IsNullOrWhiteSpace(login.Password))
+                return ErrorResponse(111, "Login fail");
+            if (!abuseGuard.Permit("login", HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    login.User, 20, TimeSpan.FromMinutes(15)))
+                return RateLimited();
+
             var result = await accounts.LoginAsync(
                 new LoginAccountRequest(login.User, login.Password, login.Remember.GetValueOrDefault(false)),
                 issueCookie: false,
@@ -89,6 +100,11 @@ namespace webserver.Controllers {
                 return ErrorResponse(121, "User not found or token exirated");
             }
         }
+
+        private IActionResult RateLimited() =>
+            StatusCode(StatusCodes.Status429TooManyRequests, new BaseResponse {
+                Code = 429, Message = "Too many requests"
+            });
 
         private IActionResult LoginResponse(String token) => OkResponse(token, "Login correct");
     }

@@ -4,6 +4,7 @@ using database.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace webserver.Auth;
 
 public sealed class AccountService(
     MoneyGestorContext legacyDatabase,
+    IdentityAccountContext identityDatabase,
     UserManager<ApplicationIdentityUser> userManager,
     SignInManager<ApplicationIdentityUser> signInManager,
     IAccountEmailSender emailSender,
@@ -19,19 +21,19 @@ public sealed class AccountService(
     TimeProvider timeProvider) {
     internal const String IdentityManagedPassword = "IDENTITY_MANAGED";
 
-    public async Task RegisterAsync(RegisterAccountRequest request, CancellationToken cancellationToken) {
+    public async Task<UInt64?> RegisterAsync(RegisterAccountRequest request, CancellationToken cancellationToken) {
         var normalizedUsername = userManager.NormalizeName(request.Username);
         var normalizedEmail = userManager.NormalizeEmail(request.Email);
         if (await userManager.Users.AnyAsync(
                 user => user.NormalizedUserName == normalizedUsername || user.NormalizedEmail == normalizedEmail,
                 cancellationToken)) {
-            return;
+            return null;
         }
 
         if (await legacyDatabase.Users.AnyAsync(
                 user => user.Username.ToUpper() == normalizedUsername || user.Email.ToUpper() == normalizedEmail,
                 cancellationToken)) {
-            return;
+            return null;
         }
 
         var legacyUser = new UserDb {
@@ -41,23 +43,32 @@ public sealed class AccountService(
             Email = request.Email.Trim(),
             Password = IdentityManagedPassword
         };
-        legacyDatabase.Users.Add(legacyUser);
-        try {
-            await legacyDatabase.SaveChangesAsync(cancellationToken);
-        } catch (DbUpdateException) {
-            return;
-        }
-
         var identityUser = new ApplicationIdentityUser {
-            LegacyUserId = legacyUser.Id,
             UserName = legacyUser.Username,
             Email = legacyUser.Email
         };
-        var created = await userManager.CreateAsync(identityUser, request.Password);
-        if (!created.Succeeded) {
-            legacyDatabase.Users.Remove(legacyUser);
-            await legacyDatabase.SaveChangesAsync(cancellationToken);
-            throw new AccountValidationException(created.Errors.Select(error => error.Code).ToArray());
+
+        // Both EF contexts use the same MySQL connection and transaction during registration.
+        await using (var transaction = await legacyDatabase.Database.BeginTransactionAsync(cancellationToken)) {
+            identityDatabase.Database.SetDbConnection(legacyDatabase.Database.GetDbConnection(), contextOwnsConnection: false);
+            await identityDatabase.Database.UseTransactionAsync(transaction.GetDbTransaction(), cancellationToken);
+            try {
+                legacyDatabase.Users.Add(legacyUser);
+                try {
+                    await legacyDatabase.SaveChangesAsync(cancellationToken);
+                } catch (DbUpdateException exception) when (IsDuplicateEntry(exception)) {
+                    return null;
+                }
+
+                identityUser.LegacyUserId = legacyUser.Id;
+                var created = await userManager.CreateAsync(identityUser, request.Password);
+                if (!created.Succeeded)
+                    throw new AccountValidationException(created.Errors.Select(error => error.Code).ToArray());
+
+                await transaction.CommitAsync(cancellationToken);
+            } finally {
+                await identityDatabase.Database.UseTransactionAsync(null, CancellationToken.None);
+            }
         }
 
         try {
@@ -65,6 +76,15 @@ public sealed class AccountService(
         } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
             logger.LogWarning("Registration succeeded, but confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
         }
+        return legacyUser.Id;
+    }
+
+    private static Boolean IsDuplicateEntry(DbUpdateException exception) {
+        for (Exception? current = exception; current != null; current = current.InnerException) {
+            if (current is MySql.Data.MySqlClient.MySqlException { Number: 1062 })
+                return true;
+        }
+        return false;
     }
 
     public async Task<AccountLoginStatus> LoginAsync(

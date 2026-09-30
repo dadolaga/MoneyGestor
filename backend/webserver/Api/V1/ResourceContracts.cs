@@ -6,10 +6,16 @@ namespace webserver.Api.V1;
 public sealed class MoneyAmountAttribute : ValidationAttribute {
     public override Boolean IsValid(Object? value) {
         if (value == null) return true;
-        if (value is not Decimal amount || Decimal.Abs(amount) > 99999999999999999.99m) return false;
+        if (value is not Decimal amount || amount > logic.Security.MonetaryValuePolicy.Maximum || amount < -logic.Security.MonetaryValuePolicy.Maximum) return false;
         var scale = (Decimal.GetBits(amount)[3] >> 16) & 0x7F;
         return scale <= 2;
     }
+}
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
+public sealed class BusinessDateAttribute : ValidationAttribute {
+    public override Boolean IsValid(Object? value) =>
+        value == null || value is DateOnly date && logic.Security.BusinessDatePolicy.IsValid(date);
 }
 
 public sealed record ColorResponse(UInt64 Id, String? Name, UInt32 Value) {
@@ -56,20 +62,36 @@ public sealed record CreateTransactionTypeRequest([Required, StringLength(100, M
 public sealed record CreateTransactionRequest(
     [StringLength(200)] String? Description,
     [StringLength(2000)] String? LongDescription,
-    [Required] DateOnly Date,
+    [Required, BusinessDate] DateOnly? Date,
     [MoneyAmount] Decimal Value,
     [Range(1, UInt64.MaxValue)] UInt64 TypeId,
     [Range(1, UInt64.MaxValue)] UInt64 WalletId,
     [Range(1, UInt64.MaxValue)] UInt64? DestinationWalletId);
 
-public sealed record UpdateTransactionRequest(
-    [StringLength(200)] String? Description,
-    [StringLength(2000)] String? LongDescription,
-    DateOnly? Date,
-    [MoneyAmount] Decimal? Value,
-    [Range(1, UInt64.MaxValue)] UInt64? TypeId,
-    [Range(1, UInt64.MaxValue)] UInt64? WalletId,
-    [Range(1, UInt64.MaxValue)] UInt64? DestinationWalletId);
+public sealed class UpdateTransactionRequest {
+    private String? description;
+    private String? longDescription;
+
+    [StringLength(200)]
+    public String? Description {
+        get => description;
+        init { description = value; DescriptionSpecified = true; }
+    }
+
+    [StringLength(2000)]
+    public String? LongDescription {
+        get => longDescription;
+        init { longDescription = value; LongDescriptionSpecified = true; }
+    }
+
+    [System.Text.Json.Serialization.JsonIgnore] public Boolean DescriptionSpecified { get; private set; }
+    [System.Text.Json.Serialization.JsonIgnore] public Boolean LongDescriptionSpecified { get; private set; }
+    [BusinessDate] public DateOnly? Date { get; init; }
+    [MoneyAmount] public Decimal? Value { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? TypeId { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? WalletId { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? DestinationWalletId { get; init; }
+}
 
 public sealed class PageQuery {
     [Range(1, Int32.MaxValue)] public Int32 Page { get; init; } = 1;

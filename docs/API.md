@@ -75,7 +75,7 @@ grezzo.
 
 Le route richiedono il cookie Identity HttpOnly, eccetto i flussi account esplicitamente anonimi. Le richieste POST,
 PUT, PATCH e DELETE sotto `/api/v1` richiedono anche `X-CSRF-TOKEN`, ottenuto da `GET /api/v1/auth/antiforgery`.
-Gli errori usano `application/problem+json`, con `code` stabile e `traceId`.
+Gli errori usano `application/problem+json`, con `code` stabile e `traceId`. La registrazione salva il record account legacy e Identity in una sola transazione MySQL.
 
 | Metodo | Percorso | Autenticazione | Risultato |
 |---|---|---:|---|
@@ -98,7 +98,7 @@ Le risposte resource sono DTO dedicati; non includono entità database o campi o
 lato destinazione del trasferimento e ordina per data e ID decrescenti. `page` parte da 1 e `pageSize` è compreso fra
 1 e 100. `GET /api/v1/transactions` supporta inoltre `from`, `to`, `walletId`, `typeId`, `kind` (`Income`, `Expense`,
 `Transfer`), `search`, `sortBy` (`Date`, `Description`, `Value`, `Type`, `Wallet`) e `direction` (`Ascending`,
-`Descending`). Ogni ordinamento termina con l'ID per mantenere stabili le pagine.
+`Descending`). Ogni ordinamento termina con l'ID per mantenere stabili le pagine. In `POST /api/v1/transactions`, `date` è obbligatoria: se manca, la richiesta riceve 400. In `PATCH /api/v1/transactions/{id}`, una proprietà `description` o `longDescription` omessa resta invariata; il valore JSON `null` la cancella.
 
 ## Payload essenziali
 
@@ -160,7 +160,7 @@ correnti negativi sono ammessi e non esistono più flag `force` per aggirare la 
 
 Gli importi sono numeri JSON mappati a `decimal`/`DECIMAL(19,2)`: sono ammessi al massimo due decimali e i valori fuori
 scala o range vengono rifiutati senza arrotondamento implicito. La data del movimento è persistita come data civile
-MySQL `DATE`; l'adapter legacy continua ad accettare il timestamp storico e ne conserva la componente di calendario
+MySQL `DATE` (anni 1000-9999); l'adapter legacy continua ad accettare il timestamp storico e ne conserva la componente di calendario
 senza conversioni dipendenti dal fuso della macchina. I filtri dashboard `from`/`to` sono inclusivi per data civile.
 
 Per lookup puntuali, una risorsa inesistente e una risorsa appartenente a un altro utente producono lo stesso `404`,

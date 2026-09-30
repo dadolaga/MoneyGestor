@@ -6,7 +6,7 @@ Data della ricognizione: 10 settembre 2026.
 
 Il progetto ha una separazione leggibile tra persistenza, logica, API e UI. La modellazione dei trasferimenti e l'uso di transazioni applicative mostrano una buona base. Prima di ampliare le funzionalità, conviene però chiudere alcuni rischi che possono compromettere isolamento tra utenti, backup e precisione economica.
 
-> Nota di pianificazione: questo documento resta la fotografia dei rischi al 10 settembre 2026. Il proprietario ha scelto di affrontare ora la migrazione frontend e di rinviare il backend. Per il workstream corrente fanno fede [FRONTEND_MIGRATION_PLAN.md](FRONTEND_MIGRATION_PLAN.md), [UI_DESIGN_SYSTEM.md](UI_DESIGN_SYSTEM.md) e [INTERNATIONALIZATION.md](INTERNATIONALIZATION.md); le priorità backend sotto riportate restano aperte e non vanno risolte incidentalmente nella UI.
+> Nota storica: questo documento fotografa i rischi al 10 settembre 2026. Molti rilievi sono stati chiusi nelle fasi successive e le righe sotto non descrivono lo stato attuale. Per il backend corrente usare la [revisione del 30 settembre](BACKEND_REVIEW_2026-09-30.md) e la [roadmap](backend-modernization/ROADMAP.md).
 
 > Aggiornamento del 21 settembre 2026: la Fase 0 backend ha sostituito la destinazione test fissa con MySQL 8.4
 > effimero tramite Testcontainers, aggiunto test HTTP e guardie distruttive, rimosso Playwright dal progetto backend e

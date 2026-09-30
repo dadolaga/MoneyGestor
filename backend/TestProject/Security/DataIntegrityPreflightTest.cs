@@ -45,6 +45,35 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
     }
 
     [Test]
+    public async Task ReportsBothSidesWhenTransferValuesNoLongerBalance() {
+        var user = new UserSample();
+        var executor = await TestUtils.CreateExecutorManagerForUser(user);
+        var source = new WalletSample(name: "source");
+        var destination = new WalletSample(name: "destination");
+        await executor.Execute(source.AddWalletCommand);
+        await executor.Execute(destination.AddWalletCommand);
+        var transfer = new TransactionSample(
+            DatabaseInitializer.TRANSFER.Id,
+            source.AddWalletCommand.Result,
+            destination.AddWalletCommand.Result,
+            value: 10);
+        await executor.Execute(transfer.AddTransactionCommand);
+
+        await using var database = TestDatabaseRuntime.CreateContext();
+        var sourceId = transfer.AddTransactionCommand.Result;
+        var destinationId = await database.Transactions
+            .Where(row => row.Id == sourceId)
+            .Select(row => row.TransactionDestinationId!.Value)
+            .SingleAsync();
+        await database.Transactions.Where(row => row.Id == destinationId)
+            .ExecuteUpdateAsync(update => update.SetProperty(row => row.Value, 11m));
+
+        var report = await DataIntegrityPreflight.InspectAsync(database);
+        var transferIssue = report.Issues.Single(issue => issue.Code == "transfer_pair_invariant");
+        Assert.That(transferIssue.EntityIds, Is.EquivalentTo(new[] { sourceId, destinationId }));
+    }
+
+    [Test]
     public async Task ReportsTechnicalIdsAndDoesNotModifyInconsistentData() {
         var firstUser = new UserSample();
         await TestUtils.CreateExecutorManagerForUser(firstUser);

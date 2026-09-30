@@ -407,6 +407,8 @@
           },
           "destinationWalletId": {
             "format": "int64",
+            "maximum": 1.8446744073709552E+19,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -418,6 +420,8 @@
           },
           "typeId": {
             "format": "int64",
+            "maximum": 1.8446744073709552E+19,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           },
@@ -431,6 +435,8 @@
           },
           "walletId": {
             "format": "int64",
+            "maximum": 1.8446744073709552E+19,
+            "minimum": 1,
             "nullable": true,
             "type": "integer"
           }

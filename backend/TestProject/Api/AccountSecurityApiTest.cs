@@ -294,6 +294,134 @@ internal sealed class AccountSecurityApiTest {
     }
 
     [Test]
+    public async Task FailedIdentityCreationRollsBackLegacyRegistration() {
+        var csrf = await GetCsrfAsync();
+        var invalid = await PostAsync("/api/v1/auth/register", new {
+            firstname = "Atomic", lastname = "User", username = "atomic_user",
+            email = "atomic@test.me", password = "PasswordWithoutSymbol123"
+        }, csrf);
+        Assert.That(invalid.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+
+        await using (var legacy = TestDatabaseRuntime.CreateContext()) {
+            Assert.That(await legacy.Users.AnyAsync(user => user.Username == "atomic_user"), Is.False);
+        }
+        await using (var identity = TestDatabaseRuntime.CreateIdentityContext()) {
+            Assert.That(await identity.Users.AnyAsync(user => user.UserName == "atomic_user"), Is.False);
+        }
+
+        var valid = await PostAsync("/api/v1/auth/register", new {
+            firstname = "Atomic", lastname = "User", username = "atomic_user",
+            email = "atomic@test.me", password = "VeryStrong123!"
+        }, csrf);
+        Assert.That(valid.StatusCode, Is.EqualTo(HttpStatusCode.Accepted));
+    }
+
+    [Test]
+    public async Task LegacyRegistrationHidesDuplicateIdAndLoginIsRateLimited() {
+        var body = new {
+            firstname = "Legacy", lastname = "User", username = "legacy_rate_user",
+            email = "legacy.rate@test.me", password = "VeryStrong123!"
+        };
+        var created = await client.PostAsJsonAsync("/user/add", body);
+        using var createdJson = JsonDocument.Parse(await created.Content.ReadAsStringAsync());
+        Assert.That(createdJson.RootElement.GetProperty("data").GetUInt64(), Is.GreaterThan(0));
+
+        var duplicate = await client.PostAsJsonAsync("/user/add", body);
+        using var duplicateJson = JsonDocument.Parse(await duplicate.Content.ReadAsStringAsync());
+        Assert.That(duplicateJson.RootElement.GetProperty("data").GetUInt64(), Is.Zero);
+
+        HttpResponseMessage? response = null;
+        for (var attempt = 0; attempt < 21; attempt++) {
+            response?.Dispose();
+            response = await client.PostAsJsonAsync("/user/login", new {
+                user = "legacy-rate-missing@test.me", password = "WrongPassword123!"
+            });
+        }
+        using (response)
+            Assert.That(response!.StatusCode, Is.EqualTo(HttpStatusCode.TooManyRequests));
+    }
+
+    [Test]
+    public void ExhaustedIpBudgetDoesNotCreateUnlimitedIdentityCounters() {
+        var guard = new AccountAbuseGuard(TimeProvider.System);
+        for (var attempt = 0; attempt < 30; attempt++)
+            guard.Permit("login", "198.51.100.1", $"identity-{attempt}", 2, TimeSpan.FromHours(1));
+
+        Assert.That(guard.TrackedIdentityCount, Is.LessThanOrEqualTo(8));
+        Assert.That(guard.Permit("login", "198.51.100.2", "new-user", 2, TimeSpan.FromHours(1)), Is.True);
+    }
+
+    [Test]
+    public async Task V1RejectsMissingDateAndExtremeDecimalAsValidationErrors() {
+        var csrf = await GetCsrfAsync();
+        await RegisterAndConfirmAsync("validation_user", "validation@test.me", "VeryStrong123!", csrf);
+        var login = await PostAsync("/api/v1/auth/login", new {
+            user = "validation@test.me", password = "VeryStrong123!"
+        }, csrf);
+        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var amount = await PostAsync("/api/v1/wallets", new {
+            name = "Extreme", initialValue = Decimal.MinValue, colorId = 1
+        }, csrf);
+        Assert.That(amount.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), await amount.Content.ReadAsStringAsync());
+
+        var date = await PostAsync("/api/v1/transactions", new {
+            description = "Missing date", value = 1m, typeId = 2, walletId = 1
+        }, csrf);
+        Assert.That(date.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), await date.Content.ReadAsStringAsync());
+
+        var tooEarly = await PostAsync("/api/v1/transactions", new {
+            date = "0001-01-01", value = 1m, typeId = 2, walletId = 1
+        }, csrf);
+        Assert.That(tooEarly.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), await tooEarly.Content.ReadAsStringAsync());
+    }
+
+    [Test]
+    public async Task TransactionPatchDistinguishesOmittedDescriptionFromExplicitNull() {
+        var csrf = await GetCsrfAsync();
+        await RegisterAndConfirmAsync("patch_user", "patch@test.me", "VeryStrong123!", csrf);
+        var login = await PostAsync("/api/v1/auth/login", new {
+            user = "patch@test.me", password = "VeryStrong123!"
+        }, csrf);
+        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var wallet = await PostAsync("/api/v1/wallets", new {
+            name = "Patch wallet", initialValue = 0m, colorId = 1
+        }, csrf);
+        using var walletJson = JsonDocument.Parse(await wallet.Content.ReadAsStringAsync());
+        var walletId = walletJson.RootElement.GetProperty("id").GetUInt64();
+        var transaction = await PostAsync("/api/v1/transactions", new {
+            description = "Short", longDescription = "Long", date = "2026-09-30",
+            value = -1m, typeId = 2, walletId
+        }, csrf);
+        Assert.That(transaction.StatusCode, Is.EqualTo(HttpStatusCode.Created), await transaction.Content.ReadAsStringAsync());
+        using var transactionJson = JsonDocument.Parse(await transaction.Content.ReadAsStringAsync());
+        var id = transactionJson.RootElement.GetProperty("id").GetUInt64();
+
+        async Task<HttpResponseMessage> PatchAsync(Object body) {
+            using var request = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/transactions/{id}") {
+                Content = JsonContent.Create(body)
+            };
+            request.Headers.Add("X-CSRF-TOKEN", csrf);
+            return await client.SendAsync(request);
+        }
+
+        var clearShort = await PatchAsync(new { description = (String?)null });
+        Assert.That(clearShort.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await clearShort.Content.ReadAsStringAsync());
+        var afterShort = await client.GetAsync($"/api/v1/transactions/{id}");
+        using (var json = JsonDocument.Parse(await afterShort.Content.ReadAsStringAsync())) {
+            Assert.That(json.RootElement.GetProperty("description").ValueKind, Is.EqualTo(JsonValueKind.Null));
+            Assert.That(json.RootElement.GetProperty("longDescription").GetString(), Is.EqualTo("Long"));
+        }
+
+        var clearLong = await PatchAsync(new { longDescription = (String?)null });
+        Assert.That(clearLong.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await clearLong.Content.ReadAsStringAsync());
+        var afterLong = await client.GetAsync($"/api/v1/transactions/{id}");
+        using var finalJson = JsonDocument.Parse(await afterLong.Content.ReadAsStringAsync());
+        Assert.That(finalJson.RootElement.GetProperty("longDescription").ValueKind, Is.EqualTo(JsonValueKind.Null));
+    }
+
+    [Test]
     public async Task CorsAllowsConfiguredCredentialedOriginAndRejectsOtherOrigins() {
         using var allowed = new HttpRequestMessage(HttpMethod.Options, "/api/v1/auth/login");
         allowed.Headers.Add("Origin", "http://localhost:3000");
