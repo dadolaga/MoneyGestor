@@ -15,7 +15,7 @@ namespace webserver.Controllers {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, [FromQuery] Filter filter) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var listFilter = ListFilterUtils.Convert(filter.Order, filter.Limit, filter.Offset, filter.Where);
             var page = await queries.GetLegacyTransactionsAsync(executor.UserId, listFilter, HttpContext.RequestAborted);
             return ListResponse(page.Items.Select(transaction => LegacyResourceMapper.ToLegacy(transaction, executor.UserId)).ToList(),
@@ -25,7 +25,7 @@ namespace webserver.Controllers {
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingle([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var transaction = await queries.GetTransactionAsync(executor.UserId, id, HttpContext.RequestAborted)
                 ?? throw new ObjectNotFoundException("Transaction not found");
             return OkResponse(LegacyResourceMapper.ToLegacy(transaction, executor.UserId), "Transaction");
@@ -47,7 +47,7 @@ namespace webserver.Controllers {
                 userId: null,
                 walletDestinationId: transaction.WalletDestination?.Id);
             try {
-                await executor.Execute(command);
+                await executor.Execute(command, HttpContext.RequestAborted);
                 return CreateResponse(command.Result, "transaction");
             } catch (InvalidTransactionException) {
                 return ErrorResponse(302, "Invalid transaction");
@@ -57,7 +57,7 @@ namespace webserver.Controllers {
         [HttpPut("{id}")]
         public async Task<IActionResult> Put([FromHeader(Name = "Authorization")] String authorization, [FromBody] Transaction transaction, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var command = new UpdateTransactionCommand(
                 id: id,
                 description: transaction.Description,
@@ -70,7 +70,7 @@ namespace webserver.Controllers {
                 userId: null,
                 overwriteNull: false);
             try {
-                await executor.Execute(command);
+                await executor.Execute(command, HttpContext.RequestAborted);
                 return OkResponse();
             } catch (InvalidTransactionException) {
                 return ErrorResponse(302, "Invalid transaction");
@@ -80,7 +80,7 @@ namespace webserver.Controllers {
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.Execute(new DeleteTransactionCommand(id));
+            await executor.Execute(new DeleteTransactionCommand(id), HttpContext.RequestAborted);
             return OkResponse();
         }
     }

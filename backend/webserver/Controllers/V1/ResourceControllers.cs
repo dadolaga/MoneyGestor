@@ -23,26 +23,26 @@ public sealed class WalletsController(IApiCurrentUser currentUser, IResourceQuer
             ? Ok(wallet) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateWalletRequest request) {
-        var id = await commands.CreateWalletAsync(await currentUser.RequireIdAsync(User), request);
+    public async Task<IActionResult> Create(CreateWalletRequest request, CancellationToken cancellationToken) {
+        var id = await commands.CreateWalletAsync(await currentUser.RequireIdAsync(User), request, cancellationToken);
         return Created($"/api/v1/wallets/{id}", new { id });
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(UInt64 id, UpdateWalletRequest request) {
-        await commands.UpdateWalletAsync(await currentUser.RequireIdAsync(User), id, request);
+    public async Task<IActionResult> Update(UInt64 id, UpdateWalletRequest request, CancellationToken cancellationToken) {
+        await commands.UpdateWalletAsync(await currentUser.RequireIdAsync(User), id, request, cancellationToken);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(UInt64 id) {
-        await commands.DeleteWalletAsync(await currentUser.RequireIdAsync(User), id);
+    public async Task<IActionResult> Delete(UInt64 id, CancellationToken cancellationToken) {
+        await commands.DeleteWalletAsync(await currentUser.RequireIdAsync(User), id, cancellationToken);
         return NoContent();
     }
 
     [HttpPut("{id}/favorite")]
-    public async Task<IActionResult> Favorite(UInt64 id, [FromBody] Boolean favorite) {
-        await commands.SetWalletFavoriteAsync(await currentUser.RequireIdAsync(User), id, favorite);
+    public async Task<IActionResult> Favorite(UInt64 id, [FromBody] Boolean favorite, CancellationToken cancellationToken) {
+        await commands.SetWalletFavoriteAsync(await currentUser.RequireIdAsync(User), id, favorite, cancellationToken);
         return NoContent();
     }
 }
@@ -59,8 +59,8 @@ public sealed class TransactionTypesController(IApiCurrentUser currentUser, IRes
             ? Ok(type) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateTransactionTypeRequest request) {
-        var id = await commands.CreateTransactionTypeAsync(await currentUser.RequireIdAsync(User), request);
+    public async Task<IActionResult> Create(CreateTransactionTypeRequest request, CancellationToken cancellationToken) {
+        var id = await commands.CreateTransactionTypeAsync(await currentUser.RequireIdAsync(User), request, cancellationToken);
         return Created($"/api/v1/transaction-types/{id}", new { id });
     }
 }
@@ -77,20 +77,20 @@ public sealed class TransactionsController(IApiCurrentUser currentUser, IResourc
             ? Ok(transaction) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateTransactionRequest request) {
-        var id = await commands.CreateTransactionAsync(await currentUser.RequireIdAsync(User), request);
+    public async Task<IActionResult> Create(CreateTransactionRequest request, CancellationToken cancellationToken) {
+        var id = await commands.CreateTransactionAsync(await currentUser.RequireIdAsync(User), request, cancellationToken);
         return Created($"/api/v1/transactions/{id}", new { id });
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update(UInt64 id, UpdateTransactionRequest request) {
-        await commands.UpdateTransactionAsync(await currentUser.RequireIdAsync(User), id, request);
+    public async Task<IActionResult> Update(UInt64 id, UpdateTransactionRequest request, CancellationToken cancellationToken) {
+        await commands.UpdateTransactionAsync(await currentUser.RequireIdAsync(User), id, request, cancellationToken);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(UInt64 id) {
-        await commands.DeleteTransactionAsync(await currentUser.RequireIdAsync(User), id);
+    public async Task<IActionResult> Delete(UInt64 id, CancellationToken cancellationToken) {
+        await commands.DeleteTransactionAsync(await currentUser.RequireIdAsync(User), id, cancellationToken);
         return NoContent();
     }
 }

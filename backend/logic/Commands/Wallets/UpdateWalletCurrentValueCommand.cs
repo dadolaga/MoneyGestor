@@ -1,4 +1,4 @@
-﻿using logic.Exceptions;
+using logic.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,18 +18,19 @@ namespace logic.Commands.Wallets {
             this.isDifferenze = isDifferenze;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             logic.Security.MonetaryValuePolicy.RequireValid(value);
             await logic.Security.OwnershipPolicy.LockOwnedWalletsAsync(
                 database,
                 executorManager.UserId,
+                cancellationToken,
                 walletId);
 
             var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 walletId,
-                executorManager.UserId);
+                executorManager.UserId, cancellationToken);
 
             if (isDifferenze) {
                 logic.Security.WalletBalancePolicy.Apply(wallet, value);
@@ -39,7 +40,7 @@ namespace logic.Commands.Wallets {
 
             database.Update(wallet);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
 
             result = wallet.Id;
         }

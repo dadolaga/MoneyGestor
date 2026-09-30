@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 ﻿using database.Models;
 using logic.Exceptions;
 using System;
@@ -26,7 +27,7 @@ namespace logic.Commands.User {
             email_ = email;
             password_ = password;
         }
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
             var userDb = new UserDb {
@@ -37,17 +38,17 @@ namespace logic.Commands.User {
                 Password = PasswordHasher.Hash(password_)
             };
 
-            if (database.Users.FirstOrDefault(u => u.Username == username_) != null) {
+            if (await database.Users.AnyAsync(u => u.Username == username_, cancellationToken)) {
                 throw new DuplicateObjectException("username");
             }
 
-            if (database.Users.FirstOrDefault(u => u.Email == email_) != null) {
+            if (await database.Users.AnyAsync(u => u.Email == email_, cancellationToken)) {
                 throw new DuplicateObjectException("email");
             }
 
-            await database.AddAsync(userDb);
+            await database.AddAsync(userDb, cancellationToken);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
 
             result = userDb.Id;
         }

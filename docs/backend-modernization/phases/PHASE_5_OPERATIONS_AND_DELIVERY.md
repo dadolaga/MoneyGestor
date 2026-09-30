@@ -107,7 +107,7 @@ injection DB, scan sentinelle, prova rolling/retention e misurazione load non so
 
 ## PERF-51 — Query, async, cancellation e lifetime risorse
 
-**Stato:** non iniziato
+**Stato:** completato (29 settembre 2026)
 
 **Priorità:** P2
 
@@ -117,8 +117,9 @@ Ridurre query/materializzazione inutili e garantire cancellazione/cleanup, basan
 
 **Situazione attuale**
 
-Letture tracked, grafi `Include` ampi, dashboard in quattro query/materializzazione gruppi, `CanConnect` per context,
-sync EF in async e nessun cancellation token HTTP.
+Il servizio query v1 usa AsNoTracking e proiezioni DTO. L'elenco paginato esegue count e pagina; la dashboard usa una
+query aggregate verificata con MySQL 8.4. CanConnectAsync è limitato al bootstrap. Baseline e misura dopo la modifica
+sono raccolte su 1.000 movimenti sintetici; i risultati sono riportati nell'esito e nell'evidenza.
 
 **Motivazione**
 
@@ -177,6 +178,25 @@ Migliora scalabilità senza cache o architetture aggiuntive e chiude resource le
 - cancellation propagata e risorse smaltite;
 - miglioramenti misurati o modifica scartata;
 - risultati e atomicità invariati.
+
+
+**Esito 29 settembre 2026**
+
+- La cancellazione HTTP raggiunge i comandi EF nei percorsi legacy e v1; rollback e disposal avvengono anche dopo
+  l'abort. Transazioni e context temporanei sono smaltiti async.
+- Corretto il lock wallet: i valori correnti letti con FOR UPDATE aggiornano l'entità tracciata prima della mutazione,
+  evitando che un context concorrente salvi una BalanceVersion obsoleta.
+- La dashboard v1 è passata da tre query aggregate a una GROUP BY con SUM condizionali. Il provider MySQL 8.4 ha
+  tradotto ed eseguito il SQL; i risultati di totali e categorie sono verificati sul dataset di prova.
+- Dataset sintetico fisso: 1.000 movimenti, 8 warm-up, 50 campioni seriali. Prima/dopo: 3→1 query/request;
+  p50 5,577→2,824 ms; p95 6,429→3,466 ms; allocazioni approssimative 124.855→74.745 byte/request.
+  Le misure dipendono dall'ambiente Testcontainers e non sono un SLO di produzione.
+- Suite backend completa su MySQL 8.4 effimero: 146/146; inclusi add concorrenti e test di cancellazione durante il lock,
+  rollback e riuso del context. Snapshot OpenAPI legacy riallineato alla route /metrics esposta da OBS-50.
+- Non sono stati cambiati indici o schema, quindi non serve EXPLAIN per una migration.
+- Eccezione documentata: UserManager e SignInManager non espongono overload con CancellationToken. Le operazioni Identity
+  restano awaited; gli accessi EF diretti dell'account ricevono il token. Nessun lavoro è lasciato fire-and-forget.
+- Evidenza: [PERF-51 2026-09-29](../evidence/PERF-51_2026-09-29.md).
 
 ## PLT-52 — Allineamento dipendenze e .NET 10 LTS
 

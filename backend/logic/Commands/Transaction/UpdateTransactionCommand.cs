@@ -40,14 +40,14 @@ namespace logic.Commands.Transaction {
             this.overwriteNull = overwriteNull;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             var ownerId = executorManager.UserId;
 
             var requestedTransaction = await TransactionPairPolicy.LockOwnedTransactionAsync(
                 database,
                 id,
-                ownerId);
+                ownerId, cancellationToken);
 
             if (userId != null && userId != ownerId) {
                 throw new UserNotHavePermissionExcpetion("Transaction owner cannot be supplied by the client");
@@ -62,10 +62,10 @@ namespace logic.Commands.Transaction {
             }
 
             var finalTypeId = transactionTypeId ?? sourceTransaction.TransactionTypeId;
-            var finalType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(database, finalTypeId, ownerId);
+            var finalType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(database, finalTypeId, ownerId, cancellationToken);
             var finalIsTransfer = finalType.Id == DatabaseInitializer.TRANSFER.Id;
             var finalSourceWalletId = walletId ?? sourceTransaction.WalletId;
-            var finalSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, finalSourceWalletId, ownerId);
+            var finalSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, finalSourceWalletId, ownerId, cancellationToken);
             WalletDb? finalDestinationWallet = null;
             Decimal finalValue;
 
@@ -86,7 +86,7 @@ namespace logic.Commands.Transaction {
                 finalDestinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                     database,
                     finalDestinationWalletId.Value,
-                    ownerId);
+                    ownerId, cancellationToken);
             } else {
                 if (walletDestinationId != null) {
                     throw new InvalidTransactionException("Only transfers can specify a destination wallet");
@@ -101,18 +101,17 @@ namespace logic.Commands.Transaction {
             var oldSourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 sourceTransaction.WalletId,
-                ownerId);
+                ownerId, cancellationToken);
             WalletDb? oldDestinationWallet = null;
             if (destinationTransaction != null) {
                 oldDestinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                     database,
                     destinationTransaction.WalletId,
-                    ownerId);
+                    ownerId, cancellationToken);
             }
 
             await OwnershipPolicy.LockOwnedWalletsAsync(
-                database,
-                ownerId,
+                database, ownerId, cancellationToken,
                 new[] {
                     sourceTransaction.WalletId,
                     destinationTransaction?.WalletId,
@@ -150,7 +149,7 @@ namespace logic.Commands.Transaction {
                         database.Transactions.Remove(destinationTransaction);
                     }
 
-                    await database.SaveChangesAsync();
+                    await database.SaveChangesAsync(cancellationToken);
                 } else {
                     sourceTransaction.Value = -finalValue;
                     WalletBalancePolicy.Apply(finalSourceWallet, -finalValue);
@@ -172,11 +171,11 @@ namespace logic.Commands.Transaction {
                     destinationTransaction.UserInsertId = ownerId;
                     destinationTransaction.Value = finalValue;
 
-                    await database.SaveChangesAsync();
+                    await database.SaveChangesAsync(cancellationToken);
 
                     sourceTransaction.TransactionDestinationId = destinationTransaction.Id;
                     destinationTransaction.TransactionDestinationId = sourceTransaction.Id;
-                    await database.SaveChangesAsync();
+                    await database.SaveChangesAsync(cancellationToken);
                 }
 
                 result = sourceTransaction.Id;

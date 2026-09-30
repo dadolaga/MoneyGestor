@@ -27,7 +27,7 @@ namespace logic.Commands.Transaction {
             this.userId = userId;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             var ownerId = executorManager.UserId;
 
@@ -40,8 +40,8 @@ namespace logic.Commands.Transaction {
             var transactionType = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(
                 database,
                 transactionTypeId,
-                ownerId);
-            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, ownerId);
+                ownerId, cancellationToken);
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, ownerId, cancellationToken);
             var isTransfer = transactionType.Id == DatabaseInitializer.TRANSFER.Id;
             WalletDb? walletDestination = null;
 
@@ -57,14 +57,13 @@ namespace logic.Commands.Transaction {
                 walletDestination = await OwnershipPolicy.RequireOwnedWalletAsync(
                     database,
                     walletDestinationId.Value,
-                    ownerId);
+                    ownerId, cancellationToken);
             } else if (walletDestinationId != null) {
                 throw new InvalidTransactionException("Only transfers can specify a destination wallet");
             }
 
             await OwnershipPolicy.LockOwnedWalletsAsync(
-                database,
-                ownerId,
+                database, ownerId, cancellationToken,
                 walletDestination == null ? [wallet.Id] : [wallet.Id, walletDestination.Id]);
 
             var sourceValue = isTransfer ? -value : value;
@@ -83,7 +82,7 @@ namespace logic.Commands.Transaction {
 
                 WalletBalancePolicy.Apply(wallet, sourceValue);
                 database.Transactions.Add(transaction);
-                await database.SaveChangesAsync();
+                await database.SaveChangesAsync(cancellationToken);
 
                 if (walletDestination != null) {
                     var transactionDestination = new TransactionDb {
@@ -100,12 +99,12 @@ namespace logic.Commands.Transaction {
 
                     WalletBalancePolicy.Apply(walletDestination, value);
                     database.Transactions.Add(transactionDestination);
-                    await database.SaveChangesAsync();
+                    await database.SaveChangesAsync(cancellationToken);
 
                     transaction.TransactionDestinationId = transactionDestination.Id;
 
                     database.Transactions.Update(transaction);
-                    await database.SaveChangesAsync();
+                    await database.SaveChangesAsync(cancellationToken);
                 }
 
                 result = transaction.Id;

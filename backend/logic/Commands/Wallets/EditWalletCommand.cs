@@ -20,16 +20,16 @@ namespace logic.Commands.Wallets {
             this.colorId = colorId;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
-            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletIdToUpdate, executorManager.UserId);
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletIdToUpdate, executorManager.UserId, cancellationToken);
 
             if (colorId != null) {
-                await OwnershipPolicy.RequireAvailableColorAsync(database, colorId.Value, executorManager.UserId);
+                await OwnershipPolicy.RequireAvailableColorAsync(database, colorId.Value, executorManager.UserId, cancellationToken);
             }
 
-            if (await database.Wallets.Where(w => w.Id != walletIdToUpdate && w.UserId == executorManager.UserId && w.Name == name).CountAsync() > 0) {
+            if (await database.Wallets.AnyAsync(w => w.Id != walletIdToUpdate && w.UserId == executorManager.UserId && w.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException("Wallet already exist");
             }
 
@@ -39,7 +39,7 @@ namespace logic.Commands.Wallets {
             database.Update(wallet);
 
             try {
-                await database.SaveChangesAsync();
+                await database.SaveChangesAsync(cancellationToken);
             } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
                 throw new DuplicateObjectException("Wallet already exist");
             } catch (DbUpdateException) {

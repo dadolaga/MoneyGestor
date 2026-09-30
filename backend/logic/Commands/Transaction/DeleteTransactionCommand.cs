@@ -12,13 +12,13 @@ namespace logic.Commands.Transaction {
             this.id = id;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
             var requestedTransaction = await TransactionPairPolicy.LockOwnedTransactionAsync(
                 database,
                 id,
-                executorManager.UserId);
+                executorManager.UserId, cancellationToken);
 
             var sourceTransaction = requestedTransaction;
             global::database.Models.TransactionDb? destinationTransaction = null;
@@ -29,8 +29,7 @@ namespace logic.Commands.Transaction {
             }
 
             await OwnershipPolicy.LockOwnedWalletsAsync(
-                database,
-                executorManager.UserId,
+                database, executorManager.UserId, cancellationToken,
                 destinationTransaction == null
                     ? [sourceTransaction.WalletId]
                     : [sourceTransaction.WalletId, destinationTransaction.WalletId]);
@@ -38,26 +37,26 @@ namespace logic.Commands.Transaction {
             var sourceWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 sourceTransaction.WalletId,
-                executorManager.UserId);
+                executorManager.UserId, cancellationToken);
             WalletBalancePolicy.Apply(sourceWallet, -sourceTransaction.Value);
 
             if (destinationTransaction != null) {
                 var destinationWallet = await OwnershipPolicy.RequireOwnedWalletAsync(
                     database,
                     destinationTransaction.WalletId,
-                    executorManager.UserId);
+                    executorManager.UserId, cancellationToken);
                 WalletBalancePolicy.Apply(destinationWallet, -destinationTransaction.Value);
 
                 sourceTransaction.TransactionDestinationId = null;
                 destinationTransaction.TransactionDestinationId = null;
-                await database.SaveChangesAsync();
+                await database.SaveChangesAsync(cancellationToken);
 
                 database.Transactions.Remove(destinationTransaction);
             }
 
             database.Transactions.Remove(sourceTransaction);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
 
             result = sourceTransaction.Id;
         }

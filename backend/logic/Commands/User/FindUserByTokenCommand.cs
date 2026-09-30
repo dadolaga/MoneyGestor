@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace logic.Commands.User {
     public class FindUserByTokenCommand : ICommand<UInt64> {
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             if (executorManager.Token is null) {
                 throw new ExecutorException("Token is null");
             }
@@ -11,7 +11,7 @@ namespace logic.Commands.User {
             var database = executorManager.DbContext;
             var login = await database.Logins
                 .Where(item => item.Token == executorManager.Token)
-                .FirstOrDefaultAsync()
+                .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new ExecutorException("User not found for the supplied authentication token");
 
             var now = executorManager.TimeProvider.GetUtcNow().UtcDateTime;
@@ -22,7 +22,7 @@ namespace logic.Commands.User {
                 ? LoginCommand.EXPIRATED_LONG
                 : LoginCommand.EXPIRATED_SMALL);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
         }
     }
 }

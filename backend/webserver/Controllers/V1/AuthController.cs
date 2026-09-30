@@ -53,7 +53,7 @@ public sealed class AuthController(
     [HttpGet("session")]
     [Authorize]
     public async Task<IActionResult> Session() {
-        var profile = await accounts.GetProfileAsync(User);
+        var profile = await accounts.GetProfileAsync(User, HttpContext.RequestAborted);
         return profile == null ? Unauthorized() : Ok(profile);
     }
 

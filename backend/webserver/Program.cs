@@ -376,7 +376,7 @@ public class Program {
 
         await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
         try {
-            await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase);
+            await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase, cancellationToken);
         } catch (logic.Exceptions.DataIntegrityException exception) {
             logger.LogCritical(new EventId(1102, "DataIntegrityMismatch"),
                 "Data integrity preflight detected {IssueCount} issue groups", exception.Report.Issues.Count);

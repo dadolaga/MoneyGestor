@@ -46,6 +46,9 @@ Approfondimenti:
 - [Guida frontend](frontend/README.md)
 - [Convenzioni frontend](frontend/README_DEV.md)
 
+PERF-51 ha completato l'ottimizzazione misurata della dashboard e la propagazione della cancellazione nelle operazioni EF.
+Dettagli e limiti nella [roadmap backend](docs/backend-modernization/ROADMAP.md).
+
 ## Prerequisiti
 
 Per lo sviluppo locale:

@@ -14,7 +14,7 @@ namespace webserver.Controllers {
             [FromQuery(Name = "from")] DateTimeOffset from,
             [FromQuery(Name = "to")] DateTimeOffset to) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var result = await queries.GetDashboardAsync(executor.UserId, new DashboardQuery {
                 From = DateOnly.FromDateTime(from.DateTime),
                 To = DateOnly.FromDateTime(to.DateTime)

@@ -18,16 +18,16 @@ namespace logic.Commands.Wallets {
             this.favorite = favorite;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
-            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, executorManager.UserId);
+            var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, executorManager.UserId, cancellationToken);
 
             wallet.Favorite = favorite ?? !wallet.Favorite;
 
             database.Update(wallet);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
 
             result = wallet.Id;
         }

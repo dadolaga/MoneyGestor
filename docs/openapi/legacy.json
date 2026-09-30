@@ -311,6 +311,19 @@
         ]
       }
     },
+    "/metrics": {
+      "get": {
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "webserver"
+        ]
+      }
+    },
     "/transaction": {
       "get": {
         "deprecated": true,

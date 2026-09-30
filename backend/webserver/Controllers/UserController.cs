@@ -64,7 +64,7 @@ namespace webserver.Controllers {
                 UserId = userId.Value
             };
             database.Logins.Add(rawLogin);
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(HttpContext.RequestAborted);
             return LoginResponse(rawLogin.Token);
         }
 
@@ -77,7 +77,7 @@ namespace webserver.Controllers {
                 } else {
                     executor.SetToken(authorization!);
                     var findCommand = new FindUserByTokenCommand();
-                    await executor.Execute(findCommand);
+                    await executor.Execute(findCommand, HttpContext.RequestAborted);
                     userId = findCommand.Result;
                 }
 

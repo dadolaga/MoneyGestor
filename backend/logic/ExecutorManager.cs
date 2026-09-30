@@ -1,4 +1,4 @@
-﻿using database;
+using database;
 using logic.Commands;
 using logic.Commands.User;
 using logic.Exceptions;
@@ -54,7 +54,7 @@ namespace logic {
             return this;
         }
 
-        public async Task Execute<T>(ICommand<T> executor) {
+        public async Task Execute<T>(ICommand<T> executor, CancellationToken cancellationToken = default) {
             if (transaction != null) {
                 throw new ExecutorException("Transaction already started");
             }
@@ -69,14 +69,14 @@ namespace logic {
                 }
 
                 try {
-                    transaction = await DbContext.Database.BeginTransactionAsync();
-                    await LoginUser();
-                    await executor.Execute(this);
-                    await transaction.CommitAsync();
+                    transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+                    await LoginUser(cancellationToken);
+                    await executor.Execute(this, cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
                     return;
                 } catch (Exception exception) {
                     if (transaction != null) {
-                        await transaction.RollbackAsync();
+                        await transaction.RollbackAsync(CancellationToken.None);
                     }
 
                     if (attempt == MaxAttempts || !DatabaseUpdatePolicy.IsRetryable(exception)) {
@@ -85,7 +85,7 @@ namespace logic {
                     ConcurrencyRetryMetrics.RecordRetry();
                     logger?.LogWarning(new EventId(1301, "ConcurrencyRetry"),
                         "Retrying a concurrent write (Attempt {Attempt})", attempt + 1);
-                    await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt));
+                    await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), cancellationToken);
                 } finally {
                     if (transaction != null) {
                         await transaction.DisposeAsync();
@@ -113,7 +113,7 @@ namespace logic {
             }
         }
 
-        public async Task<Boolean> LoginUser() {
+        public async Task<Boolean> LoginUser(CancellationToken cancellationToken = default) {
             if (Token == null) {
                 return false;
             }
@@ -124,7 +124,7 @@ namespace logic {
 
             var findUserCommand = new FindUserByTokenCommand();
 
-            await findUserCommand.Execute(this);
+            await findUserCommand.Execute(this, cancellationToken);
 
             userId = findUserCommand.Result;
 

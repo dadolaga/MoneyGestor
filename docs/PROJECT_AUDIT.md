@@ -248,3 +248,8 @@ Creare un MySQL effimero per test (container dedicato con nome casuale), separar
 > metriche aggregate senza label ad alta cardinalita e healthcheck Docker. La build backend passa con 7 warning gia
 > presenti; test fault-injection e misurazione load restano da eseguire. Vedere la [roadmap](backend-modernization/ROADMAP.md)
 > e l'[evidenza OBS-50](backend-modernization/evidence/OBS-50_2026-09-29.md).
+
+> Aggiornamento del 29 settembre 2026: PERF-51 è completato. La dashboard riduce da tre a una query aggregate;
+> su dataset sintetico MySQL 8.4 p50 è sceso da 5,577 a 2,824 ms e p95 da 6,429 a 3,466 ms. La suite backend passa
+> 146/146 su MySQL effimero. Le API ASP.NET Identity non offrono token di cancellazione; eccezione e misure sono
+> registrate nell'[evidenza PERF-51](backend-modernization/evidence/PERF-51_2026-09-29.md) e nella [roadmap](backend-modernization/ROADMAP.md).

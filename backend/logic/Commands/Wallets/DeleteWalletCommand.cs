@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 ﻿using logic.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -13,21 +14,21 @@ namespace logic.Commands.Wallets {
             this.id = id;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
             var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
                 id,
-                executorManager.UserId);
+                executorManager.UserId, cancellationToken);
 
-            if (database.Transactions.Where(t => t.WalletId == id).Count() > 0) {
+            if (await database.Transactions.AnyAsync(t => t.WalletId == id, cancellationToken)) {
                 throw new NotValidForDeleteException("Transaction not empty for delete wallet");
             }
 
             database.Wallets.Remove(wallet);
 
-            await database.SaveChangesAsync();
+            await database.SaveChangesAsync(cancellationToken);
 
             result = id;
         }

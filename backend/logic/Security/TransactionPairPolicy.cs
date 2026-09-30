@@ -9,7 +9,8 @@ internal static class TransactionPairPolicy {
     internal static async Task<TransactionDb> LockOwnedTransactionAsync(
         MoneyGestorContext database,
         UInt64 transactionId,
-        UInt64 userId) {
+        UInt64 userId,
+        CancellationToken cancellationToken = default) {
         var locked = await database.Transactions
             .FromSqlInterpolated($$"""
                 SELECT * FROM `transaction`
@@ -19,10 +20,10 @@ internal static class TransactionPairPolicy {
                 FOR UPDATE
                 """)
             .AsTracking()
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
         var requested = locked.SingleOrDefault(transaction => transaction.Id == transactionId)
             ?? throw new ObjectNotFoundException("Transaction not found");
-        await database.Entry(requested).Reference(transaction => transaction.TransactionDestination).LoadAsync();
+        await database.Entry(requested).Reference(transaction => transaction.TransactionDestination).LoadAsync(cancellationToken);
         return requested;
     }
 

@@ -20,15 +20,15 @@ namespace logic.Commands.Wallets {
             this.colorId = colorId;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             executorManager.CheckUserLogged();
 
             var database = executorManager.DbContext;
             MonetaryValuePolicy.RequireValid(value);
 
-            await OwnershipPolicy.RequireAvailableColorAsync(database, colorId, executorManager.UserId);
+            await OwnershipPolicy.RequireAvailableColorAsync(database, colorId, executorManager.UserId, cancellationToken);
 
-            if (await database.Wallets.FirstOrDefaultAsync(w => w.UserId == executorManager.UserId && w.Name == name) != null) {
+            if (await database.Wallets.AnyAsync(w => w.UserId == executorManager.UserId && w.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException($"Try to insert duplicate wallet");
             }
 
@@ -42,10 +42,10 @@ namespace logic.Commands.Wallets {
                 UserId = executorManager.UserId
             };
 
-            await database.AddAsync(wallet);
+            await database.AddAsync(wallet, cancellationToken);
 
             try {
-                await database.SaveChangesAsync();
+                await database.SaveChangesAsync(cancellationToken);
             } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
                 throw new DuplicateObjectException("Try to insert duplicate wallet");
             } catch (DbUpdateException) {

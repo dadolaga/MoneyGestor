@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace logic.Security;
 
 public static class DataIntegrityPreflight {
-    public static async Task<DataIntegrityReport> InspectAsync(MoneyGestorContext database) {
+    public static async Task<DataIntegrityReport> InspectAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
         var wallets = await database.Wallets
             .AsNoTracking()
             .Select(wallet => new {
@@ -13,7 +13,7 @@ public static class DataIntegrityPreflight {
                 wallet.UserId,
                 ColorOwnerId = wallet.Color.UserId
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var transactions = await database.Transactions
             .AsNoTracking()
@@ -28,7 +28,7 @@ public static class DataIntegrityPreflight {
                 transaction.Value,
                 transaction.TransactionDestinationId
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var issues = new List<DataIntegrityIssue>();
         AddIssue(
@@ -86,7 +86,7 @@ public static class DataIntegrityPreflight {
 
         AddIssue(issues, "transfer_pair_invariant", invalidTransfers);
 
-        var reconciliation = await new BalanceReconciliationService(database).InspectAsync();
+        var reconciliation = await new BalanceReconciliationService(database).InspectAsync(cancellationToken);
         AddIssue(
             issues,
             "wallet_balance_mismatch",
@@ -95,8 +95,8 @@ public static class DataIntegrityPreflight {
         return new DataIntegrityReport(issues);
     }
 
-    public static async Task EnsureValidAsync(MoneyGestorContext database) {
-        var report = await InspectAsync(database);
+    public static async Task EnsureValidAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
+        var report = await InspectAsync(database, cancellationToken);
         if (!report.IsValid) {
             throw new DataIntegrityException(report);
         }

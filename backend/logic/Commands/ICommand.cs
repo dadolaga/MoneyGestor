@@ -10,6 +10,6 @@ namespace logic.Commands {
         protected T? result;
         public T Result => result == null ? throw new InvalidOperationException("Executor not ended") : result!;
 
-        internal abstract Task Execute(ExecutorManager executorManager);
+        internal abstract Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken);
     }
 }

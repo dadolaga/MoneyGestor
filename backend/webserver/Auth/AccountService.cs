@@ -102,7 +102,9 @@ public sealed class AccountService(
 
     public Task LogoutAsync() => signInManager.SignOutAsync();
 
-    public async Task<AccountProfile?> GetProfileAsync(System.Security.Claims.ClaimsPrincipal principal) {
+    public async Task<AccountProfile?> GetProfileAsync(
+        System.Security.Claims.ClaimsPrincipal principal,
+        CancellationToken cancellationToken) {
         var identityUser = await userManager.GetUserAsync(principal);
         if (identityUser == null) {
             return null;
@@ -111,7 +113,7 @@ public sealed class AccountService(
         return await legacyDatabase.Users
             .Where(user => user.Id == identityUser.LegacyUserId)
             .Select(user => new AccountProfile(user.Id, user.Firstname, user.Lastname, user.Email, user.Username))
-            .SingleOrDefaultAsync();
+            .SingleOrDefaultAsync(cancellationToken);
     }
 
     public async Task ConfirmEmailAsync(ConfirmEmailRequest request) {

@@ -16,10 +16,10 @@ namespace logic.Commands.Transaction {
             this.name = name;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
-            if(database.TransactionTypes.FirstOrDefault(tt => tt.UserId == executorManager.UserId && tt.Name == name) != null) {
+            if(await database.TransactionTypes.AnyAsync(tt => tt.UserId == executorManager.UserId && tt.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException("This transaction type already exist");
             }
 
@@ -28,10 +28,10 @@ namespace logic.Commands.Transaction {
                 UserId = executorManager.UserId,
             };
 
-            await database.TransactionTypes.AddAsync(transactionType);
+            await database.TransactionTypes.AddAsync(transactionType, cancellationToken);
 
             try {
-                await database.SaveChangesAsync();
+                await database.SaveChangesAsync(cancellationToken);
             } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsDuplicateEntry(exception)) {
                 throw new DuplicateObjectException("This transaction type already exist");
             }

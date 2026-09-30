@@ -18,10 +18,10 @@ namespace logic.Commands.User {
             this.remember = remember;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager) {
+        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             var user = await database.Users
-                .FirstOrDefaultAsync(item => item.Username == userOrEmail || item.Email == userOrEmail)
+                .FirstOrDefaultAsync(item => item.Username == userOrEmail || item.Email == userOrEmail, cancellationToken)
                 ?? throw new ObjectNotFoundException("User not found");
 
             if (!PasswordHasher.Verify(password, user.Password)) {
@@ -36,8 +36,8 @@ namespace logic.Commands.User {
                 UserId = user.Id
             };
 
-            await database.AddAsync(login);
-            await database.SaveChangesAsync();
+            await database.AddAsync(login, cancellationToken);
+            await database.SaveChangesAsync(cancellationToken);
             result = login.Token;
         }
     }

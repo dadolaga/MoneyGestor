@@ -13,7 +13,7 @@ namespace webserver.Controllers {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var types = await queries.GetTransactionTypesAsync(executor.UserId, HttpContext.RequestAborted);
             return OkResponse(types.Select(type => LegacyResourceMapper.ToLegacy(type, executor.UserId)), "List of transaction type");
         }
@@ -24,7 +24,7 @@ namespace webserver.Controllers {
             executor.SetToken(authorization);
             var command = new AddTransactionTypeCommand(type.Name);
             try {
-                await executor.Execute(command);
+                await executor.Execute(command, HttpContext.RequestAborted);
                 return CreateResponse(command.Result, "transaction type");
             } catch (DuplicateObjectException) {
                 return ErrorResponse(401, "Duplicate transaction type");

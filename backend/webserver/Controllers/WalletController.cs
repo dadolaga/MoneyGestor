@@ -21,7 +21,7 @@ namespace webserver.Controllers {
             executor.SetToken(authorization);
             var command = new AddNewWalletCommand(wallet.Name, wallet.Value.Value, wallet.Color.Id.Value);
             try {
-                await executor.Execute(command);
+                await executor.Execute(command, HttpContext.RequestAborted);
                 return OkResponse();
             } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplica wallet name");
@@ -31,7 +31,7 @@ namespace webserver.Controllers {
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var wallets = await queries.GetWalletsAsync(executor.UserId, HttpContext.RequestAborted);
             return OkResponse(wallets.Select(wallet => LegacyResourceMapper.ToLegacy(wallet, executor.UserId)), "List of wallets");
         }
@@ -39,7 +39,7 @@ namespace webserver.Controllers {
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.LoginUser();
+            await executor.LoginUser(HttpContext.RequestAborted);
             var wallet = await queries.GetWalletAsync(executor.UserId, id, HttpContext.RequestAborted)
                 ?? throw new ObjectNotFoundException("Wallet not found");
             return OkResponse(LegacyResourceMapper.ToLegacy(wallet, executor.UserId), "List of wallets");
@@ -50,7 +50,7 @@ namespace webserver.Controllers {
             executor.SetToken(authorization);
             var command = new EditWalletCommand(id, wallet.Name, wallet.Color?.Id);
             try {
-                await executor.Execute(command);
+                await executor.Execute(command, HttpContext.RequestAborted);
                 return OkResponse();
             } catch (DuplicateObjectException) {
                 return ErrorResponse(201, "Duplicate wallet name");
@@ -60,14 +60,14 @@ namespace webserver.Controllers {
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.Execute(new DeleteWalletCommand(id));
+            await executor.Execute(new DeleteWalletCommand(id), HttpContext.RequestAborted);
             return OkResponse();
         }
 
         [HttpPut("favorite/{id}")]
         public async Task<IActionResult> SetFavorite([FromHeader(Name = "Authorization")] String authorization, UInt32 id) {
             executor.SetToken(authorization);
-            await executor.Execute(new FavoriteWalletCommand(id));
+            await executor.Execute(new FavoriteWalletCommand(id), HttpContext.RequestAborted);
             return OkResponse();
         }
     }

@@ -18,13 +18,15 @@ internal static class OwnershipPolicy {
     internal static async Task<WalletDb> RequireOwnedWalletAsync(
         MoneyGestorContext database,
         UInt64 walletId,
-        UInt64 userId) =>
-        await OwnedWallets(database, userId).FirstOrDefaultAsync(wallet => wallet.Id == walletId)
+        UInt64 userId,
+        CancellationToken cancellationToken = default) =>
+        await OwnedWallets(database, userId).FirstOrDefaultAsync(wallet => wallet.Id == walletId, cancellationToken)
             ?? throw new ObjectNotFoundException("Wallet not found");
 
     internal static async Task LockOwnedWalletsAsync(
         MoneyGestorContext database,
         UInt64 userId,
+        CancellationToken cancellationToken,
         params UInt64[] walletIds) {
         foreach (var walletId in walletIds.Distinct().OrderBy(id => id)) {
             var wallets = await database.Wallets
@@ -33,11 +35,20 @@ internal static class OwnershipPolicy {
                     WHERE `Id` = {{walletId}} AND `UserId` = {{userId}}
                     FOR UPDATE
                     """)
-                .AsTracking()
-                .ToListAsync();
-            var wallet = wallets.SingleOrDefault();
-            if (wallet == null) {
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+            var lockedWallet = wallets.SingleOrDefault();
+            if (lockedWallet == null) {
                 throw new ObjectNotFoundException("Wallet not found");
+            }
+
+            var trackedWallet = database.Wallets.Local.SingleOrDefault(wallet => wallet.Id == walletId);
+            if (trackedWallet == null) {
+                database.Wallets.Attach(lockedWallet);
+            } else {
+                var entry = database.Entry(trackedWallet);
+                entry.CurrentValues.SetValues(lockedWallet);
+                entry.OriginalValues.SetValues(lockedWallet);
             }
         }
     }
@@ -45,15 +56,17 @@ internal static class OwnershipPolicy {
     internal static async Task<ColorDb> RequireAvailableColorAsync(
         MoneyGestorContext database,
         UInt64 colorId,
-        UInt64 userId) =>
-        await AvailableColors(database, userId).FirstOrDefaultAsync(color => color.Id == colorId)
+        UInt64 userId,
+        CancellationToken cancellationToken = default) =>
+        await AvailableColors(database, userId).FirstOrDefaultAsync(color => color.Id == colorId, cancellationToken)
             ?? throw new ObjectNotFoundException("Color not found");
 
     internal static async Task<TransactionTypeDb> RequireAvailableTransactionTypeAsync(
         MoneyGestorContext database,
         UInt64 transactionTypeId,
-        UInt64 userId) =>
-        await AvailableTransactionTypes(database, userId).FirstOrDefaultAsync(type => type.Id == transactionTypeId)
+        UInt64 userId,
+        CancellationToken cancellationToken = default) =>
+        await AvailableTransactionTypes(database, userId).FirstOrDefaultAsync(type => type.Id == transactionTypeId, cancellationToken)
             ?? throw new ObjectNotFoundException("Transaction type not found");
 }
 

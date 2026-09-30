@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository, aggiornato al 27 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 29 settembre 2026.
 
 ## Vista generale
 
@@ -37,6 +37,10 @@ espone metriche Prometheus aggregate senza label ad alta cardinalita; i retry co
 producono eventi strutturati. Serilog legge livelli, override e policy dei file da settings.json; EF SQL diagnostic e
 sempre vincolato a Development + Trace + opzione esplicita. Vedere l'evidenza OBS-50 in
 [backend-modernization/evidence](backend-modernization/evidence/OBS-50_2026-09-29.md).
+
+PERF-51 completa la propagazione di RequestAborted fino ai comandi EF, il cleanup async e le query senza tracking.
+La dashboard v1 raggruppa ora gli aggregati in una query MySQL; la misura sintetica ha ridotto i round-trip da tre a
+uno. Vedere [evidenza PERF-51](backend-modernization/evidence/PERF-51_2026-09-29.md).
 
 ## Progetti backend
 

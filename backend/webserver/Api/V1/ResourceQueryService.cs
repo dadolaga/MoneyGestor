@@ -164,11 +164,7 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
         if (from > to) throw new logic.Exceptions.ListFilterValidationException("to", "invalid_date_range");
         var transactions = OwnershipQueryPolicy.OwnedTransactions(database, userId).AsNoTracking()
             .Where(transaction => transaction.TransactionDestinationId == null && transaction.Date >= from && transaction.Date <= to);
-        var incoming = await transactions.Where(transaction => transaction.Value > 0)
-            .Select(transaction => transaction.Value).SumAsync(cancellationToken);
-        var expense = await transactions.Where(transaction => transaction.Value < 0)
-            .Select(transaction => transaction.Value).SumAsync(cancellationToken);
-        var categories = await transactions.GroupBy(transaction => new {
+        var aggregates = await transactions.GroupBy(transaction => new {
                 transaction.TransactionTypeId,
                 transaction.TransactionType.Name,
                 transaction.TransactionType.UserId
@@ -177,10 +173,14 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
                 group.Key.TransactionTypeId,
                 group.Key.Name,
                 IsGlobal = group.Key.UserId == null,
+                Incoming = group.Sum(transaction => transaction.Value > 0 ? transaction.Value : 0m),
+                Expense = group.Sum(transaction => transaction.Value < 0 ? transaction.Value : 0m),
                 Value = group.Sum(transaction => transaction.Value)
             })
             .ToListAsync(cancellationToken);
-        var typeValues = categories.Select(item => new DashboardCategoryResponse(
+        var incoming = aggregates.Sum(item => item.Incoming);
+        var expense = aggregates.Sum(item => item.Expense);
+        var typeValues = aggregates.Select(item => new DashboardCategoryResponse(
             new TransactionTypeResponse(item.TransactionTypeId, item.Name, item.IsGlobal), item.Value)).ToArray();
         return new DashboardResponse(incoming, expense,
             typeValues.Where(item => item.Value > 0).ToArray(),
