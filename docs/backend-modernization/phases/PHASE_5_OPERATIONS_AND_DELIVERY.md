@@ -281,7 +281,7 @@ script per entrambi i DbContext non mostra variazioni DDL: cambiano soltanto `Pr
 Dettagli, warning e procedura di update: [evidenza PLT-52](../evidence/PLT-52_2026-09-30.md).
 ## CI-53 — Pipeline, container hardening e release/migration workflow
 
-**Stato:** non iniziato
+**Stato:** in corso; container e runbook aggiornati il 30 settembre 2026. Pipeline GitHub Actions rinviata dal proprietario.
 
 **Priorità:** P1
 
@@ -291,7 +291,8 @@ Automatizzare build, test, audit, immagini e deploy/migration con gate e rollbac
 
 **Situazione attuale**
 
-Nessun workflow CI. Docker multi-stage usa immagini .NET 10 e restore NuGet locked. Restano da affrontare in CI-53 i digest/tag immutabili, l'esecuzione non-root, i gate CI e il workflow release/migration. Compose non avvia MySQL; la CLI import/export deve essere assente dal deployment.
+Nessun workflow CI. Il Dockerfile backend usa digest multi-platform fissati, runtime .NET 10 senza SDK ed esecuzione non-root. Compose applica filesystem read-only, capability drop, volumi persistenti e readiness; MySQL resta esterno. Il runbook release/migration single-instance è manuale. Le GitHub Actions sono rinviate dal proprietario; non esiste quindi un gate merge automatico.
+
 **Motivazione**
 
 Le garanzie costruite nelle fasi precedenti devono essere obbligatorie e ripetibili.
@@ -300,12 +301,16 @@ Le garanzie costruite nelle fasi precedenti devono essere obbligatorie e ripetib
 
 - BAK-40, OBS-50, PERF-51, PLT-52.
 
+**Ambito CI-53 corrente**
+
+Hardening Docker e release manuale sono in scope e in corso. Le GitHub Actions, i gate automatici PR/merge e la pubblicazione remota di artifact/immagini sono rinviati dal proprietario. Lo step resta aperto fino alla decisione e configurazione della CI scelta.
+
 **File coinvolti**
 
 - nuovi workflow `.github/workflows/**` o CI scelta in DEC-07
 - `backend/*.dockerignore`, Dockerfile, `docker-compose.yml`
 - solution/config test, lock files, OpenAPI snapshot
-- runbook release/migration/rollback.
+- runbook release/migration/rollback: [RELEASE_RUNBOOK.md](../RELEASE_RUNBOOK.md).
 
 **Istruzioni operative**
 
@@ -350,6 +355,8 @@ Le garanzie costruite nelle fasi precedenti devono essere obbligatorie e ripetib
 - artifact e immagini riproducibili/tracciabili;
 - migration/release hanno single-run e rollback/recovery provati;
 - container sono healthy e least-privilege.
+
+**Esito (30 settembre 2026):** il container hardened e il runbook manuale sono verificati; le GitHub Actions restano rinviate e il ticket rimane in corso. [Evidenza CI-53](../evidence/CI-53_2026-09-30.md).
 
 ## QUA-54 — Warning zero e rimozione legacy/template
 

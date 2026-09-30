@@ -1,6 +1,6 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fasi 0-4 e PLT-52 completate**
+- Stato del documento: **Fasi 0-4 e PLT-52 completate; CI-53 in corso**
 - Data dell'ultimo aggiornamento: **30 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
@@ -33,6 +33,8 @@ Documenti operativi:
 - [Compatibilità API e frontend](API_COMPATIBILITY.md)
 - [Roadmap e dipendenze](ROADMAP.md)
 - [Runbook database: deployment, adozione e recovery](DATABASE_DEPLOYMENT.md)
+- [Runbook release/migration single-instance](RELEASE_RUNBOOK.md)
+- [Evidenza CI-53: container e release manuale](evidence/CI-53_2026-09-30.md)
 - [Fase 0 — baseline e rete di sicurezza](phases/PHASE_0_BASELINE_AND_SAFETY.md)
 - [Fase 1 — hardening di sicurezza](phases/PHASE_1_SECURITY.md)
 - [Fase 2 — persistenza e correttezza economica](phases/PHASE_2_DATA_AND_PERSISTENCE.md)

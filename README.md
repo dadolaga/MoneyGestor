@@ -168,10 +168,13 @@ Nel file `settings.json`, usa un host MySQL raggiungibile dal container, per ese
 ```powershell
 docker compose up --build -d backend frontend
 docker compose logs -f
+docker compose ps
 docker compose down
 ```
 
 Servizi esposti:
+
+Backend e frontend sono pubblicati su loopback per default; l'healthcheck del backend viene verificato e il frontend aspetta il backend healthy. Le chiavi Data Protection sono nel volume persistente `backend-data-protection`, separato dal backup MySQL. Non rimuovere i volumi con `docker compose down -v` durante il rilascio. La procedura è nel [runbook release/migration](docs/backend-modernization/RELEASE_RUNBOOK.md).
 
 - frontend: `http://localhost:3000`
 - backend: `http://localhost:5000`

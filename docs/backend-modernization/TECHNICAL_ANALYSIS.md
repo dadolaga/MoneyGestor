@@ -97,7 +97,7 @@ incrementale può mostrare 0 warning perché non ricompila i progetti: per misur
 | TST-02 | P1 | confermato | nessun test HTTP/CLI/concorrenza e difetti interni ad alcuni test |
 | DEP-01 | P1 | confermato | Playwright inutilizzato introduce `System.Text.Json 6.0.5` vulnerabile |
 | DEP-02 | P1 | completato (PLT-52, 30 settembre 2026) | .NET 10 LTS, EF Core 10, provider MySQL e dipendenze coerenti |
-| OPS-01 | P2 | confermato | nessuna CI, lock NuGet, healthcheck container o immagine pinning forte |
+| OPS-01 | P2 | parzialmente risolto (CI-53, 30 settembre 2026) | container backend hardened e runbook manuale; pipeline remota rinviata dal proprietario |
 | QUA-01 | P2 | confermato | 79 warning, codice template/legacy, naming e using inutilizzati |
 
 ## Sicurezza e isolamento fra utenti
@@ -468,11 +468,11 @@ read-only. Criticità:
 - il parser web e quello CLI sono due implementazioni diverse dello stesso schema;
 - `forceUpdate` non ha effetto;
 - `launchSettings.json` della CLI contiene un path assoluto personale;
-- Docker usa tag `8.0` mobili, nessun healthcheck, nessun utente non-root esplicito e nessun `--locked-mode`;
-- Compose non gestisce MySQL, readiness o ordine basato su health;
+- Docker backend ora usa digest multi-platform fissati, healthcheck e utente non-root; Compose applica filesystem read-only e capability drop; il frontend attende backend healthy.
+- Compose non avvia MySQL per scelta; il deployment single-instance e documentato, la CI remota e rinviata e non c'e gate automatico di merge.
 - la CLI container non monta una directory backup;
-- non esistono pipeline CI o deployment manifest oltre Compose;
-- non sono presenti `global.json`, `packages.lock.json` o central package management.
+- Non esiste una pipeline CI remota; il release/migration workflow single-instance manuale e in RELEASE_RUNBOOK.md.
+- PLT-52 ha introdotto global.json, central package management e lock NuGet.
 
 La modernizzazione non deve imporre Kubernetes, cloud secret manager o database gestito senza requisiti. Deve però
 separare configurazione non sensibile da segreti, validare all'avvio e documentare in modo deterministico la topologia

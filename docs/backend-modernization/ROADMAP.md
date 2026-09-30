@@ -152,7 +152,6 @@ La decisione DEC-08 è stata riaperta e sostituita il 27 settembre 2026. L'imple
 **Gate fase 4:** CLI legacy dimostrata fail-closed; backup hash-verificato; restore staging confrontato e validato;
 rollback eseguito senza perdita del database sorgente; runbook provato con evidenza su ambiente isolato. La fase è completata il 29 settembre 2026; vedere l'evidenza [BAK-41..43](evidence/BAK-41_43_2026-09-29.md).
 
-
 ### Fase 5 — qualità operativa e piattaforma
 
 Scheda: [PHASE_5_OPERATIONS_AND_DELIVERY.md](phases/PHASE_5_OPERATIONS_AND_DELIVERY.md)
@@ -162,9 +161,12 @@ Scheda: [PHASE_5_OPERATIONS_AND_DELIVERY.md](phases/PHASE_5_OPERATIONS_AND_DELIV
 | OBS-50 | P2 | completato (29 settembre 2026) | logging configurabile, health, metriche e tracing minimo | API-34 |
 | PERF-51 | P2 | completato (29 settembre 2026) | query, async, cancellation e resource lifetime | DAT-24, API-34 |
 | PLT-52 | P1 | completato (30 settembre 2026) | allineamento dipendenze e .NET 10 LTS | API-34, DB-21 |
-| CI-53 | P1 | non iniziato | CI, container C# e release/migration workflow | BAK-40, OBS-50, PERF-51, PLT-52 |
+| CI-53 | P1 | in corso (container hardening 30 settembre 2026; GitHub Actions rinviate) | CI, container C# e release/migration workflow | BAK-40, OBS-50, PERF-51, PLT-52 |
 | QUA-54 | P3 | non iniziato | warning zero e rimozione codice legacy/template | CI-53 |
 
+**Evidenza CI-53:** [container e release manuale](evidence/CI-53_2026-09-30.md).
+
+**Stato CI-53:** Docker .NET 10 hardened e runbook release manuale sono pronti. GitHub Actions, gate merge automatici e scansione automatica artifact restano rinviati; nessuna CI GitHub è stata aggiunta. [Runbook operativo](RELEASE_RUNBOOK.md).
 **Gate PLT-52 superato il 30 settembre 2026.** Evidenza: [upgrade .NET 10 e dipendenze](evidence/PLT-52_2026-09-30.md).
 
 **Gate finale:** build/test/audit riproducibili in CI; 0 warning concordati; deploy e migration con rollback; health e
