@@ -113,12 +113,12 @@ public class Program {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options => {
             options.SupportNonNullableReferenceTypes();
-            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
+            options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo {
                 Title = "MoneyGestor API",
                 Version = "v1",
                 Description = "Cookie-authenticated API. Unsafe requests require the antiforgery header."
             });
-            options.SwaggerDoc("legacy", new Microsoft.OpenApi.Models.OpenApiInfo {
+            options.SwaggerDoc("legacy", new Microsoft.OpenApi.OpenApiInfo {
                 Title = "MoneyGestor Legacy API",
                 Version = "legacy",
                 Description = "Deprecated compatibility contract. The raw Authorization token is temporary."
@@ -127,21 +127,21 @@ public class Program {
                 var isV1 = description.RelativePath?.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase) == true;
                 return document == "v1" ? isV1 : document == "legacy" && !isV1;
             });
-            options.AddSecurityDefinition("MoneyGestorCookie", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                In = Microsoft.OpenApi.Models.ParameterLocation.Cookie,
+            options.AddSecurityDefinition("MoneyGestorCookie", new Microsoft.OpenApi.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.ParameterLocation.Cookie,
                 Name = "MoneyGestor.Auth",
                 Description = "Identity session cookie; issued by /api/v1/auth/login."
             });
-            options.AddSecurityDefinition("AntiforgeryHeader", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            options.AddSecurityDefinition("AntiforgeryHeader", new Microsoft.OpenApi.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.ParameterLocation.Header,
                 Name = "X-CSRF-TOKEN",
                 Description = "Request token from GET /api/v1/auth/antiforgery."
             });
-            options.AddSecurityDefinition("LegacyRawToken", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            options.AddSecurityDefinition("LegacyRawToken", new Microsoft.OpenApi.OpenApiSecurityScheme {
+                Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+                In = Microsoft.OpenApi.ParameterLocation.Header,
                 Name = "Authorization",
                 Description = "Deprecated raw token accepted only on legacy endpoints."
             });

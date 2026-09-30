@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace webserver.Api;
@@ -14,10 +14,10 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
         if (!path.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase)) {
             operation.Deprecated = true;
             var usesLegacyToken = context.ApiDescription.ParameterDescriptions.Any(parameter =>
-                parameter.Name.Equals("authorization", StringComparison.OrdinalIgnoreCase));
+                String.Equals(parameter.Name, "authorization", StringComparison.OrdinalIgnoreCase));
             if (usesLegacyToken) {
                 operation.Security = [new OpenApiSecurityRequirement {
-                    [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "LegacyRawToken" } }] = Array.Empty<String>()
+                    [new OpenApiSecuritySchemeReference("LegacyRawToken", context.Document)] = []
                 }];
             }
             return;
@@ -30,14 +30,15 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
         var protectedOperation = !anonymous && (explicitlyAuthorized || !antiforgeryEndpoint);
         var requirement = new OpenApiSecurityRequirement();
         if (protectedOperation) {
-            requirement[new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = CookieScheme } }] = Array.Empty<String>();
+            requirement[new OpenApiSecuritySchemeReference(CookieScheme, context.Document)] = [];
         }
         var unsafeMethod = context.ApiDescription.HttpMethod is "POST" or "PUT" or "PATCH" or "DELETE";
         if (unsafeMethod) {
-            requirement[new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = AntiforgeryScheme } }] = Array.Empty<String>();
+            requirement[new OpenApiSecuritySchemeReference(AntiforgeryScheme, context.Document)] = [];
         }
         if (requirement.Count > 0) operation.Security = [requirement];
 
+        operation.Responses ??= new OpenApiResponses();
         foreach (var status in ProblemStatuses) {
             var key = status.ToString(System.Globalization.CultureInfo.InvariantCulture);
             if (operation.Responses.ContainsKey(key)) continue;
@@ -61,15 +62,21 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
     }
 
     private static OpenApiSchema ProblemSchema() => new() {
-        Type = "object",
+        Type = JsonSchemaType.Object,
         Required = new HashSet<String> { "title", "status", "code", "traceId" },
-        Properties = new Dictionary<String, OpenApiSchema> {
-            ["type"] = new() { Type = "string", Format = "uri" },
-            ["title"] = new() { Type = "string" },
-            ["status"] = new() { Type = "integer", Format = "int32" },
-            ["code"] = new() { Type = "string" },
-            ["traceId"] = new() { Type = "string" },
-            ["errors"] = new() { Type = "object", AdditionalProperties = new OpenApiSchema { Type = "array", Items = new OpenApiSchema { Type = "string" } } }
+        Properties = new Dictionary<String, IOpenApiSchema> {
+            ["type"] = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uri" },
+            ["title"] = new OpenApiSchema { Type = JsonSchemaType.String },
+            ["status"] = new OpenApiSchema { Type = JsonSchemaType.Integer, Format = "int32" },
+            ["code"] = new OpenApiSchema { Type = JsonSchemaType.String },
+            ["traceId"] = new OpenApiSchema { Type = JsonSchemaType.String },
+            ["errors"] = new OpenApiSchema {
+                Type = JsonSchemaType.Object,
+                AdditionalProperties = new OpenApiSchema {
+                    Type = JsonSchemaType.Array,
+                    Items = new OpenApiSchema { Type = JsonSchemaType.String }
+                }
+            }
         }
     };
 }

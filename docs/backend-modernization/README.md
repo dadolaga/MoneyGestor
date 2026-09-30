@@ -1,7 +1,7 @@
 # Modernizzazione backend di MoneyGestor
 
-- Stato del documento: **Fasi 0-4 completate**
-- Data dell'ultimo aggiornamento: **29 settembre 2026**
+- Stato del documento: **Fasi 0-4 e PLT-52 completate**
+- Data dell'ultimo aggiornamento: **30 settembre 2026**
 - Ambito analizzato: `backend/`, contratto HTTP corrente, integrazione frontend, configurazione, Docker e test.
 
 ## Scopo e regole
@@ -46,7 +46,7 @@ Documenti operativi:
 Il backend non richiede una riscrittura. Ha già una separazione comprensibile fra API, logica, persistenza, CLI e test;
 usa transazioni per le mutazioni composte; modella i trasferimenti come coppie collegate; usa hash PBKDF2 con salt e
 confronto a tempo costante; applica indici univoci ad alcuni vincoli essenziali; e dispone ora di una suite sicura con
-144 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log, lifetime DI e
+146 casi ordinari fra command, infrastruttura, pipeline HTTP, Identity, migration, redazione dei log, lifetime DI e
 concorrenza economica.
 
 La base è però fragile per dati reali o uso multiutente. Le priorità confermate sono:
@@ -70,9 +70,7 @@ La base è però fragile per dati reali o uso multiutente. Le priorità conferma
    ripetuta negli action method e filtri/ordinamenti riflettono liberamente sulle entità persistenti.
 7. **Qualità verificabile.** La Fase 0 ha aggiunto i primi test HTTP e rimosso Playwright con la vulnerabilità
    transitiva nota. Restano assenti test round-trip della CLI, CI e una copertura HTTP completa.
-8. **Ciclo di vita runtime.** Il progetto usa .NET 8, che al 20 settembre 2026 è in maintenance e termina il supporto il
-   10 novembre 2026. Il passaggio a .NET 10 LTS va pianificato, ma dopo la rete di sicurezza e senza mescolarlo ai fix di
-   autorizzazione.
+8. **Ciclo di vita runtime.** PLT-52 ha completato il passaggio a .NET 10 LTS, EF Core 10 e provider MySQL Oracle compatibile; SDK e dipendenze sono fissati e il restore usa lock file.
 
 ## Architettura attuale
 
@@ -124,6 +122,8 @@ Caratteristiche della destinazione:
 Non è necessario creare subito altri progetti .NET. I confini possono essere corretti dentro la soluzione corrente;
 un'eventuale rinomina o suddivisione dei progetti deve essere l'ultimo esito di una necessità misurata, non un
 prerequisito.
+
+PLT-52 è documentato nell'[evidenza del 30 settembre 2026](evidence/PLT-52_2026-09-30.md).
 
 ## Baseline verificata
 
@@ -182,7 +182,7 @@ dei comandi e dei test indicati nella scheda; non basta che il codice compili.
 ## Riferimenti esterni verificati
 
 - [.NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy): .NET 8 termina il supporto il
-  10 novembre 2026; .NET 10 LTS è supportato fino al 14 novembre 2028.
+  10 novembre 2026; .NET 10 LTS è supportato fino al 15 novembre 2028.
 - [NuGet — System.Text.Json 6.0.5](https://www.nuget.org/packages/System.Text.Json/6.0.5): pacchetto deprecato e con
   vulnerabilità High.
 - [MySQL Connector/NET — supporto EF Core](https://dev.mysql.com/doc/connector-net/en/connector-net-entityframework-core.html):

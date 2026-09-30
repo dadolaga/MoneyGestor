@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository, aggiornato al 29 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 30 settembre 2026.
 
 ## Vista generale
 
@@ -55,7 +55,7 @@ Contiene `MoneyGestorContext` e le entità persistenti:
 - `TransactionTypeDb`
 - `TransactionDb`
 
-Il provider è `MySql.EntityFrameworkCore`. Entrambi i context ricevono `DbContextOptions` dal composition root; host,
+Il provider è `MySql.EntityFrameworkCore 10.0.9` (Oracle Connector/NET 26.7.0), allineato a EF Core 10. Entrambi i context ricevono `DbContextOptions` dal composition root; host,
 porta, database e credenziali provengono da options tipizzate validate all'avvio, senza fallback `root/root` né stato
 statico nel layer di persistenza.
 
@@ -173,7 +173,7 @@ e rollback. Subito dopo lo startup esegue un preflight
 read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
 ID tecnici, senza correzioni automatiche o PII, e il bootstrap Identity blocca collisioni normalizzate.
 
-Il Compose avvia backend, frontend e, su profilo `tools`, la CLI; MySQL resta esterno.
+Il Compose avvia backend e frontend; MySQL resta esterno. Il backend targetta .NET 10 LTS; pacchetti centralizzati e lockati si trovano in `backend/Directory.Packages.props` e `backend/*/packages.lock.json`.
 
 ## Logging sicuro
 

@@ -1,15 +1,16 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore webserver/webserver.csproj
+RUN dotnet restore webserver/webserver.csproj --locked-mode
 RUN dotnet publish webserver/webserver.csproj \
     -c Release \
-    -o /app/publish
+    -o /app/publish \
+    --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 WORKDIR /app
 

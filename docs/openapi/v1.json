@@ -22,6 +22,7 @@
         },
         "required": [
           "id",
+          "isGlobal",
           "value"
         ],
         "type": "object"
@@ -521,7 +522,7 @@
     "title": "MoneyGestor API",
     "version": "v1"
   },
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "paths": {
     "/api/v1/auth/antiforgery": {
       "get": {
@@ -6577,6 +6578,7 @@
             "name": "WalletId",
             "schema": {
               "format": "int64",
+              "maximum": 1.8446744073709552E+19,
               "minimum": 1,
               "type": "integer"
             }
@@ -6586,6 +6588,7 @@
             "name": "TypeId",
             "schema": {
               "format": "int64",
+              "maximum": 1.8446744073709552E+19,
               "minimum": 1,
               "type": "integer"
             }
@@ -11372,5 +11375,25 @@
         ]
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Colors"
+    },
+    {
+      "name": "DashboardV1"
+    },
+    {
+      "name": "Transactions"
+    },
+    {
+      "name": "TransactionTypes"
+    },
+    {
+      "name": "Wallets"
+    }
+  ]
 }

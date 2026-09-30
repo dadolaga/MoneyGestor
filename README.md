@@ -6,7 +6,7 @@ MoneyGestor è un'applicazione full-stack per gestire finanze personali: utenti,
 
 ## Stack
 
-- Backend: ASP.NET Core 8, Entity Framework Core e MySQL
+- Backend: ASP.NET Core 10 LTS, Entity Framework Core 10 e MySQL 8.4 LTS (provider Oracle Connector/NET)
 - Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui con primitive Radix e next-intl; MUI resta nelle route legacy e TanStack è escluso
 - Test backend: NUnit
 - Strumenti: CLI .NET per esportazione e importazione ZIP/CSV
@@ -47,13 +47,14 @@ Approfondimenti:
 - [Convenzioni frontend](frontend/README_DEV.md)
 
 PERF-51 ha completato l'ottimizzazione misurata della dashboard e la propagazione della cancellazione nelle operazioni EF.
+PLT-52 ha portato il backend a .NET 10 LTS con pacchetti centralizzati e restore lockati.
 Dettagli e limiti nella [roadmap backend](docs/backend-modernization/ROADMAP.md).
 
 ## Prerequisiti
 
 Per lo sviluppo locale:
 
-- .NET SDK 8 o successivo
+- .NET SDK 10; `global.json` fissa il feature band minimo 10.0.400
 - Node.js 22 e npm
 - MySQL raggiungibile dalla macchina
 - Docker Desktop per eseguire i test backend con il database effimero
@@ -180,7 +181,8 @@ Swagger è abilitato solo con `ASPNETCORE_ENVIRONMENT=Development`; il Compose i
 ## Verifiche
 
 ```powershell
-dotnet build .\backend\backend.sln
+dotnet restore .\backend\backend.sln --locked-mode
+dotnet build .\backend\backend.sln --no-restore
 npm --prefix .\frontend run typecheck
 npm --prefix .\frontend run lint
 npm --prefix .\frontend run build
@@ -191,7 +193,7 @@ casuale con prefisso `mg_test_`, una porta dinamica e credenziali casuali; non e
 Docker deve essere disponibile:
 
 ```powershell
-dotnet test .\backend\TestProject\TestProject.csproj
+dotnet test .\backend\TestProject\TestProject.csproj --no-restore
 ```
 
 ## Backup e recovery del database

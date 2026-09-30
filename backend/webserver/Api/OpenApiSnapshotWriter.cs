@@ -1,4 +1,4 @@
-using Microsoft.OpenApi.Writers;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,7 +14,7 @@ public static class OpenApiSnapshotWriter {
             var buffer = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
             var writer = new OpenApiJsonWriter(buffer);
             provider.GetSwagger(documentName).SerializeAsV3(writer);
-            writer.Flush();
+            buffer.Flush();
             var root = JsonNode.Parse(buffer.ToString()) ?? throw new InvalidOperationException($"OpenAPI {documentName} document was empty.");
             var canonical = Canonicalize(root).ToJsonString(JsonOptions) + Environment.NewLine;
             File.WriteAllText(Path.Combine(outputDirectory, $"{documentName}.json"), canonical);

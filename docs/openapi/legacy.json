@@ -215,7 +215,7 @@
     "title": "MoneyGestor Legacy API",
     "version": "legacy"
   },
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "paths": {
     "/WeatherForecast": {
       "get": {
@@ -830,5 +830,31 @@
         ]
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Color"
+    },
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "Transaction"
+    },
+    {
+      "name": "Type"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Wallet"
+    },
+    {
+      "name": "WeatherForecast"
+    },
+    {
+      "name": "webserver"
+    }
+  ]
 }

@@ -96,7 +96,7 @@ incrementale può mostrare 0 warning perché non ricompila i progetti: per misur
 | TST-01 | P0 | confermato | test distruttivi con destinazione e credenziali hard-coded |
 | TST-02 | P1 | confermato | nessun test HTTP/CLI/concorrenza e difetti interni ad alcuni test |
 | DEP-01 | P1 | confermato | Playwright inutilizzato introduce `System.Text.Json 6.0.5` vulnerabile |
-| DEP-02 | P1 | confermato | .NET 8 vicino a fine supporto e set di dipendenze Microsoft 8/9 misto |
+| DEP-02 | P1 | completato (PLT-52, 30 settembre 2026) | .NET 10 LTS, EF Core 10, provider MySQL e dipendenze coerenti |
 | OPS-01 | P2 | confermato | nessuna CI, lock NuGet, healthcheck container o immagine pinning forte |
 | QUA-01 | P2 | confermato | 79 warning, codice template/legacy, naming e using inutilizzati |
 
@@ -455,15 +455,10 @@ altre vulnerabilità.
 
 ### DEP-02 — supporto e allineamento
 
-**Confermato, P1.** Il target è `net8.0`. Al 20 settembre 2026 .NET 8 termina il supporto il 10 novembre 2026; .NET 10
-LTS è la destinazione naturale. Gli asset risolti includono EF Core 8.0.20 e, nel webserver, varie
-`Microsoft.Extensions.* 9.0.0` tramite Serilog.AspNetCore 9. Il provider dichiarato è
-`MySql.EntityFrameworkCore 9.0.9`. Le versioni Serilog dirette sono 4.3.0 e 4.3.1.
-
-L'upgrade deve allineare SDK/runtime, EF Core, provider MySQL e test stack in una matrice provata contro la versione
-MySQL reale. Non mescolarlo con la migrazione `decimal` o con il redesign auth. Introdurre `global.json`, gestione
-centrale/lock delle versioni e restore locked solo dopo aver scelto la matrice.
-
+**Risolto il 30 settembre 2026 con PLT-52.** Il target è `net10.0`; EF Core/Identity 10.0.12 e provider Oracle
+`MySql.EntityFrameworkCore 10.0.9` usano Connector/NET 26.7.0. Serilog.AspNetCore 10.0.0 e Swashbuckle 10.2.3
+sono allineati. SDK e versioni pacchetti sono centralizzati e i restore sono bloccati. Il confronto degli script migration
+per entrambi i DbContext ha confermato nessuna variazione DDL. Vedere [evidenza PLT-52](evidence/PLT-52_2026-09-30.md).
 ## Configurazione, Docker e deployment
 
 Aspetti positivi: `settings.json` è ignorato, l'esempio usa un placeholder e i container montano la configurazione

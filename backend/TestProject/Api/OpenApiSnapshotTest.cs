@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Writers;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -35,7 +35,7 @@ internal sealed class OpenApiSnapshotTest {
         using var writerBuffer = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
         var writer = new OpenApiJsonWriter(writerBuffer);
         document.SerializeAsV3(writer);
-        writer.Flush();
+        writerBuffer.Flush();
 
         var snapshot = Canonicalize(JsonNode.Parse(writerBuffer.ToString())!).ToJsonString(new JsonSerializerOptions {
             WriteIndented = true

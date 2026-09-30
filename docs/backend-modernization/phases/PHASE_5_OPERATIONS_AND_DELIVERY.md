@@ -200,7 +200,7 @@ Migliora scalabilità senza cache o architetture aggiuntive e chiude resource le
 
 ## PLT-52 — Allineamento dipendenze e .NET 10 LTS
 
-**Stato:** non iniziato
+**Stato:** completato il 30 settembre 2026
 
 **Priorità:** P1, per fine supporto .NET 8 imminente
 
@@ -208,11 +208,9 @@ Migliora scalabilità senza cache o architetture aggiuntive e chiude resource le
 
 Portare runtime/framework/provider a una matrice supportata e riproducibile, senza mescolare modifiche di dominio.
 
-**Situazione attuale**
+**Situazione iniziale (20 settembre 2026)**
 
-Target `net8.0`, EOL 10 novembre 2026. Asset includono EF Core 8.0.20, componenti Microsoft.Extensions 8/9,
-`MySql.EntityFrameworkCore 9.0.9` e test stack datato. Nessun SDK pin o lock NuGet.
-
+Il target era `net8.0`, con EF Core 8.0.20, componenti Microsoft.Extensions 8/9, `MySql.EntityFrameworkCore 9.0.9` e test stack datato. Mancavano SDK pin e lock NuGet.
 **Motivazione**
 
 Ricevere patch di sicurezza/supporto e ridurre incompatibilità transitive.
@@ -272,6 +270,15 @@ Ricevere patch di sicurezza/supporto e ridurre incompatibilità transitive.
 - restore riproducibile e audit pulito/waiver formale;
 - nessuna breaking change funzionale non pianificata.
 
+
+**Esito (30 settembre 2026):** tutti i cinque progetti backend targettano `net10.0`. `global.json` fissa SDK 10.0.400
+con roll-forward `latestFeature`; `Directory.Packages.props` centralizza il set e i cinque `packages.lock.json`
+rendono i restore riproducibili. Il tool locale `dotnet-ef` è fissato a 10.0.12. Le immagini build/runtime usano .NET 10
+e Docker ripristina in modalità locked. Il provider Oracle `MySql.EntityFrameworkCore 10.0.9` usa Connector/NET 26.7.0,
+è allineato a EF Core 10 e dichiara compatibilità MySQL 8.0+; il target MySQL 8.4 LTS è coperto. La verifica degli
+script per entrambi i DbContext non mostra variazioni DDL: cambiano soltanto `ProductVersion` nelle righe di history
+(da 8.0.20 a 10.0.12). Restore locked, build Release, 146 test MySQL Testcontainers e audit NuGet sono superati.
+Dettagli, warning e procedura di update: [evidenza PLT-52](../evidence/PLT-52_2026-09-30.md).
 ## CI-53 — Pipeline, container hardening e release/migration workflow
 
 **Stato:** non iniziato
@@ -284,9 +291,7 @@ Automatizzare build, test, audit, immagini e deploy/migration con gate e rollbac
 
 **Situazione attuale**
 
-Nessun workflow CI. Docker multi-stage esiste, ma usa tag mobili `8.0`, root implicito, nessun healthcheck e restore non
-locked. Compose non avvia MySQL; la CLI import/export deve essere bloccata e assente dal deployment.
-
+Nessun workflow CI. Docker multi-stage usa immagini .NET 10 e restore NuGet locked. Restano da affrontare in CI-53 i digest/tag immutabili, l'esecuzione non-root, i gate CI e il workflow release/migration. Compose non avvia MySQL; la CLI import/export deve essere assente dal deployment.
 **Motivazione**
 
 Le garanzie costruite nelle fasi precedenti devono essere obbligatorie e ripetibili.
