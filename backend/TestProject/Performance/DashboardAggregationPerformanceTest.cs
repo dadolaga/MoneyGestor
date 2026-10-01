@@ -22,6 +22,7 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
         foreach (var userId in cleanupUsers) {
             await CleanupDatasetAsync(userId);
         }
+
         cleanupUsers.Clear();
     }
 
@@ -62,6 +63,7 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
             Assert.That(response.Incoming, Is.EqualTo(1350m));
             Assert.That(response.Expense, Is.EqualTo(-700m));
         }
+
         var allocated = (GC.GetTotalAllocatedBytes(true) - allocatedBefore) / elapsedMilliseconds.Length;
         Array.Sort(elapsedMilliseconds);
 
@@ -169,7 +171,7 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
     }
 
     private static Double Percentile(Double[] sorted, Double percentile) =>
-        sorted[(Int32)Math.Ceiling(percentile * sorted.Length) - 1];
+        sorted[(Int32) Math.Ceiling(percentile * sorted.Length) - 1];
 
     private sealed class CancelFirstReaderInterceptor(CancellationTokenSource cancellation) : DbCommandInterceptor {
         private Int32 canceled;
@@ -184,6 +186,7 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
                 cancellation.Cancel();
                 await Task.Delay(Timeout.Infinite, cancellation.Token);
             }
+
             return result;
         }
     }

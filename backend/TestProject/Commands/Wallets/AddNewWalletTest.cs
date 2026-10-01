@@ -98,7 +98,7 @@ namespace TestProject.Commands.Wallets {
             var firstCommand = new AddNewWalletCommand("concurrent-wallet", 10, wallet.ColorId);
             var secondCommand = new AddNewWalletCommand("concurrent-wallet", 20, wallet.ColorId);
 
-            static async Task<Exception?> CaptureAsync(
+            static async Task<Exception?> captureAsync(
                 ExecutorManager executor,
                 AddNewWalletCommand command) {
                 try {
@@ -110,8 +110,8 @@ namespace TestProject.Commands.Wallets {
             }
 
             var outcomes = await Task.WhenAll(
-                CaptureAsync(firstExecutor, firstCommand),
-                CaptureAsync(secondExecutor, secondCommand));
+                captureAsync(firstExecutor, firstCommand),
+                captureAsync(secondExecutor, secondCommand));
 
             Assert.Multiple(() => {
                 Assert.That(outcomes.Count(outcome => outcome == null), Is.EqualTo(1));

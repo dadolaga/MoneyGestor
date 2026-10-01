@@ -8,8 +8,9 @@ internal sealed class RequestCorrelationMiddleware(RequestDelegate next, ILogger
 
     public async Task InvokeAsync(HttpContext context) {
         var traceId = Activity.Current?.TraceId.ToString();
-        if (String.IsNullOrWhiteSpace(traceId) || traceId.All(character => character == '0'))
+        if (String.IsNullOrWhiteSpace(traceId) || traceId.All(character => character == '0')) {
             traceId = ActivityTraceId.CreateRandom().ToString();
+        }
 
         var correlationId = Guid.NewGuid().ToString("N");
         var externalCorrelationId = context.Request.Headers["X-Correlation-ID"].ToString();

@@ -13,11 +13,13 @@ internal static class LoggerFactory {
             .MinimumLevel.Is(options.GetLevel())
             .Enrich.FromLogContext();
 
-        foreach (var (category, level) in options.Override)
+        foreach (var (category, level) in options.Override) {
             configuration.MinimumLevel.Override(category, Enum.Parse<LogEventLevel>(level, true));
+        }
 
-        if (options.Output.Console)
+        if (options.Output.Console) {
             configuration.WriteTo.Console(outputTemplate: outputFormat);
+        }
 
         if (options.Output.File != null) {
             SelfLog.Enable(message => Console.Error.WriteLine("Serilog sink error: " + message));

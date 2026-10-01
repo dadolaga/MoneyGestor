@@ -37,10 +37,7 @@ internal static class OwnershipPolicy {
                     """)
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
-            var lockedWallet = wallets.SingleOrDefault();
-            if (lockedWallet == null) {
-                throw new ObjectNotFoundException("Wallet not found");
-            }
+            var lockedWallet = wallets.SingleOrDefault() ?? throw new ObjectNotFoundException("Wallet not found");
 
             var trackedWallet = database.Wallets.Local.SingleOrDefault(wallet => wallet.Id == walletId);
             if (trackedWallet == null) {

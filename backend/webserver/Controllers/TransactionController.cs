@@ -19,7 +19,7 @@ namespace webserver.Controllers {
             var listFilter = ListFilterUtils.Convert(filter.Order, filter.Limit, filter.Offset, filter.Where);
             var page = await queries.GetLegacyTransactionsAsync(executor.UserId, listFilter, HttpContext.RequestAborted);
             return ListResponse(page.Items.Select(transaction => LegacyResourceMapper.ToLegacy(transaction, executor.UserId)).ToList(),
-                checked((Int32)page.TotalCount), "transaction");
+                checked((Int32) page.TotalCount), "transaction");
         }
 
         [HttpGet("{id}")]
@@ -33,8 +33,9 @@ namespace webserver.Controllers {
 
         [HttpPost]
         public async Task<IActionResult> Post([FromHeader(Name = "Authorization")] String authorization, [FromBody] Transaction transaction) {
-            if (transaction.Date == null || transaction.Wallet?.Id == null || transaction.Value == null || transaction.TransactionType?.Id == null)
+            if (transaction.Date == null || transaction.Wallet?.Id == null || transaction.Value == null || transaction.TransactionType?.Id == null) {
                 return ErrorResponse(10, "Not all mandatory data inserted");
+            }
 
             executor.SetToken(authorization);
             var command = new AddTransactionCommand(

@@ -23,7 +23,7 @@ internal sealed class DatabaseBootstrapTest {
             Name = "moneygestor",
             User = "moneygestor",
             Password = "not-a-real-secret",
-            BootstrapMode = (DatabaseBootstrapMode)999
+            BootstrapMode = (DatabaseBootstrapMode) 999
         };
 
         Assert.That(webserver.DatabaseOptions.IsValid(options), Is.False);

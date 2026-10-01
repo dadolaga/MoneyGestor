@@ -25,19 +25,23 @@ public sealed class BalanceReconciliationService(MoneyGestorContext database) {
 
         var connection = command.Connection!;
         var openedHere = connection.State != ConnectionState.Open;
-        if (openedHere)
+        if (openedHere) {
             await connection.OpenAsync(cancellationToken);
+        }
 
         try {
             var differences = new List<BalanceDifference>();
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-            while (await reader.ReadAsync(cancellationToken))
+            while (await reader.ReadAsync(cancellationToken)) {
                 differences.Add(new BalanceDifference(
                     Convert.ToUInt64(reader.GetValue(0)), reader.GetDecimal(1)));
+            }
+
             return new BalanceReconciliationReport(differences);
         } finally {
-            if (openedHere)
+            if (openedHere) {
                 await connection.CloseAsync();
+            }
         }
     }
 

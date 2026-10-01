@@ -26,6 +26,7 @@ public class Program {
                 return 1;
             }
         }
+
         if (args.Length > 0 && args[0] == "--export-openapi") {
             var output = args.Length > 1 ? args[1] : "docs/openapi";
             var exportApplication = BuildApplication(Array.Empty<String>());
@@ -39,8 +40,10 @@ public class Program {
                 await exportApplication.StopAsync();
                 await exportApplication.DisposeAsync();
             }
+
             return 0;
         }
+
         var app = BuildApplication(args);
         await InitializeApplicationAsync(app);
         await app.RunAsync();
@@ -48,11 +51,16 @@ public class Program {
     }
 
     private static String ResolveOpenApiOutputDirectory(String output) {
-        if (Path.IsPathRooted(output)) return Path.GetFullPath(output);
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent) {
-            if (File.Exists(Path.Combine(directory.FullName, "backend.sln")))
-                return Path.GetFullPath(output, directory.Parent!.FullName);
+        if (Path.IsPathRooted(output)) {
+            return Path.GetFullPath(output);
         }
+
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent) {
+            if (File.Exists(Path.Combine(directory.FullName, "backend.sln"))) {
+                return Path.GetFullPath(output, directory.Parent!.FullName);
+            }
+        }
+
         return Path.GetFullPath(output, Directory.GetCurrentDirectory());
     }
 
@@ -100,20 +108,20 @@ public class Program {
             .AddCheck<DatabaseReadinessHealthCheck>("database", tags: ["ready"]);
         AddDatabaseServices(builder.Services, builder.Environment);
 
-        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options => {
-            options.InvalidModelStateResponseFactory = context => {
-                if (!context.HttpContext.Request.Path.StartsWithSegments("/api/v1"))
-                    return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState));
-                var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState) {
-                    Type = "https://api.moneygestor.example/problems/validation-failed",
-                    Title = "Request validation failed",
-                    Status = StatusCodes.Status400BadRequest
-                };
-                problem.Extensions["code"] = "validation_failed";
-                problem.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
-                return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem) {
-                    ContentTypes = { "application/problem+json" }
-                };
+        builder.Services.AddControllers().ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context => {
+            if (!context.HttpContext.Request.Path.StartsWithSegments("/api/v1")) {
+                return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState));
+            }
+
+            var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState) {
+                Type = "https://api.moneygestor.example/problems/validation-failed",
+                Title = "Request validation failed",
+                Status = StatusCodes.Status400BadRequest
+            };
+            problem.Extensions["code"] = "validation_failed";
+            problem.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(problem) {
+                ContentTypes = { "application/problem+json" }
             };
         });
         builder.Services.AddEndpointsApiExplorer();
@@ -253,6 +261,7 @@ public class Program {
                 options.SwaggerEndpoint("/swagger/legacy/swagger.json", "MoneyGestor Legacy API (deprecated)");
             });
         }
+
         app.UseMiddleware<RequestCorrelationMiddleware>();
         if (!isTesting) {
             app.UseSerilogRequestLogging(options => {
@@ -260,11 +269,13 @@ public class Program {
                 options.EnrichDiagnosticContext = (diagnosticContext, httpContext) => {
                     diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
                     diagnosticContext.Set("CorrelationId", httpContext.Items["CorrelationId"]?.ToString() ?? String.Empty);
-                    if (httpContext.Items["ExternalCorrelationId"] is String externalId)
+                    if (httpContext.Items["ExternalCorrelationId"] is String externalId) {
                         diagnosticContext.Set("ExternalCorrelationId", externalId);
+                    }
                 };
             });
         }
+
         app.UseMiddleware<ObservabilityMetricsMiddleware>();
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
@@ -297,6 +308,7 @@ public class Program {
                     return;
                 }
             }
+
             await next(context);
         });
         app.UseAuthentication();
@@ -318,6 +330,7 @@ public class Program {
                     context.RequestAborted);
                 return;
             }
+
             await next(context);
         });
         app.UseMiddleware<LegacyCookieBridgeMiddleware>();
@@ -376,6 +389,7 @@ public class Program {
             throw new InvalidOperationException(
                 $"{pendingMigrations.Length} Identity migration(s) are pending while database bootstrap is disabled.");
         }
+
         if (pendingMigrations.Length > 0) {
             await identityDatabase.Database.MigrateAsync(cancellationToken);
         }
@@ -388,6 +402,7 @@ public class Program {
                 "Data integrity preflight detected {IssueCount} issue groups", exception.Report.Issues.Count);
             throw;
         }
+
         await services.GetRequiredService<LegacyIdentityBootstrapper>().RunAsync(cancellationToken);
 
         logger.LogInformation(new EventId(1101, "DatabaseBootstrapCompleted"),

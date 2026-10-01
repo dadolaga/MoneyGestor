@@ -7,8 +7,8 @@ using logic.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using webserver.Api.V1;
 using webserver.Auth;
 using webserver.Models;
@@ -31,11 +31,14 @@ namespace webserver.Controllers {
             var request = new RegisterAccountRequest(
                 user.Firstname, user.Lastname, user.Username, user.Email, user.Password!);
             var validation = new List<ValidationResult>();
-            if (!Validator.TryValidateObject(request, new ValidationContext(request), validation, true))
+            if (!Validator.TryValidateObject(request, new ValidationContext(request), validation, true)) {
                 return ErrorResponse(103, "Account validation failed");
+            }
+
             if (!abuseGuard.Permit("register", HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    request.Email, 5, TimeSpan.FromHours(1)))
+                    request.Email, 5, TimeSpan.FromHours(1))) {
                 return RateLimited();
+            }
 
             try {
                 var id = await accounts.RegisterAsync(request, HttpContext.RequestAborted);
@@ -47,11 +50,14 @@ namespace webserver.Controllers {
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Login login) {
-            if (String.IsNullOrWhiteSpace(login.User) || String.IsNullOrWhiteSpace(login.Password))
+            if (String.IsNullOrWhiteSpace(login.User) || String.IsNullOrWhiteSpace(login.Password)) {
                 return ErrorResponse(111, "Login fail");
+            }
+
             if (!abuseGuard.Permit("login", HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    login.User, 20, TimeSpan.FromMinutes(15)))
+                    login.User, 20, TimeSpan.FromMinutes(15))) {
                 return RateLimited();
+            }
 
             var result = await accounts.LoginAsync(
                 new LoginAccountRequest(login.User, login.Password, login.Remember.GetValueOrDefault(false)),

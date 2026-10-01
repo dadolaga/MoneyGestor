@@ -19,7 +19,7 @@ namespace logic.Commands.Transaction {
         internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
-            if(await database.TransactionTypes.AnyAsync(tt => tt.UserId == executorManager.UserId && tt.Name == name, cancellationToken)) {
+            if (await database.TransactionTypes.AnyAsync(tt => tt.UserId == executorManager.UserId && tt.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException("This transaction type already exist");
             }
 

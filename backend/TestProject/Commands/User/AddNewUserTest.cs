@@ -51,15 +51,13 @@ namespace TestProject.Commands.User {
 
         [Test]
         public void AddNewUser_NullParamThrow() {
-            Assert.Throws<MandatoryParamException>(() => {
-                _ = new AddNewUserCommand(
+            Assert.Throws<MandatoryParamException>(() => _ = new AddNewUserCommand(
                     firstname: null!,
                     lastname: null!,
                     email: null!,
                     username: null!,
                     password: null!
-                );
-            });
+                ));
         }
 
         [Test]

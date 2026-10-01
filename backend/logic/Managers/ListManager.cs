@@ -13,7 +13,7 @@ namespace logic.Managers {
             var selector = Expression.Lambda(Expression.Property(parameter, property), parameter);
             var method = first ? (descending ? "OrderByDescending" : "OrderBy") : (descending ? "ThenByDescending" : "ThenBy");
             var call = Expression.Call(typeof(Queryable), method, [typeof(T), property.PropertyType], source.Expression, Expression.Quote(selector));
-            return (IOrderedQueryable<T>)source.Provider.CreateQuery<T>(call);
+            return (IOrderedQueryable<T>) source.Provider.CreateQuery<T>(call);
         }
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, Order order, Boolean first = true) =>
@@ -21,7 +21,10 @@ namespace logic.Managers {
 
         public static IOrderedQueryable<T> OrderByPropertyName<T>(this IQueryable<T> source, IList<Order> orders) {
             IOrderedQueryable<T>? ordered = null;
-            foreach (var order in orders) ordered = (ordered ?? source).OrderByPropertyName(order, ordered == null);
+            foreach (var order in orders) {
+                ordered = (ordered ?? source).OrderByPropertyName(order, ordered == null);
+            }
+
             return ordered ?? throw new ArgumentException("At least one order is required.", nameof(orders));
         }
 
@@ -32,7 +35,10 @@ namespace logic.Managers {
             Expression member = Expression.Property(parameter, property);
             var memberType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             if (where.ComparatorType == EComparatorType.LIKE) {
-                if (memberType != typeof(String)) throw new ListFilterValidationException("where", "comparator_not_supported");
+                if (memberType != typeof(String)) {
+                    throw new ListFilterValidationException("where", "comparator_not_supported");
+                }
+
                 var contains = Expression.Call(member, nameof(String.Contains), Type.EmptyTypes, Expression.Constant(where.Value));
                 return source.Where(Expression.Lambda<Func<T, Boolean>>(contains, parameter));
             }
@@ -45,8 +51,12 @@ namespace logic.Managers {
             } catch (Exception exception) when (exception is FormatException or InvalidCastException or OverflowException or ArgumentOutOfRangeException) {
                 throw new ListFilterValidationException("where", "invalid_value");
             }
+
             Expression right = Expression.Constant(parsed, memberType);
-            if (memberType != property.PropertyType) right = Expression.Convert(right, property.PropertyType);
+            if (memberType != property.PropertyType) {
+                right = Expression.Convert(right, property.PropertyType);
+            }
+
             Expression predicate = where.ComparatorType switch {
                 EComparatorType.EQUAL => Expression.Equal(member, right),
                 EComparatorType.NOT_EQUAL => Expression.NotEqual(member, right),
@@ -67,11 +77,13 @@ namespace logic.Managers {
                 ordered = query.OrderByPropertyName("Id", descending: false);
             } else {
                 ordered = query.OrderByPropertyName(filter.Orders);
-                if (!filter.Orders.Any(order => order.Name.Equals("Id", StringComparison.OrdinalIgnoreCase)))
+                if (!filter.Orders.Any(order => order.Name.Equals("Id", StringComparison.OrdinalIgnoreCase))) {
                     ordered = ordered.OrderByPropertyName("Id", descending: false, first: false);
+                }
             }
-            var skip = checked((Int32)((UInt64)filter.Offset * filter.Limit));
-            return ordered.Skip(skip).Take(checked((Int32)filter.Limit));
+
+            var skip = checked((Int32) ((UInt64) filter.Offset * filter.Limit));
+            return ordered.Skip(skip).Take(checked((Int32) filter.Limit));
         }
     }
 }

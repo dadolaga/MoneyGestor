@@ -19,8 +19,9 @@ public sealed class LegacyIdentityBootstrapper(
                 """)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-        if (unmappedUsers.Count == 0)
+        if (unmappedUsers.Count == 0) {
             return;
+        }
 
         var legacyUsers = await legacyDatabase.Users.AsNoTracking()
             .Select(user => new { user.Id, user.Username, user.Email })

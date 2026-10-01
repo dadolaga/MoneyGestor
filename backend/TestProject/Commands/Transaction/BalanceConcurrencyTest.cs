@@ -131,7 +131,7 @@ internal sealed class BalanceConcurrencyTest : DatabaseBase {
             type.AddTransactionTypeCommand.Result, null);
         await setupExecutor.Execute(transaction);
 
-        async Task ExecuteIgnoringExpectedConflict(logic.Commands.ICommand<UInt64> command) {
+        async Task executeIgnoringExpectedConflict(logic.Commands.ICommand<UInt64> command) {
             await using var database = TestDatabaseRuntime.CreateContext();
             var executor = new ExecutorManager(
                 database,
@@ -145,8 +145,8 @@ internal sealed class BalanceConcurrencyTest : DatabaseBase {
         }
 
         await Task.WhenAll(
-            ExecuteIgnoringExpectedConflict(new UpdateTransactionCommand(transaction.Result, value: 20m)),
-            ExecuteIgnoringExpectedConflict(new DeleteTransactionCommand(transaction.Result)));
+            executeIgnoringExpectedConflict(new UpdateTransactionCommand(transaction.Result, value: 20m)),
+            executeIgnoringExpectedConflict(new DeleteTransactionCommand(transaction.Result)));
 
         await using var assertionDatabase = TestDatabaseRuntime.CreateContext();
         var storedTransactions = await assertionDatabase.Transactions.ToArrayAsync();

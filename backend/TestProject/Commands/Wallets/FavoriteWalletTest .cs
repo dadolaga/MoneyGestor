@@ -59,7 +59,7 @@ namespace TestProject.Commands.Wallets {
         public async Task DuplicateWalletNameDifferentUser() {
             var secondUser = new UserSample(username: $"{user.Username}_1", email: $"{user.Email}_1");
             var secondExecutor = await TestUtils.CreateExecutorManagerForUser(secondUser);
-            
+
             var favoriteWalletCommand = new FavoriteWalletCommand(walletId: wallet.AddWalletCommand.Result, favorite: true);
 
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await secondExecutor.Execute(favoriteWalletCommand));

@@ -3,14 +3,11 @@ using System;
 
 #nullable disable
 
-namespace database.Migrations
-{
+namespace database.Migrations {
     /// <inheritdoc />
-    public partial class DataPrecisionDatesAndBalanceConcurrency : Migration
-    {
+    public partial class DataPrecisionDatesAndBalanceConcurrency : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateIndex(
                 name: "IX_transaction_UserId_Date",
                 table: "transaction",
@@ -20,60 +17,60 @@ namespace database.Migrations
                 name: "IX_transaction_UserId",
                 table: "transaction");
 
-            migrationBuilder.AlterColumn<decimal>(
+            migrationBuilder.AlterColumn<Decimal>(
                 name: "Value",
                 table: "wallet",
                 type: "decimal(19,2)",
                 precision: 19,
                 scale: 2,
                 nullable: false,
-                oldClrType: typeof(double),
+                oldClrType: typeof(Double),
                 oldType: "double");
 
-            migrationBuilder.AlterColumn<decimal>(
+            migrationBuilder.AlterColumn<Decimal>(
                 name: "CurrentValue",
                 table: "wallet",
                 type: "decimal(19,2)",
                 precision: 19,
                 scale: 2,
                 nullable: false,
-                oldClrType: typeof(double),
+                oldClrType: typeof(Double),
                 oldType: "double");
 
-            migrationBuilder.AddColumn<ulong>(
+            migrationBuilder.AddColumn<UInt64>(
                 name: "BalanceVersion",
                 table: "wallet",
                 type: "bigint unsigned",
                 nullable: false,
                 defaultValue: 0ul);
 
-            migrationBuilder.AlterColumn<decimal>(
+            migrationBuilder.AlterColumn<Decimal>(
                 name: "Value",
                 table: "transaction",
                 type: "decimal(19,2)",
                 precision: 19,
                 scale: 2,
                 nullable: false,
-                oldClrType: typeof(double),
+                oldClrType: typeof(Double),
                 oldType: "double");
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<String>(
                 name: "LongDescription",
                 table: "transaction",
                 type: "varchar(4000)",
                 maxLength: 4000,
                 nullable: true,
-                oldClrType: typeof(string),
+                oldClrType: typeof(String),
                 oldType: "longtext",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<String>(
                 name: "Description",
                 table: "transaction",
                 type: "varchar(255)",
                 maxLength: 255,
                 nullable: true,
-                oldClrType: typeof(string),
+                oldClrType: typeof(String),
                 oldType: "longtext",
                 oldNullable: true);
 
@@ -92,8 +89,7 @@ namespace database.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateIndex(
                 name: "IX_transaction_UserId",
                 table: "transaction",
@@ -111,52 +107,52 @@ namespace database.Migrations
                 name: "BalanceVersion",
                 table: "wallet");
 
-            migrationBuilder.AlterColumn<double>(
+            migrationBuilder.AlterColumn<Double>(
                 name: "Value",
                 table: "wallet",
                 type: "double",
                 nullable: false,
-                oldClrType: typeof(decimal),
+                oldClrType: typeof(Decimal),
                 oldType: "decimal(19,2)",
                 oldPrecision: 19,
                 oldScale: 2);
 
-            migrationBuilder.AlterColumn<double>(
+            migrationBuilder.AlterColumn<Double>(
                 name: "CurrentValue",
                 table: "wallet",
                 type: "double",
                 nullable: false,
-                oldClrType: typeof(decimal),
+                oldClrType: typeof(Decimal),
                 oldType: "decimal(19,2)",
                 oldPrecision: 19,
                 oldScale: 2);
 
-            migrationBuilder.AlterColumn<double>(
+            migrationBuilder.AlterColumn<Double>(
                 name: "Value",
                 table: "transaction",
                 type: "double",
                 nullable: false,
-                oldClrType: typeof(decimal),
+                oldClrType: typeof(Decimal),
                 oldType: "decimal(19,2)",
                 oldPrecision: 19,
                 oldScale: 2);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<String>(
                 name: "LongDescription",
                 table: "transaction",
                 type: "longtext",
                 nullable: true,
-                oldClrType: typeof(string),
+                oldClrType: typeof(String),
                 oldType: "varchar(4000)",
                 oldMaxLength: 4000,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<String>(
                 name: "Description",
                 table: "transaction",
                 type: "longtext",
                 nullable: true,
-                oldClrType: typeof(string),
+                oldClrType: typeof(String),
                 oldType: "varchar(255)",
                 oldMaxLength: 255,
                 oldNullable: true);

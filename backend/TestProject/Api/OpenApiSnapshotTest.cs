@@ -59,8 +59,11 @@ internal sealed class OpenApiSnapshotTest {
 
     private static String FindRepositoryRoot() {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory != null; directory = directory.Parent) {
-            if (File.Exists(Path.Combine(directory.FullName, "backend.sln"))) return directory.Parent!.FullName;
+            if (File.Exists(Path.Combine(directory.FullName, "backend.sln"))) {
+                return directory.Parent!.FullName;
+            }
         }
+
         throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

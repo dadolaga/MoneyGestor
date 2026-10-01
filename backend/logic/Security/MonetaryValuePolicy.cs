@@ -13,5 +13,5 @@ public static class MonetaryValuePolicy {
     }
 
     private static Boolean HasMoreThanTwoDecimalPlaces(Decimal value) =>
-        (Decimal.GetBits(value)[3] >> 16 & 0x7F) > 2;
+        ((Decimal.GetBits(value)[3] >> 16) & 0x7F) > 2;
 }

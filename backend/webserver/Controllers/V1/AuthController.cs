@@ -70,6 +70,7 @@ public sealed class AuthController(
         if (!Permit("confirm", request.UserId, 10, TimeSpan.FromHours(1))) {
             return RateLimited();
         }
+
         try {
             await accounts.ConfirmEmailAsync(request);
             return NoContent();
@@ -84,11 +85,13 @@ public sealed class AuthController(
         if (!Permit("resend", request.Email, 5, TimeSpan.FromHours(1))) {
             return RateLimited();
         }
+
         try {
             await accounts.ResendConfirmationAsync(request.Email, cancellationToken);
         } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
             logger.LogWarning("Confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
         }
+
         return Accepted(new { message = "If the account exists, a confirmation email will be sent." });
     }
 
@@ -98,11 +101,13 @@ public sealed class AuthController(
         if (!Permit("forgot", request.Email, 5, TimeSpan.FromHours(1))) {
             return RateLimited();
         }
+
         try {
             await accounts.SendPasswordResetAsync(request.Email, cancellationToken);
         } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
             logger.LogWarning("Password reset email delivery failed ({ExceptionType})", exception.GetType().Name);
         }
+
         return Accepted(new { message = "If the account exists, a password reset email will be sent." });
     }
 
@@ -112,6 +117,7 @@ public sealed class AuthController(
         if (!Permit("reset", request.Email, 10, TimeSpan.FromHours(1))) {
             return RateLimited();
         }
+
         try {
             await accounts.ResetPasswordAsync(request);
             return NoContent();

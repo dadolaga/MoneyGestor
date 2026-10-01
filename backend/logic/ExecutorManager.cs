@@ -50,6 +50,7 @@ namespace logic {
             if (Token != null || userId != null || authenticatedUserId == 0) {
                 throw new InvalidOperationException("An authenticated user can only be assigned to a fresh executor.");
             }
+
             userId = authenticatedUserId;
             return this;
         }
@@ -82,6 +83,7 @@ namespace logic {
                     if (attempt == MaxAttempts || !DatabaseUpdatePolicy.IsRetryable(exception)) {
                         throw;
                     }
+
                     ConcurrencyRetryMetrics.RecordRetry();
                     logger?.LogWarning(new EventId(1301, "ConcurrencyRetry"),
                         "Retrying a concurrent write (Attempt {Attempt})", attempt + 1);
@@ -91,9 +93,11 @@ namespace logic {
                         await transaction.DisposeAsync();
                         transaction = null;
                     }
+
                     if (retryContext != null) {
                         await retryContext.DisposeAsync();
                     }
+
                     DbContext = primaryDbContext;
                 }
             }

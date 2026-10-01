@@ -4,71 +4,58 @@ using System;
 
 #nullable disable
 
-namespace database.Identity.Migrations
-{
+namespace database.Identity.Migrations {
     /// <inheritdoc />
-    public partial class CreateIdentityAccountSchema : Migration
-    {
+    public partial class CreateIdentityAccountSchema : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterDatabase()
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Name = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "longtext", nullable: true)
+                columns: table => new {
+                    Id = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Name = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<String>(type: "longtext", nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                })
+                constraints: table => table.PrimaryKey("PK_AspNetRoles", x => x.Id))
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
-                    LegacyUserId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "longtext", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "longtext", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "longtext", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "longtext", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                columns: table => new {
+                    Id = table.Column<String>(type: "varchar(255)", nullable: false),
+                    LegacyUserId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    UserName = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<String>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
+                    PasswordHash = table.Column<String>(type: "longtext", nullable: true),
+                    SecurityStamp = table.Column<String>(type: "longtext", nullable: true),
+                    ConcurrencyStamp = table.Column<String>(type: "longtext", nullable: true),
+                    PhoneNumber = table.Column<String>(type: "longtext", nullable: true),
+                    PhoneNumberConfirmed = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
+                    TwoFactorEnabled = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetime", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    LockoutEnabled = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
+                    AccessFailedCount = table.Column<Int32>(type: "int", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                })
+                constraints: table => table.PrimaryKey("PK_AspNetUsers", x => x.Id))
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                columns: table => new {
+                    Id = table.Column<Int32>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    RoleId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ClaimType = table.Column<string>(type: "longtext", nullable: true),
-                    ClaimValue = table.Column<string>(type: "longtext", nullable: true)
+                    RoleId = table.Column<String>(type: "varchar(255)", nullable: false),
+                    ClaimType = table.Column<String>(type: "longtext", nullable: true),
+                    ClaimValue = table.Column<String>(type: "longtext", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
@@ -81,16 +68,14 @@ namespace database.Identity.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                columns: table => new {
+                    Id = table.Column<Int32>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ClaimType = table.Column<string>(type: "longtext", nullable: true),
-                    ClaimValue = table.Column<string>(type: "longtext", nullable: true)
+                    UserId = table.Column<String>(type: "varchar(255)", nullable: false),
+                    ClaimType = table.Column<String>(type: "longtext", nullable: true),
+                    ClaimValue = table.Column<String>(type: "longtext", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
@@ -103,15 +88,13 @@ namespace database.Identity.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
-                columns: table => new
-                {
-                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "varchar(255)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "longtext", nullable: true),
-                    UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                columns: table => new {
+                    LoginProvider = table.Column<String>(type: "varchar(255)", nullable: false),
+                    ProviderKey = table.Column<String>(type: "varchar(255)", nullable: false),
+                    ProviderDisplayName = table.Column<String>(type: "longtext", nullable: true),
+                    UserId = table.Column<String>(type: "varchar(255)", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
@@ -124,13 +107,11 @@ namespace database.Identity.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    RoleId = table.Column<string>(type: "varchar(255)", nullable: false)
+                columns: table => new {
+                    UserId = table.Column<String>(type: "varchar(255)", nullable: false),
+                    RoleId = table.Column<String>(type: "varchar(255)", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
@@ -149,15 +130,13 @@ namespace database.Identity.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
-                columns: table => new
-                {
-                    UserId = table.Column<string>(type: "varchar(255)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Name = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Value = table.Column<string>(type: "longtext", nullable: true)
+                columns: table => new {
+                    UserId = table.Column<String>(type: "varchar(255)", nullable: false),
+                    LoginProvider = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Name = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Value = table.Column<String>(type: "longtext", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
@@ -214,8 +193,7 @@ namespace database.Identity.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 

@@ -4,47 +4,38 @@ using System;
 
 #nullable disable
 
-namespace database.Migrations
-{
+namespace database.Migrations {
     /// <inheritdoc />
-    public partial class CreateLegacySchema : Migration
-    {
+    public partial class CreateLegacySchema : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterDatabase()
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "user",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Firstname = table.Column<string>(type: "longtext", nullable: false),
-                    Lastname = table.Column<string>(type: "longtext", nullable: false),
-                    Email = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Username = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Password = table.Column<string>(type: "longtext", nullable: false)
+                    Firstname = table.Column<String>(type: "longtext", nullable: false),
+                    Lastname = table.Column<String>(type: "longtext", nullable: false),
+                    Email = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Username = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Password = table.Column<String>(type: "longtext", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_user", x => x.Id);
-                })
+                constraints: table => table.PrimaryKey("PK_user", x => x.Id))
                 .Annotation("MySQL:Charset", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "color",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(255)", nullable: true),
-                    Value = table.Column<uint>(type: "int unsigned", nullable: false),
-                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: true)
+                    Name = table.Column<String>(type: "varchar(255)", nullable: true),
+                    Value = table.Column<UInt32>(type: "int unsigned", nullable: false),
+                    UserId = table.Column<UInt64>(type: "bigint unsigned", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_color", x => x.Id);
                     table.ForeignKey(
                         name: "FK_color_user_UserId",
@@ -57,17 +48,15 @@ namespace database.Migrations
 
             migrationBuilder.CreateTable(
                 name: "login",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Token = table.Column<string>(type: "varchar(255)", nullable: false),
-                    IsLong = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Token = table.Column<String>(type: "varchar(255)", nullable: false),
+                    IsLong = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
                     Expirated = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                    UserId = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_login", x => x.Id);
                     table.ForeignKey(
                         name: "FK_login_user_UserId",
@@ -80,15 +69,13 @@ namespace database.Migrations
 
             migrationBuilder.CreateTable(
                 name: "transaction_type",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(255)", nullable: false),
-                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: true)
+                    Name = table.Column<String>(type: "varchar(255)", nullable: false),
+                    UserId = table.Column<UInt64>(type: "bigint unsigned", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_transaction_type", x => x.Id);
                     table.ForeignKey(
                         name: "FK_transaction_type_user_UserId",
@@ -101,19 +88,17 @@ namespace database.Migrations
 
             migrationBuilder.CreateTable(
                 name: "wallet",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(255)", nullable: false),
-                    Value = table.Column<double>(type: "double", nullable: false),
-                    CurrentValue = table.Column<double>(type: "double", nullable: false),
-                    Favorite = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    ColorId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                    Name = table.Column<String>(type: "varchar(255)", nullable: false),
+                    Value = table.Column<Double>(type: "double", nullable: false),
+                    CurrentValue = table.Column<Double>(type: "double", nullable: false),
+                    Favorite = table.Column<Boolean>(type: "tinyint(1)", nullable: false),
+                    ColorId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    UserId = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_wallet", x => x.Id);
                     table.ForeignKey(
                         name: "FK_wallet_color_ColorId",
@@ -132,22 +117,20 @@ namespace database.Migrations
 
             migrationBuilder.CreateTable(
                 name: "transaction",
-                columns: table => new
-                {
-                    Id = table.Column<ulong>(type: "bigint unsigned", nullable: false)
+                columns: table => new {
+                    Id = table.Column<UInt64>(type: "bigint unsigned", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Description = table.Column<string>(type: "longtext", nullable: true),
-                    LongDescription = table.Column<string>(type: "longtext", nullable: true),
+                    Description = table.Column<String>(type: "longtext", nullable: true),
+                    LongDescription = table.Column<String>(type: "longtext", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    TransactionTypeId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    UserId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    UserInsertId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    WalletId = table.Column<ulong>(type: "bigint unsigned", nullable: false),
-                    Value = table.Column<double>(type: "double", nullable: false),
-                    TransactionDestinationId = table.Column<ulong>(type: "bigint unsigned", nullable: true)
+                    TransactionTypeId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    UserId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    UserInsertId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    WalletId = table.Column<UInt64>(type: "bigint unsigned", nullable: false),
+                    Value = table.Column<Double>(type: "double", nullable: false),
+                    TransactionDestinationId = table.Column<UInt64>(type: "bigint unsigned", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_transaction", x => x.Id);
                     table.ForeignKey(
                         name: "FK_transaction_transaction_TransactionDestinationId",
@@ -286,8 +269,7 @@ namespace database.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "login");
 

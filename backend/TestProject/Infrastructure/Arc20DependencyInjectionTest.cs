@@ -100,6 +100,7 @@ internal sealed class Arc20DependencyInjectionTest : DatabaseBase {
             if (eventData.Context != null) {
                 contextIds.Add(eventData.Context.ContextId.InstanceId);
             }
+
             SaveCalls++;
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }

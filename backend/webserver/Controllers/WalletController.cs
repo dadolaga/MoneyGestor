@@ -15,8 +15,9 @@ namespace webserver.Controllers {
         IResourceQueryService queries) : MoneyManagerController {
         [HttpPost]
         public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, [FromBody] Wallet wallet) {
-            if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null)
+            if (wallet.Color?.Id == null || wallet.Value == null || wallet.Name == null) {
                 return ErrorResponse(10, "Not all mandatory data inserted");
+            }
 
             executor.SetToken(authorization);
             var command = new AddNewWalletCommand(wallet.Name, wallet.Value.Value, wallet.Color.Id.Value);

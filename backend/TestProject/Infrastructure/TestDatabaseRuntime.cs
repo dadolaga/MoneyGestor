@@ -13,32 +13,30 @@ internal static class TestDatabaseRuntime {
     private const String Image = "mysql:8.4";
     private const String RunIdLabel = "moneygestor.test.run-id";
 
-    private static MySqlContainer? container;
-    private static TestDatabaseLease? lease;
-    private static Boolean testMode;
-    private static String? currentRunId;
-    private static String? currentDatabaseName;
-    private static String? currentHost;
-    private static UInt16 currentPort;
-    private static String? currentContainerId;
-    private static DbContextOptions<MoneyGestorContext>? databaseOptions;
-    private static DbContextOptions<IdentityAccountContext>? identityOptions;
-    private static String? connectionString;
+    private static MySqlContainer? Container;
+    private static TestDatabaseLease? Lease;
+    private static Boolean TestMode;
+    private static String? CurrentRunId;
+    private static String? CurrentDatabaseName;
+    private static String? CurrentHost;
+    private static UInt16 CurrentPort;
+    private static String? CurrentContainerId;
+    private static DbContextOptions<MoneyGestorContext>? DatabaseOptions;
+    private static DbContextOptions<IdentityAccountContext>? IdentityOptions;
+    private static String? ConnectionString;
 
-    internal static String? RunId => currentRunId;
-    internal static String? DatabaseName => currentDatabaseName;
-    internal static String? ContainerId => currentContainerId;
+    internal static String? RunId => CurrentRunId;
+    internal static String? DatabaseName => CurrentDatabaseName;
+    internal static String? ContainerId => CurrentContainerId;
 
     internal static MoneyGestorContext CreateContext() => new(
-        databaseOptions ?? throw new InvalidOperationException("The test database is not running."));
+        DatabaseOptions ?? throw new InvalidOperationException("The test database is not running."));
 
     internal static MoneyGestorContext CreateContext(params IInterceptor[] interceptors) {
-        if (String.IsNullOrWhiteSpace(connectionString)) {
-            throw new InvalidOperationException("The test database is not running.");
-        }
-
-        return new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
-            .UseMySQL(connectionString)
+        return String.IsNullOrWhiteSpace(ConnectionString)
+            ? throw new InvalidOperationException("The test database is not running.")
+            : new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
+            .UseMySQL(ConnectionString)
             .AddInterceptors(interceptors)
             .Options);
     }
@@ -48,7 +46,7 @@ internal static class TestDatabaseRuntime {
         params IInterceptor[] interceptors) {
         EnsureIsolatedDatabaseName(databaseName);
         var connection = new MySqlConnectionStringBuilder(
-            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            ConnectionString ?? throw new InvalidOperationException("The test database is not running.")) {
             Database = databaseName
         };
         return new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
@@ -58,16 +56,15 @@ internal static class TestDatabaseRuntime {
     }
 
     internal static String CreateIsolatedDatabaseName() {
-        if (String.IsNullOrWhiteSpace(currentDatabaseName)) {
-            throw new InvalidOperationException("The test database is not running.");
-        }
-        return $"{currentDatabaseName}_db21_{Guid.NewGuid():N}"[..63];
+        return String.IsNullOrWhiteSpace(CurrentDatabaseName)
+            ? throw new InvalidOperationException("The test database is not running.")
+            : $"{CurrentDatabaseName}_db21_{Guid.NewGuid():N}"[..63];
     }
 
     internal static async Task DropIsolatedDatabaseAsync(String databaseName) {
         EnsureIsolatedDatabaseName(databaseName);
         var connection = new MySqlConnectionStringBuilder(
-            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            ConnectionString ?? throw new InvalidOperationException("The test database is not running.")) {
             Database = String.Empty
         };
         await using var server = new MySqlConnection(connection.ConnectionString);
@@ -79,7 +76,7 @@ internal static class TestDatabaseRuntime {
     internal static async Task<Boolean> IsolatedDatabaseExistsAsync(String databaseName) {
         EnsureIsolatedDatabaseName(databaseName);
         var connection = new MySqlConnectionStringBuilder(
-            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            ConnectionString ?? throw new InvalidOperationException("The test database is not running.")) {
             Database = String.Empty
         };
         await using var server = new MySqlConnection(connection.ConnectionString);
@@ -91,12 +88,12 @@ internal static class TestDatabaseRuntime {
     }
 
     internal static IdentityAccountContext CreateIdentityContext() => new(
-        identityOptions ?? throw new InvalidOperationException("The test database is not running."));
+        IdentityOptions ?? throw new InvalidOperationException("The test database is not running."));
 
     internal static IdentityAccountContext CreateIsolatedIdentityContext(String databaseName) {
         EnsureIsolatedDatabaseName(databaseName);
         var connection = new MySqlConnectionStringBuilder(
-            connectionString ?? throw new InvalidOperationException("The test database is not running.")) {
+            ConnectionString ?? throw new InvalidOperationException("The test database is not running.")) {
             Database = databaseName
         };
         return new IdentityAccountContext(new DbContextOptionsBuilder<IdentityAccountContext>()
@@ -105,11 +102,11 @@ internal static class TestDatabaseRuntime {
     }
 
     internal static IReadOnlyDictionary<String, String?> CreateConfiguration() {
-        if (lease == null || databaseOptions == null) {
+        if (Lease == null || DatabaseOptions == null) {
             throw new InvalidOperationException("The test database is not running.");
         }
 
-        var connection = new MySqlConnectionStringBuilder(connectionString);
+        var connection = new MySqlConnectionStringBuilder(ConnectionString);
         return new Dictionary<String, String?> {
             ["database:host"] = connection.Server,
             ["database:port"] = connection.Port.ToString(),
@@ -127,7 +124,7 @@ internal static class TestDatabaseRuntime {
     }
 
     internal static async Task StartAsync() {
-        if (container != null) {
+        if (Container != null) {
             throw new InvalidOperationException("The test database container is already running.");
         }
 
@@ -149,7 +146,7 @@ internal static class TestDatabaseRuntime {
             await candidate.StartAsync();
 
             var connection = new MySqlConnectionStringBuilder(candidate.GetConnectionString());
-            var port = checked((UInt16)connection.Port);
+            var port = checked((UInt16) connection.Port);
             var rootConnection = new MySqlConnectionStringBuilder(connection.ConnectionString) {
                 Database = String.Empty,
                 UserID = "root",
@@ -161,6 +158,7 @@ internal static class TestDatabaseRuntime {
                     $"GRANT ALL PRIVILEGES ON *.* TO `{username}`@`%`", root);
                 await grant.ExecuteNonQueryAsync();
             }
+
             var candidateLease = new TestDatabaseLease(
                 RunId: runId,
                 DatabaseName: databaseName,
@@ -168,13 +166,13 @@ internal static class TestDatabaseRuntime {
                 Port: port,
                 ContainerId: candidate.Id);
 
-            databaseOptions = new DbContextOptionsBuilder<MoneyGestorContext>()
+            DatabaseOptions = new DbContextOptionsBuilder<MoneyGestorContext>()
                 .UseMySQL(connection.ConnectionString)
                 .Options;
-            identityOptions = new DbContextOptionsBuilder<IdentityAccountContext>()
+            IdentityOptions = new DbContextOptionsBuilder<IdentityAccountContext>()
                 .UseMySQL(connection.ConnectionString)
                 .Options;
-            connectionString = connection.ConnectionString;
+            ConnectionString = connection.ConnectionString;
 
             await using (var database = CreateContext()) {
                 await new LegacyDatabaseBootstrapper(database)
@@ -189,14 +187,14 @@ internal static class TestDatabaseRuntime {
                 await new DatabaseInitializer(database).InitAsync();
             }
 
-            container = candidate;
-            lease = candidateLease;
-            testMode = true;
-            currentRunId = runId;
-            currentDatabaseName = databaseName;
-            currentHost = connection.Server;
-            currentPort = port;
-            currentContainerId = candidate.Id;
+            Container = candidate;
+            Lease = candidateLease;
+            TestMode = true;
+            CurrentRunId = runId;
+            CurrentDatabaseName = databaseName;
+            CurrentHost = connection.Server;
+            CurrentPort = port;
+            CurrentContainerId = candidate.Id;
 
             TestContext.Progress.WriteLine(
                 $"MySQL test resource started: run={runId}, database={databaseName}, container={candidate.Id}.");
@@ -207,41 +205,41 @@ internal static class TestDatabaseRuntime {
     }
 
     internal static async Task StopAsync() {
-        if (container == null || lease == null) {
+        if (Container == null || Lease == null) {
             return;
         }
 
         TestDatabaseOwnershipGuard.EnsureOwned(
-            lease,
-            testMode,
-            currentRunId ?? String.Empty,
-            currentDatabaseName ?? String.Empty,
-            currentHost ?? String.Empty,
-            currentPort,
-            currentContainerId ?? String.Empty);
+            Lease,
+            TestMode,
+            CurrentRunId ?? String.Empty,
+            CurrentDatabaseName ?? String.Empty,
+            CurrentHost ?? String.Empty,
+            CurrentPort,
+            CurrentContainerId ?? String.Empty);
 
         TestContext.Progress.WriteLine(
-            $"Removing MySQL test resource: run={lease.RunId}, database={lease.DatabaseName}, container={lease.ContainerId}.");
+            $"Removing MySQL test resource: run={Lease.RunId}, database={Lease.DatabaseName}, container={Lease.ContainerId}.");
 
-        await container.DisposeAsync();
+        await Container.DisposeAsync();
 
-        container = null;
-        lease = null;
-        testMode = false;
-        currentRunId = null;
-        currentDatabaseName = null;
-        currentHost = null;
-        currentPort = 0;
-        currentContainerId = null;
-        databaseOptions = null;
-        identityOptions = null;
-        connectionString = null;
+        Container = null;
+        Lease = null;
+        TestMode = false;
+        CurrentRunId = null;
+        CurrentDatabaseName = null;
+        CurrentHost = null;
+        CurrentPort = 0;
+        CurrentContainerId = null;
+        DatabaseOptions = null;
+        IdentityOptions = null;
+        ConnectionString = null;
     }
 
     private static void EnsureIsolatedDatabaseName(String databaseName) {
-        var requiredPrefix = $"{currentDatabaseName}_db21_";
-        if (!testMode || String.IsNullOrWhiteSpace(currentRunId) ||
-            String.IsNullOrWhiteSpace(currentDatabaseName) ||
+        var requiredPrefix = $"{CurrentDatabaseName}_db21_";
+        if (!TestMode || String.IsNullOrWhiteSpace(CurrentRunId) ||
+            String.IsNullOrWhiteSpace(CurrentDatabaseName) ||
             !databaseName.StartsWith(requiredPrefix, StringComparison.Ordinal) ||
             databaseName.Length > 64) {
             throw new InvalidOperationException("Refusing to operate on an unowned DB-21 test database.");

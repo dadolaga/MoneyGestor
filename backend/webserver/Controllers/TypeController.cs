@@ -20,7 +20,10 @@ namespace webserver.Controllers {
 
         [HttpPost]
         public async Task<IActionResult> Add([FromHeader(Name = "Authorization")] String authorization, logic.Models.TransactionType type) {
-            if (type.Name == null) return ErrorResponse(10, "Not all mandatory data inserted");
+            if (type.Name == null) {
+                return ErrorResponse(10, "Not all mandatory data inserted");
+            }
+
             executor.SetToken(authorization);
             var command = new AddTransactionTypeCommand(type.Name);
             try {

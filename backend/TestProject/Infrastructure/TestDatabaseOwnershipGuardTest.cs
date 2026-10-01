@@ -42,7 +42,7 @@ internal class TestDatabaseOwnershipGuardTest {
             currentRunId,
             currentDatabaseName,
             currentHost,
-            checked((UInt16)currentPort),
+            checked((UInt16) currentPort),
             currentContainerId));
     }
 }

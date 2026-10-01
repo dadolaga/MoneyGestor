@@ -18,8 +18,9 @@ public sealed class AccountAbuseGuard(TimeProvider timeProvider) {
     public Boolean Permit(String operation, String? ipAddress, String identity, Int32 limit, TimeSpan window) {
         var now = timeProvider.GetUtcNow();
         var ipKey = Hash($"{operation}|ip|{ipAddress ?? "unknown"}");
-        if (!Increment(ipCounters, ipEvictionGate, MaxTrackedIps, ipKey, checked(limit * 4), window, now))
+        if (!Increment(ipCounters, ipEvictionGate, MaxTrackedIps, ipKey, checked(limit * 4), window, now)) {
             return false;
+        }
 
         var normalizedIdentity = identity.Trim().ToUpperInvariant();
         var identityKey = Hash($"{operation}|identity|{normalizedIdentity}");
@@ -40,16 +41,22 @@ public sealed class AccountAbuseGuard(TimeProvider timeProvider) {
                 updated = now >= current.ExpiresAt
                     ? new Counter(now.Add(window), 1)
                     : current with { Count = current.Count + 1 };
-                if (counters.TryUpdate(key, updated, current)) break;
+                if (counters.TryUpdate(key, updated, current)) {
+                    break;
+                }
             } else {
                 updated = new Counter(now.Add(window), 1);
-                if (!counters.TryAdd(key, updated)) continue;
+                if (!counters.TryAdd(key, updated)) {
+                    continue;
+                }
+
                 break;
             }
         }
 
-        if (counters.Count > capacity)
+        if (counters.Count > capacity) {
             Trim(counters, evictionGate, capacity, now);
+        }
 
         return updated.Count <= limit;
     }
@@ -60,14 +67,22 @@ public sealed class AccountAbuseGuard(TimeProvider timeProvider) {
         Int32 capacity,
         DateTimeOffset now) {
         lock (evictionGate) {
-            if (counters.Count <= capacity) return;
-            foreach (var expired in counters.Where(item => item.Value.ExpiresAt <= now))
-                ((ICollection<KeyValuePair<String, Counter>>)counters).Remove(expired);
+            if (counters.Count <= capacity) {
+                return;
+            }
 
-            var toRemove = counters.Count - capacity + capacity / 10;
-            if (toRemove <= 0) return;
-            foreach (var oldest in counters.OrderBy(item => item.Value.ExpiresAt).Take(toRemove))
-                ((ICollection<KeyValuePair<String, Counter>>)counters).Remove(oldest);
+            foreach (var expired in counters.Where(item => item.Value.ExpiresAt <= now)) {
+                ((ICollection<KeyValuePair<String, Counter>>) counters).Remove(expired);
+            }
+
+            var toRemove = counters.Count - capacity + (capacity / 10);
+            if (toRemove <= 0) {
+                return;
+            }
+
+            foreach (var oldest in counters.OrderBy(item => item.Value.ExpiresAt).Take(toRemove)) {
+                ((ICollection<KeyValuePair<String, Counter>>) counters).Remove(oldest);
+            }
         }
     }
 

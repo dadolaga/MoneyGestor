@@ -53,8 +53,9 @@ public static class DataIntegrityPreflight {
 
     public static async Task EnsureValidAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
         var report = await InspectAsync(database, cancellationToken);
-        if (!report.IsValid)
+        if (!report.IsValid) {
             throw new DataIntegrityException(report);
+        }
     }
 
     private static void AddIssue(
@@ -62,7 +63,8 @@ public static class DataIntegrityPreflight {
         String code,
         IEnumerable<UInt64> entityIds) {
         var ids = entityIds.Distinct().OrderBy(id => id).ToArray();
-        if (ids.Length > 0)
+        if (ids.Length > 0) {
             issues.Add(new DataIntegrityIssue(code, ids));
+        }
     }
 }

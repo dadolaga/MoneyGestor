@@ -20,7 +20,7 @@ public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
             var identityId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var legacyUserId = await identityDatabase.Users
                 .Where(user => user.Id == identityId)
-                .Select(user => (UInt64?)user.LegacyUserId)
+                .Select(user => (UInt64?) user.LegacyUserId)
                 .SingleOrDefaultAsync(context.RequestAborted);
 
             if (legacyUserId != null) {
@@ -39,6 +39,7 @@ public sealed class LegacyCookieBridgeMiddleware(RequestDelegate next) {
                     legacyDatabase.Logins.Add(login);
                     await legacyDatabase.SaveChangesAsync(context.RequestAborted);
                 }
+
                 context.Request.Headers.Authorization = login.Token;
             }
         }

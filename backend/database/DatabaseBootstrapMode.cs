@@ -11,4 +11,3 @@ public enum DatabaseBootstrapOutcome {
     Migrated,
     AdoptedLegacySchema
 }
-

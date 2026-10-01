@@ -182,6 +182,20 @@ Backend e frontend sono pubblicati su loopback per default; l'healthcheck del ba
 
 Swagger è abilitato solo con `ASPNETCORE_ENVIRONMENT=Development`; il Compose imposta `Production`.
 
+## Formattazione C#
+
+Le regole condivise sono in [`backend/.editorconfig`](backend/.editorconfig). Le graffe di apertura restano sulla stessa riga di `if`, metodi, classi e altri blocchi (`csharp_new_line_before_open_brace = none`).
+
+- **VS Code:** apri la cartella radice del repository, installa l'estensione C# consigliata e salva un file `.cs`. Le impostazioni in `.vscode/settings.json` attivano la formattazione C# al salvataggio. Per avviarla manualmente usa **Format Document** (`Shift+Alt+F`).
+- **Visual Studio:** apri `backend/backend.sln`; **Format Document** (`Ctrl+K, Ctrl+D`) applica le stesse regole. Per formattare a ogni salvataggio, abilita **Tools > Options > Text Editor > Code Cleanup > Run Code Cleanup profile on save** e includi **Format document** nel profilo di Code Cleanup selezionato.
+
+Per applicare dal terminale le correzioni automatiche all'intera soluzione:
+
+```powershell
+dotnet format style .\backend\backend.sln --no-restore --severity error
+dotnet format whitespace .\backend\backend.sln --no-restore
+```
+
 ## Verifiche
 
 ```powershell

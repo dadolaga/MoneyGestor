@@ -59,6 +59,7 @@ public sealed class LegacyDatabaseBootstrapper(MoneyGestorContext database) {
         if (pendingMigrations.Contains(DataEvolutionPreflight.MigrationId, StringComparer.Ordinal) && hasBaseline) {
             await DataEvolutionPreflight.EnsureValidAsync(database, cancellationToken);
         }
+
         await database.Database.MigrateAsync(cancellationToken);
 
         return hasBaseline && !appliedMigrations.Contains(BaselineMigrationId)
@@ -220,8 +221,10 @@ public sealed class LegacyDatabaseBootstrapper(MoneyGestorContext database) {
                     : Convert.ToString(reader.GetValue(index), System.Globalization.CultureInfo.InvariantCulture)
                         ?.ToLowerInvariant() ?? String.Empty;
             }
+
             rows.Add(String.Join('|', fields));
         }
+
         return rows;
     }
 

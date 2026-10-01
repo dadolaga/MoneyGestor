@@ -62,8 +62,9 @@ public sealed class AccountService(
 
                 identityUser.LegacyUserId = legacyUser.Id;
                 var created = await userManager.CreateAsync(identityUser, request.Password);
-                if (!created.Succeeded)
+                if (!created.Succeeded) {
                     throw new AccountValidationException(created.Errors.Select(error => error.Code).ToArray());
+                }
 
                 await transaction.CommitAsync(cancellationToken);
             } finally {
@@ -76,14 +77,17 @@ public sealed class AccountService(
         } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
             logger.LogWarning("Registration succeeded, but confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
         }
+
         return legacyUser.Id;
     }
 
     private static Boolean IsDuplicateEntry(DbUpdateException exception) {
         for (Exception? current = exception; current != null; current = current.InnerException) {
-            if (current is MySql.Data.MySqlClient.MySqlException { Number: 1062 })
+            if (current is MySql.Data.MySqlClient.MySqlException { Number: 1062 }) {
                 return true;
+            }
         }
+
         return false;
     }
 
@@ -91,6 +95,7 @@ public sealed class AccountService(
         LoginAccountRequest request,
         Boolean issueCookie,
         CancellationToken cancellationToken) {
+        cancellationToken.ThrowIfCancellationRequested();
         var user = await FindByLoginAsync(request.User);
         if (user == null) {
             _ = userManager.PasswordHasher.HashPassword(
@@ -103,9 +108,11 @@ public sealed class AccountService(
         if (check.IsLockedOut) {
             return AccountLoginStatus.LockedOut;
         }
+
         if (!check.Succeeded) {
             return AccountLoginStatus.Invalid;
         }
+
         if (!await userManager.IsEmailConfirmedAsync(user)) {
             return AccountLoginStatus.EmailNotConfirmed;
         }
@@ -117,6 +124,7 @@ public sealed class AccountService(
                 ExpiresUtc = timeProvider.GetUtcNow().Add(request.Remember ? TimeSpan.FromDays(30) : TimeSpan.FromHours(2))
             });
         }
+
         return AccountLoginStatus.Succeeded;
     }
 
@@ -126,11 +134,9 @@ public sealed class AccountService(
         System.Security.Claims.ClaimsPrincipal principal,
         CancellationToken cancellationToken) {
         var identityUser = await userManager.GetUserAsync(principal);
-        if (identityUser == null) {
-            return null;
-        }
-
-        return await legacyDatabase.Users
+        return identityUser == null
+            ? null
+            : await legacyDatabase.Users
             .Where(user => user.Id == identityUser.LegacyUserId)
             .Select(user => new AccountProfile(user.Id, user.Firstname, user.Lastname, user.Email, user.Username))
             .SingleOrDefaultAsync(cancellationToken);
@@ -169,10 +175,7 @@ public sealed class AccountService(
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest request) {
-        var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        if (user == null) {
-            throw new AccountTokenException();
-        }
+        var user = await userManager.FindByEmailAsync(request.Email.Trim()) ?? throw new AccountTokenException();
 
         var result = await userManager.ResetPasswordAsync(user, DecodeToken(request.Token), request.Password);
         if (!result.Succeeded) {
@@ -180,6 +183,7 @@ public sealed class AccountService(
             if (tokenError) {
                 throw new AccountTokenException();
             }
+
             throw new AccountValidationException(result.Errors.Select(error => error.Code).ToArray());
         }
 

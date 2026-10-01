@@ -52,9 +52,11 @@ internal sealed class AccountSecurityApiTest {
             await legacyData.Colors.Where(color => color.UserId != null).ExecuteDeleteAsync();
             await legacyData.Logins.ExecuteDeleteAsync();
         }
+
         await using (var identity = TestDatabaseRuntime.CreateIdentityContext()) {
             await identity.Users.ExecuteDeleteAsync();
         }
+
         using var database = TestDatabaseRuntime.CreateContext();
         await database.Users.ExecuteDeleteAsync();
         emails.Clear();
@@ -243,7 +245,7 @@ internal sealed class AccountSecurityApiTest {
             user = "locked@test.me",
             password = "VeryStrong123!"
         }, csrf);
-        Assert.That(response.StatusCode, Is.EqualTo((HttpStatusCode)423));
+        Assert.That(response.StatusCode, Is.EqualTo((HttpStatusCode) 423));
     }
 
     [Test]
@@ -305,6 +307,7 @@ internal sealed class AccountSecurityApiTest {
         await using (var legacy = TestDatabaseRuntime.CreateContext()) {
             Assert.That(await legacy.Users.AnyAsync(user => user.Username == "atomic_user"), Is.False);
         }
+
         await using (var identity = TestDatabaseRuntime.CreateIdentityContext()) {
             Assert.That(await identity.Users.AnyAsync(user => user.UserName == "atomic_user"), Is.False);
         }
@@ -337,15 +340,18 @@ internal sealed class AccountSecurityApiTest {
                 user = "legacy-rate-missing@test.me", password = "WrongPassword123!"
             });
         }
-        using (response)
+
+        using (response) {
             Assert.That(response!.StatusCode, Is.EqualTo(HttpStatusCode.TooManyRequests));
+        }
     }
 
     [Test]
     public void ExhaustedIpBudgetDoesNotCreateUnlimitedIdentityCounters() {
         var guard = new AccountAbuseGuard(TimeProvider.System);
-        for (var attempt = 0; attempt < 30; attempt++)
+        for (var attempt = 0; attempt < 30; attempt++) {
             guard.Permit("login", "198.51.100.1", $"identity-{attempt}", 2, TimeSpan.FromHours(1));
+        }
 
         Assert.That(guard.TrackedIdentityCount, Is.LessThanOrEqualTo(8));
         Assert.That(guard.Permit("login", "198.51.100.2", "new-user", 2, TimeSpan.FromHours(1)), Is.True);
@@ -398,7 +404,7 @@ internal sealed class AccountSecurityApiTest {
         using var transactionJson = JsonDocument.Parse(await transaction.Content.ReadAsStringAsync());
         var id = transactionJson.RootElement.GetProperty("id").GetUInt64();
 
-        async Task<HttpResponseMessage> PatchAsync(Object body) {
+        async Task<HttpResponseMessage> patchAsync(Object body) {
             using var request = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/transactions/{id}") {
                 Content = JsonContent.Create(body)
             };
@@ -406,7 +412,7 @@ internal sealed class AccountSecurityApiTest {
             return await client.SendAsync(request);
         }
 
-        var clearShort = await PatchAsync(new { description = (String?)null });
+        var clearShort = await patchAsync(new { description = (String?) null });
         Assert.That(clearShort.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await clearShort.Content.ReadAsStringAsync());
         var afterShort = await client.GetAsync($"/api/v1/transactions/{id}");
         using (var json = JsonDocument.Parse(await afterShort.Content.ReadAsStringAsync())) {
@@ -414,7 +420,7 @@ internal sealed class AccountSecurityApiTest {
             Assert.That(json.RootElement.GetProperty("longDescription").GetString(), Is.EqualTo("Long"));
         }
 
-        var clearLong = await PatchAsync(new { longDescription = (String?)null });
+        var clearLong = await patchAsync(new { longDescription = (String?) null });
         Assert.That(clearLong.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await clearLong.Content.ReadAsStringAsync());
         var afterLong = await client.GetAsync($"/api/v1/transactions/{id}");
         using var finalJson = JsonDocument.Parse(await afterLong.Content.ReadAsStringAsync());

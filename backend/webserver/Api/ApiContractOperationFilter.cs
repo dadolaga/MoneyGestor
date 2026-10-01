@@ -20,6 +20,7 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
                     [new OpenApiSecuritySchemeReference("LegacyRawToken", context.Document)] = []
                 }];
             }
+
             return;
         }
 
@@ -32,16 +33,23 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
         if (protectedOperation) {
             requirement[new OpenApiSecuritySchemeReference(CookieScheme, context.Document)] = [];
         }
+
         var unsafeMethod = context.ApiDescription.HttpMethod is "POST" or "PUT" or "PATCH" or "DELETE";
         if (unsafeMethod) {
             requirement[new OpenApiSecuritySchemeReference(AntiforgeryScheme, context.Document)] = [];
         }
-        if (requirement.Count > 0) operation.Security = [requirement];
+
+        if (requirement.Count > 0) {
+            operation.Security = [requirement];
+        }
 
         operation.Responses ??= new OpenApiResponses();
         foreach (var status in ProblemStatuses) {
             var key = status.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            if (operation.Responses.ContainsKey(key)) continue;
+            if (operation.Responses.ContainsKey(key)) {
+                continue;
+            }
+
             operation.Responses[key] = new OpenApiResponse {
                 Description = status switch {
                     400 => "Request validation or antiforgery failed",

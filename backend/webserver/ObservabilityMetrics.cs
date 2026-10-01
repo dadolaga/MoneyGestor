@@ -5,19 +5,25 @@ namespace webserver;
 public sealed class ObservabilityMetrics {
     private static readonly Double[] BucketBoundsMilliseconds = [5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
     private readonly Int64[] requestDurationBuckets = new Int64[BucketBoundsMilliseconds.Length + 1];
-    private long requests;
-    private long errors;
-    private long authenticationRejects;
-    private long databaseFailures;
-    private long durationSamples;
-    private long durationSumMicroseconds;
+    private Int64 requests;
+    private Int64 errors;
+    private Int64 authenticationRejects;
+    private Int64 databaseFailures;
+    private Int64 durationSamples;
+    private Int64 durationSumMicroseconds;
 
     public void RecordRequest(Int32 statusCode, Double elapsedMilliseconds) {
         Interlocked.Increment(ref requests);
-        if (statusCode >= 400) Interlocked.Increment(ref errors);
-        if (statusCode == StatusCodes.Status401Unauthorized) Interlocked.Increment(ref authenticationRejects);
+        if (statusCode >= 400) {
+            Interlocked.Increment(ref errors);
+        }
+
+        if (statusCode == StatusCodes.Status401Unauthorized) {
+            Interlocked.Increment(ref authenticationRejects);
+        }
+
         Interlocked.Increment(ref durationSamples);
-        Interlocked.Add(ref durationSumMicroseconds, (long)(elapsedMilliseconds * 1000));
+        Interlocked.Add(ref durationSumMicroseconds, (Int64) (elapsedMilliseconds * 1000));
         var bucket = Array.FindIndex(BucketBoundsMilliseconds, bound => elapsedMilliseconds <= bound);
         Interlocked.Increment(ref requestDurationBuckets[bucket < 0 ? requestDurationBuckets.Length - 1 : bucket]);
     }
@@ -35,12 +41,13 @@ public sealed class ObservabilityMetrics {
         const String name = "moneygestor_http_request_duration_milliseconds";
         builder.Append("# HELP ").Append(name).AppendLine(" HTTP request duration in milliseconds.");
         builder.Append("# TYPE ").Append(name).AppendLine(" histogram");
-        long cumulative = 0;
+        Int64 cumulative = 0;
         for (var index = 0; index < BucketBoundsMilliseconds.Length; index++) {
             cumulative += Interlocked.Read(ref requestDurationBuckets[index]);
             builder.Append(name).Append("_bucket{le=\"").Append(BucketBoundsMilliseconds[index].ToString(System.Globalization.CultureInfo.InvariantCulture))
                 .Append("\"} ").Append(cumulative).AppendLine();
         }
+
         cumulative += Interlocked.Read(ref requestDurationBuckets[^1]);
         builder.Append(name).Append("_bucket{le=\"+Inf\"} ").Append(cumulative).AppendLine();
         builder.Append(name).Append("_sum ").AppendLine((Interlocked.Read(ref durationSumMicroseconds) / 1000d)
@@ -49,7 +56,7 @@ public sealed class ObservabilityMetrics {
         return builder.ToString();
     }
 
-    private static void AppendCounter(System.Text.StringBuilder builder, String name, String help, long value) {
+    private static void AppendCounter(System.Text.StringBuilder builder, String name, String help, Int64 value) {
         builder.Append("# HELP ").Append(name).Append(' ').AppendLine(help);
         builder.Append("# TYPE ").Append(name).AppendLine(" counter");
         builder.Append(name).Append(' ').AppendLine(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -73,8 +80,9 @@ internal sealed class ObservabilityMetricsMiddleware(
         } finally {
             var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
             metrics.RecordRequest(context.Response.StatusCode, elapsed);
-            if (context.Response.StatusCode == StatusCodes.Status401Unauthorized)
+            if (context.Response.StatusCode == StatusCodes.Status401Unauthorized) {
                 authFailures.Record();
+            }
         }
     }
 }

@@ -5,8 +5,14 @@ namespace webserver.Api.V1;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
 public sealed class MoneyAmountAttribute : ValidationAttribute {
     public override Boolean IsValid(Object? value) {
-        if (value == null) return true;
-        if (value is not Decimal amount || amount > logic.Security.MonetaryValuePolicy.Maximum || amount < -logic.Security.MonetaryValuePolicy.Maximum) return false;
+        if (value == null) {
+            return true;
+        }
+
+        if (value is not Decimal amount || amount > logic.Security.MonetaryValuePolicy.Maximum || amount < -logic.Security.MonetaryValuePolicy.Maximum) {
+            return false;
+        }
+
         var scale = (Decimal.GetBits(amount)[3] >> 16) & 0x7F;
         return scale <= 2;
     }
@@ -15,7 +21,7 @@ public sealed class MoneyAmountAttribute : ValidationAttribute {
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
 public sealed class BusinessDateAttribute : ValidationAttribute {
     public override Boolean IsValid(Object? value) =>
-        value == null || value is DateOnly date && logic.Security.BusinessDatePolicy.IsValid(date);
+        value == null || (value is DateOnly date && logic.Security.BusinessDatePolicy.IsValid(date));
 }
 
 public sealed record ColorResponse(UInt64 Id, String? Name, UInt32 Value) {
@@ -43,8 +49,9 @@ public sealed class DashboardQuery : IValidatableObject {
     [Required] public DateOnly? From { get; init; }
     [Required] public DateOnly? To { get; init; }
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
-        if (From.HasValue && To.HasValue && From.Value > To.Value)
+        if (From.HasValue && To.HasValue && From.Value > To.Value) {
             yield return new ValidationResult("invalid_date_range", [nameof(To)]);
+        }
     }
 }
 
@@ -115,7 +122,8 @@ public sealed class TransactionListQuery : IValidatableObject {
     [EnumDataType(typeof(SortDirection))] public SortDirection Direction { get; init; } = SortDirection.Descending;
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
-        if (From.HasValue && To.HasValue && From.Value > To.Value)
+        if (From.HasValue && To.HasValue && From.Value > To.Value) {
             yield return new ValidationResult("invalid_date_range", [nameof(To)]);
+        }
     }
 }

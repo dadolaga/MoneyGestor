@@ -84,21 +84,36 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<PageResponse<TransactionResponse>> GetTransactionsAsync(UInt64 userId, TransactionListQuery query, CancellationToken cancellationToken) {
-        var offset = (Int64)(query.Page - 1) * query.PageSize;
-        if (offset > Int32.MaxValue)
+        var offset = (Int64) (query.Page - 1) * query.PageSize;
+        if (offset > Int32.MaxValue) {
             throw new logic.Exceptions.ListFilterValidationException("page", "out_of_range");
+        }
+
         var rows = OwnershipQueryPolicy.OwnedTransactions(database, userId).AsNoTracking()
             .Where(transaction => transaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || transaction.Value < 0);
-        if (query.From.HasValue) rows = rows.Where(transaction => transaction.Date >= query.From.Value);
-        if (query.To.HasValue) rows = rows.Where(transaction => transaction.Date <= query.To.Value);
-        if (query.TypeId.HasValue) rows = rows.Where(transaction => transaction.TransactionTypeId == query.TypeId.Value);
-        if (query.WalletId.HasValue) rows = rows.Where(transaction => transaction.WalletId == query.WalletId.Value
-            || transaction.TransactionDestination != null && transaction.TransactionDestination.WalletId == query.WalletId.Value);
+        if (query.From.HasValue) {
+            rows = rows.Where(transaction => transaction.Date >= query.From.Value);
+        }
+
+        if (query.To.HasValue) {
+            rows = rows.Where(transaction => transaction.Date <= query.To.Value);
+        }
+
+        if (query.TypeId.HasValue) {
+            rows = rows.Where(transaction => transaction.TransactionTypeId == query.TypeId.Value);
+        }
+
+        if (query.WalletId.HasValue) {
+            rows = rows.Where(transaction => transaction.WalletId == query.WalletId.Value
+            || (transaction.TransactionDestination != null && transaction.TransactionDestination.WalletId == query.WalletId.Value));
+        }
+
         if (!String.IsNullOrWhiteSpace(query.Search)) {
             var search = query.Search.Trim();
-            rows = rows.Where(transaction => transaction.Description != null && transaction.Description.Contains(search)
-                || transaction.LongDescription != null && transaction.LongDescription.Contains(search));
+            rows = rows.Where(transaction => (transaction.Description != null && transaction.Description.Contains(search))
+                || (transaction.LongDescription != null && transaction.LongDescription.Contains(search)));
         }
+
         rows = query.Kind switch {
             MovementKind.Income => rows.Where(transaction => transaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id && transaction.Value > 0),
             MovementKind.Expense => rows.Where(transaction => transaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id && transaction.Value < 0),
@@ -127,7 +142,7 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             ? ordered.ThenBy(transaction => transaction.Id)
             : ordered.ThenByDescending(transaction => transaction.Id);
         var items = await stableOrder
-            .Skip((Int32)offset)
+            .Skip((Int32) offset)
             .Take(query.PageSize)
             .Select(TransactionProjection())
             .ToListAsync(cancellationToken);
@@ -156,20 +171,23 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .Where(transaction => transaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || transaction.Value < 0);
         var count = await transactions.WhereByFilter(filter.Wheres).LongCountAsync(cancellationToken);
         var rows = await transactions.ApplyFilter(filter).Select(TransactionProjection()).ToListAsync(cancellationToken);
-        return new PageResponse<TransactionResponse>(checked((Int32)filter.Offset + 1), (Int32)filter.Limit, count, rows);
+        return new PageResponse<TransactionResponse>(checked((Int32) filter.Offset + 1), (Int32) filter.Limit, count, rows);
     }
 
     public async Task<DashboardResponse> GetDashboardAsync(UInt64 userId, DashboardQuery range, CancellationToken cancellationToken) {
         var from = range.From!.Value;
         var to = range.To!.Value;
-        if (from > to) throw new logic.Exceptions.ListFilterValidationException("to", "invalid_date_range");
+        if (from > to) {
+            throw new logic.Exceptions.ListFilterValidationException("to", "invalid_date_range");
+        }
+
         var transactions = OwnershipQueryPolicy.OwnedTransactions(database, userId).AsNoTracking()
             .Where(transaction => transaction.TransactionDestinationId == null && transaction.Date >= from && transaction.Date <= to);
         var aggregates = await transactions.GroupBy(transaction => new {
-                transaction.TransactionTypeId,
-                transaction.TransactionType!.Name,
-                transaction.TransactionType!.UserId
-            })
+            transaction.TransactionTypeId,
+            transaction.TransactionType!.Name,
+            transaction.TransactionType!.UserId
+        })
             .Select(group => new {
                 group.Key.TransactionTypeId,
                 group.Key.Name,
