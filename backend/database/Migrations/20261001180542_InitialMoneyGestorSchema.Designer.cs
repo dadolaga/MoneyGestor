@@ -11,15 +11,15 @@ using database;
 namespace database.Migrations
 {
     [DbContext(typeof(MoneyGestorContext))]
-    [Migration("20260924185824_CreateLegacySchema")]
-    partial class CreateLegacySchema
+    [Migration("20261001180542_InitialMoneyGestorSchema")]
+    partial class InitialMoneyGestorSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("database.Models.ColorDb", b =>
@@ -87,13 +87,15 @@ namespace database.Migrations
                         .HasColumnType("bigint unsigned");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("date");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("LongDescription")
-                        .HasColumnType("longtext");
+                        .HasMaxLength(4000)
+                        .HasColumnType("varchar(4000)");
 
                     b.Property<ulong?>("TransactionDestinationId")
                         .HasColumnType("bigint unsigned");
@@ -107,8 +109,9 @@ namespace database.Migrations
                     b.Property<ulong>("UserInsertId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double");
+                    b.Property<decimal>("Value")
+                        .HasPrecision(19, 2)
+                        .HasColumnType("decimal(19,2)");
 
                     b.Property<ulong>("WalletId")
                         .HasColumnType("bigint unsigned");
@@ -122,13 +125,16 @@ namespace database.Migrations
 
                     b.HasIndex("TransactionTypeId");
 
-                    b.HasIndex("UserId");
-
                     b.HasIndex("UserInsertId");
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("transaction");
+                    b.HasIndex("UserId", "Date");
+
+                    b.ToTable("transaction", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_transaction_Value_NonZero", "`Value` <> 0");
+                        });
                 });
 
             modelBuilder.Entity("database.Models.TransactionTypeDb", b =>
@@ -195,11 +201,16 @@ namespace database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<ulong>("BalanceVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint unsigned");
+
                     b.Property<ulong>("ColorId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<double>("CurrentValue")
-                        .HasColumnType("double");
+                    b.Property<decimal>("CurrentValue")
+                        .HasPrecision(19, 2)
+                        .HasColumnType("decimal(19,2)");
 
                     b.Property<bool>("Favorite")
                         .HasColumnType("tinyint(1)");
@@ -211,8 +222,9 @@ namespace database.Migrations
                     b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double");
+                    b.Property<decimal>("Value")
+                        .HasPrecision(19, 2)
+                        .HasColumnType("decimal(19,2)");
 
                     b.HasKey("Id");
 

@@ -16,7 +16,7 @@ namespace database.Identity.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

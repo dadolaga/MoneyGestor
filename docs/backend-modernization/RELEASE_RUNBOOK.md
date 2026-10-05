@@ -6,7 +6,7 @@ Procedura per il deployment a istanza singola con Docker Compose. Non pubblica i
 
 - Partire da un commit Git pulito e registrare il commit completo usato per il rilascio.
 - Verificare restore locked, build Release, suite backend e audit NuGet come indicato nel README principale.
-- Per una modifica schema, leggere entrambe le migration SQL, verificare il preflight e provare il backup su uno schema `mg_restore_*` o in staging isolato. Le procedure sono in [DATABASE_DEPLOYMENT.md](DATABASE_DEPLOYMENT.md) e [DATABASE_RECOVERY.md](DATABASE_RECOVERY.md).
+- Per una modifica schema, leggere gli script SQL applicabili, verificare gli eventuali preflight e provare il backup su uno schema `mg_restore_*` o in staging isolato. Le procedure sono in [DATABASE_DEPLOYMENT.md](DATABASE_DEPLOYMENT.md) e [DATABASE_RECOVERY.md](DATABASE_RECOVERY.md).
 - Operare da host protetto con `settings.json` non versionato e credenziali MySQL via login-path per backup/restore. Non copiare settings o credenziali in artifact e ticket.
 - Conservare il volume Docker `backend-data-protection`: contiene le chiavi di protezione cookie e token e non è incluso nel backup MySQL. Proteggerlo e copiarlo con un backup separato cifrato prima di operazioni che possano ricreare i volumi.
 
@@ -45,7 +45,7 @@ Procedura per il deployment a istanza singola con Docker Compose. Non pubblica i
 
 1. Programmare la maintenance e fermare il frontend e il backend: `docker compose stop frontend backend`.
 2. Creare e verificare un backup MySQL dopo aver fermato le scritture. Conservare l’originale invariato per recovery.
-3. Per una migration applicativa, configurare temporaneamente `database.bootstrapMode` a `Migrate` in `settings.json`. Per una nuova installazione legacy che richiede adozione baseline, seguire invece il runbook DB-21: `MigrateAndAdoptLegacy` non è un’impostazione da release ricorrente.
+3. Per una migration applicativa, configurare temporaneamente `database.bootstrapMode` a `Migrate` in `settings.json`. La nuova baseline richiede un database vuoto; seguire il runbook database per una ripartenza da zero.
 4. Avviare soltanto il backend con l’immagine nuova e senza build: `docker compose up -d --no-build backend`. Una sola istanza avvia bootstrap/migration prima di servire; attendere lo stato healthy con `docker compose ps` e controllare outcome bootstrap/readiness nei log, senza riversare settings nei log.
 5. Riportare `database.bootstrapMode` a `Disabled`, ricreare il container backend (`docker compose up -d --no-build --force-recreate backend`) e attendere nuovamente healthy. Avviare il frontend soltanto dopo: `docker compose up -d --no-build frontend`.
 6. Fare smoke check su `/health/ready`, login di prova, lettura wallet/movimenti e riconciliazione read-only. Evitare mutazioni economiche ed email reali durante il check.

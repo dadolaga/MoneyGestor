@@ -60,7 +60,7 @@ Per lo sviluppo locale:
 - MySQL raggiungibile dalla macchina
 - Docker Desktop per eseguire i test backend con il database effimero
 
-Per l'esecuzione containerizzata servono Docker e Docker Compose. Il file Compose attuale **non avvia MySQL**: il database deve esistere già ed essere raggiungibile dai container.
+Per l'esecuzione containerizzata servono Docker e Docker Compose. Il file Compose attuale **non avvia MySQL**: il server MySQL deve essere raggiungibile dai container. Con `database.bootstrapMode=Migrate`, lo schema configurato può essere creato al primo avvio.
 
 ## Configurazione
 
@@ -110,11 +110,11 @@ Campi principali:
 `settings.json` è ignorato da Git. Non inserirlo nei commit e non usare credenziali di produzione nell'esempio.
 
 `database.bootstrapMode` è `Disabled` per default: con database assente o migration pendenti lo startup si blocca senza
-applicare DDL. `Migrate` crea/applica gli schemi MoneyGestor e Identity; `MigrateAndAdoptLegacy` è riservato
-all'adozione una tantum di uno schema storico equivalente dopo backup e prova di restore. La procedura completa è nel
-[runbook database](docs/backend-modernization/DATABASE_DEPLOYMENT.md). In `Production` sono obbligatori SMTP e
-`DATA_PROTECTION_KEYS_PATH`, che deve puntare a storage persistente e protetto. Negli altri ambienti, in assenza della
-variabile, le chiavi che cifrano cookie e token vengono persistite accanto ai binari.
+applicare DDL. `Migrate` crea lo schema MoneyGestor corrente e le tabelle Identity nello stesso database MySQL.
+La nuova migration iniziale richiede un database vuoto: lo schema storico non viene adottato né cancellato
+automaticamente. La procedura è nel [runbook database](docs/backend-modernization/DATABASE_DEPLOYMENT.md).
+In `Production` sono obbligatori SMTP e `DATA_PROTECTION_KEYS_PATH`, che deve puntare a storage persistente e
+protetto. Negli altri ambienti, in assenza della variabile, le chiavi che cifrano cookie e token vengono persistite accanto ai binari.
 
 Le specifiche OpenAPI versionate si rigenerano senza avviare il database con:
 
@@ -229,6 +229,8 @@ pwsh -File ./ops/database/New-MoneyGestorBackup.ps1 -Database moneygestor_db -Lo
 Il restore crea esclusivamente uno schema `mg_restore_*`; non modifica il database sorgente e non effettua cutover automatico.
 
 ## Stato delle verifiche
+
+Verifica del 1 ottobre 2026: baseline nuove MoneyGestor e Identity, build backend senza warning e suite completa 149/149 su MySQL Testcontainers effimero. Il database MySQL locale non è stato modificato.
 
 Verifica backend locale del 30 settembre 2026:
 

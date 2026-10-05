@@ -16,7 +16,7 @@ namespace database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("database.Models.ColorDb", b =>
@@ -83,7 +83,7 @@ namespace database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
-                    b.Property<DateOnly>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
                     b.Property<string>("Description")

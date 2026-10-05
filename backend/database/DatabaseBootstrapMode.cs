@@ -2,12 +2,10 @@ namespace database;
 
 public enum DatabaseBootstrapMode {
     Disabled,
-    Migrate,
-    MigrateAndAdoptLegacy
+    Migrate
 }
 
 public enum DatabaseBootstrapOutcome {
     UpToDate,
-    Migrated,
-    AdoptedLegacySchema
+    Migrated
 }

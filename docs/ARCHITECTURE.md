@@ -1,6 +1,6 @@
 # Architettura
 
-Questa descrizione fotografa il repository, aggiornato al 30 settembre 2026.
+Questa descrizione fotografa il repository, aggiornato al 1 ottobre 2026.
 
 ## Vista generale
 
@@ -166,13 +166,13 @@ Il file indicato da `BACKEND_APP_SETTINGS` viene aggiunto alla configurazione AS
 notazione `Section__Property` possono sovrascriverne i valori. Database, logging, CORS ed email sono bindati a options
 tipizzate e validati all'avvio. I campi di connessione mancanti bloccano lo startup senza stampare credenziali.
 
-DB-21 ha sostituito `EnsureCreated` con migration EF versionate per lo schema MoneyGestor e mantiene le migration
-Identity nello stesso database. `database.bootstrapMode` governa entrambi i context: `Disabled` è fail-closed,
-`Migrate` crea/applica gli schemi e `MigrateAndAdoptLegacy` registra la baseline soltanto dopo un confronto strutturale
-completo e senza DDL sullo schema esistente. Il seed globale è un upsert transazionale, idempotente e fail-fast. Il
-[runbook di deployment e recovery](backend-modernization/DATABASE_DEPLOYMENT.md) descrive privilegi, backup, adozione
-e rollback. Subito dopo lo startup esegue un preflight
-read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
+Lo schema MoneyGestor corrente viene creato da una sola migration iniziale; le tabelle Identity sono nello stesso
+database MySQL e hanno una migration propria. `database.bootstrapMode` governa entrambi i context: `Disabled` è
+fail-closed, `Migrate` crea/applica gli schemi soltanto su un database vuoto o già aggiornato. Un database con
+tabelle precedenti e senza la nuova migration viene rifiutato, senza cancellazioni automatiche. Il seed globale è
+un upsert transazionale, idempotente e fail-fast. Il
+[runbook di deployment e recovery](backend-modernization/DATABASE_DEPLOYMENT.md) descrive la ripartenza da zero.
+Subito dopo lo startup esegue un preflight read-only su ownership e coppie di trasferimento: eventuali anomalie bloccano l'avvio riportando soltanto conteggi e
 ID tecnici, senza correzioni automatiche o PII, e il bootstrap Identity blocca collisioni normalizzate.
 
 Il Compose avvia backend e frontend; MySQL resta esterno. Il backend targetta .NET 10 LTS; pacchetti centralizzati e lockati si trovano in `backend/Directory.Packages.props` e `backend/*/packages.lock.json`.

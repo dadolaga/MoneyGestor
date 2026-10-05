@@ -209,7 +209,7 @@ public class Program {
         builder.Services.AddScoped<IResourceQueryService, ResourceQueryService>();
         builder.Services.AddScoped<IResourceCommandService, ResourceCommandService>();
         builder.Services.AddScoped<LegacyIdentityBootstrapper>();
-        builder.Services.AddScoped<LegacyDatabaseBootstrapper>();
+        builder.Services.AddScoped<DatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
         builder.Services.AddScoped<Func<MoneyGestorContext>>(services =>
             () => services.GetRequiredService<IDbContextFactory<MoneyGestorContext>>().CreateDbContext());
@@ -378,8 +378,8 @@ public class Program {
         var bootstrapStarted = Stopwatch.GetTimestamp();
         logger.LogInformation(new EventId(1100, "DatabaseBootstrapStarted"),
             "Database bootstrap started ({BootstrapMode})", databaseOptions.BootstrapMode);
-        var legacyDatabase = services.GetRequiredService<MoneyGestorContext>();
-        var bootstrapOutcome = await services.GetRequiredService<LegacyDatabaseBootstrapper>()
+        var moneyGestorDatabase = services.GetRequiredService<MoneyGestorContext>();
+        var bootstrapOutcome = await services.GetRequiredService<DatabaseBootstrapper>()
             .BootstrapAsync(databaseOptions.BootstrapMode, cancellationToken);
 
         var identityDatabase = services.GetRequiredService<IdentityAccountContext>();
@@ -396,7 +396,7 @@ public class Program {
 
         await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
         try {
-            await DataIntegrityPreflight.EnsureValidAsync(legacyDatabase, cancellationToken);
+            await DataIntegrityPreflight.EnsureValidAsync(moneyGestorDatabase, cancellationToken);
         } catch (logic.Exceptions.DataIntegrityException exception) {
             logger.LogCritical(new EventId(1102, "DataIntegrityMismatch"),
                 "Data integrity preflight detected {IssueCount} issue groups", exception.Report.Issues.Count);

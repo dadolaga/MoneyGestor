@@ -58,7 +58,7 @@ internal static class TestDatabaseRuntime {
     internal static String CreateIsolatedDatabaseName() {
         return String.IsNullOrWhiteSpace(CurrentDatabaseName)
             ? throw new InvalidOperationException("The test database is not running.")
-            : $"{CurrentDatabaseName}_db21_{Guid.NewGuid():N}"[..63];
+            : $"{CurrentDatabaseName}_schema_{Guid.NewGuid():N}"[..63];
     }
 
     internal static async Task DropIsolatedDatabaseAsync(String databaseName) {
@@ -175,7 +175,7 @@ internal static class TestDatabaseRuntime {
             ConnectionString = connection.ConnectionString;
 
             await using (var database = CreateContext()) {
-                await new LegacyDatabaseBootstrapper(database)
+                await new DatabaseBootstrapper(database)
                     .BootstrapAsync(DatabaseBootstrapMode.Migrate);
             }
 
@@ -237,12 +237,12 @@ internal static class TestDatabaseRuntime {
     }
 
     private static void EnsureIsolatedDatabaseName(String databaseName) {
-        var requiredPrefix = $"{CurrentDatabaseName}_db21_";
+        var requiredPrefix = $"{CurrentDatabaseName}_schema_";
         if (!TestMode || String.IsNullOrWhiteSpace(CurrentRunId) ||
             String.IsNullOrWhiteSpace(CurrentDatabaseName) ||
             !databaseName.StartsWith(requiredPrefix, StringComparison.Ordinal) ||
             databaseName.Length > 64) {
-            throw new InvalidOperationException("Refusing to operate on an unowned DB-21 test database.");
+            throw new InvalidOperationException("Refusing to operate on an unowned isolated test database.");
         }
     }
 }

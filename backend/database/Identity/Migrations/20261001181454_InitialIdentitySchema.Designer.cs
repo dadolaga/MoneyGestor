@@ -11,15 +11,15 @@ using database.Identity;
 namespace database.Identity.Migrations
 {
     [DbContext(typeof(IdentityAccountContext))]
-    [Migration("20260923173731_CreateIdentityAccountSchema")]
-    partial class CreateIdentityAccountSchema
+    [Migration("20261001181454_InitialIdentitySchema")]
+    partial class InitialIdentitySchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
