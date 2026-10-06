@@ -1,70 +1,83 @@
-# Istruzioni di collaborazione per MoneyGestor
+# AI instructions for MoneyGestor
 
-## Autorizzazione corrente
+This file is the entry point for Codex and other assistants working in this repository.
+Read it before editing files and also apply the AGENTS.md in the relevant directory.
 
-Il proprietario autorizza l'assistente a intervenire sull'intero progetto per svolgere le attività richieste, senza dover ottenere ogni volta un'ulteriore autorizzazione preventiva per modificare il codice.
+## Instruction map
 
-L'assistente può quindi:
+- [Backend](backend/AGENTS.md): C#, ASP.NET Core, EF Core, APIs and databases.
+- [Frontend](frontend/AGENTS.md): Next.js, React, UI, translations and build-only verification.
+- [AI workflow and Codex usage](docs/AI_WORKFLOW.md): instruction loading, example requests and handoff.
+- [Application documentation](backend/docs/README.md): current architecture, configuration and contracts.
 
-- modificare, creare, spostare o rimuovere file sorgente, configurazioni e documentazione;
-- aggiungere, aggiornare o rimuovere dipendenze;
-- eseguire build, lint, type-check, test e altri strumenti di sviluppo pertinenti;
-- effettuare refactoring, correggere problemi e implementare funzionalità nel backend, nel frontend e negli strumenti di supporto;
-- modificare dati o risorse locali quando ciò è necessario per l'attività richiesta e l'impatto è stato verificato.
+Codex uses AGENTS.md files along the path from the project root to the working directory; local
+instructions specialize the shared rules. When a task involves both backend and frontend, read both
+files. Other assistants must read these references explicitly if they do not load them automatically.
+The owner's latest explicit requests take precedence over project conventions.
 
-Questa autorizzazione è generale e permanente per il repository, salvo una successiva istruzione contraria del proprietario. Restano valide le cautele operative: preservare il lavoro non correlato già presente nel working tree, non esporre segreti e verificare con particolare attenzione le operazioni distruttive, i database e gli ambienti esterni.
+## Authorization and scope
 
-## Contesto tecnico
+The owner authorizes changes needed for the requested task throughout the repository, without
+requiring new approval for every source, dependency, configuration or documentation change.
+This includes refactoring and local resources when their impact has been verified.
 
-- Backend: .NET 8, ASP.NET Core, EF Core/MySQL.
-- Frontend: Next.js 15, React 19, TypeScript, MUI.
-- Migrazione frontend pianificata: Tailwind CSS, shadcn/ui con primitive Radix e next-intl. TanStack è escluso. MUI resta presente temporaneamente e va rimosso per slice complete.
-- Il database MySQL non è incluso in `docker-compose.yml`.
-- Il backend legge `BACKEND_APP_SETTINGS` o `./settings.json`.
-- La CLI legge `IMPORT_EXPORT_APP_SETTINGS` o `./settings.json`.
-- Le API restituiscono un envelope `{ code, message, data }`.
-- L'header `Authorization` contiene attualmente il token grezzo, senza prefisso `Bearer`.
+Preserve existing unrelated work. Do not expose secrets. Verify the target and impact before
+destructive operations, database changes or work on external environments.
+Do not commit, push, deploy or send external messages without a request authorizing those actions.
 
-## Prima di lavorare
+The default workstream remains the frontend: a UI request does not authorize changes to the backend,
+API contracts or domain rules. Change these areas when the owner explicitly requests it.
+Creating these guides does not open a new backend implementation phase.
 
-1. Leggere `README.md`, `docs/ARCHITECTURE.md` e `docs/PROJECT_AUDIT.md`.
-2. Controllare `git status --short` e preservare il lavoro non correlato.
-3. Per modifiche frontend leggere anche `frontend/README_DEV.md`, `docs/FRONTEND_MIGRATION_PLAN.md`, `docs/UI_DESIGN_SYSTEM.md` e `docs/INTERNATIONALIZATION.md`.
-4. Non leggere o mostrare il contenuto di `settings.json`; usare `settings.example.json` per lo schema.
+## Before implementing
 
-## Verifica minima
+1. Run `git status --short` and identify existing changes.
+2. Read local instructions and relevant documentation, then inspect the code actually involved.
+3. Use `rg` to find reusable components, services and helpers before introducing new ones.
+4. Define the requested behavior and make a complete, focused change.
+5. Do not read, print or copy `settings.json`, including files in subdirectories; use
+   [settings.example.json](settings.example.json) for the schema and synthetic values in examples.
 
-- Modifiche solo documentali: controllare link relativi, coerenza fra documenti e `git diff --check`; non serve eseguire build.
-- Modifiche frontend: `npm --prefix frontend run typecheck`, `npm --prefix frontend run lint` e `npm --prefix frontend run build`.
-- Modifiche backend o condivise: `dotnet build backend/backend.sln`.
-- Test backend: non avviarli senza aver verificato la destinazione MySQL. La suite crea e poi elimina `ut_money_gestor` su `localhost:1883`.
+Historical documents such as `docs/ARCHITECTURE.md`, `docs/PROJECT_AUDIT.md` and migration records
+are absent from this checkout. If they become available, consult them in context; do not block work
+or invent their contents. For now, use the available guides and inspect the current code.
 
-Segnalare separatamente errori introdotti dalla modifica, problemi preesistenti e verifiche non eseguite.
+## Implementation approach
 
-## Priorità tecniche
+- Follow the architecture, naming and style already used in the area being changed.
+- Reuse existing boundaries: HTTP in the backend webserver, financial rules in logic,
+  persistence in database, and presentation and UI state in the frontend.
+- Do not add future features, abstractions or dependencies unless the request requires them.
+- Do not fix errors by removing type checks, validation, authorization or integrity constraints.
+- Update affected documentation when behavior or the status of a slice changes.
+- Do not remove dependencies before searching for all consumers in the relevant area.
 
-L'ordine generale dei rischi resta quello indicato in `docs/PROJECT_AUDIT.md`. Il workstream corrente è però la migrazione frontend descritta in `docs/FRONTEND_MIGRATION_PLAN.md`: non modificare backend, contratto API o logica di dominio finché il proprietario non apre esplicitamente quella fase.
+The current stack is .NET 10 in the backend and Next.js 15 / React 19 / TypeScript in the frontend.
+Always check `global.json`, `.csproj` files and `frontend/package.json` before changing versions.
+The `/api/v1` APIs use Identity cookies, antiforgery and Problem Details; legacy endpoints retain
+the `{ code, message, data }` envelope and raw-token compatibility. Keep these contracts distinct.
 
-## Coerenza frontend durante la migrazione
+## Verification and completion criteria
 
-- Non introdurre nuovi componenti MUI nelle aree migrate.
-- Migrare per slice verticali complete e mantenere il tema MUI legacy allineato ai token condivisi durante la convivenza.
-- Non introdurre alcun pacchetto TanStack; il routing resta responsabilità di Next.js App Router.
-- Non duplicare logica di feature fra desktop e mobile.
-- Centralizzare token e varianti; le pagine non devono definire un proprio linguaggio visuale.
-- Usare temi light/dark e un rosso di brand parametrico tramite token semantici.
-- Usare Day.js come unica libreria data.
-- Tenere login e registrazione fuori dalla shell dashboard.
-- Dare priorità al Quick Add mobile da tre tocchi; il form completo resta disponibile per i casi avanzati.
-- Non spostare logica di dominio nel frontend e non vincolare questa migrazione al backend, che verrà affrontato separatamente.
-- L'accessibilità non è al momento un gate, ma non rimuovere semantica e comportamento base forniti da Radix.
-- Usare `docs/dashboard_mockup.png` come riferimento visuale ufficiale per ogni pagina e componente.
-- Nei testi rivolti all'utente usare “movimento”; mantenere `Transaction` nei nomi tecnici finché non viene richiesto un refactoring dedicato.
-- Non implementare ricerca globale, notifiche, categorie, budget, obiettivi, report, export, stato movimenti o andamento storico solo perché compaiono nel mockup: sono possibilità future fuori scope.
-- Preparare ogni nuova slice per next-intl: niente testi UI significativi hard-coded, chiavi semantiche per feature e formatter condivisi.
-- Usare inglese come locale predefinita senza prefisso URL e italiano sotto `/it`; niente rilevamento automatico dal browser.
-- La lingua attiva è determinata dall'URL; se un form è modificato, chiedere conferma prima di cambiare locale.
-- Usare Day.js per parsing/calcoli delle date e next-intl/Intl per la loro presentazione localizzata.
-- Usare esclusivamente il wrapper di navigazione locale-aware nelle feature multilingua.
-- Non rimuovere una dipendenza legacy finché una ricerca sull'intero frontend non conferma che non ha più consumer.
-- Aggiornare piano, sistema visuale e README quando una fase cambia stato.
+| Change | Default verification | When to stop |
+| --- | --- | --- |
+| Documentation only | Relative links, consistency and `git diff --check` | After these checks; no build |
+| Frontend | `npm --prefix frontend run build` | After the full build exits with code 0 |
+| Backend | `dotnet build backend/backend.sln` | After compilation; tests only when relevant and safe |
+| Both areas, when requested | Frontend and backend builds | After both builds complete |
+
+**Frontend: the build alone is sufficient.** Do not independently run test suites, Vitest,
+Playwright, smoke tests, visual checks, or separate lint, typecheck or format checks. Do not start
+`dev`, `start`, containers or servers to open and test a web page. This also applies to UI changes.
+Keep checks built into `next build` enabled. Perform additional verification only when the owner
+explicitly requests it; the presence of scripts or tests does not require running them.
+
+Fix errors introduced by the change and rebuild only when necessary. If compilation is blocked by
+a pre-existing or environmental problem, report it without claiming success or replacing the check
+with an application launch. Do not automatically expand the task to resolve that problem.
+
+## Handoff
+
+Respond in Italian with a summary of the change and the verification actually performed.
+Distinguish introduced errors, pre-existing issues and checks not run. A successful build verifies
+compilation: do not claim that interactions or runtime behavior have been tested.

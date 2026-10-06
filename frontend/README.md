@@ -1,23 +1,35 @@
-# Frontend MoneyGestor
+# MoneyGestor frontend
 
-Client web di MoneyGestor realizzato con Next.js 15, React 19 e TypeScript. Le route legacy usano ancora Material UI; le
-fondamenta e i componenti nuovi usano Tailwind CSS, shadcn/ui su Radix e next-intl.
+MoneyGestor web client built with Next.js 15, React 19 and TypeScript. Legacy routes still use Material UI;
+foundations and new components use Tailwind CSS, shadcn/ui on Radix and next-intl.
 
-Il frontend è in migrazione progressiva a Tailwind CSS e shadcn/ui con primitive Radix. Le Fasi 1–6 sono implementate:
-fondamenta, shell, autenticazione e wallet usano già il nuovo stack. TanStack è stato escluso; MUI resta soltanto nelle
-slice legacy non ancora migrate. Il riferimento ufficiale è il [mockup della dashboard](../docs/dashboard_mockup.png),
-da cui derivano temi light/dark, rosso parametrico e Quick Add mobile da tre tocchi. Consulta anche il
-[piano di migrazione](../docs/FRONTEND_MIGRATION_PLAN.md) e il [sistema visuale condiviso](../docs/UI_DESIGN_SYSTEM.md).
+The frontend is progressively migrating to Tailwind CSS and shadcn/ui with Radix primitives. Phases 1–6
+are implemented: foundations, shell, authentication and wallets already use the new stack. TanStack
+is excluded; MUI remains only in legacy slices that have not been migrated. Light/dark themes,
+configurable brand red and shared components follow the
+[frontend instructions](AGENTS.md#implementing-ui-and-state). The dashboard mockup and historical
+migration records are absent from this checkout; use existing tokens and components as the reference.
+Three-touch mobile Quick Add remains a goal to implement when requested.
 
-Nell'interfaccia si usa il termine “movimento”; `Transaction` resta il nome tecnico interno. Le funzionalità future
-raffigurate nel mockup non fanno parte dello scope corrente.
+Use “movimento” in Italian UI text; `Transaction` remains the internal technical name. Future features
+shown in the mockup are outside the current scope.
 
-L'architettura multilingua usa next-intl, inglese predefinito, italiano opzionale, dizionari locali e formattazione
-centralizzata. Consulta il [piano di internazionalizzazione](../docs/INTERNATIONALIZATION.md).
+The multilingual architecture uses next-intl, English by default, optional Italian, local dictionaries
+and centralized formatting. See the [internationalization rules](AGENTS.md#languages-dates-and-conventions).
 
-## Avvio
+## Working with Codex and other assistants
 
-Dalla radice del repository:
+Read [AGENTS.md](AGENTS.md) and the [AI workflow](../docs/AI_WORKFLOW.md). For a frontend change,
+default verification consists only of `npm --prefix frontend run build`: after it completes with
+exit code 0, stop. Do not run tests or separate checks, or start the application or a browser,
+unless explicitly requested. Documentation-only changes do not require a build.
+
+The startup instructions and scripts below are available for manual use and do not add steps
+to ordinary AI verification.
+
+## Manual startup
+
+From the repository root:
 
 ```powershell
 $env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
@@ -25,7 +37,7 @@ npm --prefix .\frontend install
 npm --prefix .\frontend run dev
 ```
 
-Oppure dalla directory `frontend`:
+Alternatively, from the `frontend` directory:
 
 ```powershell
 $env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
@@ -33,61 +45,62 @@ npm install
 npm run dev
 ```
 
-Apri `http://localhost:3000`. Se `NEXT_PUBLIC_API_URL` non è valorizzata, il client usa attualmente
-`https://localhost:7184`; per uno sviluppo riproducibile conviene impostare sempre la variabile.
+Open `http://localhost:3000`. If `NEXT_PUBLIC_API_URL` is unset, the client currently uses
+`http://localhost:5256`; always setting this variable makes development more reproducible.
 
-## Script
+## Scripts
 
-| Comando                | Scopo                                                    |
-| ---------------------- | -------------------------------------------------------- |
-| `npm run dev`          | server di sviluppo                                       |
-| `npm run build`        | build di produzione                                      |
-| `npm run start`        | avvio della build di produzione                          |
-| `npm run lint`         | controlli ESLint                                         |
-| `npm run lint:fix`     | correzioni ESLint automatiche                            |
-| `npm run test`         | test unitari e dei componenti con Vitest/Testing Library |
-| `npm run typecheck`    | controllo TypeScript senza emissione                     |
-| `npm run format`       | formattazione Prettier                                   |
-| `npm run format:check` | verifica Prettier                                        |
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Start the production build |
+| `npm run lint` | ESLint checks |
+| `npm run lint:fix` | Automatic ESLint fixes |
+| `npm run test` | Unit and component tests with Vitest/Testing Library |
+| `npm run typecheck` | TypeScript checks without emitting files |
+| `npm run format` | Prettier formatting |
+| `npm run format:check` | Prettier checks |
 
-## Route principali
+## Main routes
 
-La homepage pubblica Flowiy è disponibile su `/` (inglese) e `/it` (italiano), senza shell dashboard. Riprende il
-riferimento `Flowiy_ Finanze Semplici e Condivise.png`, con layout responsive, temi chiaro/scuro locali, FAQ e link di
-autenticazione locale-aware. Le card sono esempi illustrativi; le due grandi anteprime hanno spazi riservati alle
-immagini. Specifiche delle risorse, token e scelte UI: [homepage Flowiy](docs/HOMEPAGE.md).
+The public Flowiy homepage is available at `/` (English) and `/it` (Italian), outside the dashboard shell.
+It follows the `Flowiy_ Finanze Semplici e Condivise.png` reference, with a responsive layout, local light/dark
+themes, FAQs and locale-aware authentication links. Cards are illustrative examples; the two large previews
+reserve space for images. Asset specifications, tokens and UI choices: [Flowiy homepage](docs/HOMEPAGE.md).
 
-| Route                                          | Funzione                                                      |
-| ---------------------------------------------- | ------------------------------------------------------------- |
-| `/`, `/it`                                     | homepage pubblica Flowiy in inglese e italiano                |
-| `/dashboard`                                   | riepilogo entrate, uscite e categorie da `/api/v1`            |
-| `/dashboard/wallet`                            | gestione wallet da `/api/v1`, con preferiti e saldi           |
-| `/dashboard/transaction`                       | CRUD movimenti con filtri tipizzati e paginazione server-side |
-| `/dashboard/transaction/add_mobile`            | prototipo mobile da assorbire nel futuro Quick Add condiviso  |
-| `/login`, `/register`                          | autenticazione fuori dalla shell dashboard                    |
-| `/dashboard/user/login`, `/dashboard/user/new` | redirect temporanei alle route di autenticazione              |
-| `/dashboard/error`                             | errore legacy da riallineare al design system                 |
-| `/dashboard/not_implemented`                   | segnaposto per funzionalità future                            |
+| Route | Purpose |
+| --- | --- |
+| `/`, `/it` | Public Flowiy homepage in English and Italian |
+| `/dashboard` | Income, expense and category overview from `/api/v1` |
+| `/dashboard/wallet` | Wallet management through `/api/v1`, including favorites and balances |
+| `/dashboard/transaction` | Movement CRUD with typed filters and server-side pagination |
+| `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |
+| `/login`, `/register` | Authentication outside the dashboard shell |
+| `/dashboard/user/login`, `/dashboard/user/new` | Temporary redirects to authentication routes |
+| `/dashboard/error` | Legacy error page to align with the design system |
+| `/dashboard/not_implemented` | Placeholder for future features |
 
-Login e registrazione sono fuori dalla shell dashboard; le vecchie route restano redirect temporanei. L'italiano
-aggiunge il prefisso `/it` alle stesse route. Le pagine account, wallet, movimenti e dashboard usano `/api/v1` con
-cookie Identity e antiforgery; le fixture restano disponibili per preview e test dei componenti.
+Login and registration are outside the dashboard shell; old routes remain temporary redirects.
+Italian adds the `/it` prefix to the same routes. Account, wallet, movement and dashboard pages use
+`/api/v1` with Identity cookies and antiforgery; fixtures remain available for previews and component tests.
 
-## Organizzazione
+## Organization
 
-- `src/app`: route e componenti specifici delle pagine
-- `src/components/shared`: componenti comuni del nuovo sistema, inclusi form, stati e conferme
-- `src/component` e `src/context`: componenti legacy MUI, mantenuti finché hanno consumer
-- `src/hooks/useApi.ts`: adapter callback degli endpoint account `/api/v1` mantenuti dalle form legacy
-- `src/lib/api/client.ts`: client Promise con cookie, antiforgery, errori tipizzati e cancellation per le risorse v1
-- `src/features`: view model, adapter puri e componenti visuali pilotati tramite props
-- `src/lib/fixtures`: dati realistici per sviluppo e test senza backend
-- `src/types/feature-state.ts`: stati condivisi `idle`, `loading`, `ready`, `empty` ed `error`
-- `src/models/backend.ts`: tipi del contratto API
-- `src/utilis`: conversioni per filtri, colori e valori monetari
+- `src/app`: routes and page-specific components.
+- `src/components/shared`: shared components for the new system, including forms, states and confirmations.
+- `src/component` and `src/context`: legacy MUI components, retained while they have consumers.
+- `src/hooks/useApi.ts`: callback adapter for `/api/v1` account endpoints used by legacy forms.
+- `src/lib/api/client.ts`: Promise-based client with cookies, antiforgery, typed errors and cancellation for v1 resources.
+- `src/features`: view models, pure adapters and visual components driven through props.
+- `src/lib/fixtures`: realistic development and test data without a backend.
+- `src/types/feature-state.ts`: shared `idle`, `loading`, `ready`, `empty` and `error` states.
+- `src/models/backend.ts`: API contract types.
+- `src/utilis`: conversions for filters, colors and monetary values.
 
-Le pagine migrate non leggono token di autenticazione; usano il cookie Identity HttpOnly e inviano l'header antiforgery
-prima delle mutazioni. Il client legacy server-side resta isolato finché non termina la finestra di compatibilità.
+Migrated pages do not read authentication tokens; they use the HttpOnly Identity cookie and send the
+antiforgery header before mutations. The legacy server-side client remains isolated until the compatibility
+window ends.
 
-Per le convenzioni interne consulta [README_DEV.md](README_DEV.md). Per problemi noti e priorità consulta
-[l'audit](../docs/PROJECT_AUDIT.md).
+For internal conventions, see [README_DEV.md](README_DEV.md). For development issues, see
+[troubleshooting](../backend/docs/10-development-and-troubleshooting.md).

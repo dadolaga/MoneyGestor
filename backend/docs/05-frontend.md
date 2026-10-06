@@ -104,22 +104,21 @@ Semantic tokens live in `src/app/globals.css`; use shared tokens and variants fo
 
 Tailwind Preflight remains disabled while MUI areas coexist. Do not add MUI to migrated routes, create a separate mobile domain implementation or remove a legacy dependency until an entire frontend search shows no consumers. Use local UI primitives and shared components for new work.
 
-The official visual reference is the [dashboard mockup](../../docs/all_modernization/dashboard_mockup.png). Its visual elements do not authorize new reports, budgets, goals, global search, notifications or other future features. The three-touch Quick Add is an outstanding migration goal.
+The historical official visual reference is `docs/dashboard_mockup.png`, also referenced under `docs/all_modernization/`. That asset and the historical migration/design/internationalization records are absent from this checkout. Use existing shared tokens and components as the available reference; do not invent missing specifications. Mockup elements do not authorize new reports, budgets, goals, global search, notifications or other future features. The three-touch Quick Add remains an outstanding goal to implement when requested.
 
-Follow the [migration plan](../../docs/all_modernization/FRONTEND_MIGRATION_PLAN.md), [design system](../../docs/all_modernization/UI_DESIGN_SYSTEM.md) and [internationalization contract](../../docs/all_modernization/INTERNATIONALIZATION.md), while checking current route imports for runtime behavior.
+Follow the current [frontend instructions](../../frontend/AGENTS.md), including design and internationalization rules, and check current route imports for runtime behavior. Consult historical records if they become available.
 
 ## 5.8 Developer commands
 
+For ordinary AI verification, use only:
+
 ```powershell
-npm --prefix .\frontend ci
-npm --prefix .\frontend run dev
-npm --prefix .\frontend run typecheck
-npm --prefix .\frontend run lint
-npm --prefix .\frontend run test
-npm --prefix .\frontend run build
+npm --prefix frontend run build
 ```
 
-The repository also provides `lint:fix`, `format` and `format:check`. Automatic format/fix commands modify files; keep their scope aligned with the intended change. See [chapter 10](10-development-and-troubleshooting.md) for verification policy.
+Once the full build exits with code 0, stop. Do not run tests, separate lint/typecheck/format checks, start a server or open a browser unless explicitly requested by the owner. Keep Next.js build checks enabled. For documentation-only changes, check links and `git diff --check` without a build.
+
+Other scripts such as `dev`, `start`, `test`, `lint` and `format` remain available for manual work or explicit requests. Install dependencies from the lockfile only when needed. See [frontend AGENTS.md](../../frontend/AGENTS.md) and [chapter 10](10-development-and-troubleshooting.md) for the verification policy.
 
 
 ---

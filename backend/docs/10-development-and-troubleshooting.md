@@ -23,7 +23,7 @@
 
 ## 10.1 Start a development task
 
-Start with the [architecture](../../docs/all_modernization/ARCHITECTURE.md) and the relevant feature/design guides. Check `git status --short` before editing and keep changes focused. Repository collaboration conventions are defined in [AGENTS.md](../../AGENTS.md).
+Start with the [backend architecture](04-backend.md) or [frontend guide](05-frontend.md) and the relevant feature guides. Check `git status --short` before editing and keep changes focused. Repository collaboration conventions are defined in [AGENTS.md](../../AGENTS.md), with specific [backend](../AGENTS.md) and [frontend](../../frontend/AGENTS.md) instructions. See the [AI workflow](../../docs/AI_WORKFLOW.md) for Codex usage.
 
 Use [settings.example.json](../../settings.example.json) as the configuration template. Keep local credentials, settings files and backup dumps out of commits. The supported SDK is defined in `global.json`; the versioned API uses Identity cookies, and integration tests use disposable MySQL containers.
 
@@ -57,14 +57,13 @@ When switching branches or versions, verify the test infrastructure before runni
 
 ## 10.4 Frontend checks
 
+For ordinary AI work, run only:
+
 ```powershell
-npm --prefix .\frontend run typecheck
-npm --prefix .\frontend run lint
-npm --prefix .\frontend run test
-npm --prefix .\frontend run build
+npm --prefix frontend run build
 ```
 
-Validate frontend changes with typecheck, lint and build. Run focused component/unit tests for changed behavior. Use `npm --prefix frontend ci` for reproducible lockfile installation.
+Wait for the entire build to exit successfully, then stop. Fix compilation errors introduced by the change and rebuild only when necessary. Keep checks built into Next.js enabled. Do not run separate lint, typecheck, format checks, unit/component/E2E tests, browser automation or visual checks. Do not start development/production servers or containers to inspect a web page. Extra verification requires an explicit owner request; available scripts do not make it mandatory. Use `npm --prefix frontend ci` only when lockfile installation is needed. Report environmental or pre-existing build failures without claiming success or launching the app as a substitute.
 
 For documentation changes, check relative links, configuration examples and consistency between guides, then run `git diff --check`.
 

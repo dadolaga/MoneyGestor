@@ -1,127 +1,129 @@
-# Convenzioni frontend
+# Frontend conventions
 
-Questo file descrive le convenzioni già adottate o desiderate nel frontend. Non sostituisce ESLint e TypeScript.
+This file describes existing or intended frontend conventions. It does not replace ESLint or TypeScript.
 
-## Migrazione UI pianificata
+## Planned UI migration
 
-La migrazione a Tailwind CSS e shadcn/ui basato su Radix deve seguire il
-[piano per slice](../docs/FRONTEND_MIGRATION_PLAN.md) e il [contratto visuale](../docs/UI_DESIGN_SYSTEM.md). TanStack
-non fa parte dello stack di destinazione. Fino all'avvio dell'implementazione, le convenzioni MUI sotto riportate
-descrivono il codice corrente.
+The migration to Tailwind CSS and shadcn/ui on Radix follows the
+[frontend instructions](AGENTS.md) and the [implementation guide](../backend/docs/05-frontend.md).
+TanStack is outside the target stack. MUI conventions apply only to legacy areas.
+Historical planning, design and baseline documents are absent from this checkout: check the current
+state through route imports and shared components. Mobile Quick Add remains deferred until
+explicitly requested.
 
-La Fase 0 è conclusa. Matrice route, baseline visuali, checklist e backlog preesistente sono in
-[`docs/PHASE_0_BASELINE.md`](../docs/PHASE_0_BASELINE.md). Il Quick Add mobile è rinviato e non deve essere implementato
-incidentalmente durante le fondazioni.
+Phases 1–6 are implemented: Tailwind v4 without Preflight, local shadcn/Radix primitives, `next-intl`,
+`next-themes`, Sonner and the `/design-system` development catalog. Legacy MUI routes live under
+`app/[locale]/(legacy)` without changing public URLs; the shared shell does not import MUI and new
+features belong to `(app)`. View models and pure adapters live in their respective features, while
+shared fixtures live in `src/lib/fixtures`. Visual components receive data and state through props
+using the discriminated `FeatureState<T>` type.
 
-Le Fasi 1–6 sono implementate: Tailwind v4 senza Preflight, primitive locali shadcn/Radix, `next-intl`, `next-themes`,
-Sonner e il catalogo development `/design-system`. Le route legacy MUI vivono sotto `app/[locale]/(legacy)` senza
-cambiare gli URL pubblici; la shell condivisa non importa MUI e le feature nuove appartengono a `(app)`. View model e
-adapter puri vivono nelle rispettive feature, mentre le fixture condivise stanno in `src/lib/fixtures`. I componenti
-visuali ricevono dati e stato tramite props usando il tipo discriminato `FeatureState<T>`.
+The `/dashboard`, `/dashboard/wallet` and `/dashboard/transaction` routes live in `(app)` and use
+`/api/v1`; wallets support creation/editing, favorites and deletion, while movements use filters and
+server-side pagination. Fixtures remain for previews and tests. The resource client is
+`src/lib/api/client.ts`; `useApi` remains only as a callback adapter for legacy account forms.
 
-Le route `/dashboard`, `/dashboard/wallet` e `/dashboard/transaction` vivono nel gruppo `(app)` e usano `/api/v1`;
-wallet supporta creazione/modifica, preferiti ed eliminazione, mentre i movimenti usano filtri e paginazione
-server-side. Le fixture restano per preview e test. Il client di risorse è `src/lib/api/client.ts`; `useApi` è mantenuto
-soltanto come adapter callback delle form account legacy.
+The `AppShell` centralizes the header, desktop navigation, mobile Sheet, session state and language
+selector. Login, registration, email confirmation, resend and password recovery live in `(auth)`,
+so they do not receive the dashboard shell. The browser uses an Identity session through HttpOnly
+cookies and antiforgery: do not read, save or send authentication tokens from JavaScript.
+Previous dashboard login/registration URLs perform temporary redirects.
 
-La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login,
-registrazione, conferma email, reinvio e recupero password vivono nel route group `(auth)`, quindi non ricevono la shell
-dashboard. Il browser usa la sessione Identity tramite cookie HttpOnly e antiforgery: non leggere, salvare o inviare
-token di autenticazione da JavaScript. Le precedenti URL dashboard di login/registrazione eseguono un redirect
-temporaneo.
+Vitest, Testing Library, `user-event` and `jest-dom` are configured without forcing peer dependencies.
+Playwright is planned alongside smoke tests for the first migrated slice.
 
-Vitest, Testing Library, `user-event` e `jest-dom` sono configurati senza forzare peer dependency. Playwright verrà
-aggiunto insieme agli smoke test della prima slice migrata.
+During the transition:
 
-Durante la transizione:
+- A route declared migrated must not import MUI.
+- New code uses semantic tokens and shared primitives rather than ad hoc visual values.
+- Next.js App Router remains the application router.
+- The frontend contains only presentation state and validation; substantial domain logic stays in the backend.
+- Tables use shadcn and simple React state until future backend integration.
+- Desktop and mobile share form fields, components and state.
+- New forms use React Hook Form only for state, errors and submission; domain rules remain in the backend.
+- User-entered amounts are normalized once at the presentation boundary using the active locale.
+- `DateRangeField` exchanges `Date` values with the calendar and converts to Day.js at its boundary.
+- Day.js is the only date library.
+- Light and dark themes use the same tokens, including configurable brand red.
+- Login and registration remain outside the dashboard shell.
+- The component catalog is a lightweight internal route, not Storybook.
+- `docs/dashboard_mockup.png` is the official visual baseline.
+- Use “movimento” in Italian UI text; retain `Transaction` in existing technical names.
+- Do not implement future features shown in the mockup unless explicitly requested.
+- Tailwind Preflight remains disabled while MUI coexists; enable and verify it only after the final legacy route.
+- The application theme initially follows the system and preserves an explicit user choice.
 
-- una route dichiarata migrata non deve importare MUI;
-- il nuovo codice usa token semantici e primitive condivise, non valori visuali ad hoc;
-- Next.js App Router resta il router dell'applicazione;
-- il frontend contiene soltanto stato e validazione di presentazione; la logica pesante resta nel backend;
-- le tabelle usano shadcn e semplice stato React fino alla futura integrazione backend;
-- desktop e mobile condividono campi, componenti e stato del form;
-- i nuovi form usano React Hook Form solo per stato, errori e submit; le regole di dominio restano nel backend;
-- importi immessi dall'utente vengono normalizzati una volta nel boundary di presentazione con la locale attiva;
-- il `DateRangeField` scambia `Date` con il calendario e converte a Day.js nel suo boundary;
-- Day.js è l'unica libreria data;
-- temi chiaro e scuro usano gli stessi token, incluso il rosso di brand parametrico;
-- login e registrazione restano fuori dalla shell dashboard;
-- il catalogo componenti è una route interna leggera, non Storybook.
-- `docs/dashboard_mockup.png` è la baseline visuale ufficiale;
-- nei testi UI usare “movimento”; mantenere `Transaction` nei nomi tecnici esistenti;
-- non implementare le funzionalità future mostrate nel mockup se non vengono richieste esplicitamente.
-- durante la convivenza con MUI, Tailwind Preflight resta disabilitato; verrà abilitato e verificato solo dopo l'ultima
-  route legacy;
-- il tema applicativo parte da quello di sistema e conserva l'eventuale scelta esplicita.
+## Internationalization
 
-## Internazionalizzazione
+The public homepage slice is implemented in `src/features/home`, with the `Home` namespace in English
+and Italian dictionaries. Shared marketing styles and tokens are in `src/styles/marketing.css`;
+the landing page starts dark like the reference and its theme selector is local, without changing
+the saved dashboard theme. Previews are static and make no API calls.
+See the [homepage and image specifications](docs/HOMEPAGE.md).
 
-La slice homepage pubblica è implementata in `src/features/home`, con namespace `Home` nei dizionari inglese e italiano.
-Gli stili e i token marketing condivisi sono in `src/styles/marketing.css`; il tema della landing parte scuro come il
-riferimento e il suo selettore è locale, senza modificare il tema salvato della dashboard. Le anteprime sono statiche e
-non chiamano API. Vedi le [specifiche homepage e immagini](docs/HOMEPAGE.md).
+Follow the [internationalization rules](AGENTS.md#languages-dates-and-conventions).
 
-Seguire [INTERNATIONALIZATION.md](../docs/INTERNATIONALIZATION.md).
+- Do not hard-code meaningful user-facing text in migrated slices.
+- Use semantic keys and namespaces for each feature.
+- Use shared formatters for currency, percentages and dates.
+- Day.js handles parsing and calculations; next-intl/Intl handles localized presentation.
+- Use the locale-aware navigation wrapper instead of importing Next.js APIs directly in features.
+- English is the deterministic fallback; do not use `Accept-Language` to change the first visit automatically.
+- Do not translate user-entered names or descriptions.
+- Do not add keys for future features outside the scope.
 
-- Nessun testo utente significativo hard-coded nelle slice migrate.
-- Usare chiavi semantiche e namespace per feature.
-- Usare i formatter condivisi per valuta, percentuali e date.
-- Day.js gestisce parsing e calcoli; next-intl/Intl gestisce la presentazione localizzata.
-- Usare il navigation wrapper locale-aware invece di importare direttamente le API Next.js nelle feature.
-- L'inglese è il fallback deterministico; non usare `Accept-Language` per cambiare automaticamente la prima visita.
-- Non tradurre nomi o descrizioni inseriti dall'utente.
-- Non aggiungere chiavi per funzionalità future fuori scope.
+## Component ordering
 
-## Ordine nel componente
+Inside a React component, use this order:
 
-All'interno di un componente React, usa questo ordine:
+1. Context and routing hooks.
+2. State and refs.
+3. `useEffect`.
+4. API loading functions named `load...` or `reload...`.
+5. Helper functions.
+6. Event handlers with the `Handler` suffix.
+7. Local rendering functions.
+8. JSX `return`.
 
-1. hook di contesto e routing;
-2. stato e ref;
-3. `useEffect`;
-4. funzioni che caricano dati dalle API, chiamate `load...` o `reload...`;
-5. funzioni di supporto;
-6. handler degli eventi, con suffisso `Handler`;
-7. funzioni di rendering locali;
-8. `return` JSX.
+When a `useEffect` uses a loading function declared later, the function must be stable
+(`useCallback`) or the effect must contain the operation directly. Avoid disabling
+`react-hooks/exhaustive-deps` without documenting the actual reason.
 
-Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la funzione deve essere stabile
-(`useCallback`) oppure l'effetto deve contenere direttamente l'operazione. Evita di disabilitare
-`react-hooks/exhaustive-deps` senza annotare il motivo reale.
+## Naming
 
-## Nomi
+- Components and component files: `PascalCase`.
+- Hooks: `use` prefix.
+- Remote loading: `loadWallets`, `reloadTransactions`, `loadUserInformation`.
+- Events: `saveHandler`, `closeDialogHandler`, `changePageHandler`.
+- Booleans: `is`, `has`, `show` or `open` prefixes.
+- Imported types: use `import type` to respect `consistent-type-imports`.
 
-- Componenti e file componente: `PascalCase`.
-- Hook: prefisso `use`.
-- Caricamento remoto: `loadWallets`, `reloadTransactions`, `loadUserInformation`.
-- Eventi: `saveHandler`, `closeDialogHandler`, `changePageHandler`.
-- Booleani: prefissi `is`, `has`, `show` o `open`.
-- Tipi importati: usa `import type` per rispettare `consistent-type-imports`.
+## API calls
 
-## Chiamate API
+V1 resources go through `src/lib/api/client.ts`; do not create Axios instances directly in pages.
+Every call that increments loading state must also decrement it on errors using `onFinish`.
 
-Le risorse v1 passano da `src/lib/api/client.ts`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che
-modifica uno stato di caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
+The `ApiRequest` wrapper currently does not return a Promise from `execute`. Until it is refactored,
+handle success, error and completion through available callbacks and do not use `await execute()`.
 
-Il wrapper `ApiRequest` non restituisce oggi una Promise dalla funzione `execute`. Finché non verrà rifattorizzato,
-gestisci successo, errore e fine con i callback disponibili e non usare `await execute()`.
+## Forms
 
-## Form
+- Define rules in a `FormSettings` object near the component, or export them only when genuinely shared.
+- Do not rely on TypeScript casts to convert runtime values: text inputs remain strings and must be
+  converted explicitly before the request.
+- Display backend errors on the correct field when a mapping exists; use a snackbar for general errors.
 
-- Definisci le regole in un oggetto `FormSettings` vicino al componente o esportale solo se sono davvero condivise.
-- Non affidarti al cast TypeScript per convertire valori runtime: gli input testuali restano stringhe e vanno convertiti
-  esplicitamente prima della richiesta.
-- Mostra gli errori del backend sul campo corretto quando esiste una corrispondenza; usa una snackbar per errori
-  generali.
+## Verifying AI changes
 
-## Controlli prima di una modifica
+For frontend changes, run only the following from the repository root:
 
 ```powershell
-npm run typecheck
-npm run lint
-npm run test
-npm run format:check
+npm --prefix frontend run build
 ```
 
-La build usa `next/font` con Google Fonts e richiede una catena TLS valida oppure una strategia di font locale.
+Wait for the full build to finish: if the exit code is 0, stop and hand off the result. Fix introduced
+errors and rebuild only when necessary. Do not run tests or separate lint, typecheck or format checks,
+start servers or open browser pages unless the owner explicitly requests it.
+Keep internal Next.js checks enabled. Report environmental and pre-existing blockers separately.
+For documentation-only changes, links, consistency and `git diff --check` are sufficient; no build.
+See [AGENTS.md](AGENTS.md) and the [Codex workflow](../docs/AI_WORKFLOW.md).
