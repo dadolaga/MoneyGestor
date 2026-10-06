@@ -207,7 +207,7 @@ export function HomePage() {
     return (
         <div className="flowiy-home" data-theme={isLightTheme ? 'light' : 'dark'}>
             <header className="marketing-header">
-                <div className="marketing-container marketing-header-inner">
+                <div className="marketing-header-inner mx-4">
                     <Link className="marketing-brand" href="/" aria-label={t('navigation.home')}>
                         <Image src="/new_logo_dark.png" alt="Flowiy" width={162} height={51} priority />
                     </Link>
