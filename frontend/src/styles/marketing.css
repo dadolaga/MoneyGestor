@@ -1,0 +1,1441 @@
+/* Shared marketing tokens and component variants. The landing's theme is scoped,
+   so its art direction does not alter the saved dashboard theme. */
+.flowiy-home {
+    --marketing-brand: oklch(0.63 0.25 17);
+    --marketing-brand-soft: oklch(0.71 0.22 12);
+    --marketing-background: #001521;
+    --marketing-surface: #061f2e;
+    --marketing-surface-deep: #031a27;
+    --marketing-foreground: #f6f5fa;
+    --marketing-muted: #c5cfdd;
+    --marketing-border: #173b50;
+    --marketing-blue: #00adf7;
+    --marketing-green: #00d8a3;
+    --marketing-brand-tint: color-mix(in srgb, var(--marketing-brand) 15%, transparent);
+    --marketing-glow: color-mix(in srgb, var(--marketing-brand) 24%, transparent);
+    --marketing-radius: 12px;
+    background: var(--marketing-background);
+    color: var(--marketing-foreground);
+    min-height: 100dvh;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    color-scheme: dark;
+    overflow: clip;
+}
+
+.flowiy-home[data-theme='light'] {
+    --marketing-background: #f3f7fb;
+    --marketing-surface: #ffffff;
+    --marketing-surface-deep: #edf3f8;
+    --marketing-foreground: #132639;
+    --marketing-muted: #516277;
+    --marketing-border: #d3e0eb;
+    --marketing-green: #008463;
+    --marketing-blue: #007bc0;
+    --marketing-glow: color-mix(in srgb, var(--marketing-brand) 12%, transparent);
+    color-scheme: light;
+}
+
+.flowiy-home *,
+.flowiy-home *::before,
+.flowiy-home *::after {
+    box-sizing: border-box;
+}
+.flowiy-home h1,
+.flowiy-home h2,
+.flowiy-home h3,
+.flowiy-home p {
+    margin: 0;
+}
+.flowiy-home a {
+    color: inherit;
+    text-decoration: none;
+}
+.flowiy-home button,
+.flowiy-home a {
+    -webkit-tap-highlight-color: transparent;
+}
+.flowiy-home a:focus-visible,
+.flowiy-home button:focus-visible {
+    outline: 2px solid var(--marketing-brand-soft);
+    outline-offset: 5px;
+}
+.flowiy-home h1,
+.flowiy-home h2 {
+    font-weight: 800;
+    letter-spacing: -1.4px;
+    line-height: 1.08;
+}
+.flowiy-home h2 {
+    font-size: clamp(28px, 3.25vw, 39px);
+}
+.flowiy-home h3 {
+    font-size: 15px;
+    font-weight: 700;
+}
+.flowiy-home p {
+    color: var(--marketing-muted);
+}
+.flowiy-home section[id],
+.flowiy-home div[id] {
+    scroll-margin-top: 90px;
+}
+.marketing-container {
+    width: min(1240px, calc(100% - 56px));
+    margin-inline: auto;
+}
+.marketing-section {
+    position: relative;
+    border-bottom: 1px solid var(--marketing-border);
+}
+.marketing-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    color: white;
+    background: linear-gradient(110deg, var(--marketing-brand), #d60939);
+    box-shadow: 0 2px 20px #00000015;
+}
+.marketing-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    min-height: 65px;
+}
+.marketing-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.marketing-brand img {
+    object-fit: contain;
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.marketing-desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-left: 30px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+.marketing-desktop-nav a:hover,
+.marketing-footer a:hover {
+    opacity: 0.75;
+}
+.marketing-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    margin-left: auto;
+}
+.marketing-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+.marketing-login > span {
+    width: 18px;
+    height: 18px;
+}
+.marketing-text-button {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+}
+.marketing-text-button:hover {
+    opacity: 0.75;
+}
+.flowiy-home .marketing-icon-button {
+    color: white;
+    background: transparent;
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+    border: 0;
+}
+.marketing-icon-button > span {
+    width: 18px;
+    height: 18px;
+}
+.flowiy-home .marketing-menu-button {
+    display: none;
+}
+.marketing-mobile-nav {
+    padding: 10px 28px 20px;
+    gap: 16px;
+    background: #d60939;
+}
+.marketing-mobile-nav:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.marketing-eyebrow {
+    display: inline-block;
+    border: 1px solid var(--marketing-border);
+    border-radius: 100px;
+    padding: 5px 13px;
+    background: color-mix(in srgb, var(--marketing-surface) 85%, transparent);
+    font-size: 10px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    font-weight: 400;
+}
+.flowiy-home .marketing-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 51px;
+    padding: 0 28px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border: 1px solid color-mix(in srgb, var(--marketing-brand-soft) 60%, transparent);
+    border-radius: 10px;
+    background: linear-gradient(120deg, var(--marketing-brand-soft), var(--marketing-brand));
+    box-shadow: 0 8px 28px var(--marketing-brand-tint);
+    transition:
+        transform 160ms,
+        filter 160ms;
+}
+.flowiy-home .marketing-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+.marketing-button > span {
+    width: 18px;
+    height: 18px;
+}
+.flowiy-home .marketing-button--light {
+    background: linear-gradient(120deg, #ffffff, #fff0f3);
+    border-color: white;
+    color: #560b21;
+    box-shadow: 0 5px 24px #fff2;
+}
+.flowiy-home .marketing-header .marketing-button {
+    height: 41px;
+    padding: 0 18px;
+    font-size: 13px;
+    gap: 9px;
+    border-radius: 9px;
+}
+.flowiy-home .marketing-button--outline {
+    background: color-mix(in srgb, var(--marketing-surface) 60%, transparent);
+    color: var(--marketing-foreground);
+    border-color: #39576b;
+    box-shadow: none;
+    font-weight: 400;
+}
+.flowiy-home .marketing-button--small {
+    height: 43px;
+    padding: 0 20px;
+    font-size: 13px;
+}
+.marketing-hero {
+    isolation: isolate;
+}
+.marketing-hero-grid {
+    display: grid;
+    grid-template-columns: 0.98fr 1.02fr;
+    gap: 20px;
+    align-items: center;
+    min-height: 445px;
+    padding-block: 38px 47px;
+}
+.marketing-hero-copy {
+    z-index: 2;
+}
+.marketing-hero h1 {
+    margin-top: 16px;
+    font-size: clamp(38px, 4.35vw, 58px);
+}
+.marketing-hero h1 span,
+.marketing-together h2 span {
+    color: var(--marketing-brand-soft);
+}
+.marketing-lead {
+    font-size: clamp(16px, 1.8vw, 20px);
+    max-width: 520px;
+    margin-top: 19px !important;
+    line-height: 1.45;
+}
+.marketing-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+.flowiy-home .marketing-play {
+    width: 26px;
+    height: 26px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    padding-left: 2px;
+}
+.marketing-checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 21px;
+    padding: 0;
+    margin: 23px 0 0;
+    list-style: none;
+    font-size: 11px;
+    color: var(--marketing-muted);
+}
+.marketing-checks li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.marketing-checks li > span {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    color: #d5fff2;
+    background: #00665870;
+}
+.marketing-ribbon {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    border: 1px solid color-mix(in srgb, var(--marketing-brand) 42%, transparent);
+    border-radius: 44% 56% 66% 34% / 67% 40% 60% 33%;
+    background: linear-gradient(155deg, transparent 20%, var(--marketing-glow) 49%, transparent 76%);
+}
+.marketing-ribbon--hero {
+    width: 710px;
+    height: 440px;
+    right: -30px;
+    top: 7px;
+    transform: rotate(-20deg);
+    box-shadow: -18px 40px 100px var(--marketing-brand-tint);
+}
+.marketing-hero-art {
+    position: relative;
+    min-width: 0;
+    padding-left: 13px;
+    margin-right: 9px;
+}
+.marketing-image-slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #425e78;
+    border-radius: 17px;
+    background: linear-gradient(130deg, var(--marketing-surface), var(--marketing-surface-deep));
+    box-shadow:
+        0 22px 75px #0004,
+        0 0 50px var(--marketing-brand-tint);
+}
+.marketing-image-slot > span {
+    padding: 7px 13px;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: var(--marketing-muted);
+    opacity: 0.48;
+    border: 1px dashed var(--marketing-border);
+    border-radius: 6px;
+    text-align: center;
+}
+.marketing-image-slot--dashboard {
+    aspect-ratio: 1.5;
+    transform: perspective(1000px) rotateY(-7deg) rotateZ(-2deg);
+    border-width: 2px;
+}
+.marketing-floating-card {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 16px;
+    width: 206px;
+    border-radius: var(--marketing-radius);
+    border: 1px solid var(--marketing-border);
+    background: linear-gradient(130deg, var(--marketing-surface), var(--marketing-surface-deep));
+    box-shadow: 0 10px 25px #0004;
+    font-size: 12px;
+}
+.marketing-floating-card > div {
+    flex: 1;
+}
+.marketing-floating-card .marketing-icon {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+}
+.marketing-floating-card--budget {
+    bottom: -20px;
+    left: -37px;
+    transform: rotate(5deg);
+}
+.marketing-floating-card--sharing {
+    bottom: -32px;
+    right: -10px;
+    transform: rotate(-2deg);
+}
+.marketing-floating-card .marketing-progress {
+    margin-top: 11px;
+}
+.marketing-floating-card--budget .marketing-progress > span {
+    background: var(--marketing-green);
+}
+.marketing-avatar-slots {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+.marketing-avatar-slots i {
+    width: 22px;
+    height: 22px;
+    border: 1px dashed #617487;
+    background: var(--marketing-surface-deep);
+    border-radius: 50%;
+}
+.marketing-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 13px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    color: var(--marketing-brand-soft);
+    border: 1px solid color-mix(in srgb, var(--marketing-brand) 45%, transparent);
+    background: radial-gradient(
+        circle at 25% 15%,
+        var(--marketing-brand-tint),
+        color-mix(in srgb, var(--marketing-brand) 8%, transparent)
+    );
+}
+.marketing-icon > span {
+    width: 100%;
+    height: 100%;
+}
+.marketing-icon--blue {
+    color: var(--marketing-blue);
+    border-color: color-mix(in srgb, var(--marketing-blue) 30%, transparent);
+    background: color-mix(in srgb, var(--marketing-blue) 13%, transparent);
+}
+.marketing-icon--green {
+    color: var(--marketing-green);
+    border-color: color-mix(in srgb, var(--marketing-green) 30%, transparent);
+    background: color-mix(in srgb, var(--marketing-green) 13%, transparent);
+}
+.marketing-benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-block: 22px;
+}
+.marketing-benefit {
+    display: flex;
+    gap: 17px;
+    align-items: center;
+    padding-inline: 22px;
+    border-left: 1px solid var(--marketing-border);
+}
+.marketing-benefit:first-child {
+    border-left: 0;
+    padding-left: 0;
+}
+.marketing-benefit:last-child {
+    padding-right: 0;
+}
+.marketing-benefit h2 {
+    font-size: 14px;
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+}
+.marketing-benefit p {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+.marketing-features {
+    padding-block: 24px 18px;
+}
+.marketing-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 14px;
+}
+.marketing-section-heading h2 {
+    margin-top: 6px;
+}
+.marketing-section-heading p {
+    font-size: 15px;
+    margin-top: 5px;
+}
+.marketing-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+.marketing-feature-card {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 11px 10px;
+    border: 1px solid var(--marketing-border);
+    border-radius: var(--marketing-radius);
+    background: linear-gradient(130deg, var(--marketing-surface), var(--marketing-surface-deep));
+    min-width: 0;
+}
+.marketing-feature-heading {
+    display: flex;
+    gap: 14px;
+    padding: 0 5px;
+    min-height: 108px;
+}
+.marketing-feature-heading .marketing-icon {
+    width: 52px;
+    height: 52px;
+}
+.marketing-feature-heading h3 {
+    margin-top: 11px;
+    letter-spacing: -0.25px;
+}
+.marketing-feature-heading p {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+.marketing-example {
+    border: 1px solid var(--marketing-border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--marketing-background) 57%, transparent);
+    margin-top: 12px;
+    font-size: 11px;
+    flex: 1;
+}
+.marketing-example-row {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    padding: 12px;
+    border-top: 1px solid var(--marketing-border);
+    min-height: 40px;
+}
+.marketing-example-row:first-child {
+    border-top: 0;
+}
+.marketing-example-row > span:first-child {
+    width: 22px;
+    height: 22px;
+    color: var(--marketing-blue);
+}
+.marketing-example-row strong {
+    margin-left: auto;
+    font-size: 11px;
+    white-space: nowrap;
+    font-weight: 600;
+}
+.marketing-income {
+    color: var(--marketing-green);
+}
+.marketing-expense {
+    color: var(--marketing-brand-soft);
+}
+.marketing-budget-example {
+    background: transparent;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.marketing-budget {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 10px;
+    border: 1px solid var(--marketing-border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--marketing-background) 57%, transparent);
+}
+.marketing-budget > div {
+    flex: 1;
+    min-width: 0;
+}
+.marketing-budget .marketing-icon {
+    width: 38px;
+    height: 38px;
+    padding: 9px;
+    border: 0;
+}
+.marketing-budget p {
+    margin-top: 3px;
+    color: var(--marketing-foreground);
+    font-size: 11px;
+    white-space: nowrap;
+}
+.marketing-progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 10px;
+    background: var(--marketing-border);
+    overflow: hidden;
+}
+.marketing-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--marketing-brand-soft), var(--marketing-brand));
+}
+.marketing-progress--63 {
+    width: 63%;
+}
+.marketing-progress--60 {
+    width: 60%;
+}
+.marketing-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 7px;
+}
+.marketing-progress-row strong {
+    color: var(--marketing-brand-soft);
+    font-size: 11px;
+}
+.marketing-report {
+    padding: 11px 14px;
+}
+.marketing-chart-label {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 10px;
+    padding: 3px 10px;
+    border: 1px solid var(--marketing-border);
+    border-radius: 5px;
+    font-size: 10px;
+}
+.marketing-bars {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+    height: 101px;
+    border-bottom: 1px solid var(--marketing-border);
+    background: repeating-linear-gradient(
+        to top,
+        transparent 0,
+        transparent 29px,
+        var(--marketing-border) 30px,
+        transparent 31px
+    );
+}
+.marketing-bar-group {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    color: var(--marketing-muted);
+    font-size: 9px;
+}
+.marketing-bar-track {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    height: 80px;
+}
+.marketing-bar-track i {
+    display: block;
+    width: 9px;
+    border-radius: 2px 2px 0 0;
+    background: var(--marketing-green);
+}
+.marketing-bar-track i:nth-child(2) {
+    background: var(--marketing-brand);
+}
+.marketing-bar-group > span {
+    display: block;
+    margin-top: 6px;
+}
+.marketing-chart-legend {
+    display: flex;
+    gap: 22px;
+    margin-top: 8px;
+    font-size: 10px;
+}
+.marketing-chart-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    background: var(--marketing-green);
+    border-radius: 2px;
+    margin-right: 6px;
+}
+.marketing-chart-legend span:nth-child(2)::before {
+    background: var(--marketing-brand);
+}
+.marketing-together {
+    isolation: isolate;
+    padding-block: 27px 24px;
+}
+.marketing-together-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 55px;
+    align-items: center;
+}
+.marketing-together h2 {
+    margin-top: 12px;
+}
+.marketing-together-copy > p {
+    margin-top: 16px;
+    max-width: 540px;
+    font-size: 15px;
+}
+.marketing-together-copy > .marketing-button {
+    margin-top: 17px;
+    height: 46px;
+    padding-inline: 26px;
+    font-size: 14px;
+}
+.marketing-sharing-benefits {
+    display: flex;
+    gap: 14px;
+    margin-top: 23px;
+}
+.marketing-sharing-benefits > div {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+}
+.marketing-sharing-benefits .marketing-icon {
+    width: 39px;
+    height: 39px;
+    padding: 9px;
+}
+.marketing-sharing-benefits span {
+    font-size: 11px;
+    line-height: 1.5;
+}
+.marketing-image-slot--sharing {
+    aspect-ratio: 1.73;
+}
+.marketing-ribbon--together {
+    width: 150%;
+    height: 310px;
+    left: -20%;
+    top: 30px;
+    transform: rotate(7deg);
+}
+.marketing-how {
+    padding-block: 17px 20px;
+}
+.marketing-how .marketing-section-heading {
+    align-items: flex-end;
+    margin-bottom: 13px;
+}
+.marketing-how .marketing-section-heading > p {
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+.marketing-steps {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 19px;
+    padding: 0;
+    margin: 0;
+}
+.marketing-steps li {
+    position: relative;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 16px 13px;
+    border: 1px solid var(--marketing-border);
+    border-radius: var(--marketing-radius);
+    background: linear-gradient(130deg, var(--marketing-surface), var(--marketing-surface-deep));
+}
+.marketing-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 39px;
+    height: 39px;
+    font-size: 20px;
+    border-radius: 50%;
+    background: linear-gradient(130deg, var(--marketing-brand), #a20831);
+    border: 1px solid var(--marketing-brand-soft);
+    color: white;
+}
+.marketing-steps .marketing-icon {
+    border-radius: 10px;
+    width: 51px;
+    height: 51px;
+}
+.marketing-steps h3 {
+    font-size: 13px;
+}
+.marketing-steps p {
+    font-size: 12px;
+    margin-top: 5px;
+}
+.marketing-step-arrow {
+    position: absolute;
+    right: -19px;
+    top: calc(50% - 8px);
+    width: 18px;
+    height: 18px;
+    z-index: 1;
+}
+.marketing-steps li:last-child .marketing-step-arrow {
+    display: none;
+}
+.marketing-security {
+    border-bottom: 0;
+    padding-block: 18px 13px;
+}
+.marketing-security-grid {
+    display: grid;
+    grid-template-columns: 2.1fr repeat(3, 1fr);
+    gap: 24px;
+    align-items: center;
+}
+.marketing-security h2 {
+    font-size: clamp(23px, 2.4vw, 30px);
+    margin-top: 7px;
+    letter-spacing: -0.9px;
+}
+.marketing-security p {
+    font-size: 12px;
+    margin-top: 5px;
+}
+.marketing-security-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.marketing-security-item .marketing-icon {
+    width: 54px;
+    height: 54px;
+}
+.marketing-security-item h3 {
+    font-size: 11px;
+}
+.marketing-security-item p {
+    font-size: 10px;
+    line-height: 1.5;
+}
+.marketing-cta {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    padding: 20px 44px;
+    border-radius: 13px;
+    border: 1px solid var(--marketing-brand-soft);
+    color: white;
+    background: linear-gradient(115deg, #95092e, var(--marketing-brand) 60%, #a00835);
+}
+.marketing-cta .marketing-eyebrow {
+    background: #49081f50;
+    border-color: #ff8ca55c;
+    padding-block: 4px;
+}
+.marketing-cta h2 {
+    font-size: clamp(28px, 3vw, 39px);
+    margin-top: 5px;
+}
+.marketing-cta p {
+    color: #fff0f4;
+    font-size: 16px;
+    margin-top: 6px;
+}
+.marketing-cta-action {
+    flex-shrink: 0;
+    text-align: center;
+}
+.marketing-cta-action .marketing-button {
+    height: 45px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.marketing-cta small {
+    display: block;
+    color: #ffe4eb;
+    font-size: 10px;
+    margin-top: 10px;
+}
+.marketing-ribbon--cta {
+    width: 760px;
+    height: 340px;
+    right: -160px;
+    top: -130px;
+    transform: rotate(-23deg);
+    border-color: #ffc2d33f;
+    background: linear-gradient(170deg, transparent 30%, #ffffff15 65%, transparent 85%);
+}
+.marketing-footer {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding-block: 18px;
+}
+.marketing-footer p {
+    font-size: 10px;
+}
+.marketing-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-left: auto;
+    font-size: 10px;
+}
+.marketing-locales {
+    display: flex;
+    gap: 7px;
+    font-size: 11px;
+    color: var(--marketing-muted);
+}
+.marketing-locales [aria-current='page'] {
+    color: var(--marketing-brand-soft);
+    font-weight: 700;
+}
+.marketing-faq-list {
+    overflow-y: auto;
+}
+.marketing-faq-list details {
+    padding-block: 14px;
+    border-top: 1px solid var(--border);
+}
+.marketing-faq-list summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+}
+.marketing-faq-list p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--muted-foreground);
+}
+
+@media (min-width: 1450px) {
+    .marketing-hero-grid {
+        min-height: 510px;
+    }
+}
+@media (max-width: 1150px) {
+    .marketing-header-inner {
+        gap: 18px;
+    }
+    .marketing-brand img {
+        width: 140px;
+    }
+    .marketing-desktop-nav {
+        margin-left: 8px;
+        gap: 23px;
+        font-size: 12px;
+    }
+    .marketing-header-actions {
+        gap: 13px;
+    }
+    .marketing-hero-grid {
+        min-height: 410px;
+    }
+    .marketing-feature-heading {
+        gap: 10px;
+        padding: 0;
+        min-height: 113px;
+    }
+    .marketing-feature-heading .marketing-icon {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+    }
+    .marketing-feature-heading h3 {
+        font-size: 14px;
+    }
+    .marketing-example-row {
+        gap: 8px;
+        padding: 9px;
+    }
+    .marketing-budget {
+        padding: 9px 6px;
+    }
+    .marketing-budget .marketing-icon {
+        width: 30px;
+        height: 30px;
+        padding: 6px;
+    }
+    .marketing-benefit {
+        padding-inline: 19px;
+        gap: 14px;
+    }
+    .marketing-benefit .marketing-icon {
+        width: 50px;
+        height: 50px;
+    }
+    .marketing-together-grid {
+        gap: 35px;
+    }
+    .marketing-sharing-benefits {
+        gap: 10px;
+    }
+    .marketing-sharing-benefits > div {
+        gap: 9px;
+    }
+    .marketing-sharing-benefits .marketing-icon {
+        width: 34px;
+        height: 34px;
+        padding: 8px;
+    }
+    .marketing-security-grid {
+        gap: 15px;
+    }
+    .marketing-security-item {
+        gap: 10px;
+    }
+    .marketing-security-item .marketing-icon {
+        width: 46px;
+        height: 46px;
+        padding: 11px;
+    }
+    .marketing-footer {
+        gap: 16px;
+    }
+    .marketing-footer .marketing-brand img {
+        width: 110px;
+    }
+    .marketing-footer nav {
+        gap: 16px;
+    }
+}
+@media (max-width: 960px) {
+    .marketing-desktop-nav {
+        display: none;
+    }
+    .flowiy-home .marketing-menu-button {
+        display: inline-flex;
+    }
+    .marketing-container {
+        width: min(1240px, calc(100% - 40px));
+    }
+    .marketing-hero-grid {
+        gap: 12px;
+        min-height: 410px;
+    }
+    .marketing-hero h1 {
+        font-size: 42px;
+    }
+    .marketing-hero-art {
+        padding-left: 0;
+        margin-right: 0;
+    }
+    .marketing-floating-card {
+        width: 170px;
+        padding: 11px;
+    }
+    .marketing-floating-card--budget {
+        left: -8px;
+    }
+    .marketing-floating-card--sharing {
+        right: -8px;
+        bottom: -52px;
+    }
+    .marketing-checks {
+        gap: 12px;
+    }
+    .marketing-benefit-grid {
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 22px;
+    }
+    .marketing-benefit:nth-child(3) {
+        padding-left: 0;
+        border-left: 0;
+    }
+    .marketing-feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    .marketing-feature-heading {
+        min-height: 98px;
+    }
+    .marketing-feature-heading .marketing-icon {
+        width: 52px;
+        height: 52px;
+        padding: 13px;
+    }
+    .marketing-feature-heading h3 {
+        font-size: 16px;
+    }
+    .marketing-example-row {
+        padding: 11px 14px;
+    }
+    .marketing-budget {
+        padding: 10px 14px;
+    }
+    .marketing-together-grid {
+        gap: 24px;
+    }
+    .marketing-together h2 {
+        font-size: 33px;
+    }
+    .marketing-sharing-benefits {
+        flex-wrap: wrap;
+    }
+    .marketing-sharing-benefits > div {
+        flex-basis: 40%;
+    }
+    .marketing-image-slot--sharing {
+        aspect-ratio: 1.2;
+    }
+    .marketing-steps li {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .marketing-steps li > div {
+        flex-basis: 100%;
+    }
+    .marketing-security-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+    .marketing-security-grid > div:first-child {
+        grid-column: 1 / -1;
+    }
+    .marketing-security-item p {
+        font-size: 11px;
+    }
+    .marketing-cta {
+        padding: 24px;
+    }
+    .marketing-cta h2 {
+        font-size: 31px;
+    }
+    .marketing-cta p {
+        font-size: 14px;
+    }
+    .marketing-footer {
+        flex-wrap: wrap;
+    }
+    .marketing-footer nav {
+        order: 3;
+        margin-left: 0;
+        flex: 1;
+    }
+    .marketing-locales {
+        margin-left: auto;
+    }
+}
+@media (max-width: 640px) {
+    .marketing-container {
+        width: calc(100% - 36px);
+    }
+    .marketing-header-inner {
+        min-height: 62px;
+        gap: 10px;
+    }
+    .marketing-brand img {
+        width: 124px;
+    }
+    .marketing-header-actions {
+        gap: 8px;
+    }
+    .marketing-login {
+        display: none;
+    }
+    .flowiy-home .marketing-header .marketing-button {
+        height: 36px;
+        padding-inline: 11px;
+        font-size: 11px;
+        gap: 5px;
+    }
+    .marketing-header .marketing-button > span {
+        width: 14px;
+        height: 14px;
+    }
+    .flowiy-home .marketing-icon-button {
+        width: 26px;
+        height: 28px;
+    }
+    .marketing-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 37px;
+        padding-block: 32px 60px;
+    }
+    .marketing-hero h1 {
+        font-size: clamp(35px, 9.1vw, 49px);
+        letter-spacing: -1.5px;
+    }
+    .marketing-lead {
+        font-size: 17px;
+        max-width: 460px;
+    }
+    .marketing-hero-actions {
+        gap: 11px;
+    }
+    .flowiy-home .marketing-hero-actions .marketing-button {
+        font-size: 14px;
+        padding-inline: 20px;
+        height: 49px;
+        gap: 11px;
+    }
+    .marketing-checks {
+        gap: 12px 16px;
+        font-size: 10px;
+    }
+    .marketing-checks li {
+        gap: 6px;
+    }
+    .marketing-hero-art {
+        margin: 0 14px 0 10px;
+    }
+    .marketing-image-slot--dashboard {
+        aspect-ratio: 1.5;
+    }
+    .marketing-floating-card {
+        width: 165px;
+        font-size: 11px;
+    }
+    .marketing-floating-card--budget {
+        left: -13px;
+        bottom: -19px;
+    }
+    .marketing-floating-card--sharing {
+        right: -14px;
+        bottom: -33px;
+    }
+    .marketing-floating-card .marketing-icon {
+        width: 30px;
+        height: 30px;
+        padding: 7px;
+    }
+    .marketing-avatar-slots i {
+        width: 17px;
+        height: 17px;
+    }
+    .marketing-ribbon--hero {
+        right: -400px;
+        top: 200px;
+    }
+    .marketing-benefit-grid {
+        padding-block: 24px;
+        column-gap: 14px;
+    }
+    .marketing-benefit {
+        padding: 0;
+        border-left: 0;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    .marketing-benefit .marketing-icon {
+        width: 39px;
+        height: 39px;
+        padding: 9px;
+    }
+    .marketing-benefit h2 {
+        font-size: 12px;
+    }
+    .marketing-benefit p {
+        font-size: 11px;
+    }
+    .marketing-features {
+        padding-block: 27px;
+    }
+    .marketing-section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .marketing-section-heading h2 {
+        font-size: 31px;
+    }
+    .marketing-section-heading p {
+        font-size: 14px;
+    }
+    .marketing-feature-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .marketing-feature-card {
+        padding: 16px;
+    }
+    .marketing-feature-heading {
+        min-height: 83px;
+        gap: 18px;
+    }
+    .marketing-feature-heading p {
+        margin-top: 7px;
+        font-size: 13px;
+    }
+    .marketing-feature-heading h3 {
+        font-size: 16px;
+    }
+    .marketing-example {
+        font-size: 12px;
+    }
+    .marketing-example-row {
+        padding: 12px 14px;
+    }
+    .marketing-example-row strong {
+        font-size: 12px;
+    }
+    .marketing-budget-example {
+        gap: 9px;
+    }
+    .marketing-budget .marketing-icon {
+        width: 37px;
+        height: 37px;
+        padding: 8px;
+    }
+    .marketing-budget p {
+        font-size: 12px;
+    }
+    .marketing-report {
+        padding: 13px 20px;
+    }
+    .marketing-bars {
+        height: 115px;
+    }
+    .marketing-bar-track {
+        height: 92px;
+    }
+    .marketing-together {
+        padding-block: 30px;
+    }
+    .marketing-together-grid {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+    .marketing-together h2 {
+        font-size: 35px;
+    }
+    .marketing-together-copy > p {
+        font-size: 14px;
+    }
+    .marketing-sharing-benefits {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+    .marketing-sharing-benefits > div {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .marketing-sharing-benefits span {
+        font-size: 10px;
+    }
+    .marketing-image-slot--sharing {
+        aspect-ratio: 1.65;
+    }
+    .marketing-how {
+        padding-block: 26px;
+    }
+    .marketing-how .marketing-section-heading {
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .marketing-steps {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .marketing-steps li {
+        flex-wrap: nowrap;
+        gap: 14px;
+        padding: 17px 13px;
+    }
+    .marketing-steps li > div {
+        flex-basis: auto;
+    }
+    .marketing-step-arrow {
+        transform: rotate(90deg);
+        right: calc(50% - 9px);
+        top: auto;
+        bottom: -18px;
+    }
+    .marketing-steps h3 {
+        font-size: 14px;
+    }
+    .marketing-steps p {
+        font-size: 12px;
+    }
+    .marketing-security {
+        padding-block: 25px;
+    }
+    .marketing-security-grid {
+        grid-template-columns: 1fr;
+        gap: 21px;
+    }
+    .marketing-security h2 {
+        font-size: 28px;
+    }
+    .marketing-security p {
+        font-size: 13px;
+    }
+    .marketing-security-item h3 {
+        font-size: 13px;
+    }
+    .marketing-security-item p {
+        font-size: 12px;
+    }
+    .marketing-cta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 22px;
+        padding: 23px;
+    }
+    .marketing-cta h2 {
+        font-size: 32px;
+    }
+    .marketing-cta p {
+        font-size: 14px;
+    }
+    .marketing-cta-action {
+        text-align: left;
+    }
+    .marketing-footer {
+        padding-block: 23px;
+        gap: 14px;
+    }
+    .marketing-footer p {
+        flex-basis: calc(100% - 134px);
+        font-size: 10px;
+    }
+    .marketing-footer nav {
+        flex-basis: calc(100% - 80px);
+        gap: 14px;
+        font-size: 11px;
+    }
+    .marketing-locales {
+        order: 4;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .flowiy-home .marketing-button {
+        transition: none;
+    }
+    .flowiy-home .marketing-button:hover {
+        transform: none;
+    }
+}

@@ -20,14 +20,14 @@ adapter puri vivono nelle rispettive feature, mentre le fixture condivise stanno
 visuali ricevono dati e stato tramite props usando il tipo discriminato `FeatureState<T>`.
 
 Le route `/dashboard`, `/dashboard/wallet` e `/dashboard/transaction` vivono nel gruppo `(app)` e usano `/api/v1`;
-wallet supporta creazione/modifica, preferiti ed eliminazione, mentre i movimenti usano filtri e paginazione server-side.
-Le fixture restano per preview e test. Il client di risorse è `src/lib/api/client.ts`; `useApi` è mantenuto soltanto
-come adapter callback delle form account legacy.
+wallet supporta creazione/modifica, preferiti ed eliminazione, mentre i movimenti usano filtri e paginazione
+server-side. Le fixture restano per preview e test. Il client di risorse è `src/lib/api/client.ts`; `useApi` è mantenuto
+soltanto come adapter callback delle form account legacy.
 
 La shell `AppShell` centralizza header, navigazione desktop, Sheet mobile, stato sessione e selettore lingua. Login,
-registrazione, conferma email, reinvio e recupero password vivono nel route group `(auth)`, quindi non ricevono la
-shell dashboard. Il browser usa la sessione Identity tramite cookie HttpOnly e antiforgery: non leggere, salvare o
-inviare token di autenticazione da JavaScript. Le precedenti URL dashboard di login/registrazione eseguono un redirect
+registrazione, conferma email, reinvio e recupero password vivono nel route group `(auth)`, quindi non ricevono la shell
+dashboard. Il browser usa la sessione Identity tramite cookie HttpOnly e antiforgery: non leggere, salvare o inviare
+token di autenticazione da JavaScript. Le precedenti URL dashboard di login/registrazione eseguono un redirect
 temporaneo.
 
 Vitest, Testing Library, `user-event` e `jest-dom` sono configurati senza forzare peer dependency. Playwright verrà
@@ -56,6 +56,11 @@ Durante la transizione:
 - il tema applicativo parte da quello di sistema e conserva l'eventuale scelta esplicita.
 
 ## Internazionalizzazione
+
+La slice homepage pubblica è implementata in `src/features/home`, con namespace `Home` nei dizionari inglese e italiano.
+Gli stili e i token marketing condivisi sono in `src/styles/marketing.css`; il tema della landing parte scuro come il
+riferimento e il suo selettore è locale, senza modificare il tema salvato della dashboard. Le anteprime sono statiche e
+non chiamano API. Vedi le [specifiche homepage e immagini](docs/HOMEPAGE.md).
 
 Seguire [INTERNATIONALIZATION.md](../docs/INTERNATIONALIZATION.md).
 
@@ -96,8 +101,8 @@ Quando un `useEffect` usa una funzione di caricamento dichiarata più avanti, la
 
 ## Chiamate API
 
-Le risorse v1 passano da `src/lib/api/client.ts`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che modifica uno stato di
-caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
+Le risorse v1 passano da `src/lib/api/client.ts`; non creare istanze Axios direttamente nelle pagine. Ogni chiamata che
+modifica uno stato di caricamento deve decrementarlo anche in caso di errore usando `onFinish`.
 
 Il wrapper `ApiRequest` non restituisce oggi una Promise dalla funzione `execute`. Finché non verrà rifattorizzato,
 gestisci successo, errore e fine con i callback disponibili e non usare `await execute()`.

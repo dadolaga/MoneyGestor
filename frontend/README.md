@@ -52,16 +52,22 @@ Apri `http://localhost:3000`. Se `NEXT_PUBLIC_API_URL` non è valorizzata, il cl
 
 ## Route principali
 
-| Route                                          | Funzione                                                     |
-| ---------------------------------------------- | ------------------------------------------------------------ |
-| `/dashboard`                                   | riepilogo entrate, uscite e categorie da `/api/v1`           |
-| `/dashboard/wallet`                            | gestione wallet da `/api/v1`, con preferiti e saldi          |
-| `/dashboard/transaction`                       | CRUD movimenti con filtri tipizzati e paginazione server-side|
-| `/dashboard/transaction/add_mobile`            | prototipo mobile da assorbire nel futuro Quick Add condiviso |
-| `/login`, `/register`                          | autenticazione fuori dalla shell dashboard                   |
-| `/dashboard/user/login`, `/dashboard/user/new` | redirect temporanei alle route di autenticazione             |
-| `/dashboard/error`                             | errore legacy da riallineare al design system                |
-| `/dashboard/not_implemented`                   | segnaposto per funzionalità future                           |
+La homepage pubblica Flowiy è disponibile su `/` (inglese) e `/it` (italiano), senza shell dashboard. Riprende il
+riferimento `Flowiy_ Finanze Semplici e Condivise.png`, con layout responsive, temi chiaro/scuro locali, FAQ e link di
+autenticazione locale-aware. Le card sono esempi illustrativi; le due grandi anteprime hanno spazi riservati alle
+immagini. Specifiche delle risorse, token e scelte UI: [homepage Flowiy](docs/HOMEPAGE.md).
+
+| Route                                          | Funzione                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------- |
+| `/`, `/it`                                     | homepage pubblica Flowiy in inglese e italiano                |
+| `/dashboard`                                   | riepilogo entrate, uscite e categorie da `/api/v1`            |
+| `/dashboard/wallet`                            | gestione wallet da `/api/v1`, con preferiti e saldi           |
+| `/dashboard/transaction`                       | CRUD movimenti con filtri tipizzati e paginazione server-side |
+| `/dashboard/transaction/add_mobile`            | prototipo mobile da assorbire nel futuro Quick Add condiviso  |
+| `/login`, `/register`                          | autenticazione fuori dalla shell dashboard                    |
+| `/dashboard/user/login`, `/dashboard/user/new` | redirect temporanei alle route di autenticazione              |
+| `/dashboard/error`                             | errore legacy da riallineare al design system                 |
+| `/dashboard/not_implemented`                   | segnaposto per funzionalità future                            |
 
 Login e registrazione sono fuori dalla shell dashboard; le vecchie route restano redirect temporanei. L'italiano
 aggiunge il prefisso `/it` alle stesse route. Le pagine account, wallet, movimenti e dashboard usano `/api/v1` con

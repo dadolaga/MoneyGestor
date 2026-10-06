@@ -1,7 +1,7 @@
 import type { Locale } from 'next-intl';
 
 export async function getMessagesForLocale(locale: Locale) {
-    const [common, navigation, metadata, auth, wallets, movements, apiFinance] = await Promise.all([
+    const [common, navigation, metadata, auth, wallets, movements, apiFinance, home] = await Promise.all([
         import(`../../messages/${locale}/common.json`),
         import(`../../messages/${locale}/navigation.json`),
         import(`../../messages/${locale}/metadata.json`),
@@ -9,6 +9,7 @@ export async function getMessagesForLocale(locale: Locale) {
         import(`../../messages/${locale}/wallets.json`),
         import(`../../messages/${locale}/movements.json`),
         import(`../../messages/${locale}/apiFinance.json`),
+        import(`../../messages/${locale}/home.json`),
     ]);
 
     return {
@@ -19,5 +20,6 @@ export async function getMessagesForLocale(locale: Locale) {
         ...wallets.default,
         ...movements.default,
         ...apiFinance.default,
+        ...home.default,
     };
 }
