@@ -449,7 +449,7 @@ public class Program {
             .ValidateOnStart();
         services.AddOptions<EmailOptions>()
             .Bind(configuration.GetSection(EmailOptions.SectionName))
-            .Validate(EmailOptions.IsValid, "Email port and frontend base URL must be valid.")
+            .Validate(EmailOptions.IsValid, "When SMTP is configured, email.port must be between 1 and 65535 and email.frontendBaseUrl must be an absolute URL.")
             .ValidateOnStart();
         services.AddOptions<ObservabilityOptions>()
             .Bind(configuration.GetSection(ObservabilityOptions.SectionName))

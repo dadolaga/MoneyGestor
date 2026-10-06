@@ -5,7 +5,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "BACKEND_APP_SETTINGS": "./settings.json",
+        "BACKEND_APP_SETTINGS": "../../settings.json",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,

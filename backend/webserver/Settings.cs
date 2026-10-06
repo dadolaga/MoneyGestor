@@ -124,6 +124,7 @@ public sealed class EmailOptions {
     public Boolean IsConfigured => !String.IsNullOrWhiteSpace(Host) && !String.IsNullOrWhiteSpace(From);
 
     internal static Boolean IsValid(EmailOptions options) =>
-        options.Port > 0 &&
-        Uri.TryCreate(options.FrontendBaseUrl, UriKind.Absolute, out _);
+        !options.IsConfigured || (
+            options.Port is > 0 and <= 65535 &&
+            Uri.TryCreate(options.FrontendBaseUrl, UriKind.Absolute, out _));
 }
