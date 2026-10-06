@@ -1,0 +1,129 @@
+**[Documentation](README.md) / Part II · The implementation**
+
+# 05 · Frontend implementation
+
+> Explore the web interface, route structure, shared components and API integration.
+
+<details>
+<summary><strong>On this page</strong></summary>
+
+- [5.1 Stack and responsibilities](#51-stack-and-responsibilities)
+- [5.2 Routes](#52-routes)
+- [5.3 Source map](#53-source-map)
+- [5.4 Live data and development previews](#54-live-data-and-development-previews)
+- [5.5 API integration](#55-api-integration)
+- [5.6 Internationalization](#56-internationalization)
+- [5.7 Design and migration rules](#57-design-and-migration-rules)
+- [5.8 Developer commands](#58-developer-commands)
+
+</details>
+
+---
+
+## 5.1 Stack and responsibilities
+
+The frontend uses Next.js 15 App Router, React 19 and TypeScript. Its current UI foundations include Tailwind CSS v4, repository-owned shadcn/ui components built on Radix, next-intl, next-themes and Sonner. MUI and other older dependencies remain while their consumers are migrated. TanStack is excluded from the target stack.
+
+The browser manages presentation, form state, navigation and HTTP calls. The backend remains responsible for ownership, monetary validation, transfer pairing and authoritative balances.
+
+## 5.2 Routes
+
+Routes are organized under `src/app/[locale]`. Route-group folders such as `(app)` and `(auth)` do not appear in public URLs.
+
+| English URL | Responsibility | Current implementation |
+| --- | --- | --- |
+| `/` | Application entry | Redirect to the dashboard |
+| `/dashboard` | Period totals and breakdowns | Live `/api/v1/dashboard` requests |
+| `/dashboard/wallet` | Wallet management | Live v1 wallet/color requests |
+| `/dashboard/transaction` | Transaction management | Live v1 CRUD, search, kind filter and pagination |
+| `/dashboard/transaction/add_mobile` | Old mobile URL | Redirect to the standard transactions page |
+| `/login`, `/register` | Sign-in and registration | Account pages outside the dashboard shell |
+| `/verify-email`, `/resend-confirmation` | Confirmation workflow | Account email links and resend form |
+| `/forgot-password`, `/reset-password` | Password recovery | Account recovery forms |
+| `/dashboard/user/login`, `/dashboard/user/new` | Old account URLs | Redirects to the current account routes |
+| `/dashboard/error` | Legacy error page | Legacy area awaiting consolidation |
+| `/dashboard/not_implemented` | Unavailable features | Placeholder, including report navigation |
+| `/design-system` | Developer catalog | Development-only previews with fixture data |
+
+Italian uses the same URLs with `/it` prepended. These are frontend routes; do not confuse `/dashboard/wallet` with the API resource `/api/v1/wallets`.
+
+## 5.3 Source map
+
+| Location | Purpose |
+| --- | --- |
+| `src/app` | Pages, layouts, global styles and route groups |
+| `src/components/app/app-shell.tsx` | Shared header, desktop/mobile navigation and session display |
+| `src/components/ui` | Local UI primitives and visual variants |
+| `src/components/shared` | Form controls, date fields, loading/error states and confirmation dialogs |
+| `src/features/api/api-finance-pages.tsx` | Current live financial page components |
+| `src/features/dashboard`, `wallets`, `transactions` | Feature models, adapters and visual components, including richer fixture previews |
+| `src/lib/api/client.ts` | Promise-based v1 resource client, DTO types, CSRF and typed errors |
+| `src/hooks/useApi.ts` | Callback-style account API adapter used by account forms and session UI |
+| `src/i18n` | Routing, dictionaries, request configuration and locale-aware navigation |
+| `src/lib/money.ts` | Shared money-input normalization |
+| `src/lib/fixtures` | Synthetic development and test data |
+| `src/providers` | Application-wide providers, including theme |
+| `src/component`, `src/context`, `src/utilis` | Legacy components and utilities retained for existing consumers |
+
+## 5.4 Live data and development previews
+
+The current dashboard, wallet and transaction route files import `ApiDashboardPage`, `ApiWalletsPage` and `ApiTransactionsPage`. They perform real HTTP requests through `apiClient`.
+
+The development catalog and feature tests use fixtures and view models. These are useful for inspecting layout, themes and loading/empty/error states without a running backend, but editing a preview does not persist a real financial record. Some richer feature components expose more controls than the simpler live pages. Always inspect the route import before assuming a component is the production implementation.
+
+## 5.5 API integration
+
+Both active clients use `NEXT_PUBLIC_API_URL`, currently falling back to `http://localhost:5256`. Axios requests include credentials so the browser can send the Identity cookie. Mutations obtain a CSRF request token and include `X-CSRF-TOKEN`. The resource client caches its token request and clears the cache if fetching that token fails; it does not currently clear it for every later authentication/antiforgery failure.
+
+The Promise client represents API failures as `ApiProblemError`, with HTTP status, stable code and optional field errors. Live pages currently map many failures to generic localized text. They support AbortSignal cancellation when loading data.
+
+The account adapter uses a fluent callback interface (`onSuccess`, `onError`, `onFinish`). Follow its actual return contract rather than assuming it behaves like the resource Promise client. Do not store authentication tokens in localStorage or readable cookies.
+
+`NEXT_PUBLIC_API_URL` is public build configuration. It is visible to the browser and must never contain secrets. A hostname such as `backend` can work between containers but is normally not resolvable by a user's browser.
+
+## 5.6 Internationalization
+
+| Rule | Implementation |
+| --- | --- |
+| Languages | English `en` and Italian `it` |
+| Default URL | English without `/en` |
+| Italian URL | `/it/...` |
+| Detection | Browser-language detection and locale cookies disabled |
+| Source of truth | URL locale |
+| Regional formatting | English maps to `en-GB`; Italian maps to `it-IT` |
+| Currency | EUR; locale does not imply currency conversion |
+| Dates | Day.js for parsing/calculation; next-intl/Intl for display |
+| Navigation | Import the wrapper in `src/i18n/navigation.ts` |
+| UI messages | Semantic dictionary keys; user-entered names remain unchanged |
+
+The plan requires a locale selector preserving route/query and confirmation before discarding modified forms. The current live shell does not expose the complete selector, and live API forms do not implement this confirmation everywhere. This guide describes that gap rather than treating the design contract as implemented behavior.
+
+## 5.7 Design and migration rules
+
+Semantic tokens live in `src/app/globals.css`; use shared tokens and variants for backgrounds, text, brand red, borders and income/expense/transfer colors. The theme provider initially follows the operating system. The development catalog exposes an explicit theme switch.
+
+Tailwind Preflight remains disabled while MUI areas coexist. Do not add MUI to migrated routes, create a separate mobile domain implementation or remove a legacy dependency until an entire frontend search shows no consumers. Use local UI primitives and shared components for new work.
+
+The official visual reference is the [dashboard mockup](../../docs/all_modernization/dashboard_mockup.png). Its visual elements do not authorize new reports, budgets, goals, global search, notifications or other future features. The three-touch Quick Add is an outstanding migration goal.
+
+Follow the [migration plan](../../docs/all_modernization/FRONTEND_MIGRATION_PLAN.md), [design system](../../docs/all_modernization/UI_DESIGN_SYSTEM.md) and [internationalization contract](../../docs/all_modernization/INTERNATIONALIZATION.md), while checking current route imports for runtime behavior.
+
+## 5.8 Developer commands
+
+```powershell
+npm --prefix .\frontend ci
+npm --prefix .\frontend run dev
+npm --prefix .\frontend run typecheck
+npm --prefix .\frontend run lint
+npm --prefix .\frontend run test
+npm --prefix .\frontend run build
+```
+
+The repository also provides `lint:fix`, `format` and `format:check`. Automatic format/fix commands modify files; keep their scope aligned with the intended change. See [chapter 10](10-development-and-troubleshooting.md) for verification policy.
+
+
+---
+
+| Previous | Documentation | Next |
+| :--- | :---: | ---: |
+| [← Backend implementation](04-backend.md) | [Index](README.md) | [Settings reference →](06-settings-reference.md) |
