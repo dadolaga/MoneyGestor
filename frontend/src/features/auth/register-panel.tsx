@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AtSign, Mail, UserRound } from '@/components/ui/icons';
+import { AuthPasswordField } from '@/features/auth/auth-password-field';
 import useApi from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
 
@@ -22,7 +23,11 @@ interface RegistrationFormValues {
     confirmPassword: string;
 }
 
-export default function RegisterPage() {
+interface PanelProps {
+    onDirtyChange?: (isDirty: boolean) => void;
+}
+
+export function RegisterPanel({ onDirtyChange }: PanelProps) {
     const t = useTranslations('Auth.register');
     const router = useRouter();
     const api = useApi();
@@ -31,7 +36,10 @@ export default function RegisterPage() {
     const form = useForm<RegistrationFormValues>({
         defaultValues: { firstName: '', lastName: '', username: '', email: '', password: '', confirmPassword: '' },
     });
-    const password = useWatch({ control: form.control, name: 'password' });
+
+    useEffect(() => {
+        onDirtyChange?.(form.formState.isDirty);
+    }, [form.formState.isDirty, onDirtyChange]);
 
     const submitHandler = (values: RegistrationFormValues) => {
         setSubmitError(undefined);
@@ -48,22 +56,35 @@ export default function RegisterPage() {
                 toast.success(t('success'));
                 router.replace('/login');
             })
-            .onError(() => setSubmitError(t('errors.generic')))
+            .onError((error) => {
+                const message = error.status === 429 ? t('errors.tooManyRequests')
+                    : error.status === 0 ? t('errors.network')
+                    : error.status === 400 && error.message === 'validation_failed' ? t('errors.validation')
+                    : t('errors.generic');
+                setSubmitError(message);
+            })
             .onFinish(() => setIsPending(false))
             .execute();
     };
 
     const onInvalid = () => setSubmitError(t('errors.summary'));
+    const fields = {
+        firstName: { placeholder: t('fields.firstName'), startAdornment: <UserRound aria-hidden="true" className="size-5" /> },
+        lastName: { placeholder: t('fields.lastName'), startAdornment: <UserRound aria-hidden="true" className="size-5" /> },
+        username: { placeholder: t('fields.username'), startAdornment: <AtSign aria-hidden="true" className="size-5" /> },
+        email: { placeholder: t('placeholders.email'), startAdornment: <Mail aria-hidden="true" className="size-5" /> },
+        password: { placeholder: t('placeholders.password'), description: t('validation.passwordRequirements') },
+        confirmPassword: { placeholder: t('placeholders.confirmPassword') },
+    };
     return (
         <div className="w-full h-full flex items-center justify-center">
-            <Card>
+            <Card className="flowiy-auth-form-card">
                 <CardHeader className="items-center text-center">
-                    <Image alt="Money Gestor" height={72} priority src="/new_logo_dark.png" width={229} />
                     <CardTitle>{t('title')}</CardTitle>
                     <p className="m-0 text-sm text-muted-foreground">{t('description')}</p>
                 </CardHeader>
                 <CardContent>
-                    <form className="grid gap-5" noValidate onSubmit={form.handleSubmit(submitHandler, onInvalid)}>
+                    <form aria-busy={isPending} className="grid gap-5" noValidate onSubmit={form.handleSubmit(submitHandler, onInvalid)}>
                         {/* submitError and isPending are controlled values; each branch renders a safe React node. */}
                         {/* eslint-disable-next-line react/jsx-no-leaked-render */}
                         {submitError ? (
@@ -82,6 +103,8 @@ export default function RegisterPage() {
                                 disabled={isPending}
                                 label={t('fields.firstName')}
                                 name="firstName"
+                                maxLength={100}
+                                {...fields.firstName}
                                 rules={{ required: t('validation.required') }}
                             />
                             <InputField
@@ -90,6 +113,8 @@ export default function RegisterPage() {
                                 disabled={isPending}
                                 label={t('fields.lastName')}
                                 name="lastName"
+                                maxLength={100}
+                                {...fields.lastName}
                                 rules={{ required: t('validation.required') }}
                             />
                         </div>
@@ -99,7 +124,9 @@ export default function RegisterPage() {
                             disabled={isPending}
                             label={t('fields.username')}
                             name="username"
-                            rules={{ required: t('validation.required') }}
+                            maxLength={64}
+                            {...fields.username}
+                            rules={{ required: t('validation.required'), minLength: { value: 3, message: t('validation.usernameLength') } }}
                         />
                         <InputField
                             autoComplete="email"
@@ -107,35 +134,41 @@ export default function RegisterPage() {
                             disabled={isPending}
                             label={t('fields.email')}
                             name="email"
+                            maxLength={256}
+                            {...fields.email}
                             rules={{
                                 pattern: { value: /^\S+@\S+\.\S+$/, message: t('validation.email') },
                                 required: t('validation.required'),
                             }}
                             type="email"
                         />
-                        <InputField
-                            kind="password"
+                        <AuthPasswordField
                             autoComplete="new-password"
                             control={form.control}
                             disabled={isPending}
                             label={t('fields.password')}
                             name="password"
+                            maxLength={128}
+                            {...fields.password}
                             rules={{
                                 minLength: { value: 12, message: t('validation.passwordLength') },
+                                deps: ['confirmPassword'],
+                                validate: (value: string) => /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^a-zA-Z0-9]/.test(value) ? true : t('validation.passwordRequirements'),
                                 required: t('validation.required'),
                             }}
                         />
-                        <InputField
-                            kind="password"
+                        <AuthPasswordField
                             autoComplete="new-password"
                             control={form.control}
                             disabled={isPending}
                             label={t('fields.confirmPassword')}
                             name="confirmPassword"
+                            maxLength={128}
+                            {...fields.confirmPassword}
                             rules={{
                                 required: t('validation.required'),
                                 validate: (value: string) =>
-                                    value === password ? true : t('validation.passwordMatch'),
+                                    value === form.getValues('password') ? true : t('validation.passwordMatch'),
                             }}
                         />
                         <Button disabled={isPending} type="submit">

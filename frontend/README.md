@@ -76,12 +76,44 @@ reserve space for images. Asset specifications, tokens and UI choices: [Flowiy h
 | `/dashboard/wallet` | Wallet management through `/api/v1`, including favorites and balances |
 | `/dashboard/transaction` | Movement CRUD with typed filters and server-side pagination |
 | `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |
-| `/login`, `/register` | Authentication outside the dashboard shell |
+| `/login`, `/register` | Flowiy authentication pages with shared marketing layout and existing account API |
+| `/login-flowiy`, `/register-flowiy` | Compatibility redirects to `/login` and `/register` |
+| `/forgot-password`, `/resend-confirmation` | Compatibility redirects opening the corresponding popup on `/login` |
 | `/dashboard/user/login`, `/dashboard/user/new` | Temporary redirects to authentication routes |
 | `/dashboard/error` | Legacy error page to align with the design system |
 | `/dashboard/not_implemented` | Placeholder for future features |
 
 Login and registration are outside the dashboard shell; old routes remain temporary redirects.
+Flowiy is the only login and registration interface, served at `/login` and `/register`.
+The previous separate forms have been removed. Homepage, dashboard and account-recovery links
+all lead to these canonical routes; the former Flowiy URLs remain compatibility redirects.
+The Flowiy pages reuse the original `LoginPanel`, `RegisterPanel` and `AppHeader`, keeping form fields,
+validation and the cookie/antiforgery account flows.
+The Flowiy forms retain their field order and name/surname row, with leading icons, localized
+placeholders and individual password visibility buttons. Registration validates the existing account
+password requirements and matching confirmation. Login reports invalid credentials, temporary
+lockout and rate limits; both forms display connection failures and finish their loading state.
+Password recovery and confirmation-email resend open Radix dialogs within login without navigating
+or clearing the login form. Each dialog validates the email and displays loading, generic acceptance
+or request errors using the existing account API. Old direct URLs redirect to `/login?recovery=forgot`
+or `/login?recovery=resend`, opening the same dialogs. Token-based password reset and email
+verification remain dedicated pages.
+Both routes share a persistent Next.js layout: the Flowiy logo, finance headline and three benefit
+columns sit above the tilted dashboard preview from `Finanze semplici con Flowiy.png`, framed by
+red luminous waves. The source image is served as `public/flowiy-auth-reference.png` and the preview
+region is selected in CSS; it remains illustrative and does not add dashboard features.
+This introduction sits beside one card with identical dimensions and
+position for login and registration. The card's login/register links change the route and form
+inside that frame, while the introduction, header and card remain mounted.
+The footer is omitted and the layout fits the viewport. The header contains an English/Italian
+language dropdown and the theme control beside the account actions; the home link remains below it.
+Language changes preserve the route and query parameters and still trigger confirmation for modified forms.
+On narrow screens the introduction is hidden to prioritize the form.
+If the form exceeds the available height (for example with field errors or the mobile keyboard),
+only its panel scrolls so every field and action remains accessible.
+English, Italian and the saved light/dark theme are supported. Google sign-in is not offered by
+the current account API. `AppHeader` also serves the dashboard shell; shared marketing FAQ and
+icon components serve the homepage. Styles in `src/styles/marketing-auth.css` reuse marketing tokens.
 Italian adds the `/it` prefix to the same routes. Account, wallet, movement and dashboard pages use
 `/api/v1` with Identity cookies and antiforgery; fixtures remain available for previews and component tests.
 

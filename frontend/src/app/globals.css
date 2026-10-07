@@ -3,6 +3,7 @@
 @import 'tailwindcss/utilities' layer(utilities);
 @import 'tw-animate-css';
 @import '../styles/marketing.css';
+@import '../styles/marketing-auth.css';
 
 @custom-variant dark (&:is(.dark *));
 

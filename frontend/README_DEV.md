@@ -24,8 +24,10 @@ server-side pagination. Fixtures remain for previews and tests. The resource cli
 `src/lib/api/client.ts`; `useApi` remains only as a callback adapter for legacy account forms.
 
 The `AppShell` centralizes the header, desktop navigation, mobile Sheet, session state and language
-selector. Login, registration, email confirmation, resend and password recovery live in `(auth)`,
-so they do not receive the dashboard shell. The browser uses an Identity session through HttpOnly
+selector. Flowiy login and registration live in `(flowiy-auth)` with their shared marketing layout.
+Password recovery and confirmation resend use dialogs inside login; their former routes and the
+former Flowiy URLs redirect from `(auth-redirects)`. Email verification and token-based password
+reset remain in `(auth)`. The browser uses an Identity session through HttpOnly
 cookies and antiforgery: do not read, save or send authentication tokens from JavaScript.
 Previous dashboard login/registration URLs perform temporary redirects.
 

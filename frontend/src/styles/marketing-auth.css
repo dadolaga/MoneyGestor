@@ -1,0 +1,304 @@
+/* A persistent authentication frame; only the routed form changes. */
+.flowiy-auth,
+.flowiy-auth-recovery-dialog {
+    --background: var(--marketing-surface-deep);
+    --foreground: var(--marketing-foreground);
+    --card: var(--marketing-surface);
+    --card-foreground: var(--marketing-foreground);
+    --primary: var(--marketing-brand);
+    --primary-foreground: white;
+    --muted-foreground: var(--marketing-muted);
+    --border: var(--marketing-border);
+    --input: var(--marketing-border);
+    --ring: var(--marketing-brand-soft);
+    --accent: var(--marketing-brand-tint);
+    --accent-foreground: var(--marketing-foreground);
+    --destructive: var(--marketing-brand-soft);
+    --popover: var(--marketing-surface);
+    --popover-foreground: var(--marketing-foreground);
+}
+.flowiy-auth {
+    --auth-content-width: min(1440px, calc(100% - 64px));
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+}
+.flowiy-auth > header { flex-shrink: 0; }
+.flowiy-auth-main {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 20px;
+    padding-block: 20px;
+    background: var(--marketing-background);
+}
+.flowiy-auth-art { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.flowiy-auth-art::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.4;
+    background-image: radial-gradient(var(--marketing-brand-soft) 1px, transparent 1px);
+    background-size: 16px 16px;
+    mask-image: radial-gradient(ellipse at 0% 46%, black, transparent 37%), radial-gradient(ellipse at 100% 70%, black, transparent 35%);
+}
+.flowiy-auth-wave {
+    position: absolute;
+    display: block;
+    border: 2px solid color-mix(in srgb, var(--marketing-brand-soft) 65%, transparent);
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 45% 40%, transparent 42%, var(--marketing-brand-tint) 75%, color-mix(in srgb, var(--marketing-brand) 55%, transparent) 100%);
+    box-shadow: 0 0 24px var(--marketing-glow), inset 0 0 45px var(--marketing-glow);
+}
+.flowiy-auth-wave--top { width: 1000px; height: 620px; left: calc(50% - 980px); top: -300px; transform: rotate(30deg); }
+.flowiy-auth-wave--left { width: 750px; height: 520px; left: -510px; top: 210px; transform: rotate(34deg); }
+.flowiy-auth-wave--bottom { width: 1180px; height: 540px; left: calc(50% - 1060px); bottom: -340px; transform: rotate(24deg); }
+.flowiy-auth-wave--right { width: 940px; height: 460px; right: -700px; bottom: -65px; transform: rotate(-36deg); }
+.flowiy-auth[data-theme='light'] .flowiy-auth-art { opacity: 0.55; }
+.flowiy-auth-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    width: var(--auth-content-width);
+    margin-inline: auto;
+    gap: 16px;
+}
+.flowiy-auth-header-controls { display: flex; align-items: center; gap: 12px; }
+.flowiy-auth .flowiy-auth-language-select {
+    width: auto;
+    height: 36px;
+    gap: 8px;
+    padding-inline: 10px;
+    border-color: #ffffff40;
+    background: transparent;
+    color: var(--primary-foreground);
+    font-size: 13px;
+    font-weight: 600;
+}
+.flowiy-auth .flowiy-auth-language-select:hover { background: #ffffff15; }
+.flowiy-auth-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    color: var(--marketing-muted) !important;
+    font-size: 13px;
+}
+.flowiy-auth-back:hover { color: var(--marketing-foreground) !important; }
+.flowiy-auth .flowiy-auth-theme-button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #ffffff40;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--primary-foreground);
+}
+.flowiy-auth .flowiy-auth-theme-button:hover { background: #ffffff15; color: var(--primary-foreground); }
+.flowiy-auth-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 600px);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    max-height: 760px;
+    width: var(--auth-content-width);
+    margin: auto;
+    gap: clamp(40px, 7vw, 120px);
+}
+.flowiy-auth-intro { align-self: start; min-width: 0; min-height: 0; height: 100%; padding-top: 8px; }
+.flowiy-auth-intro-copy { padding-left: clamp(0px, 2vw, 36px); }
+.flowiy-auth-brand { display: flex; align-items: center; min-height: 48px; }
+.flowiy-auth-brand img { display: block; width: 132px; height: auto; }
+.flowiy-auth-intro h1 { margin-top: 24px; font-size: clamp(38px, 3.3vw, 56px); line-height: 1.03; letter-spacing: -1.8px; }
+.flowiy-auth-intro h1 > span { color: var(--marketing-brand-soft); }
+.flowiy-auth .flowiy-auth-description { margin-top: 16px; max-width: 520px; font-size: 20px; line-height: 1.35; }
+.flowiy-auth-benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 0; margin: 28px 0 0; list-style: none; }
+.flowiy-auth-benefit { display: flex; align-items: flex-start; min-width: 0; gap: 14px; }
+.flowiy-auth-benefit + .flowiy-auth-benefit { padding-left: 18px; border-left: 1px solid var(--marketing-border); }
+.flowiy-auth-benefit-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    border: 1px solid color-mix(in srgb, var(--marketing-brand-soft) 50%, transparent);
+    border-radius: 14px;
+    color: var(--marketing-brand-soft);
+    background: linear-gradient(140deg, var(--marketing-brand-tint), var(--marketing-surface));
+    box-shadow: inset 0 1px 0 #ffffff12, 0 0 18px var(--marketing-brand-tint);
+}
+.flowiy-auth .flowiy-auth-benefit h2 { margin: 5px 0 8px; font-size: 13px; line-height: 1.3; font-weight: 700; letter-spacing: -0.2px; }
+.flowiy-auth .flowiy-auth-benefit p { font-size: 13px; line-height: 1.4; }
+.flowiy-auth-dashboard {
+    position: relative;
+    width: calc(100% + 130px);
+    aspect-ratio: 890 / 349;
+    margin-top: 24px;
+    margin-left: -130px;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
+    mask-image: linear-gradient(black 82%, transparent);
+}
+/* Display only the tilted dashboard region of the supplied 1916 × 821 reference. */
+.flowiy-auth-dashboard .flowiy-auth-dashboard-image {
+    position: absolute;
+    top: -135.2436%;
+    left: -7.191%;
+    width: 215.2809%;
+    max-width: none;
+    height: auto;
+}
+.flowiy-auth-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid color-mix(in srgb, var(--marketing-brand-soft) 65%, var(--marketing-border));
+    border-radius: 20px;
+    background: linear-gradient(150deg, var(--marketing-surface), var(--marketing-surface-deep));
+    box-shadow: 0 20px 70px #00000020, 0 0 24px var(--marketing-brand-tint), inset 0 1px 0 #ffffff08;
+}
+.flowiy-auth-switch {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-shrink: 0;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 16px;
+    border: 1px solid var(--marketing-border);
+    border-radius: 12px;
+    background: var(--marketing-surface-deep);
+}
+.flowiy-auth-switch a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    border-radius: 8px;
+    color: var(--marketing-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+.flowiy-auth-switch a:hover { color: var(--marketing-foreground); background: var(--marketing-brand-tint); }
+.flowiy-auth-switch a[aria-current='page'] {
+    color: white;
+    background: linear-gradient(120deg, var(--marketing-brand-soft), var(--marketing-brand));
+    box-shadow: 0 2px 8px var(--marketing-brand-tint);
+}
+.flowiy-auth-form { flex: 1; min-height: 0; overflow-y: auto; padding: 4px; scrollbar-width: thin; scrollbar-color: var(--marketing-border) transparent; }
+.flowiy-auth-form > div { height: auto; min-height: 100%; }
+.flowiy-auth-form-card { width: 100%; min-width: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.flowiy-auth-form-card > div:first-child { padding: 12px 0 20px; }
+.flowiy-auth-form-card > div:last-child { padding: 0 0 8px; }
+.flowiy-auth-form-card h3 { font-size: 24px; line-height: 1.2; }
+.flowiy-auth-form-card > div:last-child > p { margin-top: 16px; }
+.flowiy-auth-form-card [data-slot='field-control'] { height: 44px; border-radius: 8px; background: var(--marketing-surface-deep); }
+.flowiy-auth-form-card form, .flowiy-auth-form-card form > .grid { gap: 16px; }
+.flowiy-auth-form-card input::placeholder { color: var(--marketing-muted); opacity: 0.65; }
+.flowiy-auth-form-card [data-position='start'] { color: var(--marketing-muted); }
+.flowiy-auth-form-card [data-slot='field-control'][data-invalid='true'] { border-color: var(--destructive); }
+.flowiy-auth .flowiy-auth-password-toggle {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 6px;
+    color: var(--marketing-muted);
+}
+.flowiy-auth .flowiy-auth-password-toggle:hover { color: var(--marketing-foreground); background: var(--marketing-brand-tint); }
+.flowiy-auth-form-card input, .flowiy-auth-form-card label { color: var(--marketing-foreground); }
+.flowiy-auth-form-card form > button[type='submit'] {
+    height: 46px;
+    border: 1px solid var(--marketing-brand-soft);
+    border-radius: 8px;
+    background: linear-gradient(120deg, var(--marketing-brand-soft), var(--marketing-brand));
+    color: white;
+}
+.flowiy-auth-form-card a.text-primary { color: var(--marketing-brand-soft); }
+.flowiy-auth-recovery-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--marketing-brand-soft);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+.flowiy-auth-recovery-link:hover { text-decoration: underline; }
+.flowiy-auth-recovery-dialog {
+    min-height: 0;
+    border-color: color-mix(in srgb, var(--marketing-brand-soft) 65%, var(--marketing-border));
+    background: linear-gradient(150deg, var(--marketing-surface), var(--marketing-surface-deep));
+    color: var(--marketing-foreground);
+    overflow: hidden;
+    box-shadow: 0 20px 70px #00000040, 0 0 24px var(--marketing-brand-tint);
+}
+.flowiy-auth-recovery-dialog h2 { font-size: 22px; line-height: 1.25; letter-spacing: -0.5px; }
+.flowiy-auth-recovery-dialog [data-slot='field-control'] { height: 44px; border-radius: 8px; }
+.flowiy-auth-recovery-dialog form > button[type='submit'] {
+    height: 44px;
+    background: linear-gradient(120deg, var(--marketing-brand-soft), var(--marketing-brand));
+    color: white;
+}
+.flowiy-auth-recovery-status { padding: 16px; border: 1px solid var(--marketing-border); border-radius: 8px; background: var(--marketing-surface-deep); font-size: 14px; }
+
+@media (max-height: 820px) {
+    .flowiy-auth-main { padding-block: 12px; gap: 12px; }
+    .flowiy-auth-intro { padding-top: 0; }
+    .flowiy-auth-intro h1 { margin-top: 18px; }
+    .flowiy-auth-benefits { margin-top: 24px; }
+    .flowiy-auth-dashboard { margin-top: 16px; }
+    .flowiy-auth-card { padding: 12px; }
+    .flowiy-auth-switch { margin-bottom: 8px; }
+    .flowiy-auth-switch a { min-height: 32px; }
+    .flowiy-auth-form { padding: 2px; }
+    .flowiy-auth-form-card > div:first-child { padding: 0 0 6px; }
+    .flowiy-auth-form-card > div:first-child > p { display: none; }
+    .flowiy-auth-form-card h3 { font-size: 22px; }
+    .flowiy-auth-form-card > div:last-child { padding-bottom: 0; }
+    .flowiy-auth-form-card > div:last-child > p { margin-top: 12px; }
+}
+@media (max-width: 1100px) {
+    .flowiy-auth { --auth-content-width: calc(100% - 48px); }
+    .flowiy-auth-grid { grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); gap: 36px; }
+    .flowiy-auth-intro h1 { font-size: 36px; }
+    .flowiy-auth-intro-copy { padding-left: 0; }
+    .flowiy-auth .flowiy-auth-description { font-size: 16px; }
+    .flowiy-auth-benefits { gap: 10px; }
+    .flowiy-auth-benefit { gap: 8px; }
+    .flowiy-auth-benefit + .flowiy-auth-benefit { padding-left: 10px; }
+    .flowiy-auth-benefit-icon { width: 40px; height: 40px; border-radius: 10px; }
+    .flowiy-auth-benefit-icon > span { width: 24px; height: 24px; }
+    .flowiy-auth .flowiy-auth-benefit h2 { font-size: 12px; }
+    .flowiy-auth .flowiy-auth-benefit p { font-size: 11px; }
+    .flowiy-auth-dashboard { width: calc(100% + 24px); margin-left: -24px; }
+}
+@media (max-width: 860px) {
+    .flowiy-auth { --auth-content-width: min(600px, calc(100% - 32px)); }
+    .flowiy-auth-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .flowiy-auth-intro { display: none; }
+}
+@media (max-width: 640px) {
+    .flowiy-auth > header .app-header-account-label { display: none; }
+}
+@media (max-width: 480px) {
+    .flowiy-auth-main { padding-block: 10px; gap: 10px; }
+    .flowiy-auth > header { padding-inline: 16px; }
+    .flowiy-auth > header img { width: 96px; height: auto; }
+    .flowiy-auth > header button { padding-inline: 9px; font-size: 11px; gap: 6px; }
+    .flowiy-auth > header button > span { width: 16px; height: 16px; }
+    .flowiy-auth > header > div, .flowiy-auth > header > div > div { gap: 8px; }
+    .flowiy-auth-header-controls { gap: 6px; }
+    .flowiy-auth-back { font-size: 12px; }
+    .flowiy-auth-card { padding: 12px; border-radius: 16px; }
+}

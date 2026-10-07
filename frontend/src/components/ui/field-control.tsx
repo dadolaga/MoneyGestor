@@ -10,6 +10,7 @@ interface FieldControlProps extends ComponentProps<'div'> {
 function FieldControl({ className, invalid = false, disabled = false, ...props }: FieldControlProps) {
     return (
         <div
+            data-slot="field-control"
             data-disabled={disabled || undefined}
             data-invalid={invalid || undefined}
             className={cn(

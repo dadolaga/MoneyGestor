@@ -94,7 +94,7 @@ export default function useApi() {
 
 export class AccountApiRequest<T_RETURN> {
     private successFunction: (_data: T_RETURN) => void = () => {};
-    private errorFunction: (_error: AccountResponseError) => void = () => {};
+    private errorFunction?: (_error: AccountResponseError) => void;
     private finishFunction: () => void = () => {};
 
     constructor(
@@ -120,13 +120,17 @@ export class AccountApiRequest<T_RETURN> {
     execute() {
         this.actionFunction()
             .then((response) => this.successFunction(response.data))
-            .catch((error) => {
-                if (error.code === 'ERR_NETWORK') {
-                    this.enqueueSnackbar('Server error', { variant: 'error' });
+            .catch((error: unknown) => {
+                if (!axios.isAxiosError<{ code?: string }>(error)) {
+                    this.errorFunction?.(new AccountResponseError(0, 'request_failed'));
                     return;
                 }
-                const status = error?.response?.status ?? 0;
-                this.errorFunction(new AccountResponseError(status, 'request_failed'));
+                const status = error.response?.status ?? 0;
+                const code = error.response?.data?.code;
+                if (error.code === 'ERR_NETWORK' && !this.errorFunction) {
+                    this.enqueueSnackbar('Server error', { variant: 'error' });
+                }
+                this.errorFunction?.(new AccountResponseError(status, typeof code === 'string' ? code : 'request_failed'));
             })
             .finally(this.finishFunction);
     }

@@ -1,0 +1,20 @@
+{
+    "FlowiyAuth": {
+        "backHome": "Torna alla home",
+        "security": "Accesso sicuro al tuo account",
+        "switchLabel": "Accesso all’account",
+        "loginTab": "Accedi",
+        "registerTab": "Registrati",
+        "dashboardPreview": "Dashboard illustrativa di Flowiy con entrate, uscite, saldo e grafici delle spese",
+        "benefits": {
+            "security": { "title": "Sicurezza al primo posto", "description": "I tuoi dati sono protetti e sempre privati." },
+            "spending": { "title": "Segui le tue spese", "description": "Una visione chiara per raggiungere i tuoi obiettivi." },
+            "sharing": { "title": "Condividi e collabora", "description": "Gestisci le finanze con familiari, amici o colleghi." }
+        },
+        "intro": {
+            "headline": "Le tue finanze,",
+            "highlight": "con semplicità.",
+            "description": "Uno spazio semplice per organizzare il tuo denaro e avere una visione chiara delle tue finanze."
+        }
+    }
+}

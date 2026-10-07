@@ -6,15 +6,9 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 
+import { MarketingFaq as Faq } from '@/components/shared/marketing-faq';
+import { MarketingIcon as IconBubble } from '@/components/shared/marketing-icon';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import {
     ArrowLeftRight,
     ArrowRight,
@@ -47,14 +41,6 @@ const benefits = ['wallets', 'budgets', 'reports', 'sharing'] as const;
 const benefitIcons = [Wallet, PiggyBank, BarChart3, UserPlus];
 const steps = ['wallets', 'movements', 'insights'] as const;
 const stepIcons = [Wallet, FileText, BarChart3];
-
-function IconBubble({ icon: Icon, tone = 'brand' }: { icon: IconComponent; tone?: 'brand' | 'blue' | 'green' }) {
-    return (
-        <span className={`marketing-icon marketing-icon--${tone}`}>
-            <Icon aria-hidden="true" />
-        </span>
-    );
-}
 
 function SectionLabel({ children }: { children: ReactNode }) {
     return <span className="marketing-eyebrow">{children}</span>;
@@ -160,29 +146,6 @@ function FeatureExample({ feature }: { feature: Feature }) {
                 </div>
             ))}
         </div>
-    );
-}
-
-function Faq({ children }: { children: ReactNode }) {
-    const t = useTranslations('Home.faq');
-    return (
-        <Dialog>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent closeLabel={t('close')}>
-                <DialogHeader>
-                    <DialogTitle>{t('title')}</DialogTitle>
-                    <DialogDescription>{t('description')}</DialogDescription>
-                </DialogHeader>
-                <div className="marketing-faq-list">
-                    {(['start', 'languages', 'preview'] as const).map((key) => (
-                        <details key={key}>
-                            <summary>{t(`${key}.question`)}</summary>
-                            <p>{t(`${key}.answer`)}</p>
-                        </details>
-                    ))}
-                </div>
-            </DialogContent>
-        </Dialog>
     );
 }
 
