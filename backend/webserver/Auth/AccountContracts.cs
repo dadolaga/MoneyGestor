@@ -2,6 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace webserver.Auth;
 
+public sealed record AccountConfiguration(Boolean RequireConfirmedEmail);
+
+public sealed record AccountRegistrationResponse(String Message, Boolean RequireConfirmedEmail);
+
 public sealed record RegisterAccountRequest(
     [Required, StringLength(100)] String Firstname,
     [Required, StringLength(100)] String Lastname,

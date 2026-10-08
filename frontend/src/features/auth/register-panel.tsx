@@ -52,8 +52,8 @@ export function RegisterPanel({ onDirtyChange }: PanelProps) {
                 email: values.email,
                 password: values.password,
             })
-            .onSuccess(() => {
-                toast.success(t('success'));
+            .onSuccess((response) => {
+                toast.success(t(response.requireConfirmedEmail ? 'success' : 'successWithoutConfirmation'));
                 router.replace('/login');
             })
             .onError((error) => {

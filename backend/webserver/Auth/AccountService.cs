@@ -21,6 +21,8 @@ public sealed class AccountService(
     TimeProvider timeProvider) {
     internal const String IdentityManagedPassword = "IDENTITY_MANAGED";
 
+    public Boolean RequireConfirmedEmail => signInManager.Options.SignIn.RequireConfirmedEmail;
+
     public async Task<UInt64?> RegisterAsync(RegisterAccountRequest request, CancellationToken cancellationToken) {
         var normalizedUsername = userManager.NormalizeName(request.Username);
         var normalizedEmail = userManager.NormalizeEmail(request.Email);
@@ -72,10 +74,12 @@ public sealed class AccountService(
             }
         }
 
-        try {
-            await SendConfirmationAsync(identityUser, cancellationToken);
-        } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
-            logger.LogWarning("Registration succeeded, but confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
+        if (RequireConfirmedEmail) {
+            try {
+                await SendConfirmationAsync(identityUser, cancellationToken);
+            } catch (Exception exception) when (exception is InvalidOperationException or System.Net.Mail.SmtpException) {
+                logger.LogWarning("Registration succeeded, but confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
+            }
         }
 
         return legacyUser.Id;
@@ -113,7 +117,7 @@ public sealed class AccountService(
             return AccountLoginStatus.Invalid;
         }
 
-        if (!await userManager.IsEmailConfirmedAsync(user)) {
+        if (RequireConfirmedEmail && !await userManager.IsEmailConfirmedAsync(user)) {
             return AccountLoginStatus.EmailNotConfirmed;
         }
 
@@ -155,6 +159,10 @@ public sealed class AccountService(
     }
 
     public async Task ResendConfirmationAsync(String email, CancellationToken cancellationToken) {
+        if (!RequireConfirmedEmail) {
+            return;
+        }
+
         var user = await userManager.FindByEmailAsync(email.Trim());
         if (user == null || user.EmailConfirmed) {
             return;
@@ -165,7 +173,7 @@ public sealed class AccountService(
 
     public async Task SendPasswordResetAsync(String email, CancellationToken cancellationToken) {
         var user = await userManager.FindByEmailAsync(email.Trim());
-        if (user == null || !user.EmailConfirmed) {
+        if (user == null || (RequireConfirmedEmail && !user.EmailConfirmed)) {
             return;
         }
 

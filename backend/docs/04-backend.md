@@ -57,7 +57,7 @@ Normal startup loads and validates options, creates logging, registers services,
 
 Initialization applies or checks MoneyGestor migrations according to bootstrap mode, checks/applies Identity migrations, seeds global reference data, runs a read-only financial integrity preflight and creates legacy-to-Identity mappings. A failure stops startup; it does not automatically repair bad financial data.
 
-In Production, an SMTP host/sender and `DATA_PROTECTION_KEYS_PATH` are required. `Testing` supplies in-memory host configuration for tests and OpenAPI export; it is not a production mode or a normal setup shortcut.
+In Production, `DATA_PROTECTION_KEYS_PATH` is required, and an SMTP host/sender is required when email confirmation is enabled. SMTP remains necessary for password recovery in either mode. `Testing` supplies in-memory host configuration for tests and OpenAPI export; it is not a production mode or a normal setup shortcut.
 
 ## 4.5 Authentication and authorization
 
@@ -65,7 +65,7 @@ In Production, an SMTP host/sender and `DATA_PROTECTION_KEYS_PATH` are required.
 | --- | --- |
 | Identity session | Encrypted `MoneyGestor.Auth`, HttpOnly, SameSite=Lax, Secure in Production |
 | Login lifetime | Explicit two-hour ticket, or persistent 30-day ticket with `remember=true`; sliding renewal enabled |
-| Email confirmation | Required before successful login |
+| Email confirmation | Required by default; configurable with `security.requireConfirmedEmail`, exposed by `/api/v1/auth/configuration` |
 | Password policy | Minimum 12 characters, uppercase, lowercase, digit and non-alphanumeric character |
 | Account tokens | One-hour lifetime for confirmation/reset tokens |
 | CSRF | `MoneyGestor.Antiforgery` cookie plus `X-CSRF-TOKEN` header for v1 mutations |

@@ -110,10 +110,15 @@ This is a **section example**, not a complete replacement settings file. In Comp
 | --- | --- | --- | --- | --- |
 | `security.allowedOrigins` | Array of strings | `["http://localhost:3000"]` | Empty array | At least one absolute URI required. Used as the exact credentialed CORS allowlist. |
 | `security.allowedOrigins[0]` | String | `http://localhost:3000` | Absent | First allowed frontend origin; additional array entries allow other explicit frontends. |
+| `security.requireConfirmedEmail` | Boolean | `true` | `true` | Require email confirmation before login. Accepts `true` or `false`; invalid Boolean values fail configuration binding at startup. Applies to Identity and account services. |
 
 Use origin values consisting of scheme, host and optional port, without page paths or a trailing slash. HTTP and HTTPS, different ports, and `localhost` versus `127.0.0.1` are different origins. Although validation checks absolute URIs, that alone does not prove a value is a usable browser origin.
 
 CORS allows credentials, any method and any header for configured origins. A wildcard is not a substitute for explicit credentialed origins. CORS does not disable cookie SameSite/Secure rules, configure HTTPS or authenticate requests.
+
+To allow login immediately after registration, set `security.requireConfirmedEmail` to `false`, or override it with `security__requireConfirmedEmail=false`, then restart the backend. Omitting the option preserves mandatory verification. This switch also allows existing unconfirmed accounts to log in and suppresses registration/resend confirmation emails. It does not mark email addresses as verified: enabling it again requires those accounts to confirm their email, using resend if needed.
+
+The public GET `/api/v1/auth/configuration` returns `{ "requireConfirmedEmail": true }` (or `false`). Registration acceptance includes the same flag. The frontend uses the backend value to choose registration messages, show or hide confirmation resend, and adapt the verification page; no frontend environment switch is needed.
 
 ## 6.5 Email settings
 
@@ -127,7 +132,7 @@ CORS allows credentials, any method and any header for configured origins. A wil
 | `email.useSsl` | Boolean | `true` | `true` | Passed to `SmtpClient.EnableSsl`; use an endpoint supporting STARTTLS when enabled. |
 | `email.frontendBaseUrl` | String | `http://localhost:3000` | Empty | Absolute frontend URL required when SMTP is configured. Used to construct confirmation and reset links. |
 
-Production startup requires `email.IsConfigured`, which means nonblank host **and** sender. It does not test SMTP connectivity, credentials or delivery. Partial configuration can pass optional validation in Development while delivery still fails. No message is printed containing account verification/reset tokens as an alternative to SMTP.
+Production startup requires `email.IsConfigured` when `security.requireConfirmedEmail` is `true`, which means nonblank host **and** sender. With verification disabled, SMTP is optional for startup and registration, but still required for password recovery. Recovery can send reset links to unconfirmed accounts while verification is disabled. Configured SMTP is still validated in both modes. Startup does not test SMTP connectivity, credentials or delivery. Partial configuration can pass optional validation while delivery still fails. No message is printed containing account verification/reset tokens as an alternative to SMTP.
 
 Links append `/verify-email` or `/reset-password` to the base URL. The server does not select a user's locale; a base URL without `/it` produces English links. Use the actual public HTTPS frontend address for hosted deployments.
 
@@ -180,7 +185,7 @@ The current Compose build argument constructs `NEXT_PUBLIC_API_URL` as `http://l
 
 ## 6.9 Configuration checklist
 
-Before startup, check the selected file path, MySQL host/database/user, intended bootstrap mode, at least one log sink, writable file-log storage, exact frontend origins and email-link base URL. Production also needs working SMTP, HTTPS topology and durable Data Protection storage. Health/readiness validates MySQL availability; it does not validate email delivery or browser authentication.
+Before startup, check the selected file path, MySQL host/database/user, intended bootstrap mode, at least one log sink, writable file-log storage, exact frontend origins, confirmation policy and email-link base URL. Production needs HTTPS topology and durable Data Protection storage; SMTP is required when confirmation is enabled and for email password recovery. Health/readiness validates MySQL availability; it does not validate email delivery or browser authentication.
 
 
 ---

@@ -27,6 +27,7 @@
     "bootstrapMode": "Disabled"
   },
   "security": {
+    "requireConfirmedEmail": true,
     "allowedOrigins": [
       "http://localhost:3000"
     ]

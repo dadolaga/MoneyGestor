@@ -105,6 +105,7 @@ public sealed class SecurityOptions {
     public const String SectionName = "security";
 
     public String[] AllowedOrigins { get; set; } = [];
+    public Boolean RequireConfirmedEmail { get; set; } = true;
 
     internal static Boolean IsValid(SecurityOptions options) =>
         options.AllowedOrigins.Length > 0 &&

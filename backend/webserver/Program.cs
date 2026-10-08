@@ -190,7 +190,6 @@ public class Program {
 
         builder.Services
             .AddIdentity<ApplicationIdentityUser, IdentityRole>(options => {
-                options.SignIn.RequireConfirmedEmail = true;
                 options.Password.RequiredLength = 12;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
@@ -203,6 +202,9 @@ public class Program {
             })
             .AddEntityFrameworkStores<IdentityAccountContext>()
             .AddDefaultTokenProviders();
+        builder.Services.AddOptions<IdentityOptions>()
+            .Configure<IOptions<SecurityOptions>>((options, security) =>
+                options.SignIn.RequireConfirmedEmail = security.Value.RequireConfirmedEmail);
         builder.Services.AddScoped<IPasswordHasher<ApplicationIdentityUser>, LegacyCompatiblePasswordHasher>();
         builder.Services.AddScoped<AccountService>();
         builder.Services.AddScoped<IApiCurrentUser, ApiCurrentUser>();
@@ -370,8 +372,9 @@ public class Program {
         var databaseOptions = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
         var emailOptions = services.GetRequiredService<IOptions<EmailOptions>>().Value;
 
-        if (app.Environment.IsProduction() && !emailOptions.IsConfigured) {
-            throw new InvalidOperationException("Email delivery must be configured in Production.");
+        var securityOptions = services.GetRequiredService<IOptions<SecurityOptions>>().Value;
+        if (app.Environment.IsProduction() && securityOptions.RequireConfirmedEmail && !emailOptions.IsConfigured) {
+            throw new InvalidOperationException("Email delivery must be configured in Production when email confirmation is required.");
         }
 
         var logger = services.GetRequiredService<ILogger<Program>>();

@@ -5,7 +5,12 @@ import axios from 'axios';
 import type { EnqueueSnackbar } from 'notistack';
 import { useSnackbar } from 'notistack';
 
+import type { AccountConfiguration } from '@/lib/api/client';
 import type { Login, User } from '@/models/backend';
+
+export interface AccountRegistrationResponse extends AccountConfiguration {
+    message: string;
+}
 
 export interface AccountProfile {
     id: number;
@@ -49,8 +54,8 @@ export default function useApi() {
     return {
         account: {
             register: (user: User) =>
-                new AccountApiRequest<void>(
-                    () => accountRequest<void>('POST', '/api/v1/auth/register', user),
+                new AccountApiRequest<AccountRegistrationResponse>(
+                    () => accountRequest<AccountRegistrationResponse>('POST', '/api/v1/auth/register', user),
                     enqueueSnackbar,
                 ),
             login: (login: Login) =>

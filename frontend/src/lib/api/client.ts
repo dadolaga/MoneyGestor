@@ -7,6 +7,10 @@ const http = axios.create({
     headers: { Accept: 'application/json, application/problem+json' },
 });
 
+export interface AccountConfiguration {
+    requireConfirmedEmail: boolean;
+}
+
 export interface ApiColor {
     id: number;
     name: string | null;
@@ -161,6 +165,7 @@ async function send<T>(config: AxiosRequestConfig, unsafe = false): Promise<T> {
 }
 
 export const apiClient = {
+    accountConfiguration: (signal?: AbortSignal) => send<AccountConfiguration>({ method: 'GET', url: '/api/v1/auth/configuration', signal }),
     session: (signal?: AbortSignal) => send<{ id: number; firstname: string; lastname: string; email: string; username: string }>({ method: 'GET', url: '/api/v1/auth/session', signal }),
     logout: (signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/logout', signal }, true),
     colors: (signal?: AbortSignal) => send<ApiColor[]>({ method: 'GET', url: '/api/v1/colors', signal }),

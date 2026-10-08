@@ -65,8 +65,9 @@ All paths in this table start with `/api/v1/auth`.
 
 | Method and suffix | Session required | JSON body / purpose | Success |
 | --- | --- | --- | --- |
+| GET `/configuration` | No | Read the backend email-confirmation policy | 200 `{ "requireConfirmedEmail": true }` (or `false`); `Cache-Control: no-store` |
 | GET `/antiforgery` | No | Issue request token and antiforgery cookie | 200 `{ "token": "..." }` |
-| POST `/register` | No | `firstname`, `lastname`, `username`, `email`, `password` | 202 generic acceptance |
+| POST `/register` | No | `firstname`, `lastname`, `username`, `email`, `password` | 202 generic acceptance with `message` and `requireConfirmedEmail` |
 | POST `/login` | No | `user`, `password`, optional `remember` | 204; session cookie issued |
 | GET `/session` | Yes | Current minimal profile | 200 profile |
 | POST `/logout` | Yes | Sign out current cookie | 204 |
@@ -76,6 +77,10 @@ All paths in this table start with `/api/v1/auth`.
 | POST `/reset-password` | No | `email`, `token`, `password` | 204 |
 
 Profile fields are `id`, `firstname`, `lastname`, `email`, `username`. Generic account acceptance prevents enumeration and is not a mail-delivery receipt. Password and lockout rules are in [chapter 04](04-backend.md).
+
+The confirmation policy is configured by `security.requireConfirmedEmail` (default `true`). Clients should fetch `/configuration` before offering confirmation-related actions and use the flag in the registration response for the success message. Registration returns the same acceptance shape for existing and newly created accounts; the flag describes server policy, not account existence.
+
+When the flag is `false`, registration does not send a confirmation email, login accepts unconfirmed accounts, and `/resend-confirmation` returns generic 202 acceptance without sending mail. Password recovery accepts unconfirmed accounts in this mode but still requires SMTP. The `/confirm-email` token contract remains available for valid previously issued links. Disabling verification does not change stored confirmation status, so re-enabling it requires those accounts to verify before login.
 
 ## 7.4 Financial resource endpoints
 

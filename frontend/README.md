@@ -98,6 +98,10 @@ or clearing the login form. Each dialog validates the email and displays loading
 or request errors using the existing account API. Old direct URLs redirect to `/login?recovery=forgot`
 or `/login?recovery=resend`, opening the same dialogs. Token-based password reset and email
 verification remain dedicated pages.
+The backend controls email verification through `security.requireConfirmedEmail` (enabled by default).
+Login and verification read `/api/v1/auth/configuration`; resend is hidden when verification is disabled.
+Registration acceptance includes the same flag so the success message reflects the active policy.
+With verification disabled, users can log in immediately; no frontend configuration switch is needed.
 Both routes share a persistent Next.js layout: the Flowiy logo, finance headline and three benefit
 columns sit above the tilted dashboard preview from `Finanze semplici con Flowiy.png`, framed by
 red luminous waves. The source image is served as `public/flowiy-auth-reference.png` and the preview

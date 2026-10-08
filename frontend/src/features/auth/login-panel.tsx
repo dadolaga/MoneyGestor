@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserRound } from '@/components/ui/icons';
 import { AccountRecoveryDialog, type RecoveryAction } from '@/features/auth/account-recovery-dialog';
 import { AuthPasswordField } from '@/features/auth/auth-password-field';
+import { useAccountConfiguration } from '@/hooks/useAccountConfiguration';
 import useApi from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
 
@@ -27,8 +28,10 @@ interface PanelProps {
 
 export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
     const t = useTranslations('Auth.login');
+    const configurationText = useTranslations('Auth.configuration');
     const router = useRouter();
     const api = useApi();
+    const { configuration, reloadConfiguration } = useAccountConfiguration();
     const [submitError, setSubmitError] = useState<string>();
     const [isPending, setIsPending] = useState(false);
     const form = useForm<LoginFormValues>({ defaultValues: { username: '', password: '', remember: false } });
@@ -114,11 +117,23 @@ export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
                         <AccountRecoveryDialog action="forgot" defaultOpen={initialRecovery === 'forgot'}>
                             {t('forgotPassword')}
                         </AccountRecoveryDialog>
-                        {' · '}
-                        <AccountRecoveryDialog action="resend" defaultOpen={initialRecovery === 'resend'}>
-                            {t('resendConfirmation')}
-                        </AccountRecoveryDialog>
+                        {configuration.status === 'ready' && configuration.data.requireConfirmedEmail === true && (
+                            <>
+                                {' · '}
+                                <AccountRecoveryDialog action="resend" defaultOpen={initialRecovery === 'resend'}>
+                                    {t('resendConfirmation')}
+                                </AccountRecoveryDialog>
+                            </>
+                        )}
                     </p>
+                    {configuration.status === 'error' && (
+                        <p className="mb-0 mt-3 text-center text-sm text-muted-foreground" role="status">
+                            {configurationText('error')}{' '}
+                            <button className="flowiy-auth-recovery-link" onClick={reloadConfiguration} type="button">
+                                {configurationText('retry')}
+                            </button>
+                        </p>
+                    )}
                     <p className="mb-0 mt-3 text-center text-sm text-muted-foreground">
                         {t('registerPrompt')}{' '}
                         <Link className="font-medium text-primary hover:underline" href="/register">

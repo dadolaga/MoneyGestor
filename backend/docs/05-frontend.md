@@ -79,6 +79,8 @@ The Promise client represents API failures as `ApiProblemError`, with HTTP statu
 
 The account adapter uses a fluent callback interface (`onSuccess`, `onError`, `onFinish`). Follow its actual return contract rather than assuming it behaves like the resource Promise client. Do not store authentication tokens in localStorage or readable cookies.
 
+Authentication reads GET `/api/v1/auth/configuration` to follow the backend's `requireConfirmedEmail` policy. Login offers confirmation resend only when enabled, and the verification page explains when confirmation is unnecessary. Registration uses the same flag returned with 202 acceptance to show either confirmation instructions or immediate-login guidance. Configuration requests support cancellation and a localized retry state; login remains available if configuration cannot be loaded.
+
 `NEXT_PUBLIC_API_URL` is public build configuration. It is visible to the browser and must never contain secrets. A hostname such as `backend` can work between containers but is normally not resolvable by a user's browser.
 
 ## 5.6 Internationalization

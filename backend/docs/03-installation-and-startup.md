@@ -26,7 +26,7 @@
 | .NET SDK | `global.json` requests 10.0.400, allows later feature bands and disallows prereleases | Backend build and development |
 | Node.js / npm | Node 22 is used by the frontend Dockerfile | Frontend development and build |
 | MySQL | MySQL 8.4 is the integration-test and operations baseline | Persistent application database |
-| SMTP server | Working server and sender for registration/recovery | Account confirmation and password reset |
+| SMTP server | Working server and sender when confirmation is enabled or password recovery is needed | Account confirmation and password reset |
 | Docker / Compose | Required for container deployment and backend integration tests | Containers and disposable test database |
 | PowerShell 7 and MySQL clients | Required for administrative database scripts | Backup, staging restore and recovery drills |
 
@@ -55,7 +55,7 @@ Only copy the example if a local settings file does not already exist. Edit the 
 
 `Disabled` is the default: missing databases or pending migrations stop startup without applying DDL. A populated historical database lacking the current initial migration is rejected even in `Migrate` mode. Startup never deletes that database or automatically imports its old schema. See [database details](08-database-and-business-rules.md).
 
-Development can start without SMTP, but registration cannot complete normally without confirmation email delivery. Configure a development SMTP service if you want to exercise the full account workflow. Production requires SMTP configuration and persistent Data Protection keys.
+Development can start without SMTP. Email confirmation is required by default: configure a development SMTP service for this workflow, or set `security.requireConfirmedEmail=false` to allow immediate login after registration. Production requires SMTP configuration when confirmation is enabled and always requires persistent Data Protection keys. Password recovery requires SMTP in both modes.
 
 ## 3.4 Run the backend locally
 
@@ -102,7 +102,7 @@ Before building:
 - Supply an existing root `settings.json` for the read-only mount.
 - Use a MySQL host reachable **from the backend container**. `host.docker.internal` can address a database running on the host; `localhost` inside the container addresses the container itself.
 - Use `/app/log/backend` or another path under `/app/log` for file logs; that directory has writable persistent storage.
-- Configure working SMTP and the browser-visible frontend origin. Compose sets the backend to `Production`.
+- Configure working SMTP when confirmation is enabled or password recovery is needed, and the browser-visible frontend origin. Compose sets the backend to `Production`.
 
 ```powershell
 docker compose up --build -d backend frontend
@@ -122,7 +122,7 @@ These HTTP addresses describe port exposure. Production cookies are `Secure`: fo
 
 ## 3.7 First functional check
 
-After readiness reports `Healthy`, register a synthetic test account, verify its email, sign in, create a wallet and record an income and expense. Check that the balance and dashboard match the sample in the [user guide](02-user-guide.md). Use disposable development data for this check.
+After readiness reports `Healthy`, register a synthetic test account, verify its email if required, sign in, create a wallet and record an income and expense. Check that the balance and dashboard match the sample in the [user guide](02-user-guide.md). Use disposable development data for this check.
 
 
 ---

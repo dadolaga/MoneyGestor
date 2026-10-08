@@ -12,6 +12,13 @@ public sealed class AuthController(
     AccountAbuseGuard abuseGuard,
     IAntiforgery antiforgery,
     ILogger<AuthController> logger) : ControllerBase {
+    [HttpGet("configuration")]
+    [AllowAnonymous]
+    public ActionResult<AccountConfiguration> Configuration() {
+        Response.Headers.CacheControl = "no-store";
+        return Ok(new AccountConfiguration(accounts.RequireConfirmedEmail));
+    }
+
     [HttpGet("antiforgery")]
     [AllowAnonymous]
     public IActionResult AntiforgeryToken() {
@@ -21,6 +28,7 @@ public sealed class AuthController(
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [ProducesResponseType<AccountRegistrationResponse>(StatusCodes.Status202Accepted)]
     public async Task<IActionResult> Register(RegisterAccountRequest request, CancellationToken cancellationToken) {
         if (!Permit("register", request.Email, 5, TimeSpan.FromHours(1))) {
             return RateLimited();
@@ -32,7 +40,11 @@ public sealed class AuthController(
             return ValidationFailure("Account validation failed", "account", exception.Errors.ToArray());
         }
 
-        return Accepted(new { message = "If the account can be created, a confirmation email will be sent." });
+        return Accepted(new AccountRegistrationResponse(
+            accounts.RequireConfirmedEmail
+                ? "If the account can be created, a confirmation email will be sent."
+                : "If the account can be created, you can log in without email confirmation.",
+            accounts.RequireConfirmedEmail));
     }
 
     [HttpPost("login")]
@@ -92,7 +104,7 @@ public sealed class AuthController(
             logger.LogWarning("Confirmation email delivery failed ({ExceptionType})", exception.GetType().Name);
         }
 
-        return Accepted(new { message = "If the account exists, a confirmation email will be sent." });
+        return Accepted(new { message = "If confirmation is required and the account needs it, a confirmation email will be sent." });
     }
 
     [HttpPost("forgot-password")]

@@ -94,7 +94,7 @@ The export branch starts a temporary local host and writes the specifications wi
 | Existing schema rejected | Database lacks current initial migration | Preserve old database; use a new empty schema or explicit conversion plan |
 | Integrity preflight fails | Ownership, balance, pair or account-mapping inconsistency | Technical report, compatible backup and deliberate investigation; bootstrap mode is not a repair switch |
 | Production rejects key path | Missing `DATA_PROTECTION_KEYS_PATH` | Persistent writable protected key storage |
-| Production rejects email configuration | Missing SMTP host/sender | Configure SMTP plus a valid frontend URL |
+| Production rejects email configuration | Confirmation enabled but SMTP host/sender missing | Configure SMTP plus a valid frontend URL, or explicitly disable confirmation with `security.requireConfirmedEmail=false` |
 | File logger cannot write | Bad path or filesystem permissions | Container path under `/app/log`; valid filename; non-root permissions |
 | Readiness is Unhealthy | MySQL unreachable, credentials/privileges wrong or timeout | Container/host networking, database existence and configured timeout |
 | Frontend container remains waiting | Backend health never succeeds | Backend startup logs and readiness first |
@@ -103,7 +103,7 @@ The export branch starts a temporary local host and writes the specifications wi
 
 | Symptom | Likely cause | What to check |
 | --- | --- | --- |
-| Generic login failure | Credentials wrong or email unconfirmed | Verify email, username/email input and lockout status |
+| Generic login failure | Credentials wrong, or email unconfirmed while verification is enabled | Check `/api/v1/auth/configuration`, verify email when required, username/email input and lockout status |
 | No confirmation/reset email | Placeholder SMTP, failed authentication, invalid sender or wrong link URL | SMTP delivery and `email.frontendBaseUrl`; acceptance is not delivery proof |
 | Link expired/invalid | One-hour token lifetime, altered token or lost key ring | Request a new link; preserve Data Protection keys |
 | Account locked / too many requests | Lockout or abuse limiter | Wait for the lockout/window; avoid repeated submits |

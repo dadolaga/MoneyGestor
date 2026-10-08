@@ -31,12 +31,12 @@ English is the default language without a URL prefix, for example `/dashboard`. 
 
 1. Open `/register` (or `/it/register`).
 2. Enter your first name, last name, username, email address and password.
-3. Submit the form and check your email for the confirmation link.
-4. Open the link to complete email verification, then sign in at `/login`.
+3. Submit the form and follow the displayed instructions. If email verification is enabled, check your email for the confirmation link.
+4. When required, open the link to complete email verification, then sign in at `/login`. If verification is disabled, sign in immediately without a confirmation link.
 
 Passwords must contain at least 12 characters, uppercase and lowercase letters, a digit and a non-alphanumeric character. The API caps passwords at 128 characters and requires usernames between 3 and 64 characters. Email addresses must be unique.
 
-Registration and recovery responses intentionally avoid confirming whether an account exists. A generic acceptance message does not prove that email delivery succeeded. If no message arrives, check spam and use `/resend-confirmation`; ask the operator to check SMTP configuration if the issue persists.
+Registration and recovery responses intentionally avoid confirming whether an account exists. A generic acceptance message does not prove that email delivery succeeded. If verification is enabled and no message arrives, check spam and use `/resend-confirmation`; ask the operator to check SMTP configuration if the issue persists. Confirmation resend is hidden when verification is disabled. Password recovery still needs email delivery in either mode.
 
 ## 2.3 Sign in, sign out and recover access
 
