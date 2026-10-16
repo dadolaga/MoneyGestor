@@ -44,11 +44,25 @@ or invent their contents. For now, use the available guides and inspect the curr
 
 ## Implementation approach
 
+- Keep implementations simple, clean and readable. Choose the least complex solution that fully
+  satisfies the request while preserving correctness, security and maintainability.
 - Follow the architecture, naming and style already used in the area being changed.
 - Reuse existing boundaries: HTTP in the backend webserver, financial rules in logic,
   persistence in database, and presentation and UI state in the frontend.
 - Do not add future features, abstractions or dependencies unless the request requires them.
+- Use clear, intention-revealing names and focused functions or components. Prefer straightforward
+  control flow over clever shortcuts, deeply nested conditions or unnecessary indirection.
+- Reuse existing code when responsibilities match. Extract shared logic when it removes meaningful
+  duplication; do not force unrelated cases into a generic abstraction.
+- Keep each piece of state or business logic in one authoritative place. Derive values when practical
+  instead of maintaining duplicate state that must be synchronized.
+- Address the cause of an error in the affected flow. Do not hide failures with empty catch blocks,
+  silent fallbacks or special cases that merely make the symptom disappear.
 - Do not fix errors by removing type checks, validation, authorization or integrity constraints.
+- Keep refactoring proportional to the task and confined to what the change needs. Remove code made
+  obsolete by the change after checking its consumers; do not leave commented-out implementations.
+- Write comments to explain non-obvious decisions, constraints or tradeoffs. Prefer clear code over
+  comments that repeat what the code does.
 - Update affected documentation when behavior or the status of a slice changes.
 - Do not remove dependencies before searching for all consumers in the relevant area.
 
