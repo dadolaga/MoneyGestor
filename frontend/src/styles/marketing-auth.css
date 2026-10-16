@@ -68,19 +68,6 @@
     margin-inline: auto;
     gap: 16px;
 }
-.flowiy-auth-header-controls { display: flex; align-items: center; gap: 12px; }
-.flowiy-auth .flowiy-auth-language-select {
-    width: auto;
-    height: 36px;
-    gap: 8px;
-    padding-inline: 10px;
-    border-color: #ffffff40;
-    background: transparent;
-    color: var(--primary-foreground);
-    font-size: 13px;
-    font-weight: 600;
-}
-.flowiy-auth .flowiy-auth-language-select:hover { background: #ffffff15; }
 .flowiy-auth-back {
     display: flex;
     align-items: center;
@@ -90,16 +77,6 @@
     font-size: 13px;
 }
 .flowiy-auth-back:hover { color: var(--marketing-foreground) !important; }
-.flowiy-auth .flowiy-auth-theme-button {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #ffffff40;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--primary-foreground);
-}
-.flowiy-auth .flowiy-auth-theme-button:hover { background: #ffffff15; color: var(--primary-foreground); }
 .flowiy-auth-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 600px);
@@ -288,17 +265,8 @@
     .flowiy-auth-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
     .flowiy-auth-intro { display: none; }
 }
-@media (max-width: 640px) {
-    .flowiy-auth > header .app-header-account-label { display: none; }
-}
 @media (max-width: 480px) {
     .flowiy-auth-main { padding-block: 10px; gap: 10px; }
-    .flowiy-auth > header { padding-inline: 16px; }
-    .flowiy-auth > header img { width: 96px; height: auto; }
-    .flowiy-auth > header button { padding-inline: 9px; font-size: 11px; gap: 6px; }
-    .flowiy-auth > header button > span { width: 16px; height: 16px; }
-    .flowiy-auth > header > div, .flowiy-auth > header > div > div { gap: 8px; }
-    .flowiy-auth-header-controls { gap: 6px; }
     .flowiy-auth-back { font-size: 12px; }
     .flowiy-auth-card { padding: 12px; border-radius: 16px; }
 }

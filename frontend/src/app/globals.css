@@ -4,6 +4,7 @@
 @import 'tw-animate-css';
 @import '../styles/marketing.css';
 @import '../styles/marketing-auth.css';
+@import '../styles/app-header.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -69,7 +70,8 @@
     --chart-6: oklch(0.67 0.13 190);
     --radius: 0.75rem;
     --text-color: #f0efeb;
-    --header-height: 4rem;
+    --header-height: 65px;
+    --app-header-brand: oklch(0.63 0.25 17);
     --navigation-width: 14rem;
     color-scheme: light;
 }

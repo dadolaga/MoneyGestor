@@ -89,20 +89,6 @@
     position: relative;
     border-bottom: 1px solid var(--marketing-border);
 }
-.marketing-header {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    color: white;
-    background: linear-gradient(110deg, var(--marketing-brand), #d60939);
-    box-shadow: 0 2px 20px #00000015;
-}
-.marketing-header-inner {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    min-height: 65px;
-}
 .marketing-brand {
     display: inline-flex;
     align-items: center;
@@ -114,23 +100,8 @@
     max-width: 100%;
     height: auto;
 }
-.marketing-desktop-nav {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    margin-left: 30px;
-    font-size: 13px;
-    white-space: nowrap;
-}
-.marketing-desktop-nav a:hover,
 .marketing-footer a:hover {
     opacity: 0.75;
-}
-.marketing-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 17px;
-    margin-left: auto;
 }
 .marketing-login {
     display: flex;
@@ -153,31 +124,6 @@
 }
 .marketing-text-button:hover {
     opacity: 0.75;
-}
-.flowiy-home .marketing-icon-button {
-    color: white;
-    background: transparent;
-    width: 30px;
-    height: 30px;
-    padding: 5px;
-    border: 0;
-}
-.marketing-icon-button > span {
-    width: 18px;
-    height: 18px;
-}
-.flowiy-home .marketing-menu-button {
-    display: none;
-}
-.marketing-mobile-nav {
-    padding: 10px 28px 20px;
-    gap: 16px;
-    background: #d60939;
-}
-.marketing-mobile-nav:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 .marketing-eyebrow {
     display: inline-block;
@@ -945,19 +891,8 @@
     }
 }
 @media (max-width: 1150px) {
-    .marketing-header-inner {
-        gap: 18px;
-    }
     .marketing-brand img {
         width: 140px;
-    }
-    .marketing-desktop-nav {
-        margin-left: 8px;
-        gap: 23px;
-        font-size: 12px;
-    }
-    .marketing-header-actions {
-        gap: 13px;
     }
     .marketing-hero-grid {
         min-height: 410px;
@@ -1031,12 +966,6 @@
     }
 }
 @media (max-width: 960px) {
-    .marketing-desktop-nav {
-        display: none;
-    }
-    .flowiy-home .marketing-menu-button {
-        display: inline-flex;
-    }
     .marketing-container {
         width: min(1240px, calc(100% - 40px));
     }
@@ -1151,15 +1080,8 @@
     .marketing-container {
         width: calc(100% - 36px);
     }
-    .marketing-header-inner {
-        min-height: 62px;
-        gap: 10px;
-    }
     .marketing-brand img {
         width: 124px;
-    }
-    .marketing-header-actions {
-        gap: 8px;
     }
     .marketing-login {
         display: none;
@@ -1173,10 +1095,6 @@
     .marketing-header .marketing-button > span {
         width: 14px;
         height: 14px;
-    }
-    .flowiy-home .marketing-icon-button {
-        width: 26px;
-        height: 28px;
     }
     .marketing-hero-grid {
         grid-template-columns: 1fr;

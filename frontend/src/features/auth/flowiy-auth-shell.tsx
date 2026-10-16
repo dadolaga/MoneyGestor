@@ -7,16 +7,13 @@ import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
 import { AppHeader } from '@/components/app/app-header';
-import { FormLanguageSwitch } from '@/components/shared/form-language-switch';
 import { MarketingBrand } from '@/components/shared/marketing-brand';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, BarChart3, Moon, ShieldCheck, Sun, Users } from '@/components/ui/icons';
+import { ArrowLeft, BarChart3, ShieldCheck, Users } from '@/components/ui/icons';
 import { Link } from '@/i18n/navigation';
 
 export function FlowiyAuthShell({ mode, isDirty, children }: { mode: 'login' | 'register'; isDirty: boolean; children: ReactNode }) {
     const t = useTranslations('FlowiyAuth');
-    const home = useTranslations('Home');
-    const { resolvedTheme, setTheme } = useTheme();
+    const { resolvedTheme } = useTheme();
     const isLightTheme = resolvedTheme === 'light';
     const loginCurrent = mode === 'login' ? 'page' : undefined;
     const registerCurrent = mode === 'register' ? 'page' : undefined;
@@ -28,21 +25,7 @@ export function FlowiyAuthShell({ mode, isDirty, children }: { mode: 'login' | '
 
     return (
         <div className="flowiy-home flowiy-auth" data-theme={isLightTheme ? 'light' : 'dark'}>
-            <AppHeader
-                homeHref="/" showNotifications={false}
-                actions={
-                    <div className="flowiy-auth-header-controls">
-                        <FormLanguageSwitch isDirty={isDirty} />
-                        <Button
-                            aria-label={home(isLightTheme ? 'navigation.darkTheme' : 'navigation.lightTheme')}
-                            className="flowiy-auth-theme-button" size="icon" type="button" variant="ghost"
-                            onClick={() => setTheme(isLightTheme ? 'dark' : 'light')}
-                        >
-                            {isLightTheme ? <Moon aria-hidden="true" className="size-4" /> : <Sun aria-hidden="true" className="size-4" />}
-                        </Button>
-                    </div>
-                }
-            />
+            <AppHeader homeHref="/" showNotifications={false} isDirty={isDirty} />
             <main className="flowiy-auth-main">
                 <div className="flowiy-auth-art" aria-hidden="true">
                     <span className="flowiy-auth-wave flowiy-auth-wave--top" />

@@ -1,30 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AppHeaderAccount } from '@/components/app/app-header-account';
+import { FormLanguageSwitch } from '@/components/shared/form-language-switch';
 import { Button } from '@/components/ui/button';
-import { Bell, LogIn, LogOut, Menu, Search, UserPlus } from '@/components/ui/icons';
-import { Skeleton } from '@/components/ui/skeleton';
-import useApi from '@/hooks/useApi';
-import { Link, useRouter } from '@/i18n/navigation';
-
-function initials(name: string) {
-    return name
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join('')
-        .toUpperCase();
-}
+import { ArrowRight, Bell, Menu, Moon, Search, Sun, UserPlus, X } from '@/components/ui/icons';
+import { Link } from '@/i18n/navigation';
 
 interface AppHeaderProps {
+    navigation?: readonly { href: string; label: string }[];
+    navigationExtra?: ReactNode;
+    mobileNavigationExtra?: ReactNode;
+    accountMode?: 'marketing' | 'session' | 'none';
     actions?: ReactNode;
     showGlobalSearch?: boolean;
     showNotifications?: boolean;
@@ -32,121 +25,93 @@ interface AppHeaderProps {
     homeHref?: string;
     loginHref?: string;
     registerHref?: string;
+    isDirty?: boolean;
+    themeControl?: { isLightTheme: boolean; onToggle: () => void };
 }
 
-export function AppHeader({ actions, showGlobalSearch, showNotifications = true, onOpenNavigation, homeHref = '/dashboard', loginHref = '/login', registerHref = '/register' }: AppHeaderProps) {
-    const t = useTranslations('Navigation');
-    const router = useRouter();
-    const api = useApi();
-    const [userName, setUserName] = useState<string>();
-    const [isLoadingSession, setIsLoadingSession] = useState(true);
+export function AppHeader({
+    navigation = [], navigationExtra, mobileNavigationExtra, accountMode = 'session', actions,
+    showGlobalSearch = false, showNotifications = true, onOpenNavigation,
+    homeHref = '/', loginHref = '/login', registerHref = '/register', isDirty = false, themeControl,
+}: AppHeaderProps) {
+    const t = useTranslations('Home.navigation');
+    const app = useTranslations('Navigation');
+    const { resolvedTheme, setTheme } = useTheme();
+    const mobileNavigationId = useId();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const isLightTheme = themeControl?.isLightTheme ?? (resolvedTheme === 'light');
+    const hasNavigation = navigation.length > 0 || navigationExtra !== undefined;
 
-    useEffect(() => {
-        const timeout = window.setTimeout(() => {
-            api.account
-                .session()
-                .onSuccess((user) => setUserName(`${user.firstname} ${user.lastname}`))
-                .onError(() => {
-                    setUserName(undefined);
-                })
-                .onFinish(() => setIsLoadingSession(false))
-                .execute();
-        }, 0);
-
-        return () => window.clearTimeout(timeout);
-        // `useApi` exposes an intentionally lightweight fluent client whose object identity is not stable.
-        // The session is refreshed once when the shell mounts.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const loginClickHandler = useCallback(() => {
-        router.push(loginHref);
-    }, [router, loginHref]);
-
-    const registrationClickHandler = useCallback(() => {
-        router.push(registerHref);
-    }, [router, registerHref]);
-
-    const logoutClickHandler = useCallback(() => {
-        api.account
-            .logout()
-            .onSuccess(() => {
-                setUserName(undefined);
-                toast.success(t('logoutSuccess'));
-                router.push(loginHref);
-            })
-            .execute();
-    }, [api.account, router, t, loginHref]);
+    const closeMenuHandler = () => setIsMenuOpen(false);
+    const toggleThemeHandler = () => {
+        if (themeControl) themeControl.onToggle();
+        else setTheme(isLightTheme ? 'dark' : 'light');
+    };
 
     return (
-        <header className="sticky top-0 z-40 flex h-[var(--header-height)] items-center bg-primary px-4 text-primary-foreground shadow-md sm:px-7">
-            {!!onOpenNavigation && <Button
-                aria-label={t('openNavigation')}
-                className="mr-2 text-primary-foreground hover:bg-white/15 hover:text-primary-foreground lg:hidden"
-                size="icon"
-                variant="ghost"
-                onClick={onOpenNavigation}
-            >
-                <Menu aria-hidden="true" className="size-5" />
-            </Button>}
-            <Link href={homeHref} className="flex shrink-0 items-center gap-2.5 text-primary-foreground">
-                <Image alt="flowiy logo" height={50} priority src="/new_logo_dark.png" width={159} />
-            </Link>
-            {!!(showGlobalSearch ?? false) && (
-                <div
-                    aria-hidden="true"
-                    className="mx-6 hidden h-10 max-w-xl flex-1 items-center rounded-lg border border-white/25 bg-black/10 px-4 text-sm shadow-inner lg:flex"
-                >
-                    <Search className="mr-3 size-4 shrink-0" />
-                    <span className="truncate text-primary-foreground/95">{t('searchPlaceholder')}</span>
-                    <span className="ml-auto rounded border border-white/20 bg-black/10 px-1.5 py-0.5 text-xs font-semibold">
-                        ⌘ K
-                    </span>
-                </div>
-            )}
-            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
-                {actions}
-                {!!showNotifications && <span aria-hidden="true" className="relative hidden size-10 items-center justify-center lg:flex">
-                    <Bell className="size-5" />
-                    <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full bg-card text-[10px] font-bold text-primary">
-                        3
-                    </span>
-                </span>}
-                {/* The conditions are explicit booleans; this renders exactly one account state. */}
-                {/* eslint-disable-next-line react/jsx-no-leaked-render */}
-                {isLoadingSession === true ? (
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                ) : userName !== undefined ? (
-                    <div className="flex items-center gap-3">
-                        <Avatar className="size-11">
-                            <AvatarFallback className="bg-white font-semibold text-primary">
-                                {initials(userName)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <span className="hidden max-w-36 truncate text-sm font-semibold sm:block">{userName}</span>
-                        <Button aria-label={t('logout')} size="icon" variant="ghost" onClick={logoutClickHandler}>
-                            <LogOut aria-hidden="true" />
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-3">
-                        <Button aria-label={t('enter')} size="default" variant="border" onClick={loginClickHandler}>
-                            <LogIn aria-hidden="true" />
-                            <span className="app-header-account-label">{t('enter')}</span>
-                        </Button>
-                        <Button
-                            aria-label={t('register')}
-                            size="default"
-                            className="bg-white text-(--primary)"
-                            variant={'outline'}
-                            onClick={registrationClickHandler}
-                        >
-                            <UserPlus aria-hidden="true" />
-                            <span className="app-header-account-label">{t('register')}</span>
-                        </Button>
+        <header className="app-header marketing-header">
+            <div className="app-header-inner">
+                <Link className="app-header-brand" href={homeHref} aria-label={t('home')}>
+                    <Image src="/new_logo_dark.png" alt="Flowiy" width={162} height={51} priority />
+                </Link>
+                {!!hasNavigation && (
+                    <nav className="app-header-desktop-nav" aria-label={t('main')}>
+                        {navigation.map(({ href, label }) => <Link href={href} key={href}>{label}</Link>)}
+                        {navigationExtra}
+                    </nav>
+                )}
+                {!!showGlobalSearch && (
+                    <div aria-hidden="true" className="mx-6 hidden h-10 max-w-xl flex-1 items-center rounded-lg border border-white/25 bg-black/10 px-4 text-sm lg:flex">
+                        <Search className="mr-3 size-4 shrink-0" />
+                        <span className="truncate">{app('searchPlaceholder')}</span>
+                        <span className="ml-auto rounded border border-white/20 bg-black/10 px-1.5 py-0.5 text-xs font-semibold">⌘ K</span>
                     </div>
                 )}
+                <div className="app-header-actions">
+                    <div className="app-header-controls">
+                        <FormLanguageSwitch isDirty={isDirty} />
+                        <Button className="app-header-icon-button" size="icon" variant="ghost" type="button"
+                            onClick={toggleThemeHandler} aria-label={t(isLightTheme ? 'darkTheme' : 'lightTheme')}>
+                            {isLightTheme ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
+                        </Button>
+                    </div>
+                    {accountMode === 'marketing' && (
+                        <>
+                            <Link href={loginHref} className="marketing-login"><UserPlus aria-hidden="true" />{t('login')}</Link>
+                            <Button asChild className="marketing-button marketing-button--light">
+                                <Link href={registerHref}>{t('start')}<ArrowRight aria-hidden="true" /></Link>
+                            </Button>
+                        </>
+                    )}
+                    {actions}
+                    {!!showNotifications && <span aria-hidden="true" className="relative hidden size-10 items-center justify-center lg:flex">
+                        <Bell className="size-5" />
+                        <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full bg-card text-[10px] font-bold text-primary">3</span>
+                    </span>}
+                    {accountMode === 'session' && <AppHeaderAccount loginHref={loginHref} registerHref={registerHref} />}
+                    {!!onOpenNavigation && (
+                        <Button className="app-header-icon-button lg:hidden" size="icon" variant="ghost"
+                            type="button" aria-label={app('openNavigation')} onClick={onOpenNavigation}>
+                            <Menu aria-hidden="true" />
+                        </Button>
+                    )}
+                    {!!hasNavigation && (
+                        <Button className="app-header-icon-button app-header-menu-button" size="icon" variant="ghost" type="button"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label={t(isMenuOpen ? 'closeMenu' : 'openMenu')}
+                            aria-expanded={isMenuOpen} aria-controls={mobileNavigationId}>
+                            {isMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+                        </Button>
+                    )}
+                </div>
             </div>
+            {!!hasNavigation && (
+                <nav id={mobileNavigationId} className="app-header-mobile-nav" hidden={!isMenuOpen} aria-label={t('main')}>
+                    {navigation.map(({ href, label }) => <Link href={href} key={href} onClick={closeMenuHandler}>{label}</Link>)}
+                    {accountMode === 'marketing' && <Link href={loginHref} onClick={closeMenuHandler}>{t('login')}</Link>}
+                    {navigationExtra}
+                    {mobileNavigationExtra}
+                </nav>
+            )}
         </header>
     );
 }

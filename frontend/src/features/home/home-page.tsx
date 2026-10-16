@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 
+import { AppHeader } from '@/components/app/app-header';
 import { MarketingFaq as Faq } from '@/components/shared/marketing-faq';
 import { MarketingIcon as IconBubble } from '@/components/shared/marketing-icon';
 import { Button } from '@/components/ui/button';
@@ -16,13 +17,9 @@ import {
     Check,
     CreditCard,
     FileText,
-    Menu,
-    Moon,
     PiggyBank,
-    Sun,
     UserPlus,
     Wallet,
-    X,
 } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
 import { Link } from '@/i18n/navigation';
@@ -152,7 +149,6 @@ function FeatureExample({ feature }: { feature: Feature }) {
 export function HomePage() {
     const t = useTranslations('Home');
     const locale = useLocale();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     // The public landing starts with the reference's dark art direction; this switch is local to it.
     const [isLightTheme, setIsLightTheme] = useState(false);
     const englishCurrent = locale === 'en' ? 'page' : undefined;
@@ -165,79 +161,22 @@ export function HomePage() {
         { href: '#start', label: t('navigation.pricing') },
     ];
 
-    const closeMenuHandler = () => setIsMenuOpen(false);
-
     return (
         <div className="flowiy-home" data-theme={isLightTheme ? 'light' : 'dark'}>
-            <header className="marketing-header">
-                <div className="marketing-header-inner mx-4">
-                    <Link className="marketing-brand" href="/" aria-label={t('navigation.home')}>
-                        <Image src="/new_logo_dark.png" alt="Flowiy" width={162} height={51} priority />
-                    </Link>
-                    <nav className="marketing-desktop-nav" aria-label={t('navigation.main')}>
-                        {navigation.map(({ href, label }) => (
-                            <Link href={href} key={href}>
-                                {label}
-                            </Link>
-                        ))}
-                        <Faq>
-                            <button type="button" className="marketing-text-button">
-                                {t('navigation.faq')}
-                            </button>
-                        </Faq>
-                    </nav>
-                    <div className="marketing-header-actions">
-                        <Link href="/login" className="marketing-login">
-                            <UserPlus aria-hidden="true" />
-                            {t('navigation.login')}
-                        </Link>
-                        <RegisterLink light>{t('navigation.start')}</RegisterLink>
-                        <Button
-                            className="marketing-icon-button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setIsLightTheme(!isLightTheme)}
-                            aria-label={t(isLightTheme ? 'navigation.darkTheme' : 'navigation.lightTheme')}
-                        >
-                            {isLightTheme ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
-                        </Button>
-                        <Button
-                            className="marketing-menu-button marketing-icon-button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            aria-label={t(isMenuOpen ? 'navigation.closeMenu' : 'navigation.openMenu')}
-                            aria-expanded={isMenuOpen}
-                            aria-controls="marketing-mobile-nav"
-                        >
-                            {isMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-                        </Button>
-                    </div>
-                </div>
-                <nav
-                    id="marketing-mobile-nav"
-                    className="marketing-mobile-nav"
-                    hidden={!isMenuOpen}
-                    aria-label={t('navigation.main')}
-                >
-                    {navigation.map(({ href, label }) => (
-                        <Link href={href} key={href} onClick={closeMenuHandler}>
-                            {label}
-                        </Link>
-                    ))}
-                    <Link href="/login" onClick={closeMenuHandler}>
-                        {t('navigation.login')}
-                    </Link>
+            <AppHeader
+                accountMode="marketing"
+                showNotifications={false}
+                navigation={navigation}
+                navigationExtra={
                     <Faq>
-                        <button type="button" className="marketing-text-button">
-                            {t('navigation.faq')}
-                        </button>
+                        <button type="button" className="marketing-text-button">{t('navigation.faq')}</button>
                     </Faq>
-                    <Link href="/" locale={locale === 'it' ? 'en' : 'it'} onClick={closeMenuHandler}>
-                        {t('navigation.switchLanguage')}
-                    </Link>
-                </nav>
-            </header>
+                }
+                mobileNavigationExtra={
+                    <Link href="/" locale={locale === 'it' ? 'en' : 'it'}>{t('navigation.switchLanguage')}</Link>
+                }
+                themeControl={{ isLightTheme, onToggle: () => setIsLightTheme(!isLightTheme) }}
+            />
 
             <main>
                 <section className="marketing-hero marketing-section" aria-labelledby="hero-title">

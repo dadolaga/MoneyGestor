@@ -35,7 +35,7 @@ export function FormLanguageSwitch({ isDirty }: { isDirty: boolean }) {
     return (
         <>
             <Select value={locale} onValueChange={selectLanguageHandler}>
-                <SelectTrigger aria-label={t('language')} className="flowiy-auth-language-select">
+                <SelectTrigger aria-label={t('language')} className="app-header-language-select">
                     <span lang={locale}>{locale.toUpperCase()}</span>
                 </SelectTrigger>
                 <SelectContent align="end">

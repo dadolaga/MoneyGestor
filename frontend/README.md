@@ -116,8 +116,12 @@ On narrow screens the introduction is hidden to prioritize the form.
 If the form exceeds the available height (for example with field errors or the mobile keyboard),
 only its panel scrolls so every field and action remains accessible.
 English, Italian and the saved light/dark theme are supported. Google sign-in is not offered by
-the current account API. `AppHeader` also serves the dashboard shell; shared marketing FAQ and
-icon components serve the homepage. Styles in `src/styles/marketing-auth.css` reuse marketing tokens.
+the current account API. `AppHeader` serves the homepage, dashboard shell and authentication pages with one shared frame.
+Its navigation slots and account mode configure the page actions; language and theme controls
+are always available before the account buttons. The homepage retains its navigation and local theme; dashboard and account
+pages use the saved application theme. Header height, logo dimensions and position, and the red
+background stay consistent at each viewport width. The stable brand token is `--app-header-brand`.
+Shared marketing FAQ and icon components serve the homepage. Styles in `src/styles/marketing-auth.css` reuse marketing tokens.
 Italian adds the `/it` prefix to the same routes. Account, wallet, movement and dashboard pages use
 `/api/v1` with Identity cookies and antiforgery; fixtures remain available for previews and component tests.
 
