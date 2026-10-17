@@ -7,6 +7,12 @@
             "delete": "Elimina",
             "retry": "Riprova"
         },
+        "comingSoon": {
+            "badge": "In arrivo",
+            "title": "Funzionalità ancora da implementare",
+            "description": "Stiamo ancora lavorando a questa sezione per renderla davvero utile e ben fatta. Torna presto oppure continua a usare le funzionalità già disponibili in Flowiy.",
+            "confirm": "Ho capito"
+        },
         "theme": {
             "label": "Tema",
             "light": "Chiaro",

@@ -14,8 +14,9 @@
             "failed": "The wallet could not be saved. Please try again."
         },
         "namePlaceholder": "Wallet name",
-        "typeUnavailable": "The type is unavailable for this wallet. Select it to complete the details.",
-        "linkedCardsTypeLock": "This account has linked cards, so its type stays Current account.",
+        "typeUnavailable": "The type is unavailable for this wallet. Reload the wallet list.",
+        "typeLocked": "The wallet type cannot be changed after creation.",
+        "initialBalanceLocked": "The opening balance cannot be changed after creation.",
         "description": "Add an account, card or wallet to track.",
         "kind": "Wallet type",
         "kinds": {
@@ -80,8 +81,7 @@
             "network": "Select a valid card network.",
             "serverAmount": "Enter a non-negative amount with up to two decimal places, within the allowed limits.",
             "incompatibleFields": "Some details are incompatible with the selected wallet type.",
-            "linkedCards": "This account has linked cards, so its type must stay Current account.",
-            "balanceOrMovements": "You cannot change this wallet to a debit or credit card: it has an opening balance, a current balance or recorded transactions.",
+            "immutableKind": "The wallet type cannot be changed after creation.",
             "required": "This field is required.",
             "amount": "Enter a valid amount with up to two decimal places.",
             "nonNegative": "Enter an amount greater than or equal to zero.",
@@ -103,6 +103,7 @@
             "transfer": "Transfer",
             "movement": "Add transaction",
             "viewAll": "View all",
+            "infoFor": "Information {name}",
             "editFor": "Edit {name}",
             "deleteFor": "Delete {name}",
             "delete": "Delete",
@@ -198,6 +199,7 @@
             "details": "Details",
             "edit": "Edit",
             "delete": "Delete",
+            "info": "information",
             "more": "More actions for {name}",
             "gridView": "Grid view",
             "listView": "List view"

@@ -8,7 +8,7 @@ import { FormField, fieldAriaProps } from '@/components/shared/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FieldAdornment, FieldControl, fieldControlInputClassName } from '@/components/ui/field-control';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { Switch, type SwitchProps } from '@/components/ui/switch';
 import { parseLocalizedAmount } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -37,7 +37,6 @@ export type InputFieldProps<T extends FieldValues> = ControlledProps<T> &
         endAdornment?: ReactNode;
         locale?: string;
         options?: SelectOption[];
-        contentClassName?: string;
     };
 
 /** A single API for text, password, amount and select fields. */
@@ -50,7 +49,6 @@ export function InputField<T extends FieldValues>({
     endAdornment,
     locale,
     options = [],
-    contentClassName,
     control,
     name,
     rules,
@@ -95,28 +93,28 @@ export function InputField<T extends FieldValues>({
 
         const selectValue = field.value == null ? '' : String(field.value);
         return (
-            <Select value={selectValue} name={field.name} disabled={disabled} onValueChange={field.onChange}>
-                <FieldControl invalid={error !== undefined} disabled={disabled} className={className}>
-                    {startAdornment !== undefined && <FieldAdornment position="start">{startAdornment}</FieldAdornment>}
-                    <SelectTrigger
-                        ref={field.ref}
-                        id={id}
-                        className={fieldControlInputClassName}
-                        onBlur={field.onBlur}
-                        {...fieldAriaProps(id, error, description)}
-                    >
-                        <SelectValue placeholder={inputProps.placeholder} />
-                    </SelectTrigger>
-                    {endAdornment !== undefined && <FieldAdornment position="end">{endAdornment}</FieldAdornment>}
-                </FieldControl>
-                <SelectContent className={contentClassName}>
+            <FieldControl invalid={error !== undefined} disabled={disabled} className={className}>
+                {startAdornment !== undefined && <FieldAdornment position="start">{startAdornment}</FieldAdornment>}
+                <Select
+                    ref={field.ref}
+                    id={id}
+                    value={selectValue}
+                    name={field.name}
+                    disabled={disabled}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder={inputProps.placeholder}
+                    className={fieldControlInputClassName}
+                    {...fieldAriaProps(id, error, description)}
+                >
                     {options.map((option) => (
-                        <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+                        <option key={option.value} value={option.value} disabled={option.disabled}>
                             {option.label}
-                        </SelectItem>
+                        </option>
                     ))}
-                </SelectContent>
-            </Select>
+                </Select>
+                {endAdornment !== undefined && <FieldAdornment position="end">{endAdornment}</FieldAdornment>}
+            </FieldControl>
         );
     };
 

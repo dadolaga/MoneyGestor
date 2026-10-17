@@ -66,17 +66,13 @@ public static class WalletConfigurationPolicy {
 
     internal static async Task ApplyAsync(MoneyGestorContext database, WalletDb wallet, WalletDetails details,
         UInt64 userId, CancellationToken cancellationToken) {
+        if (wallet.Id != 0 && wallet.Kind != details.Kind) Fail("kind", "immutable_kind");
         details = Validate(details);
         if (details.LinkedAccountId.HasValue) {
             if (details.LinkedAccountId == wallet.Id) Fail("linkedAccountId", "invalid_account");
             var account = await OwnershipPolicy.RequireOwnedWalletAsync(database, details.LinkedAccountId.Value, userId, cancellationToken);
             if (account.Kind != "bank") Fail("linkedAccountId", "invalid_account");
             if (details.Kind == "debit") details = details with { Currency = account.Currency, Shareable = account.Shareable };
-        }
-        if (wallet.Kind != details.Kind && wallet.Id != 0) {
-            if (await database.Wallets.AnyAsync(item => item.LinkedAccountId == wallet.Id, cancellationToken)) Fail("kind", "linked_cards");
-            if (!HasOwnBalance(details.Kind) && (wallet.Value != 0 || wallet.CurrentValue != 0
-                || await database.Transactions.AnyAsync(item => item.WalletId == wallet.Id, cancellationToken))) Fail("kind", "has_balance_or_movements");
         }
         wallet.Kind = details.Kind;
         wallet.Currency = details.Currency;

@@ -108,9 +108,10 @@ Balance containers default to bank/EUR. Generating this migration does not apply
 
 Only bank/prepaid/cash own balances. Debit/credit keep zero opening/current values and are excluded
 from wealth. Account linking requires the same owner and a bank type. Commands lock affected
-wallets before linking, changing type, toggling favourite or deleting. A wallet with movements or
-linked cards cannot be deleted. A balance-owning wallet with balances or movements cannot become
-a balance-less card. Credit spending is stored separately as metadata; no billing automation or
+wallets before linking, updating metadata, toggling favourite or deleting. Opening balances and
+wallet kinds are immutable after creation, even when the wallet has no balance or movements.
+A wallet with movements or linked cards cannot be deleted.
+Credit spending is stored separately as metadata; no billing automation or
 ledger adjustment is implied. Shareable does not implement shared ownership or permissions.
 
 Startup checks financial ownership, references, balances and transfer pairs and refuses known inconsistencies. Identity account creation enforces unique normalized usernames/emails. Startup no longer imports historical accounts. Failures expose technical identifiers/counts instead of automatically changing records.

@@ -4,14 +4,14 @@ This file describes existing or intended frontend conventions. It does not repla
 
 ## Planned UI migration
 
-The migration to Tailwind CSS and shadcn/ui on Radix follows the
+The migration to Tailwind CSS and local React/HTML primitives follows the
 [frontend instructions](AGENTS.md) and the [implementation guide](../backend/docs/05-frontend.md).
 TanStack is outside the target stack. MUI conventions apply only to legacy areas.
 Historical planning, design and baseline documents are absent from this checkout: check the current
 state through route imports and shared components. Mobile Quick Add remains deferred until
 explicitly requested.
 
-Phases 1–6 are implemented: Tailwind v4 without Preflight, local shadcn/Radix primitives, `next-intl`,
+Phases 1–6 are implemented: Tailwind v4 without Preflight, local React/HTML primitives, `next-intl`,
 `next-themes`, Sonner and the `/design-system` development catalog. Legacy MUI routes live under
 `app/[locale]/(legacy)` without changing public URLs; the shared shell does not import MUI and new
 features belong to `(app)`. View models and pure adapters live in their respective features, while
@@ -21,7 +21,7 @@ using the discriminated `FeatureState<T>` type.
 The `/dashboard`, `/dashboard/wallet` and `/dashboard/transaction` routes live in `(app)` and use
 `/api/v1`; the wallet page now shows balances, selection, recent movements and distribution with
 a shared creation/editing dialog for five wallet types. CRUD and metadata persist through v1 APIs;
-other action dialogs remain empty (see the [wallet README](src/features/wallets/README.md)).
+other actions show a shared Coming soon dialog (see the [wallet README](src/features/wallets/README.md)).
 Movements use filters and server-side pagination. Fixtures remain for previews and tests. The resource client is
 `src/lib/api/client.ts`; `useApi` remains only as a callback adapter for legacy account forms.
 
@@ -42,7 +42,7 @@ During the transition:
 - New code uses semantic tokens and shared primitives rather than ad hoc visual values.
 - Next.js App Router remains the application router.
 - The frontend contains only presentation state and validation; substantial domain logic stays in the backend.
-- Tables use shadcn and simple React state until future backend integration.
+- Tables use local primitives and simple React state until future backend integration.
 - Desktop and mobile share form fields, components and state.
 - New forms use React Hook Form only for state, errors and submission; domain rules remain in the backend.
 - User-entered amounts are normalized once at the presentation boundary using the active locale.
@@ -56,6 +56,20 @@ During the transition:
 - Do not implement future features shown in the mockup unless explicitly requested.
 - Tailwind Preflight remains disabled while MUI coexists; enable and verify it only after the final legacy route.
 - The application theme initially follows the system and preserves an explicit user choice.
+
+## Shared UI primitives
+
+Shared controls are owned by this repository. Selects, checkboxes and progress indicators use
+native HTML elements; modal dialogs and mobile sheets use `dialog.showModal()` for focus containment,
+background inertness and focus restoration. Confirmation dialogs initially focus Cancel and do not
+dismiss on backdrop clicks. Calendar popups and action menus use the native Popover API in the
+browser top layer, including inside dialogs. Menus support arrows, Home/End, typing and Escape.
+Do not add Radix packages or overwrite these implementations with Radix-based generator templates.
+
+Modal content uses an explicit auto height bounded by the viewport. Only `DialogBody` scrolls;
+headers and footers remain outside that region and do not shrink. Forms between the dialog and
+its body use `min-h-0` and `overflow-hidden`. Keep disabled fieldsets inside the scrolling body,
+with footer actions disabled explicitly while a request is pending.
 
 ## Internationalization
 
@@ -112,6 +126,12 @@ handle success, error and completion through available callbacks and do not use 
 
 ## Forms
 
+- Global disabled and read-only styles live in `src/app/globals.css`: darker surfaces and muted text
+  cover native controls, shared disabled states, composite `FieldControl` wrappers and legacy MUI inputs.
+  Locked controls and labels wrapping disabled inputs do not receive pointer interactions.
+  Native `fieldset` disabling is respected. Use semantic disabled/read-only attributes instead of
+  adding feature-specific colour or opacity overrides. Custom radio/checkbox tiles should use a
+  direct `input.sr-only` child of their label followed by the visible `span`.
 - Define rules in a `FormSettings` object near the component, or export them only when genuinely shared.
 - Do not rely on TypeScript casts to convert runtime values: text inputs remain strings and must be
   converted explicitly before the request.

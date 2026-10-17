@@ -83,6 +83,10 @@ export default tseslint.config(
                     ],
                     patterns: [
                         {
+                            group: ['radix-ui', 'radix-ui/*', '@radix-ui/*'],
+                            message: 'Use the local React/HTML UI primitives.',
+                        },
+                        {
                             group: ['date-fns/*'],
                             message: 'Use Day.js as the project date library.',
                         },
@@ -127,6 +131,10 @@ export default tseslint.config(
                         },
                     ],
                     patterns: [
+                        {
+                            group: ['radix-ui', 'radix-ui/*', '@radix-ui/*'],
+                            message: 'Use the local React/HTML UI primitives.',
+                        },
                         {
                             group: ['@mui/*'],
                             message: 'Migrated slices must not import MUI.',

@@ -31,7 +31,7 @@ import {
     WalletCards,
 } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { FeatureState } from '@/types/feature-state';
 
@@ -277,14 +277,9 @@ export function WalletsPage({ initialState }: WalletsPageProps) {
                             </h2>
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-sm text-muted-foreground">{t('list.sortLabel')}</span>
-                                <Select value={sort} onValueChange={(value) => setSort(value as WalletSort)}>
-                                    <SelectTrigger className="w-36" aria-label={t('list.sortLabel')}>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="name">{t('list.sortName')}</SelectItem>
-                                        <SelectItem value="balance">{t('list.sortBalance')}</SelectItem>
-                                    </SelectContent>
+                                <Select className="w-36" aria-label={t('list.sortLabel')} value={sort} onValueChange={(value) => setSort(value as WalletSort)}>
+                                    <option value="name">{t('list.sortName')}</option>
+                                    <option value="balance">{t('list.sortBalance')}</option>
                                 </Select>
                                 <div className="flex rounded-md bg-muted p-1 gap-1">
                                     <Button

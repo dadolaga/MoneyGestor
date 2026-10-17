@@ -69,7 +69,7 @@ Maintain the application, diagnose issues and recover data.
 | Backend | Frontend | Data & operations |
 | :--- | :--- | :--- |
 | .NET 10 · ASP.NET Core | Next.js 15 · React 19 · TypeScript | MySQL 8.4 |
-| EF Core · ASP.NET Core Identity | Tailwind CSS · shadcn/ui · Radix | Docker Compose |
+| EF Core · ASP.NET Core Identity | Tailwind CSS · local React/HTML primitives | Docker Compose |
 | Serilog · NUnit | next-intl · Day.js · Vitest | Health checks · Prometheus metrics |
 
 MUI remains in legacy frontend areas during migration. MySQL is managed separately from the application containers.

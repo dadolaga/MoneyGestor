@@ -14,7 +14,7 @@
         "cardContent": "Shared semantic tokens are ready for the first migrated slice.",
         "openDialog": "Open dialog",
         "dialogTitle": "Foundation dialog",
-        "dialogDescription": "This verifies the shared Radix dialog primitive."
+        "dialogDescription": "This previews the shared native modal dialog."
     },
     "FeaturePreview": {
         "title": "Feature state workshop",

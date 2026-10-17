@@ -49,7 +49,7 @@ import {
 } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import type { FeatureState } from '@/types/feature-state';
@@ -238,7 +238,7 @@ function TransactionDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form className="flex min-h-0 flex-1 flex-col" onSubmit={submit}>
+                <form className="flex min-h-0 flex-1 flex-col overflow-hidden" onSubmit={submit}>
                     <DialogBody className="grid gap-5 px-5 py-5 sm:px-7">
                         <Controller
                             control={control}
@@ -672,17 +672,12 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                                 setPage(1);
                             }}
                         >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t('filters.allWallets')}</SelectItem>
-                                {wallets.map((wallet) => (
-                                    <SelectItem key={wallet} value={wallet}>
-                                        {wallet}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
+                            <option value="all">{t('filters.allWallets')}</option>
+                            {wallets.map((wallet) => (
+                                <option key={wallet} value={wallet}>
+                                    {wallet}
+                                </option>
+                            ))}
                         </Select>
                     </label>
                     <label className="grid gap-1.5 text-sm font-medium">
@@ -694,17 +689,12 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                                 setPage(1);
                             }}
                         >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">{t('filters.allKinds')}</SelectItem>
-                                {(['income', 'expense', 'transfer'] as const).map((kind) => (
-                                    <SelectItem key={kind} value={kind}>
-                                        {t(`filters.${kind}`)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
+                            <option value="all">{t('filters.allKinds')}</option>
+                            {(['income', 'expense', 'transfer'] as const).map((kind) => (
+                                <option key={kind} value={kind}>
+                                    {t(`filters.${kind}`)}
+                                </option>
+                            ))}
                         </Select>
                     </label>
                     <Button type="button" variant="secondary" onClick={resetFilters}>
@@ -872,22 +862,18 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span>{t('list.perPage')}</span>
                         <Select
+                            className="w-20" aria-label={t('list.perPage')}
                             value={String(pageSize)}
                             onValueChange={(value) => {
                                 setPageSize(Number(value));
                                 setPage(1);
                             }}
                         >
-                            <SelectTrigger className="w-20">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
                                 {[8, 12, 20].map((size) => (
-                                    <SelectItem key={size} value={String(size)}>
-                                        {size}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
+                                <option key={size} value={String(size)}>
+                                    {size}
+                                </option>
+                            ))}
                         </Select>
                     </div>
                     <div className="flex items-center justify-between gap-2">

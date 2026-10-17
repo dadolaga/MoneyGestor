@@ -19,14 +19,12 @@ import {
 } from '@/components/ui/dialog';
 import {
     Banknote,
-    ChartNoAxesColumnIncreasing,
     CreditCard,
     FileText,
     Landmark,
     PiggyBank,
     Plus,
     Save,
-    WalletCards,
 } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
 import { parseLocalizedAmount } from '@/lib/money';
@@ -63,19 +61,17 @@ interface WalletDialogProps {
     onSave: (wallet: Omit<WalletViewModel, 'id'>) => void;
 }
 
-const walletKinds: WalletKind[] = ['bank', 'savings', 'card', 'cash', 'investment'];
+const walletKinds = ['bank', 'savings', 'card', 'cash'] as const;
 const cardKinds: CardKind[] = ['debit', 'credit', 'prepaid'];
 const cardNetworks: CardNetwork[] = ['visa', 'mastercard', 'amex', 'other'];
 const walletColors = ['#ef2850', '#8b5cf6', '#3b82f6', '#10b981', '#84cc16', '#f59e0b', '#64748b'];
 const draftStorageKey = 'moneygestor.wallet-draft';
 
-const kindIcons: Record<WalletIcon, IconComponent> = {
+const kindIcons: Record<(typeof walletKinds)[number], IconComponent> = {
     bank: Landmark,
     savings: PiggyBank,
     card: CreditCard,
     cash: Banknote,
-    investment: ChartNoAxesColumnIncreasing,
-    wallet: WalletCards,
 };
 
 const emptyValues: WalletFormValues = {
@@ -217,7 +213,7 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                     <DialogDescription className="text-left text-base mt-1">{dialogDescription}</DialogDescription>
                 </DialogHeader>
 
-                <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit(submitHandler)}>
+                <form className="flex min-h-0 flex-1 flex-col overflow-hidden" onSubmit={handleSubmit(submitHandler)}>
                     <DialogBody className="grid gap-5 px-5 py-5 sm:px-7">
                         <Controller
                             control={control}
@@ -225,13 +221,15 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                             render={({ field }) => (
                                 <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0">
                                     <legend className="sr-only">{t('dialog.type')}</legend>
-                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5" role="radiogroup">
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup">
                                         {walletKinds.map((kind) => {
                                             const Icon = kindIcons[kind];
                                             const selected = field.value === kind;
                                             return (
                                                 <Button
                                                     key={kind}
+                                                    type="button"
+                                                    disabled={wallet !== undefined && !selected}
                                                     role="radio"
                                                     aria-checked={selected}
                                                     className={cn(
@@ -244,7 +242,6 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                                                         field.onChange(kind);
                                                         setValue('icon', kind, { shouldDirty: true });
                                                     }}
-                                                    disabled={kind == 'investment'}
                                                 >
                                                     <Icon aria-hidden="true" className="size-6" />
                                                     {t(`types.${kind}`)}
@@ -269,6 +266,8 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                                                 return (
                                                     <Button
                                                         key={cardKind}
+                                                        type="button"
+                                                        disabled={wallet !== undefined && !selected}
                                                         role="radio"
                                                         aria-checked={selected}
                                                         className={cn(
@@ -307,6 +306,7 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                                     kind="amount"
                                     control={control}
                                     name="balance"
+                                    readOnly={wallet !== undefined}
                                     label={t('dialog.balance')}
                                     description={t('dialog.balanceHelp')}
                                     placeholder="0.00"
@@ -374,6 +374,7 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                                     {walletColors.map((color) => (
                                         <Button
                                             key={color}
+                                            type="button"
                                             role="radio"
                                             aria-label={t('dialog.chooseColor', { color })}
                                             aria-checked={selectedColor === color}
@@ -397,6 +398,7 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                                         kind="amount"
                                         control={control}
                                         name="balance"
+                                        readOnly={wallet !== undefined && selectedCardKind === 'prepaid'}
                                         label={t(
                                             selectedCardKind === 'credit'
                                                 ? 'dialog.creditBalance'
@@ -531,11 +533,12 @@ export function WalletDialog({ open, wallet, availableWallets = [], onOpenChange
                     </DialogBody>
 
                     <DialogFooter className="border-t border-border bg-background px-5 py-4 sm:justify-start sm:px-7">
-                        <Button className="sm:min-w-36" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button type="button" className="sm:min-w-36" variant="outline" onClick={() => onOpenChange(false)}>
                             {tCommon('actions.cancel')}
                         </Button>
                         {wallet === undefined && (
                             <Button
+                                type="button"
                                 className="sm:ml-auto sm:min-w-40"
                                 variant="secondary"
                                 onClick={handleSubmit(saveDraftHandler)}

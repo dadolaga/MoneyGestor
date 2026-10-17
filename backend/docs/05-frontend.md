@@ -22,7 +22,7 @@
 
 ## 5.1 Stack and responsibilities
 
-The frontend uses Next.js 15 App Router, React 19 and TypeScript. Its current UI foundations include Tailwind CSS v4, repository-owned shadcn/ui components built on Radix, next-intl, next-themes and Sonner. MUI and other older dependencies remain while their consumers are migrated. TanStack is excluded from the target stack.
+The frontend uses Next.js 15 App Router, React 19 and TypeScript. Its current UI foundations include Tailwind CSS v4, repository-owned React/HTML UI primitives, next-intl, next-themes and Sonner. MUI and other older dependencies remain while their consumers are migrated. TanStack is excluded from the target stack.
 
 The browser manages presentation, form state, navigation and HTTP calls. The backend remains responsible for ownership, monetary validation, transfer pairing and authoritative balances.
 

@@ -14,7 +14,7 @@
         "cardContent": "I token semantici condivisi sono pronti per la prima slice migrata.",
         "openDialog": "Apri dialog",
         "dialogTitle": "Dialog delle fondamenta",
-        "dialogDescription": "Verifica la primitiva condivisa Radix per i dialog."
+        "dialogDescription": "Anteprima del dialogo modale nativo condiviso."
     },
     "FeaturePreview": {
         "title": "Laboratorio stati delle feature",

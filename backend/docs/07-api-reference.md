@@ -132,7 +132,10 @@ Wallet responses contain `id`, `name`, `initialValue`, `currentValue`, `favorite
 POST and PUT accept optional `details`. When present this is a complete replacement of the
 metadata: nullable fields omitted from that object are cleared. Omitting `details` preserves
 existing metadata on PUT and creates a generic bank/EUR balance container on POST for older clients.
-Opening balances remain immutable on PUT; this endpoint does not make ledger adjustments.
+Opening balances remain immutable on PUT; `initialValue` is only accepted on POST and this endpoint
+does not make ledger adjustments. The wallet kind is also immutable after creation: PUT may repeat
+the existing `details.kind`, but a different kind returns 400 `validation_failed` with field `kind`
+and reason `immutable_kind`, regardless of balances, movements or linked cards.
 
 Example prepaid creation (names and values are synthetic):
 
@@ -164,8 +167,8 @@ Debit and credit require a different owned bank account. Debit inherits its curr
 shareable flag from that account. Prepaid has its own balance and no linked account.
 Credit requires nonnegative monetary `creditLimit` and `currentSpending`, and statement/payment
 days from 1 to 31. Sharing is a stored preference, not an authorization grant or invitation.
-Fields inapplicable to a type are rejected. Type changes cannot orphan linked cards or convert
-a wallet with opening/current balance or movements to a balance-less card.
+Fields inapplicable to a type are rejected. Wallet kinds are selected on creation and cannot be
+changed by an update.
 
 GET responses additionally expose `details`, `hasOwnBalance` and `includedInTotal`.
 Bank/prepaid/cash own their balances and count in wealth; debit/credit do not and retain zero

@@ -14,8 +14,9 @@
             "failed": "Impossibile salvare il portafoglio. Riprova."
         },
         "namePlaceholder": "Nome del portafoglio",
-        "typeUnavailable": "Il tipo non è disponibile per questo portafoglio. Selezionalo per completare i dati.",
-        "linkedCardsTypeLock": "Questo conto ha carte collegate: il tipo resta Conto corrente.",
+        "typeUnavailable": "Il tipo non è disponibile per questo portafoglio. Ricarica l’elenco dei portafogli.",
+        "typeLocked": "La tipologia del portafoglio non può essere modificata dopo la creazione.",
+        "initialBalanceLocked": "Il saldo iniziale non può essere modificato dopo la creazione.",
         "description": "Aggiungi un conto, una carta o un portafoglio da monitorare.",
         "kind": "Tipo di portafoglio",
         "kinds": {
@@ -80,8 +81,7 @@
             "network": "Seleziona un circuito valido.",
             "serverAmount": "Inserisci un importo non negativo con al massimo due decimali, entro i limiti consentiti.",
             "incompatibleFields": "Alcuni dati non sono compatibili con il tipo di portafoglio selezionato.",
-            "linkedCards": "Il conto ha carte collegate: il tipo deve restare Conto corrente.",
-            "balanceOrMovements": "Non puoi trasformare questo portafoglio in una carta di debito o di credito: ha un saldo iniziale, un saldo attuale o dei movimenti registrati.",
+            "immutableKind": "La tipologia del portafoglio non può essere modificata dopo la creazione.",
             "required": "Questo campo è obbligatorio.",
             "amount": "Inserisci un importo valido con al massimo due decimali.",
             "nonNegative": "Inserisci un importo maggiore o uguale a zero.",
@@ -103,6 +103,7 @@
             "transfer": "Trasferisci",
             "movement": "Aggiungi movimento",
             "viewAll": "Vedi tutti",
+            "infoFor": "Informazioni {name}",
             "editFor": "Modifica {name}",
             "deleteFor": "Elimina {name}",
             "delete": "Elimina",
@@ -198,6 +199,7 @@
             "details": "Dettagli",
             "edit": "Modifica",
             "delete": "Elimina",
+            "info": "Informazioni",
             "more": "Altre azioni per {name}",
             "gridView": "Vista a griglia",
             "listView": "Vista a lista"

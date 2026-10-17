@@ -50,7 +50,6 @@ interface WalletFormValues {
 interface WalletEditorDialogProps {
     accounts: NewWalletAccount[];
     wallet?: Partial<NewWalletDraft> & { id: number };
-    hasLinkedCards?: boolean;
     pending?: boolean;
     onClose: () => void;
     onSave: (wallet: NewWalletDraft) => Promise<void>;
@@ -104,14 +103,12 @@ const serverReasons: Record<string, string> = {
     not_applicable: 'validation.incompatibleFields',
     inapplicable_card_fields: 'validation.incompatibleFields',
     inapplicable_credit_fields: 'validation.incompatibleFields',
-    linked_cards: 'validation.linkedCards',
-    has_balance_or_movements: 'validation.balanceOrMovements',
+    immutable_kind: 'validation.immutableKind',
 };
 
 export function WalletEditorDialog({
     accounts,
     wallet,
-    hasLinkedCards = false,
     pending = false,
     onClose,
     onSave,
@@ -122,7 +119,6 @@ export function WalletEditorDialog({
     const format = useFormatter();
     const id = useId();
     const isEditing = wallet !== undefined;
-    const isPersisted = wallet !== undefined && wallet.id > 0;
     const amountText = (value: number | undefined, fallback = '') =>
         value === undefined ? fallback : format.number(value, { useGrouping: false, maximumFractionDigits: 2 });
     const {
@@ -154,14 +150,13 @@ export function WalletEditorDialog({
         },
     });
     const kind = useWatch({ control, name: 'kind' });
-    const linkedAccountId = useWatch({ control, name: 'linkedAccountId' });
     const notes = useWatch({ control, name: 'notes' }) ?? '';
     const isCard = kind === 'prepaid' || kind === 'debit' || kind === 'credit';
     const isCredit = kind === 'credit';
     const needsAccount = kind === 'debit' || isCredit;
     const hasBalance = kind !== '' && hasOwnBalance(kind);
-    const linkedAccount = needsAccount ? accounts.find((account) => String(account.id) === linkedAccountId) : undefined;
     const currencyDescription = kind === 'debit' ? t('inheritedCurrency') : undefined;
+    const initialBalanceDescription = isEditing ? t('initialBalanceLocked') : undefined;
     const accountDescription = accounts.length === 0 ? t('noAccounts') : undefined;
     const title = t(isEditing ? 'editTitle' : 'title');
     const description = t(isEditing ? 'editDescription' : 'description');
@@ -216,6 +211,9 @@ export function WalletEditorDialog({
             setError('kind', { message: t('validation.required') });
             return;
         }
+        const linkedAccount = needsAccount
+            ? accounts.find((account) => String(account.id) === values.linkedAccountId)
+            : undefined;
         if (needsAccount && linkedAccount === undefined) {
             setError('linkedAccountId', { message: t('validation.account') });
             return;
@@ -286,9 +284,9 @@ export function WalletEditorDialog({
                         <DialogDescription className="mt-1 mb-0">{description}</DialogDescription>
                     </div>
                 </DialogHeader>
-                <form className="flex min-h-0 flex-1 flex-col" noValidate onSubmit={handleSubmit(submitHandler)}>
-                    <fieldset disabled={pending} className="m-0 flex min-h-0 flex-1 flex-col border-0 p-0">
-                        <DialogBody className="grid gap-5 px-5 py-5 sm:px-6">
+                <form className="flex min-h-0 flex-1 flex-col overflow-hidden" noValidate onSubmit={handleSubmit(submitHandler)}>
+                    <DialogBody className="px-5 py-5 sm:px-6">
+                        <fieldset disabled={pending} className="m-0 grid min-w-0 gap-5 border-0 p-0">
                             <fieldset className="m-0 min-w-0 border-0 p-0">
                                 <legend className="sr-only">{t('kind')}</legend>
                                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -300,14 +298,14 @@ export function WalletEditorDialog({
                                                     className="peer sr-only"
                                                     type="radio"
                                                     value={walletKind}
-                                                    disabled={!!hasLinkedCards && walletKind !== 'bank'}
+                                                    disabled={!!isEditing && walletKind !== wallet.kind}
                                                     aria-describedby={kindErrorId}
                                                     {...register('kind', {
                                                         required: t('validation.required'),
                                                         onChange: () => clearErrors(),
                                                     })}
                                                 />
-                                                <span className="flex h-full min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-solid border-border bg-secondary/20 px-2 py-3 text-center transition-colors peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-disabled:cursor-not-allowed peer-disabled:opacity-50">
+                                                <span className="flex h-full min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-solid border-border bg-secondary/20 px-2 py-3 text-center transition-colors peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
                                                     <Icon aria-hidden="true" className="size-6" />
                                                     <span className="text-sm font-medium">
                                                         {t(`kinds.${walletKind}`)}
@@ -336,9 +334,9 @@ export function WalletEditorDialog({
                                 {wallet !== undefined && wallet.kind === undefined && (
                                     <p className="mt-2 mb-0 text-sm text-muted-foreground">{t('typeUnavailable')}</p>
                                 )}
-                                {!!hasLinkedCards && (
+                                {!!isEditing && (
                                     <p className="mt-2 mb-0 text-sm text-muted-foreground">
-                                        {t('linkedCardsTypeLock')}
+                                        {t('typeLocked')}
                                     </p>
                                 )}
                             </fieldset>
@@ -407,8 +405,9 @@ export function WalletEditorDialog({
                                         id={`${id}-balance`}
                                         control={control}
                                         name="initialBalance"
-                                        readOnly={isPersisted}
+                                        readOnly={isEditing}
                                         label={requiredLabel(t('fields.initialBalance'))}
+                                        description={initialBalanceDescription}
                                         inputMode="decimal"
                                         startAdornment="€"
                                         placeholder={t('amountPlaceholder')}
@@ -587,17 +586,17 @@ export function WalletEditorDialog({
                                     {errors.root.server.message}
                                 </p>
                             )}
-                        </DialogBody>
-                        <DialogFooter className="border-t border-border px-5 py-4 sm:px-6">
-                            <Button type="button" variant="ghost" className="sm:mr-auto" onClick={onClose}>
-                                {t('cancel')}
-                            </Button>
-                            <Button type="submit" disabled={!!needsAccount && accounts.length === 0}>
-                                <SubmitIcon aria-hidden="true" className="size-4" />
-                                {actionLabel}
-                            </Button>
-                        </DialogFooter>
-                    </fieldset>
+                        </fieldset>
+                    </DialogBody>
+                    <DialogFooter className="border-t border-border px-5 py-4 sm:px-6">
+                        <Button type="button" variant="ghost" className="sm:mr-auto" disabled={pending} onClick={onClose}>
+                            {t('cancel')}
+                        </Button>
+                        <Button type="submit" disabled={pending || (!!needsAccount && accounts.length === 0)}>
+                            <SubmitIcon aria-hidden="true" className="size-4" />
+                            {actionLabel}
+                        </Button>
+                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>

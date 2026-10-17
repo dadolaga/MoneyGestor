@@ -42,7 +42,7 @@ Read the [README](README.md), [conventions](README_DEV.md) and
 
 - `src/app/[locale]`: Next.js App Router routes and layouts; keep pages thin.
 - `src/features`: components, view models and adapters for the affected feature.
-- `src/components/ui`: local shadcn/ui and Radix primitives with shared variants.
+- `src/components/ui`: local React/HTML UI primitives with shared Tailwind variants.
 - `src/components/shared`: form fields, states, dialogs and common components.
 - `src/components/app/app-shell.tsx`: dashboard shell shared by desktop and mobile.
 - `src/lib/api/client.ts`: Promise-based client for `/api/v1` resources.
@@ -55,7 +55,7 @@ component. Change the real flow involved in the request.
 
 ## Implementing UI and state
 
-The current stack is Next.js 15, React 19, TypeScript, Tailwind v4, shadcn/ui on Radix and next-intl.
+The current stack is Next.js 15, React 19, TypeScript, Tailwind v4, local React/HTML UI primitives and next-intl.
 MUI remains temporarily in legacy areas. Do not add it to migrated slices or introduce TanStack.
 Routing remains the responsibility of Next.js App Router; use the locale-aware navigation wrapper
 in multilingual features.
@@ -67,7 +67,8 @@ Tailwind Preflight stays disabled while MUI coexists.
 
 Migrate complete vertical slices. Desktop and mobile share logic, fields and state; adapt the layout
 without duplicating the feature. Login and registration stay outside the dashboard shell.
-Preserve semantics, focus and the basic behavior supplied by Radix primitives.
+Use native controls and preserve semantics, keyboard navigation and focus management in shared primitives.
+Do not introduce Radix dependencies or regenerate shared primitives from Radix-based templates.
 
 The historical dashboard reference is `docs/dashboard_mockup.png` (or its copy under
 `docs/all_modernization/`, when present). It is unavailable in this checkout: use existing tokens

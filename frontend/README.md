@@ -1,9 +1,9 @@
 # MoneyGestor frontend
 
 MoneyGestor web client built with Next.js 15, React 19 and TypeScript. Legacy routes still use Material UI;
-foundations and new components use Tailwind CSS, shadcn/ui on Radix and next-intl.
+foundations and new components use Tailwind CSS, local React/HTML primitives and next-intl.
 
-The frontend is progressively migrating to Tailwind CSS and shadcn/ui with Radix primitives. Phases 1–6
+The frontend is progressively migrating to Tailwind CSS with local React/HTML primitives. Phases 1–6
 are implemented: foundations, shell, authentication and wallets already use the new stack. TanStack
 is excluded; MUI remains only in legacy slices that have not been migrated. Light/dark themes,
 configurable brand red and shared components follow the
@@ -93,7 +93,7 @@ The Flowiy forms retain their field order and name/surname row, with leading ico
 placeholders and individual password visibility buttons. Registration validates the existing account
 password requirements and matching confirmation. Login reports invalid credentials, temporary
 lockout and rate limits; both forms display connection failures and finish their loading state.
-Password recovery and confirmation-email resend open Radix dialogs within login without navigating
+Password recovery and confirmation-email resend open native modal dialogs within login without navigating
 or clearing the login form. Each dialog validates the email and displays loading, generic acceptance
 or request errors using the existing account API. Old direct URLs redirect to `/login?recovery=forgot`
 or `/login?recovery=resend`, opening the same dialogs. Token-based password reset and email
@@ -132,7 +132,7 @@ It reads existing v1 resources. The shared creation/editing dialog follows the a
 creation, edits and deletion persist through the v1 APIs, including account/card metadata.
 Cards support selection and deselection; the unselected view shows the table with edit/delete icons,
 while the selected view shows wallet details. Pending states, server validation, deployment migration
-and the remaining empty action dialogs are documented in the
+and the Coming soon dialog for deferred actions are documented in the
 [wallet README](src/features/wallets/README.md).
 
 - `src/app`: routes and page-specific components.

@@ -85,7 +85,7 @@ flowchart LR
 | `backend/docs` | Application guides and technical reference |
 | `docs/all_modernization` | Earlier design, migration, audit and operational records |
 
-The current backend targets .NET 10 and EF Core 10. The frontend uses Next.js 15, React 19 and TypeScript, with Tailwind CSS, local shadcn/ui components, Radix and next-intl. MUI remains in legacy areas during migration.
+The current backend targets .NET 10 and EF Core 10. The frontend uses Next.js 15, React 19 and TypeScript, with Tailwind CSS, local React/HTML UI primitives and next-intl. MUI remains in legacy areas during migration.
 
 ## 1.5 Scope and limitations
 

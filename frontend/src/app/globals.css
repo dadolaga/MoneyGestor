@@ -57,6 +57,7 @@
     --destructive-foreground: oklch(0.99 0 0);
     --border: oklch(0.88 0.015 250);
     --input: oklch(0.88 0.015 250);
+    --disabled-background: color-mix(in oklch, var(--border) 50%, var(--popover));
     --ring: oklch(0.57 0.22 22);
     --income: oklch(0.6 0.17 145);
     --expense: oklch(0.58 0.23 28);
@@ -95,6 +96,7 @@
     --destructive-foreground: oklch(0.99 0 0);
     --border: oklch(0.34 0.025 255);
     --input: oklch(0.34 0.025 255);
+    --disabled-background: var(--background);
     --ring: oklch(0.69 0.2 22);
     --income: oklch(0.68 0.17 145);
     --expense: oklch(0.66 0.23 28);
@@ -112,3 +114,36 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     overflow-x: hidden;
 }
+
+/* Keep locked controls consistent, including fieldsets, composite fields and legacy MUI inputs. */
+:root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
+:root :is(input, textarea)[readonly],
+:root .MuiInputBase-root:is(.Mui-disabled, .Mui-readOnly),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:disabled), :has([readonly])),
+:root label:has(> input.sr-only:disabled) > span {
+    background: var(--disabled-background);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+    opacity: 1;
+    pointer-events: none;
+}
+
+:root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:disabled)),
+:root label:has(> input:disabled) {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* The wrapper owns the surface; its input stays transparent and readable. */
+:root [data-slot='field-control'] :is(input, button, select, textarea):is(:disabled, [readonly], [aria-disabled='true']) {
+    background: transparent;
+    color: inherit;
+}
+
+:root :is(input, textarea):is(:disabled, [readonly]) {
+    -webkit-text-fill-color: var(--muted-foreground);
+}
+/* Native dialogs stay hidden even when their layout uses flex or grid utilities. */
+dialog[data-slot='modal']:not([open]) { display: none; }
+html:has(dialog[data-slot='modal'][open]) { overflow: hidden; }
