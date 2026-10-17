@@ -1,7 +1,7 @@
 import { toDashboardViewModel } from '@/features/dashboard/adapter';
 import { toTransactionViewModels } from '@/features/transactions/adapter';
-import { toWalletViewModels } from '@/features/wallets/adapter';
-import type { WalletViewModel } from '@/features/wallets/model';
+import { toWalletPreviewModels } from '@/features/wallets/wallet-adapter';
+import type { WalletPreviewModel } from '@/features/wallets/wallet-model';
 import type { DashboardOutput, Transaction, Wallet } from '@/models/backend';
 import type { FeatureState, FeatureStatus } from '@/types/feature-state';
 
@@ -165,11 +165,7 @@ const transactionDtos: Transaction[] = [
 ];
 
 export const dashboardStateFixtures = createStateFixtures(toDashboardViewModel(dashboardDto));
-export const demoWallets: WalletViewModel[] = toWalletViewModels(walletDtos).map((wallet, index) => ({
-    ...wallet,
-    kind: (['bank', 'card', 'savings'] as const)[index],
-    monthlyChange: [1.4, -2.1, 3.6][index],
-}));
+export const demoWallets: WalletPreviewModel[] = toWalletPreviewModels(walletDtos);
 
 demoWallets.push(
     {
@@ -178,8 +174,6 @@ demoWallets.push(
         currentValue: 320,
         isFavorite: false,
         color: '#2fbf71',
-        kind: 'cash',
-        monthlyChange: 0,
     },
     {
         id: 15,
@@ -187,8 +181,6 @@ demoWallets.push(
         currentValue: 5770.2,
         isFavorite: false,
         color: '#f2b935',
-        kind: 'investment',
-        monthlyChange: 5.2,
     },
 );
 

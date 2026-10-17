@@ -24,12 +24,11 @@ import { ApiProblemError } from '@/lib/api/client';
 import { parseLocalizedAmount } from '@/lib/money';
 import { cn } from '@/lib/utils';
 
-import type { CardNetwork } from './model';
-import { hasOwnBalance, newWalletIcons, newWalletKinds } from './new-wallet-model';
-import type { NewWalletAccount, NewWalletDraft, NewWalletKind } from './new-wallet-model';
+import { hasOwnBalance, walletIcons, walletKinds } from './wallet-model';
+import type { CardNetwork, WalletAccount, WalletDraft, WalletKind } from './wallet-model';
 
 interface WalletFormValues {
-    kind: NewWalletKind | '';
+    kind: WalletKind | '';
     name: string;
     institution: string;
     color: string;
@@ -48,11 +47,11 @@ interface WalletFormValues {
 }
 
 interface WalletEditorDialogProps {
-    accounts: NewWalletAccount[];
-    wallet?: Partial<NewWalletDraft> & { id: number };
+    accounts: WalletAccount[];
+    wallet?: Partial<WalletDraft> & { id: number };
     pending?: boolean;
     onClose: () => void;
-    onSave: (wallet: NewWalletDraft) => Promise<void>;
+    onSave: (wallet: WalletDraft) => Promise<void>;
 }
 
 const colors = [
@@ -114,7 +113,6 @@ export function WalletEditorDialog({
     onSave,
 }: WalletEditorDialogProps) {
     const t = useTranslations('CreateWallet');
-    const tWallets = useTranslations('Wallets');
     const locale = useLocale();
     const format = useFormatter();
     const id = useId();
@@ -219,7 +217,7 @@ export function WalletEditorDialog({
             return;
         }
 
-        const wallet: NewWalletDraft = {
+        const wallet: WalletDraft = {
             kind: values.kind,
             name: values.name.trim(),
             color: values.color,
@@ -290,8 +288,8 @@ export function WalletEditorDialog({
                             <fieldset className="m-0 min-w-0 border-0 p-0">
                                 <legend className="sr-only">{t('kind')}</legend>
                                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                                    {newWalletKinds.map((walletKind) => {
-                                        const Icon = newWalletIcons[walletKind];
+                                    {walletKinds.map((walletKind) => {
+                                        const Icon = walletIcons[walletKind];
                                         return (
                                             <label key={walletKind} className="relative cursor-pointer">
                                                 <input
@@ -455,7 +453,7 @@ export function WalletEditorDialog({
                                             label={t('fields.network')}
                                             options={networks.map((network) => ({
                                                 value: network,
-                                                label: tWallets(`cardNetworks.${network}`),
+                                                label: t(`cardNetworks.${network}`),
                                             }))}
                                         />
                                         <InputField

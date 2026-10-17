@@ -1,12 +1,12 @@
 # Portafogli
 
-The live route uses [wallets-dashboard.tsx](wallets-dashboard.tsx), the shared
-[wallet-editor-dialog.tsx](wallet-editor-dialog.tsx) and [wallet-api-adapter.ts](wallet-api-adapter.ts). Styles use
+The live route uses [WalletsDashboard.tsx](WalletsDashboard.tsx), the shared
+[WalletEditorDialog.tsx](WalletEditorDialog.tsx) and [wallet-adapter.ts](wallet-adapter.ts). Styles use
 Tailwind and existing semantic tokens. Header and sidebar are unchanged.
 
 ## Component structure
 
-`wallets-dashboard.tsx` owns API loading, selection, mutations and dialog state, and composes:
+`WalletsDashboard.tsx` owns API loading, selection, mutations and dialog state, and composes:
 
 - [WalletsSummary.tsx](WalletsSummary.tsx): balance, wallet count and monthly totals.
 - [WalletCardsList.tsx](WalletCardsList.tsx): selectable wallet cards.
@@ -17,9 +17,21 @@ Tailwind and existing semantic tokens. Header and sidebar are unchanged.
 
 Small section-specific components stay in their section's file. Shared wallet marks/status live in
 [WalletDisplay.tsx](WalletDisplay.tsx), localized amounts and type labels in
-[useWalletFormatting.ts](useWalletFormatting.ts), and dashboard types/colour conversion in
-[wallet-dashboard-model.ts](wallet-dashboard-model.ts). Presentation components receive data and callbacks; they do not
+[useWalletFormatting.ts](useWalletFormatting.ts), and wallet, editor and preview models in
+[wallet-model.ts](wallet-model.ts). Presentation components receive data and callbacks; they do not
 fetch data or duplicate the page's state.
+
+Component files use PascalCase, hooks use the `use` prefix, and supporting modules use `wallet-*.ts`.
+The editor uses the same `WalletDraft`, wallet kinds and icons for creation and editing.
+`wallet-adapter.ts` contains API/form conversions and the separate DTO conversion for preview fixtures.
+
+## Design-system preview
+
+[WalletsPreview.tsx](WalletsPreview.tsx) is used by `/design-system` to display fixture data and feature states
+without API calls. Its `WalletPreviewModel` contains only the fields displayed by that preview. The obsolete
+standalone page, local-only dialog and their chart have been removed; the live route has one shared editor.
+The existing DTO adapter test remains in [wallet-adapter.test.ts](wallet-adapter.test.ts); tests for the removed
+page and dialog have been removed with those components.
 
 ## Persistent API integration
 
@@ -109,7 +121,3 @@ pending migration under bootstrapMode Disabled. Do not bypass that check.
 - Real bank connections, sharing permissions/invitations and automated credit billing are not implemented.
 - Exact filled/coloured reference artwork and category-specific movement icons are unavailable. Existing Iconify bank,
   card, cash, pencil, trash and directional icons are reused.
-- The older wallets-page.tsx and wallet-dialog.tsx remain isolated previews, not the live route. The preview dialog
-  offers bank, savings, card and cash; investments are no longer selectable. Type, card subtype and colour buttons only
-  change form values. Saving happens through the explicit submit action; Cancel and Save draft do not submit the wallet.
-  Wallet/card types and opening balances are also locked while editing in this preview.

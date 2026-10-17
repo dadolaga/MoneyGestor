@@ -10,7 +10,7 @@ import type { ApiDashboard } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 import { useWalletFormatting } from './useWalletFormatting';
-import type { LoadState } from './wallet-dashboard-model';
+import type { LoadState } from './wallet-model';
 
 interface WalletsSummaryProps {
     total: number;

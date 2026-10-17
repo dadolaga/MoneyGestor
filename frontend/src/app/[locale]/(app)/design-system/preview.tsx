@@ -26,7 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardPreview } from '@/features/dashboard/dashboard-preview';
 import { TransactionsPreview } from '@/features/transactions/transactions-preview';
-import { WalletsPreview } from '@/features/wallets/wallets-preview';
+import { WalletsPreview } from '@/features/wallets/WalletsPreview';
 import {
     dashboardStateFixtures,
     fixtureForStatus,

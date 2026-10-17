@@ -8,7 +8,7 @@ import { ArrowLeftRight, Plus } from '@/components/ui/icons';
 import type { ApiTransaction } from '@/lib/api/client';
 
 import { useWalletFormatting } from './useWalletFormatting';
-import type { DashboardWallet, LoadState, WalletDetailAction } from './wallet-dashboard-model';
+import type { DashboardWallet, LoadState, WalletDetailAction } from './wallet-model';
 import { WalletMark } from './WalletDisplay';
 import { WalletMovements } from './WalletMovements';
 

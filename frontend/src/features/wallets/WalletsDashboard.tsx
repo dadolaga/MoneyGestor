@@ -15,14 +15,13 @@ import { apiClient, ApiProblemError } from '@/lib/api/client';
 import type { ApiDashboard, ApiTransaction, ApiWallet } from '@/lib/api/client';
 import '@/styles/wallets.css';
 
-import type { NewWalletDraft } from './new-wallet-model';
-import { walletDraftFromApi, walletRequestFromDraft } from './wallet-api-adapter';
-import { walletColor } from './wallet-dashboard-model';
-import type { DashboardWallet, LoadState, WalletDetailAction } from './wallet-dashboard-model';
-import { WalletEditorDialog } from './wallet-editor-dialog';
+import { walletDraftFromApi, walletRequestFromDraft } from './wallet-adapter';
+import { walletColor } from './wallet-model';
+import type { DashboardWallet, LoadState, WalletDetailAction, WalletDraft } from './wallet-model';
 import { WalletCardsList } from './WalletCardsList';
 import { WalletDetails } from './WalletDetails';
 import { WalletDistributions } from './WalletDistributions';
+import { WalletEditorDialog } from './WalletEditorDialog';
 import { WalletsSummary } from './WalletsSummary';
 import { WalletsTable } from './WalletsTable';
 
@@ -145,7 +144,7 @@ export function WalletsDashboard() {
         }
     }
 
-    async function saveWalletHandler(draft: NewWalletDraft) {
+    async function saveWalletHandler(draft: WalletDraft) {
         if (pending) return;
         const editingWallet = dialog?.action === 'edit' ? dialog.wallet : undefined;
         const body = walletRequestFromDraft(draft);

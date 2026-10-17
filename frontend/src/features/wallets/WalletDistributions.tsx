@@ -10,8 +10,8 @@ import { Banknote, CreditCard, Landmark } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 
 import { useWalletFormatting } from './useWalletFormatting';
-import { walletColor } from './wallet-dashboard-model';
-import type { DashboardWallet } from './wallet-dashboard-model';
+import { walletColor } from './wallet-model';
+import type { DashboardWallet } from './wallet-model';
 
 interface WalletDistributionsProps {
     wallets: DashboardWallet[];

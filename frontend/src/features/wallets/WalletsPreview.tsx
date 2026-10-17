@@ -1,13 +1,12 @@
-
 import { FeatureStateBoundary } from '@/components/shared/feature-state';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star } from '@/components/ui/icons';
 import type { FeatureState } from '@/types/feature-state';
 
-import type { WalletViewModel } from './model';
+import type { WalletPreviewModel } from './wallet-model';
 
 interface WalletsPreviewProps {
-    state: FeatureState<WalletViewModel[]>;
+    state: FeatureState<WalletPreviewModel[]>;
     labels: {
         balance: string;
         favorite: string;

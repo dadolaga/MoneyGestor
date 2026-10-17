@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 import { useWalletFormatting } from './useWalletFormatting';
-import type { DashboardWallet } from './wallet-dashboard-model';
+import type { DashboardWallet } from './wallet-model';
 import { WalletMark, WalletStatus } from './WalletDisplay';
 
 interface WalletCardsListProps {

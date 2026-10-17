@@ -9,8 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 
 import { useWalletFormatting } from './useWalletFormatting';
-import { walletColor } from './wallet-dashboard-model';
-import type { DashboardWallet } from './wallet-dashboard-model';
+import { walletColor } from './wallet-model';
+import type { DashboardWallet } from './wallet-model';
 import { WalletStatus } from './WalletDisplay';
 
 interface WalletTableActions {

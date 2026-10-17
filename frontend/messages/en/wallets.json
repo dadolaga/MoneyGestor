@@ -51,6 +51,12 @@
             "notes": "Description / notes (optional)",
             "shareable": "Shareable"
         },
+        "cardNetworks": {
+            "visa": "Visa",
+            "mastercard": "Mastercard",
+            "amex": "American Express",
+            "other": "Other"
+        },
         "namePlaceholders": {
             "bank": "E.g. Main account",
             "prepaid": "E.g. PostePay",
@@ -189,162 +195,6 @@
             "summaryError": "Monthly totals are unavailable.",
             "refreshError": "The operation completed, but the list could not be refreshed. Reload the wallets.",
             "signInAgain": "Your session has expired. Please sign in again."
-        }
-    },
-    "Wallets": {
-        "title": "Your wallets",
-        "description": "Keep accounts, cards, savings and investments in one place.",
-        "actions": {
-            "add": "Add wallet",
-            "details": "Details",
-            "edit": "Edit",
-            "delete": "Delete",
-            "info": "information",
-            "more": "More actions for {name}",
-            "gridView": "Grid view",
-            "listView": "List view"
-        },
-        "summary": {
-            "total": "Total wealth",
-            "available": "Available funds",
-            "savings": "Savings",
-            "investments": "Investments",
-            "comparedToLastMonth": "from last month"
-        },
-        "list": {
-            "title": "My wallets",
-            "sortLabel": "Sort by",
-            "sortName": "Name",
-            "sortBalance": "Balance",
-            "currentBalance": "Current balance",
-            "favorite": "Favourite wallet"
-        },
-        "chart": {
-            "title": "Wealth distribution",
-            "total": "Total",
-            "description": "Distribution of the current balance across all wallets."
-        },
-        "dialog": {
-            "createTitle": "New wallet",
-            "createDescription": "Add an account, a card or a wallet to keep track of.",
-            "editTitle": "Edit wallet",
-            "editDescription": "Changes remain in this browser session and are not sent to the backend.",
-            "cardTitles": {
-                "create": {
-                    "debit": "New debit card",
-                    "credit": "New credit card",
-                    "prepaid": "New prepaid card"
-                },
-                "edit": {
-                    "debit": "Edit debit card",
-                    "credit": "Edit credit card",
-                    "prepaid": "Edit prepaid card"
-                }
-            },
-            "cardDescriptions": {
-                "debit": "Connect a card that draws funds directly from one of your accounts.",
-                "credit": "Track a card whose balance is collected from a linked account on a set day.",
-                "prepaid": "Manage a card with its own balance and optional top-ups."
-            },
-            "name": "Wallet name",
-            "namePlaceholder": "Main account",
-            "nameHelp": "Enter a name that makes this wallet easy to identify.",
-            "cardName": "Card name",
-            "cardNamePlaceholder": "Everyday card",
-            "cardNameHelp": "Enter a name that makes this card easy to identify.",
-            "balance": "Opening balance",
-            "balanceHelp": "Enter the wallet's opening balance.",
-            "institution": "Bank / Institution",
-            "institutionPlaceholder": "E.g. Barclays, Revolut, N26...",
-            "institutionHelp": "The name of the bank or financial institution.",
-            "currency": "Currency",
-            "currencyHelp": "Choose the wallet currency.",
-            "currencyEur": "EUR (€)",
-            "type": "Wallet type",
-            "typePlaceholder": "Choose a type",
-            "cardType": "Card type",
-            "cardNetwork": "Card network",
-            "cardNetworkHelp": "Choose the payment network shown on the card.",
-            "lastFour": "Last 4 digits (optional)",
-            "lastFourHelp": "Use only the final four digits; never enter the full card number.",
-            "invalidLastFour": "Enter exactly four digits.",
-            "linkedAccount": "Linked account",
-            "linkedAccountHelp": "This is the account from which card charges are collected.",
-            "linkedAccountPlaceholder": "Choose an account",
-            "topUpAccount": "Top-up account (optional)",
-            "topUpAccountHelp": "Choose the account used to add funds to this prepaid card.",
-            "noLinkedAccounts": "Add an account wallet before linking this card.",
-            "paymentDay": "Collection day",
-            "paymentDayHelp": "Day of the month when the credit card balance is collected from the linked account.",
-            "invalidDay": "Enter a day from 1 to 31.",
-            "creditBalance": "Current amount due",
-            "creditBalanceHelp": "Enter the amount currently due on the card.",
-            "prepaidBalance": "Opening balance",
-            "prepaidBalanceHelp": "Enter the amount currently available on the prepaid card.",
-            "lowBalanceThreshold": "Low-balance threshold (optional)",
-            "lowBalanceThresholdHelp": "Receive a reminder when the prepaid balance drops below this amount.",
-            "allowLinkedTopUps": "Allow top-ups from the linked account",
-            "allowLinkedTopUpsHelp": "Use the selected account to add funds to this card.",
-            "suggestAutomaticTopUp": "Suggest a top-up when the balance is low",
-            "suggestAutomaticTopUpHelp": "Show a reminder when the balance falls below the threshold.",
-            "color": "Icon colour",
-            "colorHelp": "Choose a colour to identify this wallet.",
-            "chooseColor": "Choose colour {color}",
-            "icon": "Icon",
-            "iconHelp": "Choose an icon for this wallet.",
-            "description": "Description (optional)",
-            "descriptionPlaceholder": "E.g. Main account for everyday expenses...",
-            "descriptionHelp": "A short description of the wallet.",
-            "showOnDashboard": "Show on dashboard",
-            "showOnDashboardHelp": "Make this wallet visible on the dashboard.",
-            "favorite": "Set as primary",
-            "favoriteHelp": "Use this as your primary wallet.",
-            "info": "You can edit this wallet at any time.",
-            "cardInfo": {
-                "debit": "Debit card payments use the balance of the linked account.",
-                "credit": "The amount due is collected from the linked account on the selected day each month.",
-                "prepaid": "A prepaid card has a separate balance and can be topped up from the selected account."
-            },
-            "saveDraft": "Save draft",
-            "addAction": "Add wallet",
-            "addCardAction": "Add card",
-            "updateAction": "Save changes",
-            "required": "This field is required.",
-            "invalidAmount": "Enter a valid amount.",
-            "deleteTitle": "Delete wallet?",
-            "deleteDescription": "{name} will be removed from this local preview."
-        },
-        "types": {
-            "bank": "Account",
-            "savings": "Savings",
-            "card": "Card",
-            "cash": "Cash",
-            "investment": "Investments"
-        },
-        "cardTypes": {
-            "debit": "Debit",
-            "credit": "Credit",
-            "prepaid": "Prepaid"
-        },
-        "cardNetworks": {
-            "visa": "Visa",
-            "mastercard": "Mastercard",
-            "amex": "American Express",
-            "other": "Other"
-        },
-        "icons": {
-            "bank": "Bank",
-            "savings": "Piggy bank",
-            "card": "Card",
-            "cash": "Banknote",
-            "investment": "Investments",
-            "wallet": "Wallet"
-        },
-        "states": {
-            "idle": "Wallets are ready to load.",
-            "loading": "Loading wallets…",
-            "empty": "No wallets yet. Add your first wallet to get started.",
-            "error": "Wallets could not be loaded."
         }
     }
 }

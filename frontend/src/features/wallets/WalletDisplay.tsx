@@ -4,13 +4,12 @@ import { useTranslations } from 'next-intl';
 
 import { Wallet } from '@/components/ui/icons';
 
-import { newWalletIcons } from './new-wallet-model';
-import { walletColor } from './wallet-dashboard-model';
-import type { DashboardWallet } from './wallet-dashboard-model';
+import { walletColor, walletIcons } from './wallet-model';
+import type { DashboardWallet } from './wallet-model';
 
 export function WalletMark({ wallet }: { wallet: DashboardWallet }) {
     const color = walletColor(wallet);
-    const Icon = wallet.draft === undefined ? Wallet : newWalletIcons[wallet.draft.kind];
+    const Icon = wallet.draft === undefined ? Wallet : walletIcons[wallet.draft.kind];
     return (
         <span
             className="flex size-[46px] shrink-0 items-center justify-center rounded-[10px] bg-[color-mix(in_oklch,currentColor_18%,transparent)]"

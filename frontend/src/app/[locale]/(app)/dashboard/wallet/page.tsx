@@ -1,4 +1,4 @@
-import { WalletsDashboard } from '@/features/wallets/wallets-dashboard';
+import { WalletsDashboard } from '@/features/wallets/WalletsDashboard';
 
 export default function WalletPage() {
     return <WalletsDashboard />;

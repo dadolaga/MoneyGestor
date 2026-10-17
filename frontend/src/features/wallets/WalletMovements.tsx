@@ -8,7 +8,7 @@ import { ArrowDown, ArrowLeftRight, ArrowRight, ArrowUp } from '@/components/ui/
 import type { ApiTransaction } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
-import type { LoadState } from './wallet-dashboard-model';
+import type { LoadState } from './wallet-model';
 
 interface WalletMovementsProps {
     walletId?: number;

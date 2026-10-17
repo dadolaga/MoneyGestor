@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from 'next-intl';
 
-import type { DashboardWallet } from './wallet-dashboard-model';
+import type { DashboardWallet } from './wallet-model';
 
 export function useWalletFormatting() {
     const t = useTranslations('WalletsDashboard');

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { DashboardPreview } from '@/features/dashboard/dashboard-preview';
 import { TransactionsPreview } from '@/features/transactions/transactions-preview';
-import { WalletsPreview } from '@/features/wallets/wallets-preview';
+import { WalletsPreview } from '@/features/wallets/WalletsPreview';
 import { dashboardStateFixtures, transactionStateFixtures, walletStateFixtures } from '@/lib/fixtures/finance';
 
 const states = {
