@@ -22,16 +22,25 @@ Do not apply historical .NET 8 guidance to the current code.
 | Area | Responsibility |
 | --- | --- |
 | `webserver/Controllers` | HTTP binding, authentication, authorization and responses |
-| `webserver/Api/V1` | DTOs and query/command services for versioned resources |
-| `webserver/Auth` | Accounts, Identity sessions, antiforgery and compatibility |
+| `webserver/Api/V1` | DTOs and query services for versioned resources |
+| `webserver/Auth` | Accounts, Identity sessions and authenticated owner resolution |
 | `logic/Commands` and `logic/Security` | Financial rules, ownership and atomic changes |
 | `database` | EF entities, DbContext and migrations |
 | `TestProject` | NUnit tests and isolated infrastructure |
 | `ExportImportApplication` | Disabled historical CLI; do not incidentally re-enable it |
 
-Keep controllers small. Extend existing services and commands without duplicating domain logic
-in endpoints or the frontend. Use DI and respect scoped context lifetimes; do not introduce static
-DbContext instances or manually dispose contexts managed by the container.
+`ApplicationIdentityUser` is the single user entity and uses a numeric Identity key. Its `Id` is
+also the financial owner key. `MoneyGestorContext` includes Identity and financial entities; do not
+reintroduce a separate user table, account mapping or Identity context. Registration uses
+`UserManager.CreateAsync` once. The current initial migration targets a new empty database.
+
+Keep controllers small. Reads call query services; writes call `ExecutorManager.ExecuteAsync(ownerId,
+command, cancellationToken)` directly and receive the result. Extend commands and shared policies
+without duplicating domain logic in endpoints or the frontend. Commands can call child commands
+directly within `logic`, using the active executor and cancellation token; only the outer execution
+owns the transaction and retries. Keep command inputs replayable and external side effects outside
+retryable writes. Use DI; the executor owns factory-created contexts, while the container owns scoped
+query/account contexts. Do not introduce static DbContext instances.
 
 For reads, preserve ownership filters, DTO projections, pagination and `AsNoTracking` where
 appropriate. Propagate `CancellationToken` through asynchronous operations. Use `TimeProvider`
@@ -47,11 +56,11 @@ for operational time instead of introducing clock reads that are difficult to co
   Reuse existing policies, locks and retries.
 - Keep financial dates as calendar dates (`DateOnly`); operational time remains UTC.
 - For `/api/v1`, retain Identity cookies, CSRF for mutations, DTOs and Problem Details errors.
-  Do not introduce tokens in JavaScript or incidentally change the legacy envelope.
+  Do not introduce tokens in JavaScript or restore legacy endpoints/authentication.
 - Do not log passwords, tokens, cookies, connection strings or sensitive SQL parameters.
 - For new options, update the example schema, validation and configuration guide together.
-- For contract changes, update DTOs, documentation and required consumers without mixing
-  legacy and v1 contracts.
+- For contract changes, update DTOs, documentation and required consumers. `/api/v1` is the only
+  application contract.
 
 ## Databases, migrations and tools
 

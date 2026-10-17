@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
+using database.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace database.Models {
     [Table("wallet")]
@@ -32,7 +28,7 @@ namespace database.Models {
         public UInt64 ColorId { get; set; }
         public ColorDb? Color { get; set; }
         public UInt64 UserId { get; set; }
-        public UserDb? User { get; set; }
+        public ApplicationIdentityUser? User { get; set; }
         public ICollection<TransactionDb> Transactions { get; set; } = new List<TransactionDb>();
     }
 }

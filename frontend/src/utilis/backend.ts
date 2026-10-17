@@ -21,7 +21,7 @@ export function convertSortToApi(sort: SortType) {
 }
 
 export function convertFilterToApi(filter?: FilterData) {
-    console.log('convertFilterToApi: ', filter);
+    console.log('Transaction filter input:', filter);
 
     if (filter === undefined) return undefined;
 
@@ -39,7 +39,7 @@ export function convertFilterToApi(filter?: FilterData) {
         text += `${text.length > 0 ? '&' : ''}transactionTypeId=${filter.typeId}`;
     }
 
-    console.log(text);
+    console.log('Generated transaction filter:', text);
 
     return text.length > 0 ? text : undefined;
 }

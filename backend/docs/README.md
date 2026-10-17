@@ -22,7 +22,7 @@ MoneyGestor helps you organize personal finances in one place. Track balances ac
 Built with **ASP.NET Core**, **Next.js** and **MySQL**, it combines a responsive web interface with an API that enforces account ownership and financial consistency.
 
 > [!NOTE]
-> MoneyGestor is under active development. The guides distinguish available features from planned work and legacy compatibility.
+> MoneyGestor is under active development. The guides distinguish available features from planned work. The application API is exclusively `/api/v1`.
 
 ## Start here
 

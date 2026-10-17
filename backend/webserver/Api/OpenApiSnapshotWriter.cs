@@ -10,15 +10,13 @@ public static class OpenApiSnapshotWriter {
 
     public static void Write(ISwaggerProvider provider, String outputDirectory) {
         Directory.CreateDirectory(outputDirectory);
-        foreach (var documentName in new[] { "v1", "legacy" }) {
-            var buffer = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
-            var writer = new OpenApiJsonWriter(buffer);
-            provider.GetSwagger(documentName).SerializeAsV3(writer);
-            buffer.Flush();
-            var root = JsonNode.Parse(buffer.ToString()) ?? throw new InvalidOperationException($"OpenAPI {documentName} document was empty.");
-            var canonical = Canonicalize(root).ToJsonString(JsonOptions) + Environment.NewLine;
-            File.WriteAllText(Path.Combine(outputDirectory, $"{documentName}.json"), canonical);
-        }
+        var buffer = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        var writer = new OpenApiJsonWriter(buffer);
+        provider.GetSwagger("v1").SerializeAsV3(writer);
+        buffer.Flush();
+        var root = JsonNode.Parse(buffer.ToString()) ?? throw new InvalidOperationException("OpenAPI v1 document was empty.");
+        var canonical = Canonicalize(root).ToJsonString(JsonOptions) + Environment.NewLine;
+        File.WriteAllText(Path.Combine(outputDirectory, "v1.json"), canonical);
     }
 
     private static JsonNode Canonicalize(JsonNode node) => node switch {

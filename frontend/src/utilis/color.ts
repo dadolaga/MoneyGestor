@@ -21,7 +21,7 @@ export const getAdaptiveBackground = (hexColor: string): string => {
     // 3. Validazione: se non è un esadecimale valido di 6 cifre, torna un grigio neutro
     const hexRegex = /^[0-9A-Fa-f]{6}$/;
     if (!hexRegex.test(cleanHex)) {
-        console.warn(`Colore non valido fornito: ${hexColor}`);
+        console.warn(`Invalid color supplied: ${hexColor}`);
         return '#F8F9FA'; // Fallback sicuro
     }
 

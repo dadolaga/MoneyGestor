@@ -55,6 +55,15 @@ dotnet test .\backend\TestProject\TestProject.csproj --no-restore
 
 When switching branches or versions, verify the test infrastructure before running commands that create or remove schemas.
 
+The API/executor simplification removes legacy endpoints, authentication commands, list filters
+and the old executor API. User unification also removes `UserDb`, `LoginDb` and the separate Identity
+context, replacing their migration chains with a new empty-database baseline. Test sources have
+deliberately not been updated in these slices. The
+solution build therefore currently fails in `TestProject` until those consumers are migrated;
+this is a known consequence of the refactor, not a pre-existing test failure. Do not restore
+production compatibility APIs just to compile the old tests. Application projects can be checked
+with `dotnet build backend/webserver/webserver.csproj` without running the test suite.
+
 ## 10.4 Frontend checks
 
 For ordinary AI work, run only:
@@ -82,7 +91,7 @@ try {
 }
 ```
 
-The export branch starts a temporary local host and writes the specifications without calling normal database initialization. It is an artifact-generation command, not the normal API startup. The `docs/openapi` path matches the snapshot tests and [the API workflow](../../.github/workflows/api-contract.yml).
+The export branch starts a temporary local host and writes only `v1.json` without calling normal database initialization. It is an artifact-generation command, not the normal API startup. The `docs/openapi` path matches [the API workflow](../../.github/workflows/api-contract.yml); the old snapshot tests still need updating for the single document.
 
 ## 10.6 Startup and configuration problems
 
@@ -112,6 +121,7 @@ The export branch starts a temporary local host and writes the specifications wi
 | API requests target the wrong host | Stale public build variable | Set browser-reachable `NEXT_PUBLIC_API_URL` and rebuild |
 | 400 antiforgery error | Missing/stale token or mismatched cookie identity | Fetch a new token in the same cookie session; refresh browser app state after account transitions |
 | 401 after password reset | Existing session was invalidated | Sign in again |
+| Signed out after switching to numeric Identity IDs | An older GUID-based session is incompatible and is automatically cleared | Sign in again; refresh the page to obtain a fresh CSRF token before registration/login |
 | Sessions/links break after redeploy | Key storage replaced or removed | Restore/preserve the key ring; do not remove named volumes routinely |
 
 Keep hosts consistent during local testing: `localhost` and `127.0.0.1` are distinct for cookies/origins. Reports of failures should include status, stable error code and trace ID, without cookie/header dumps.

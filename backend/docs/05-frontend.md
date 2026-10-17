@@ -76,7 +76,7 @@ The development catalog and feature tests use fixtures and view models. These ar
 
 ## 5.5 API integration
 
-Both active clients use `NEXT_PUBLIC_API_URL`, currently falling back to `http://localhost:5256`. Axios requests include credentials so the browser can send the Identity cookie. Mutations obtain a CSRF request token and include `X-CSRF-TOKEN`. The resource client caches its token request and clears the cache if fetching that token fails; it does not currently clear it for every later authentication/antiforgery failure.
+Both active clients use `NEXT_PUBLIC_API_URL`, currently falling back to `http://localhost:5256`. Axios requests include credentials so the browser can send the Identity cookie. Before each mutation, both clients obtain a fresh CSRF request token and include `X-CSRF-TOKEN`. Tokens are not cached across mutations, so subsequent operations follow the current cookie identity after login, logout or account changes in another tab. Token-fetch failures stop the mutation and use the existing error flow.
 
 The Promise client represents API failures as `ApiProblemError`, with HTTP status, stable code and optional field errors. Live pages currently map many failures to generic localized text. They support AbortSignal cancellation when loading data.
 

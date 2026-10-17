@@ -27,7 +27,7 @@ The solution is [backend.sln](../backend.sln). Current projects target .NET 10; 
 | --- | --- | --- |
 | `webserver` | ASP.NET Core host, HTTP controllers, Identity, options, health and observability | [Program.cs](../webserver/Program.cs), [Settings.cs](../webserver/Settings.cs) |
 | `logic` | Financial commands, ownership, balance/transfer policies, validation and atomic execution | [ExecutorManager.cs](../logic/ExecutorManager.cs), [Security](../logic/Security) |
-| `database` | MoneyGestor and Identity contexts, entities, schema migrations | [MoneyGestorContext.cs](../database/MoneyGestorContext.cs), [IdentityAccountContext.cs](../database/Identity/IdentityAccountContext.cs) |
+| `database` | Unified financial/Identity context, entities and schema migrations | [MoneyGestorContext.cs](../database/MoneyGestorContext.cs), [ApplicationIdentityUser.cs](../database/Identity/ApplicationIdentityUser.cs) |
 | `TestProject` | NUnit domain, security, infrastructure, HTTP and integration tests | [test infrastructure](../TestProject/Infrastructure) |
 | `ExportImportApplication` | Historical tool, disabled at its entry point | [Program.cs](../ExportImportApplication/Program.cs) |
 
@@ -35,19 +35,24 @@ The solution is [backend.sln](../backend.sln). Current projects target .NET 10; 
 
 1. Correlation middleware assigns response trace and correlation IDs.
 2. Request logging and metrics record operational metadata.
-3. Exception handling maps failures to the appropriate v1 or legacy response.
-4. Routing/CORS and antiforgery validation run. Every POST/PUT/PATCH/DELETE under `/api/v1` requires CSRF validation, including anonymous account operations.
+3. Exception handling maps failures to Problem Details.
+4. Routing and CORS run.
 5. Identity authenticates the cookie; authorization restricts protected endpoints.
-6. A controller calls an account service, resource query service or command service.
-7. Queries project owned EF entities to dedicated DTOs. Commands enforce financial rules and persist changes transactionally.
+6. Antiforgery validates against the resolved identity. Every POST/PUT/PATCH/DELETE under `/api/v1` requires CSRF validation, including anonymous account operations.
+7. A controller calls the account service, the resource query service or `ExecutorManager.ExecuteAsync(ownerId, command, cancellationToken)`.
+8. Queries project owned EF entities to dedicated DTOs. Commands enforce financial rules and persist changes transactionally.
 
-The principal's Identity account maps to an existing MoneyGestor user ID. Financial resource ownership is resolved server-side; resource DTOs do not let a client choose an owner.
+`ApplicationIdentityUser` is the only user entity. Its numeric Identity key is also the owner key of financial resources. Ownership is resolved from the authenticated principal; resource DTOs do not let a client choose an owner.
 
 ## 4.3 Application services and lifetimes
 
-`MoneyGestorContext`, `IdentityAccountContext`, account services and `ExecutorManager` are scoped. The DI container owns their lifetime. Commands in one request share the application context and explicit transaction; retry paths can obtain a fresh context through the registered factory.
+Account services, query contexts and `ExecutorManager` are scoped. The DI container owns their lifetime. The executor creates and disposes a fresh application context and explicit transaction for each execution attempt through `IDbContextFactory<MoneyGestorContext>`. Failed concurrent writes retry the complete operation up to five attempts; subsequent operations on the same executor also start with a fresh context.
 
-[ResourceQueryService](../webserver/Api/V1/ResourceQueryService.cs) performs no-tracking reads with ownership predicates, filtering and pagination. [ResourceCommandService](../webserver/Api/V1/ResourceCommandService.cs) translates HTTP DTOs into existing application commands. Registration shares a MySQL transaction between application and Identity contexts.
+[ResourceQueryService](../webserver/Api/V1/ResourceQueryService.cs) performs no-tracking reads with ownership predicates, filtering and pagination. Controllers translate HTTP DTOs into commands and receive the result directly from the executor. There is no forwarding command service or mutable `command.Result`.
+
+Commands return `Task<T>` from `ExecuteAsync`. Within `logic`, a parent can call `await child.ExecuteAsync(executorManager, cancellationToken)` directly: both use the active owner, context and transaction. Only the outer executor commits or rolls back. Do not re-enter `ExecutorManager.ExecuteAsync` from a command or swallow child failures; retries must repeat the whole operation. Commands must keep inputs replayable and avoid external side effects inside database retries.
+
+[ApiCurrentUser](../webserver/Auth/ApiCurrentUser.cs) reads and validates the numeric ID from the authenticated Identity principal without a mapping query; command constructors do not accept a replacement owner. Registration creates one `ApplicationIdentityUser` through `UserManager.CreateAsync`, including name and surname. Identity and financial data use the same `MoneyGestorContext`, with no second user record or cross-context transaction.
 
 `TimeProvider` centralizes operational time and can be replaced in tests. Cancellation flows from aborted HTTP requests into asynchronous services and EF operations.
 
@@ -55,7 +60,7 @@ The principal's Identity account maps to an existing MoneyGestor user ID. Financ
 
 Normal startup loads and validates options, creates logging, registers services, builds the middleware pipeline and then initializes the database before serving requests.
 
-Initialization applies or checks MoneyGestor migrations according to bootstrap mode, checks/applies Identity migrations, seeds global reference data, runs a read-only financial integrity preflight and creates legacy-to-Identity mappings. A failure stops startup; it does not automatically repair bad financial data.
+Initialization applies or checks the unified migrations according to bootstrap mode, seeds global reference data and runs a read-only financial integrity preflight. A failure stops startup; it does not automatically repair bad financial data. The initial schema targets a new empty database, with no historical account import.
 
 In Production, `DATA_PROTECTION_KEYS_PATH` is required, and an SMTP host/sender is required when email confirmation is enabled. SMTP remains necessary for password recovery in either mode. `Testing` supplies in-memory host configuration for tests and OpenAPI export; it is not a production mode or a normal setup shortcut.
 
@@ -76,11 +81,24 @@ In Production, `DATA_PROTECTION_KEYS_PATH` is required, and an SMTP host/sender 
 
 Account operations additionally have process-local abuse limits per identity: login permits 20 attempts per 15-minute window; register/resend/forgot permit 5 per hour; confirm/reset permit 10 per hour. A separate per-IP counter allows four times the corresponding limit. Counters are tracked per operation with hashed keys in [AccountAbuseGuard](../webserver/Auth/AccountAbuseGuard.cs), not by a distributed rate-limit store.
 
-Legacy PBKDF2 password hashes can be recognized and upgraded after successful authentication. The cookie bridge exists for temporary non-versioned endpoints; browser JavaScript does not need access to raw legacy authentication tokens. `/api/v1` accepts Identity cookies, not raw `Authorization` tokens.
+Identity is the only authentication mechanism. Users and roles use `UInt64` keys. The `AspNetUsers` row contains profile data, normalized username/email, password hash and security state. There are no separate `user`/`login` tables, ownership mapping fields, raw authentication tokens, cookie bridges or historical password verification.
+
+Cookie validation rejects and clears sessions whose user ID is missing, zero or incompatible with `UInt64`, including GUID-based sessions from earlier versions, before querying the Identity store. Valid numeric sessions still undergo the standard security-stamp validation.
 
 ## 4.6 Logging and operational endpoints
 
 Serilog uses validated configuration for the minimum level, category overrides and sinks. The file sink supports time/size rotation and retention; sink errors are reported to stderr. EF diagnostic SQL logging requires Development, Trace/Verbose and the explicit diagnostic switch. SQL parameter values are not enabled.
+
+Console and file events retain the original single-line format: timestamp, level, trace ID,
+correlation ID and message. Application and diagnostic log messages use descriptive English sentences,
+independently of the interface language.
+At Information, each completed request reports method, path, status and duration. At Debug,
+request diagnostics also report the incoming absolute URL and protocol, followed by the response
+status, duration, selected endpoint, anonymous/authenticated state and response content type.
+Client cancellation and unhandled failures have distinct Debug messages and are still propagated.
+URL logging excludes query strings; request bodies, cookies, authentication headers and account
+names are not logged. These URLs describe requests received by the backend; frontend pages served
+by Next.js are not automatically visible to it. Framework messages keep their original wording.
 
 `/health/live` checks the process without querying the database. `/health/ready` runs a bounded MySQL `SELECT 1`. Metrics are enabled by default at `/metrics` and can be disabled or moved. See [settings](06-settings-reference.md) and [operations](09-operations-and-recovery.md).
 
@@ -88,7 +106,7 @@ Serilog uses validated configuration for the minimum level, category overrides a
 
 Current browser pages use versioned DTO-based `/api/v1` APIs. Success responses are resource objects, arrays, page objects or empty responses; errors use Problem Details with stable codes and trace IDs.
 
-Legacy controllers retain their `{ code, message, data }` envelope and raw-token compatibility. Keep the contracts separate when integrating a client. Detailed endpoints and examples are in [chapter 07](07-api-reference.md).
+Only `/api/v1` resource and account endpoints are available. Non-versioned controllers, the `{ code, message, data }` envelope and compatibility mappers have been removed. The URL version is retained as a stable public contract. Detailed endpoints and examples are in [chapter 07](07-api-reference.md).
 
 The ZIP/CSV CLI exits with `feature_disabled` and exit code 2 before reading settings or touching the database. Its source files are historical artifacts, not an enabled import/export service. Use the administrative scripts described in [chapter 09](09-operations-and-recovery.md).
 

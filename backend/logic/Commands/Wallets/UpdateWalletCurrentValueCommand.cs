@@ -18,7 +18,7 @@ namespace logic.Commands.Wallets {
             this.isDifferenze = isDifferenze;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             logic.Security.MonetaryValuePolicy.RequireValid(value);
             await logic.Security.OwnershipPolicy.LockOwnedWalletsAsync(
@@ -42,7 +42,7 @@ namespace logic.Commands.Wallets {
 
             await database.SaveChangesAsync(cancellationToken);
 
-            result = wallet.Id;
+            return wallet.Id;
         }
     }
 }

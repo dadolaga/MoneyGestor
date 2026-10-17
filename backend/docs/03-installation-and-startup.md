@@ -50,7 +50,7 @@ Only copy the example if a local settings file does not already exist. Edit the 
 1. Choose a new empty database name and set `database.name` to it.
 2. Ensure the configured user can connect and apply schema changes. If the database does not exist, creation also requires appropriate MySQL privileges.
 3. Set `database.bootstrapMode` to `Migrate` for the first startup.
-4. Start one backend instance. It applies the MoneyGestor and Identity migrations, seeds global colors/types, checks integrity and initializes Identity mappings before serving requests.
+4. Start one backend instance. It applies the unified financial/Identity migration, seeds global colors/types and checks integrity before serving requests.
 5. Check readiness and the account flow, then set bootstrap mode back to `Disabled` and restart.
 
 `Disabled` is the default: missing databases or pending migrations stop startup without applying DDL. A populated historical database lacking the current initial migration is rejected even in `Migrate` mode. Startup never deletes that database or automatically imports its old schema. See [database details](08-database-and-business-rules.md).

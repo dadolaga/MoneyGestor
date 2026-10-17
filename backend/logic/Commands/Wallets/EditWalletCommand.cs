@@ -25,7 +25,7 @@ namespace logic.Commands.Wallets {
             this.colorValue = colorValue;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             await OwnershipPolicy.LockOwnedWalletsAsync(database, executorManager.UserId, cancellationToken,
                 details?.LinkedAccountId is UInt64 accountId ? [walletIdToUpdate, accountId] : [walletIdToUpdate]);
@@ -56,7 +56,7 @@ namespace logic.Commands.Wallets {
                 throw new ObjectNotFoundException("Color not found");
             }
 
-            result = wallet.Id;
+            return wallet.Id;
         }
     }
 }

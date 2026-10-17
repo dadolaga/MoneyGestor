@@ -2,12 +2,14 @@ using database;
 using database.Identity;
 using logic;
 using logic.Security;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using webserver.Api;
 using webserver.Api.V1;
@@ -109,10 +111,6 @@ public class Program {
         AddDatabaseServices(builder.Services, builder.Environment);
 
         builder.Services.AddControllers().ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context => {
-            if (!context.HttpContext.Request.Path.StartsWithSegments("/api/v1")) {
-                return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState));
-            }
-
             var problem = new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState) {
                 Type = "https://api.moneygestor.example/problems/validation-failed",
                 Title = "Request validation failed",
@@ -132,15 +130,8 @@ public class Program {
                 Version = "v1",
                 Description = "Cookie-authenticated API. Unsafe requests require the antiforgery header."
             });
-            options.SwaggerDoc("legacy", new Microsoft.OpenApi.OpenApiInfo {
-                Title = "MoneyGestor Legacy API",
-                Version = "legacy",
-                Description = "Deprecated compatibility contract. The raw Authorization token is temporary."
-            });
-            options.DocInclusionPredicate((document, description) => {
-                var isV1 = description.RelativePath?.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase) == true;
-                return document == "v1" ? isV1 : document == "legacy" && !isV1;
-            });
+            options.DocInclusionPredicate((document, description) => document == "v1"
+                && description.RelativePath?.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase) == true);
             options.AddSecurityDefinition("MoneyGestorCookie", new Microsoft.OpenApi.OpenApiSecurityScheme {
                 Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
                 In = Microsoft.OpenApi.ParameterLocation.Cookie,
@@ -152,12 +143,6 @@ public class Program {
                 In = Microsoft.OpenApi.ParameterLocation.Header,
                 Name = "X-CSRF-TOKEN",
                 Description = "Request token from GET /api/v1/auth/antiforgery."
-            });
-            options.AddSecurityDefinition("LegacyRawToken", new Microsoft.OpenApi.OpenApiSecurityScheme {
-                Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
-                In = Microsoft.OpenApi.ParameterLocation.Header,
-                Name = "Authorization",
-                Description = "Deprecated raw token accepted only on legacy endpoints."
             });
             options.OperationFilter<ApiContractOperationFilter>();
             options.SchemaFilter<ApiDtoSchemaFilter>();
@@ -189,7 +174,7 @@ public class Program {
         }
 
         builder.Services
-            .AddIdentity<ApplicationIdentityUser, IdentityRole>(options => {
+            .AddIdentity<ApplicationIdentityUser, IdentityRole<UInt64>>(options => {
                 options.Password.RequiredLength = 12;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
@@ -200,21 +185,16 @@ public class Program {
                 options.Lockout.AllowedForNewUsers = true;
                 options.User.RequireUniqueEmail = true;
             })
-            .AddEntityFrameworkStores<IdentityAccountContext>()
+            .AddEntityFrameworkStores<MoneyGestorContext>()
             .AddDefaultTokenProviders();
         builder.Services.AddOptions<IdentityOptions>()
             .Configure<IOptions<SecurityOptions>>((options, security) =>
                 options.SignIn.RequireConfirmedEmail = security.Value.RequireConfirmedEmail);
-        builder.Services.AddScoped<IPasswordHasher<ApplicationIdentityUser>, LegacyCompatiblePasswordHasher>();
         builder.Services.AddScoped<AccountService>();
         builder.Services.AddScoped<IApiCurrentUser, ApiCurrentUser>();
         builder.Services.AddScoped<IResourceQueryService, ResourceQueryService>();
-        builder.Services.AddScoped<IResourceCommandService, ResourceCommandService>();
-        builder.Services.AddScoped<LegacyIdentityBootstrapper>();
         builder.Services.AddScoped<DatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
-        builder.Services.AddScoped<Func<MoneyGestorContext>>(services =>
-            () => services.GetRequiredService<IDbContextFactory<MoneyGestorContext>>().CreateDbContext());
         builder.Services.AddScoped<ExecutorManager>();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton<AccountAbuseGuard>();
@@ -228,6 +208,18 @@ public class Program {
                 : CookieSecurePolicy.SameAsRequest;
             options.ExpireTimeSpan = TimeSpan.FromHours(2);
             options.SlidingExpiration = true;
+            options.Events.OnValidatePrincipal = async context => {
+                var users = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationIdentityUser>>();
+                var userId = context.Principal == null ? null : users.GetUserId(context.Principal);
+                // Reject incompatible sessions before Identity converts the claim to a numeric store key.
+                if (!UInt64.TryParse(userId, NumberStyles.None, CultureInfo.InvariantCulture, out var id) || id == 0) {
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(context.Scheme.Name);
+                    return;
+                }
+
+                await SecurityStampValidator.ValidatePrincipalAsync(context);
+            };
             options.Events.OnRedirectToLogin = context => {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
@@ -256,18 +248,10 @@ public class Program {
 
         var app = builder.Build();
 
-        if (app.Environment.IsDevelopment() || isTesting) {
-            app.UseSwagger();
-            app.UseSwaggerUI(options => {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "MoneyGestor API v1");
-                options.SwaggerEndpoint("/swagger/legacy/swagger.json", "MoneyGestor Legacy API (deprecated)");
-            });
-        }
-
         app.UseMiddleware<RequestCorrelationMiddleware>();
         if (!isTesting) {
             app.UseSerilogRequestLogging(options => {
-                options.MessageTemplate = "HTTP {RequestMethod} responded {StatusCode} in {Elapsed:0.0000} ms (TraceId: {TraceId}, CorrelationId: {CorrelationId})";
+                options.MessageTemplate = "HTTP request {RequestMethod} {RequestPath} completed with status {StatusCode} in {Elapsed:0.0000} ms";
                 options.EnrichDiagnosticContext = (diagnosticContext, httpContext) => {
                     diagnosticContext.Set("TraceId", httpContext.TraceIdentifier);
                     diagnosticContext.Set("CorrelationId", httpContext.Items["CorrelationId"]?.ToString() ?? String.Empty);
@@ -280,9 +264,40 @@ public class Program {
 
         app.UseMiddleware<ObservabilityMetricsMiddleware>();
         app.UseExceptionHandler();
+        if (app.Environment.IsDevelopment() || isTesting) {
+            app.UseSwagger();
+            app.UseSwaggerUI(options => {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "MoneyGestor API v1");
+            });
+        }
+
         app.UseHttpsRedirection();
         app.UseRouting();
         app.UseCors("CorsPolicy");
+        app.UseAuthentication();
+        app.Use(async (context, next) => {
+            if (context.Request.Path.StartsWithSegments("/api/v1")
+                && context.GetEndpoint() != null
+                && context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() == null
+                && context.User.Identity?.IsAuthenticated != true) {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/problem+json";
+                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
+                    Type = "https://api.moneygestor.example/problems/authentication-required",
+                    Title = "Authentication required",
+                    Status = StatusCodes.Status401Unauthorized,
+                    Extensions = { ["code"] = "authentication_required", ["traceId"] = context.TraceIdentifier }
+                };
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(problem, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
+                    context.RequestAborted);
+                return;
+            }
+
+            await next(context);
+        });
+        app.UseAuthorization();
+        // Antiforgery request tokens are bound to the authenticated identity.
         app.Use(async (context, next) => {
             var requiresAntiforgery = context.Request.Path.StartsWithSegments("/api/v1") && (
                 HttpMethods.IsPost(context.Request.Method) ||
@@ -313,30 +328,6 @@ public class Program {
 
             await next(context);
         });
-        app.UseAuthentication();
-        app.Use(async (context, next) => {
-            if (context.Request.Path.StartsWithSegments("/api/v1")
-                && context.GetEndpoint() != null
-                && context.GetEndpoint()?.Metadata.GetMetadata<Microsoft.AspNetCore.Authorization.IAllowAnonymous>() == null
-                && context.User.Identity?.IsAuthenticated != true) {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                context.Response.ContentType = "application/problem+json";
-                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails {
-                    Type = "https://api.moneygestor.example/problems/authentication-required",
-                    Title = "Authentication required",
-                    Status = StatusCodes.Status401Unauthorized,
-                    Extensions = { ["code"] = "authentication_required", ["traceId"] = context.TraceIdentifier }
-                };
-                await context.Response.WriteAsync(
-                    JsonSerializer.Serialize(problem, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
-                    context.RequestAborted);
-                return;
-            }
-
-            await next(context);
-        });
-        app.UseMiddleware<LegacyCookieBridgeMiddleware>();
-        app.UseAuthorization();
         app.MapControllers();
 
         app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions {
@@ -385,18 +376,6 @@ public class Program {
         var bootstrapOutcome = await services.GetRequiredService<DatabaseBootstrapper>()
             .BootstrapAsync(databaseOptions.BootstrapMode, cancellationToken);
 
-        var identityDatabase = services.GetRequiredService<IdentityAccountContext>();
-        var pendingMigrations = (await identityDatabase.Database
-            .GetPendingMigrationsAsync(cancellationToken)).ToArray();
-        if (pendingMigrations.Length > 0 && databaseOptions.BootstrapMode == DatabaseBootstrapMode.Disabled) {
-            throw new InvalidOperationException(
-                $"{pendingMigrations.Length} Identity migration(s) are pending while database bootstrap is disabled.");
-        }
-
-        if (pendingMigrations.Length > 0) {
-            await identityDatabase.Database.MigrateAsync(cancellationToken);
-        }
-
         await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
         try {
             await DataIntegrityPreflight.EnsureValidAsync(moneyGestorDatabase, cancellationToken);
@@ -406,11 +385,9 @@ public class Program {
             throw;
         }
 
-        await services.GetRequiredService<LegacyIdentityBootstrapper>().RunAsync(cancellationToken);
-
         logger.LogInformation(new EventId(1101, "DatabaseBootstrapCompleted"),
-            "Database bootstrap completed ({BootstrapOutcome}, {IdentityMigrationCount} Identity migration(s) applied) in {ElapsedMilliseconds} ms",
-            bootstrapOutcome, pendingMigrations.Length, Stopwatch.GetElapsedTime(bootstrapStarted).TotalMilliseconds);
+            "Database bootstrap completed ({BootstrapOutcome}) in {ElapsedMilliseconds} ms",
+            bootstrapOutcome, Stopwatch.GetElapsedTime(bootstrapStarted).TotalMilliseconds);
     }
 
     internal static Boolean ShouldEnableDatabaseLogging(
@@ -471,9 +448,5 @@ public class Program {
         });
         services.AddScoped(services =>
             services.GetRequiredService<IDbContextFactory<MoneyGestorContext>>().CreateDbContext());
-        services.AddDbContext<IdentityAccountContext>((serviceProvider, options) => {
-            var database = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-            options.UseMySQL(database.CreateConnectionString());
-        });
     }
 }

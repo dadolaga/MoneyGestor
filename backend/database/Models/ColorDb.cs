@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
+using database.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace database.Models {
 
@@ -13,7 +9,7 @@ namespace database.Models {
         public String? Name { get; set; }
         public UInt32 Value { get; set; }
         public UInt64? UserId { get; set; }
-        public UserDb? User { get; set; }
+        public ApplicationIdentityUser? User { get; set; }
         public ICollection<WalletDb> Wallets { get; set; } = new List<WalletDb>();
     }
 }

@@ -31,7 +31,7 @@ The browser provides the interface. An ASP.NET Core API owns authentication, aut
 | Wallets | Create a wallet with an opening balance and color; edit its name/color; set favorites; delete wallets with no transactions |
 | Transactions | Create, edit and delete income, expenses and transfers; search descriptions; filter by kind; navigate server-side pages |
 | Dashboard | Select an inclusive date range and view income, expenses and breakdowns by transaction type |
-| API | Versioned `/api/v1` endpoints for account and financial resources, plus temporary legacy endpoints |
+| API | `/api/v1` endpoints for account and financial resources; Identity cookies and Problem Details |
 | Presentation | English and Italian routes; shared light/dark styling and responsive components |
 | Administration | Health checks, configurable logs, Prometheus metrics, MySQL backup and staging restore scripts |
 

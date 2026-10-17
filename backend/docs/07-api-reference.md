@@ -14,7 +14,7 @@
 - [7.5 Resource payload examples](#75-resource-payload-examples)
 - [7.6 Transaction queries and pagination](#76-transaction-queries-and-pagination)
 - [7.7 Errors and correlation](#77-errors-and-correlation)
-- [7.8 Legacy API](#78-legacy-api)
+- [7.8 Removed endpoints](#78-removed-endpoints)
 
 </details>
 
@@ -22,9 +22,9 @@
 
 ## 7.1 Choose the correct contract
 
-Use `/api/v1` for current integrations. It returns dedicated DTOs and HTTP statuses, uses Identity cookies and requires CSRF validation on mutations. Legacy non-versioned routes use a different envelope and raw-token contract; they are compatibility endpoints.
+`/api/v1` is the only application API. It returns dedicated DTOs and HTTP statuses, uses Identity cookies and requires CSRF validation on mutations. Non-versioned compatibility endpoints and raw authentication tokens have been removed.
 
-The generated specifications are [v1.json](../../docs/openapi/v1.json) and [legacy.json](../../docs/openapi/legacy.json). Regenerate these artifacts when changing API contracts. Runtime Swagger is exposed in Development and Testing, not Production.
+The generated specification is [v1.json](../../docs/openapi/v1.json). Regenerate it when changing API contracts. Runtime Swagger is exposed in Development and Testing, not Production.
 
 Local base URLs are `http://localhost:5256` for development and `http://localhost:5000` for default Compose port exposure. Hosted clients must use the deployment's public API URL.
 
@@ -77,6 +77,8 @@ All paths in this table start with `/api/v1/auth`.
 | POST `/reset-password` | No | `email`, `token`, `password` | 204 |
 
 Profile fields are `id`, `firstname`, `lastname`, `email`, `username`. Generic account acceptance prevents enumeration and is not a mail-delivery receipt. Password and lockout rules are in [chapter 04](04-backend.md).
+
+The profile `id` is the numeric Identity primary key, also used for financial ownership. A confirmation link carries that same ID as decimal text in `userId`; the confirmation JSON request keeps `userId` as a string. Invalid or out-of-range IDs return the generic `invalid_token` response. Existing frontend payloads and profile field names are unchanged.
 
 The confirmation policy is configured by `security.requireConfirmedEmail` (default `true`). Clients should fetch `/configuration` before offering confirmation-related actions and use the flag in the registration response for the success message. Registration returns the same acceptance shape for existing and newly created accounts; the flag describes server policy, not account existence.
 
@@ -174,7 +176,7 @@ use a balance-owning wallet. Automated billing and card-attributed transaction l
 Validation errors return 400 `validation_failed` with field keys, foreign/missing resources return
 404, and duplicate names or deletion with movements/linked cards return 409 `resource_conflict`.
 Ownership checks and account-link/type/deletion checks run within the command transaction and
-wallet locks. Existing legacy response envelopes remain unchanged.
+wallet locks.
 
 Create an expense:
 
@@ -262,17 +264,9 @@ V1 application errors use Problem Details, normally `application/problem+json`, 
 
 Responses include `X-Trace-ID` and `X-Correlation-ID`. Include these identifiers when reporting a failure, without attaching passwords, cookies or financial payloads.
 
-## 7.8 Legacy API
+## 7.8 Removed endpoints
 
-The main legacy resources are `/user/add`, `/user/login`, `/user/info`, `/color`, `/wallet`, `/type`, `/transaction` and `/dashboard/all`. Their envelope is:
-
-```json
-{ "code": 0, "message": "", "data": {} }
-```
-
-Protected direct legacy requests use `Authorization: <raw-token>`, without a Bearer prefix. The server-side cookie bridge exists during compatibility. Legacy transaction payloads use nested `wallet`/`transactionType` references and historical dates; do not send them to v1 DTO endpoints.
-
-Legacy list parameters are `limit`, `offset` (zero-based page index), `order` and `where`; they are not the v1 `page/pageSize` contract. Consult the [legacy specification](../../docs/all_modernization/openapi/legacy.json) and [historical API reference](../../docs/all_modernization/API.md) if maintaining an existing integration.
+The routes `/user/add`, `/user/login`, `/user/info`, `/color`, `/wallet`, `/type`, `/transaction` and `/dashboard/all` are no longer mapped. Clients must use the account and financial endpoints above, with Identity cookies, CSRF and the v1 pagination/payload contracts. There is no response envelope or raw-token fallback, and no legacy Swagger document.
 
 
 ---

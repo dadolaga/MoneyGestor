@@ -91,7 +91,7 @@ export function FormProvider(props: FormProvideProps) {
 
     useEffect(() => {
         if (props.default) {
-            console.log('default param', props.default);
+            console.log('Default form values:', props.default);
 
             queueMicrotask(() => {
                 setForm(

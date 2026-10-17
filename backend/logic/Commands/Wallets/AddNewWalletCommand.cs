@@ -25,9 +25,7 @@ namespace logic.Commands.Wallets {
             this.colorValue = colorValue;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
-            executorManager.CheckUserLogged();
-
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             MonetaryValuePolicy.RequireValid(value);
 
@@ -63,7 +61,7 @@ namespace logic.Commands.Wallets {
                 throw new ObjectNotFoundException("Color not found");
             }
 
-            result = wallet.Id;
+            return wallet.Id;
         }
     }
 }

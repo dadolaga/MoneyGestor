@@ -147,17 +147,10 @@ export class ApiProblemError extends Error {
     }
 }
 
-let csrfRequest: Promise<string> | undefined;
-
 async function requestCsrf(): Promise<string> {
-    const request = csrfRequest ??= http
-        .get<{ token: string }>('/api/v1/auth/antiforgery')
-        .then((response) => response.data.token)
-        .catch((error: unknown) => {
-            csrfRequest = undefined;
-            throw toApiProblem(error);
-        });
-    return request;
+    // Fetch for each mutation so login/logout and other tabs cannot leave a cached identity token.
+    const response = await http.get<{ token: string }>('/api/v1/auth/antiforgery');
+    return response.data.token;
 }
 
 function toApiProblem(error: unknown): Error {

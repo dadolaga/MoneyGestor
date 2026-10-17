@@ -56,7 +56,7 @@ The connection string is assembled with `MySqlConnectionStringBuilder`. The publ
 | `Disabled` | Startup fails | Startup fails without applying DDL | Startup fails |
 | `Migrate` | Attempts creation/migration with configured privileges | Applies pending migrations | Startup fails; no automatic adoption/deletion |
 
-After a controlled first installation, return to `Disabled`. This mode prevents migration DDL, but normal startup still seeds reference data and can initialize Identity mappings; it is not a read-only application mode.
+After a controlled first installation, return to `Disabled`. This mode prevents migration DDL, but normal startup still seeds reference data; it is not a read-only application mode. Identity and financial tables share the single `MoneyGestorContext` migration history.
 
 ## 6.3 Logging settings
 
@@ -77,6 +77,14 @@ After a controlled first installation, return to `Disabled`. This mode prevents 
 | `log.diagnosticEfLogging` | Boolean | `false` | `false` | Opt-in EF SQL events, enabled only with Development and global Trace/Verbose. Does not enable SQL parameter values. |
 
 `log.override` can contain other logging category names; the two example keys are not a closed allowlist.
+
+Set `log.level` to `Debug` (or the `log__level=Debug` environment override) and restart the backend
+to see descriptive request diagnostics. They include the absolute backend URL without its query
+string, HTTP method/protocol, response status/duration, selected endpoint, authentication state
+and content type. A category override for `webserver.RequestCorrelationMiddleware` can also set
+its minimum level independently. Request/response bodies, credentials, cookies and query values
+are excluded. At `Information`, only the normal request completion summary is emitted by the
+application request loggers.
 
 | `log.level` input, case-insensitive | Serilog level |
 | --- | --- |

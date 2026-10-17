@@ -54,7 +54,7 @@ public sealed class AuthController(
             return RateLimited();
         }
 
-        var result = await accounts.LoginAsync(request, issueCookie: true, cancellationToken);
+        var result = await accounts.LoginAsync(request, cancellationToken);
         return result switch {
             AccountLoginStatus.Succeeded => NoContent(),
             AccountLoginStatus.LockedOut => CodedProblem(StatusCodes.Status423Locked, "account_locked", "Account temporarily locked"),

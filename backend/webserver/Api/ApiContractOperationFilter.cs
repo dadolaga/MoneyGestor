@@ -11,19 +11,6 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context) {
         var path = context.ApiDescription.RelativePath ?? String.Empty;
-        if (!path.StartsWith("api/v1/", StringComparison.OrdinalIgnoreCase)) {
-            operation.Deprecated = true;
-            var usesLegacyToken = context.ApiDescription.ParameterDescriptions.Any(parameter =>
-                String.Equals(parameter.Name, "authorization", StringComparison.OrdinalIgnoreCase));
-            if (usesLegacyToken) {
-                operation.Security = [new OpenApiSecurityRequirement {
-                    [new OpenApiSecuritySchemeReference("LegacyRawToken", context.Document)] = []
-                }];
-            }
-
-            return;
-        }
-
         var endpointMetadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
         var anonymous = endpointMetadata.OfType<IAllowAnonymous>().Any();
         var explicitlyAuthorized = endpointMetadata.OfType<IAuthorizeData>().Any();

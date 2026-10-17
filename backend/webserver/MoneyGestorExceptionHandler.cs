@@ -3,31 +3,11 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
-using webserver.Controllers;
 
 namespace webserver {
     public sealed class MoneyGestorExceptionHandler(ILogger<MoneyGestorExceptionHandler> logger, ObservabilityMetrics metrics) : IExceptionHandler {
         public async ValueTask<Boolean> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken) {
             if (exception is OperationCanceledException && context.RequestAborted.IsCancellationRequested) {
-                return true;
-            }
-
-            var isV1 = context.Request.Path.StartsWithSegments("/api/v1");
-            if (!isV1) {
-                var (legacy, legacyStatus) = exception switch {
-                    TokenExpiredException => (new BaseResponse { Code = 20, Message = "User token expiated" }, 403),
-                    ObjectNotFoundException or UserPermissionException => (new BaseResponse { Code = 404, Message = "Resource not found" }, 404),
-                    ListFilterValidationException or WalletValidationException or MandatoryParamException => (new BaseResponse { Code = 10, Message = "Invalid request" }, 400),
-                    InvalidTransactionException => (new BaseResponse { Code = 302, Message = "Invalid transaction" }, 400),
-                    NotValidForDeleteException => (new BaseResponse { Code = 202, Message = "Resource cannot be deleted" }, 409),
-                    _ => (new BaseResponse { Code = 500, Message = "Unexpected error" }, 500)
-                };
-                if (legacyStatus == 500) {
-                    logger.LogError(exception, "Unhandled legacy API error ({TraceId})", context.TraceIdentifier);
-                }
-
-                context.Response.StatusCode = legacyStatus;
-                await context.Response.WriteAsJsonAsync(legacy, cancellationToken: cancellationToken);
                 return true;
             }
 

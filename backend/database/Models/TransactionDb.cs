@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
+using database.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace database.Models {
 
@@ -16,9 +12,9 @@ namespace database.Models {
         public UInt64 TransactionTypeId { get; set; }
         public TransactionTypeDb? TransactionType { get; set; }
         public UInt64 UserId { get; set; }
-        public UserDb? User { get; set; }
+        public ApplicationIdentityUser? User { get; set; }
         public UInt64 UserInsertId { get; set; }
-        public UserDb? UserInsert { get; set; }
+        public ApplicationIdentityUser? UserInsert { get; set; }
         public UInt64 WalletId { get; set; }
         public WalletDb? Wallet { get; set; }
         public Decimal Value { get; set; }

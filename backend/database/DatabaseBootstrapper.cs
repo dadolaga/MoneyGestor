@@ -4,7 +4,7 @@ using System.Data;
 namespace database;
 
 public sealed class DatabaseBootstrapper(MoneyGestorContext database) {
-    public const String InitialMigrationId = "20261001180542_InitialMoneyGestorSchema";
+    public const String InitialMigrationId = "20261017084510_InitialUnifiedSchema";
 
     public async Task<DatabaseBootstrapOutcome> BootstrapAsync(
         DatabaseBootstrapMode mode,

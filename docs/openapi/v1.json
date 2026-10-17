@@ -655,12 +655,6 @@
         "name": "X-CSRF-TOKEN",
         "type": "apiKey"
       },
-      "LegacyRawToken": {
-        "description": "Deprecated raw token accepted only on legacy endpoints.",
-        "in": "header",
-        "name": "Authorization",
-        "type": "apiKey"
-      },
       "MoneyGestorCookie": {
         "description": "Identity session cookie; issued by /api/v1/auth/login.",
         "in": "cookie",

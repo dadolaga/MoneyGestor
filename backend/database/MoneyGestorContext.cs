@@ -1,18 +1,12 @@
-﻿using database.Models;
+﻿using database.Identity;
+using database.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace database {
-    public class MoneyGestorContext : DbContext {
+    public class MoneyGestorContext : IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64> {
 
-        public DbSet<UserDb> Users { get; set; }
-        public DbSet<LoginDb> Logins { get; set; }
         public DbSet<ColorDb> Colors { get; set; }
         public DbSet<WalletDb> Wallets { get; set; }
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
@@ -23,6 +17,19 @@ namespace database {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+
+            var users = modelBuilder.Entity<ApplicationIdentityUser>();
+            users.Property(user => user.Id).ValueGeneratedOnAdd();
+            users.Property(user => user.Firstname).HasMaxLength(100).IsRequired();
+            users.Property(user => user.Lastname).HasMaxLength(100).IsRequired();
+            users.Property(user => user.UserName).HasMaxLength(64).IsRequired();
+            users.Property(user => user.NormalizedUserName).IsRequired();
+            users.Property(user => user.Email).IsRequired();
+            users.Property(user => user.NormalizedEmail).IsRequired();
+            users.HasIndex(user => user.NormalizedEmail).HasDatabaseName("EmailIndex").IsUnique();
+            modelBuilder.Entity<IdentityRole<UInt64>>().Property(role => role.Id).ValueGeneratedOnAdd();
+
             var wallets = modelBuilder.Entity<WalletDb>();
             wallets.Property(wallet => wallet.Kind).HasMaxLength(16).HasDefaultValue("bank");
             wallets.Property(wallet => wallet.Currency).HasMaxLength(3).HasDefaultValue("EUR");
@@ -76,9 +83,6 @@ namespace database {
                 .HasIndex(transaction => new { transaction.UserId, transaction.Date });
 
             // Set primary key
-            modelBuilder.Entity<UserDb>()
-                .HasKey(u => u.Id);
-
             modelBuilder.Entity<TransactionTypeDb>()
                 .HasKey(tt => tt.Id);
 
@@ -88,21 +92,10 @@ namespace database {
             modelBuilder.Entity<WalletDb>()
                 .HasIndex(w => w.Id);
 
-            modelBuilder.Entity<LoginDb>()
-                .HasIndex(l => l.Id);
-
             modelBuilder.Entity<TransactionDb>()
                 .HasIndex(t => t.Id);
 
             // Set index
-            modelBuilder.Entity<UserDb>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
-
-            modelBuilder.Entity<UserDb>()
-                .HasIndex(u => u.Username)
-                .IsUnique();
-
             modelBuilder.Entity<TransactionTypeDb>()
                 .HasIndex(tt => new { tt.UserId, tt.Name })
                 .IsUnique();
@@ -113,10 +106,6 @@ namespace database {
 
             modelBuilder.Entity<WalletDb>()
                 .HasIndex(w => new { w.Name, w.UserId })
-                .IsUnique();
-
-            modelBuilder.Entity<LoginDb>()
-                .HasIndex(l => l.Token)
                 .IsUnique();
 
             // Foreign key
@@ -143,12 +132,6 @@ namespace database {
                 .WithMany(u => u.Wallets)
                 .HasForeignKey(w => w.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<LoginDb>()
-                .HasOne(l => l.User)
-                .WithMany(u => u.Logins)
-                .HasForeignKey(l => l.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<TransactionDb>()
                 .HasOne(t => t.TransactionType)

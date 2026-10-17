@@ -12,7 +12,7 @@ namespace logic.Commands.Transaction {
             this.id = id;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
             var requestedTransaction = await TransactionPairPolicy.LockOwnedTransactionAsync(
@@ -58,7 +58,7 @@ namespace logic.Commands.Transaction {
 
             await database.SaveChangesAsync(cancellationToken);
 
-            result = sourceTransaction.Id;
+            return sourceTransaction.Id;
         }
     }
 }

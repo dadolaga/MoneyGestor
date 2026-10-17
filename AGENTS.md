@@ -63,13 +63,14 @@ or invent their contents. For now, use the available guides and inspect the curr
   obsolete by the change after checking its consumers; do not leave commented-out implementations.
 - Write comments to explain non-obvious decisions, constraints or tradeoffs. Prefer clear code over
   comments that repeat what the code does.
+- Write application and diagnostic log messages in English, regardless of the interface language.
 - Update affected documentation when behavior or the status of a slice changes.
 - Do not remove dependencies before searching for all consumers in the relevant area.
 
 The current stack is .NET 10 in the backend and Next.js 15 / React 19 / TypeScript in the frontend.
 Always check `global.json`, `.csproj` files and `frontend/package.json` before changing versions.
-The `/api/v1` APIs use Identity cookies, antiforgery and Problem Details; legacy endpoints retain
-the `{ code, message, data }` envelope and raw-token compatibility. Keep these contracts distinct.
+The `/api/v1` APIs are the only application endpoints and use Identity cookies, antiforgery and
+Problem Details. Do not reintroduce non-versioned controllers, response envelopes or raw-token authentication.
 
 ## Verification and completion criteria
 

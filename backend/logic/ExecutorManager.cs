@@ -1,138 +1,64 @@
 using database;
 using logic.Commands;
-using logic.Commands.User;
 using logic.Exceptions;
 using logic.Security;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace logic {
-    public class ExecutorManager {
-        private const Int32 MaxAttempts = 5;
-        public String? Token { get; private set; }
-        public UInt64 UserId => userId ?? throw new ExecutorException("User not already logged");
-        public MoneyGestorContext DbContext { get; private set; }
-        public IDbContextTransaction Transaction => transaction == null ? throw new ExecutorException("Transaction was not open or already closed") : transaction!;
+namespace logic;
 
-        private IDbContextTransaction? transaction;
+public sealed class ExecutorManager(
+    IDbContextFactory<MoneyGestorContext> contextFactory,
+    TimeProvider timeProvider,
+    ILogger<ExecutorManager> logger) {
+    private const Int32 MaxAttempts = 5;
+    private UInt64? userId;
+    private MoneyGestorContext? dbContext;
 
-        private UInt64? userId;
-        private readonly MoneyGestorContext primaryDbContext;
-        private readonly Func<MoneyGestorContext>? contextFactory;
-        private readonly ILogger<ExecutorManager>? logger;
+    public UInt64 UserId => userId ?? throw new ExecutorException("No command is executing.");
+    public MoneyGestorContext DbContext => dbContext ?? throw new ExecutorException("No command is executing.");
 
-        internal TimeProvider TimeProvider { get; }
-
-        public ExecutorManager(MoneyGestorContext dbContext, TimeProvider timeProvider)
-            : this(dbContext, timeProvider, null) {
+    /// <summary>The owner must come from the authenticated principal, never from request data.</summary>
+    public async Task<T> ExecuteAsync<T>(UInt64 authenticatedUserId, ICommand<T> command, CancellationToken cancellationToken = default) {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentOutOfRangeException.ThrowIfZero(authenticatedUserId);
+        if (userId != null) {
+            throw new ExecutorException("An operation is already executing. Nested commands must use the active executor directly.");
         }
 
-        public ExecutorManager(
-            MoneyGestorContext dbContext,
-            TimeProvider timeProvider,
-            Func<MoneyGestorContext>? contextFactory,
-            ILogger<ExecutorManager>? logger = null) {
-            DbContext = dbContext;
-            primaryDbContext = dbContext;
-            this.contextFactory = contextFactory;
-            this.logger = logger;
-            TimeProvider = timeProvider;
-            transaction = null;
-        }
-
-        public ExecutorManager WithToken(String? token) {
-            Token = token;
-            return this;
-        }
-
-        /// <summary>Supplies a user ID resolved by the authenticated application boundary, without accepting client identity data.</summary>
-        public ExecutorManager UseAuthenticatedUser(UInt64 authenticatedUserId) {
-            if (Token != null || userId != null || authenticatedUserId == 0) {
-                throw new InvalidOperationException("An authenticated user can only be assigned to a fresh executor.");
-            }
-
-            userId = authenticatedUserId;
-            return this;
-        }
-
-        public async Task Execute<T>(ICommand<T> executor, CancellationToken cancellationToken = default) {
-            if (transaction != null) {
-                throw new ExecutorException("Transaction already started");
-            }
-
-            for (var attempt = 1; attempt <= MaxAttempts; attempt++) {
-                MoneyGestorContext? retryContext = null;
-                if (attempt > 1) {
-                    retryContext = contextFactory?.Invoke()
-                        ?? throw new InvalidOperationException(
-                            "A fresh database context factory is required to retry a concurrent operation.");
-                    DbContext = retryContext;
-                }
-
+        userId = authenticatedUserId;
+        try {
+            for (var attempt = 1; ; attempt++) {
                 try {
-                    transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
-                    await LoginUser(cancellationToken);
-                    await executor.Execute(this, cancellationToken);
-                    await transaction.CommitAsync(cancellationToken);
-                    return;
-                } catch (Exception exception) {
-                    if (transaction != null) {
-                        await transaction.RollbackAsync(CancellationToken.None);
-                    }
-
-                    if (attempt == MaxAttempts || !DatabaseUpdatePolicy.IsRetryable(exception)) {
-                        throw;
-                    }
-
+                    return await ExecuteAttemptAsync(command, cancellationToken);
+                } catch (Exception exception) when (attempt < MaxAttempts && DatabaseUpdatePolicy.IsRetryable(exception)) {
                     ConcurrencyRetryMetrics.RecordRetry();
-                    logger?.LogWarning(new EventId(1301, "ConcurrencyRetry"),
+                    logger.LogWarning(new EventId(1301, "ConcurrencyRetry"),
                         "Retrying a concurrent write (Attempt {Attempt})", attempt + 1);
-                    await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), cancellationToken);
-                } finally {
-                    if (transaction != null) {
-                        await transaction.DisposeAsync();
-                        transaction = null;
-                    }
-
-                    if (retryContext != null) {
-                        await retryContext.DisposeAsync();
-                    }
-
-                    DbContext = primaryDbContext;
+                    await Task.Delay(TimeSpan.FromMilliseconds(10 * attempt), timeProvider, cancellationToken);
                 }
             }
+        } finally {
+            userId = null;
         }
+    }
 
-        public void SetToken(String token) {
-            if (Token != null) {
-                throw new InvalidOperationException("Token is already set");
+    private async Task<T> ExecuteAttemptAsync<T>(ICommand<T> command, CancellationToken cancellationToken) {
+        // Each attempt owns a fresh context, including consecutive operations on this scoped executor.
+        await using var database = await contextFactory.CreateDbContextAsync(cancellationToken);
+        dbContext = database;
+        try {
+            await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
+            try {
+                var result = await command.ExecuteAsync(this, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            } catch {
+                await transaction.RollbackAsync(CancellationToken.None);
+                throw;
             }
-
-            Token = token;
-        }
-
-        public void CheckUserLogged() {
-            if (userId == null) {
-                throw new ExecutorException("User or token not setted");
-            }
-        }
-
-        public async Task<Boolean> LoginUser(CancellationToken cancellationToken = default) {
-            if (Token == null) {
-                return false;
-            }
-
-            if (userId != null) {
-                return true;
-            }
-
-            var findUserCommand = new FindUserByTokenCommand();
-
-            await findUserCommand.Execute(this, cancellationToken);
-
-            userId = findUserCommand.Result;
-
-            return true;
+        } finally {
+            dbContext = null;
         }
     }
 }

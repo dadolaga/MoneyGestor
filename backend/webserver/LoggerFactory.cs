@@ -7,7 +7,7 @@ namespace webserver;
 
 internal static class LoggerFactory {
     public static Logger Create(LogOptions options) {
-        const String outputFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u4}] {TraceId} {CorrelationId} {Message:lj}{NewLine}{Exception}";
+        const String outputFormat = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u4}] {TraceId} - {Message:lj}{NewLine}{Exception}";
 
         var configuration = new LoggerConfiguration()
             .MinimumLevel.Is(options.GetLevel())

@@ -14,9 +14,8 @@ namespace logic.Commands.Transaction {
         private UInt64? walletDestinationId;
         private Decimal value;
         private UInt64 transactionTypeId;
-        private UInt64? userId;
 
-        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Decimal value, UInt64 transactionTypeId, UInt64? userId, UInt64? walletDestinationId = null) {
+        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Decimal value, UInt64 transactionTypeId, UInt64? walletDestinationId = null) {
             this.description = description;
             this.longDescription = longDescription;
             this.date = date;
@@ -24,16 +23,11 @@ namespace logic.Commands.Transaction {
             this.walletDestinationId = walletDestinationId;
             this.value = value;
             this.transactionTypeId = transactionTypeId;
-            this.userId = userId;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             var ownerId = executorManager.UserId;
-
-            if (userId != null && userId != ownerId) {
-                throw new UserPermissionException("Transaction owner cannot be supplied by the client");
-            }
 
             MonetaryValuePolicy.RequireValid(value, allowZero: false);
             BusinessDatePolicy.RequireValid(date);
@@ -108,7 +102,7 @@ namespace logic.Commands.Transaction {
                     await database.SaveChangesAsync(cancellationToken);
                 }
 
-                result = transaction.Id;
+                return transaction.Id;
             } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsRetryable(exception)) {
                 throw;
             } catch (DbUpdateException) {

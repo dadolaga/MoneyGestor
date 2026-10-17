@@ -21,34 +21,30 @@
 
 ## 8.1 Persistence structure
 
-One external MySQL database stores financial and Identity tables. `MoneyGestorContext` and `IdentityAccountContext` manage separate entity groups in the same schema and share `__EFMigrationsHistory`.
+One external MySQL database stores financial and Identity tables. `MoneyGestorContext` extends `IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64>` and manages the complete model and its single `__EFMigrationsHistory`.
 
 | Entity / area | Purpose | Important fields or relationships |
 | --- | --- | --- |
-| `UserDb` | Application user and historical account data | User ID, names, email, username, legacy password representation |
-| `LoginDb` | Legacy authentication compatibility | User association, token/session timestamps |
+| `ApplicationIdentityUser` | Single application and Identity user, stored in `AspNetUsers` | Numeric ID, first/last name, username, email, Identity password hash and security state |
 | `WalletDb` | Owned balance container | Opening `Value`, `CurrentValue`, `BalanceVersion`, favorite, color and owner |
 | `ColorDb` | Wallet styling | RGB value and optional owner; no owner means global |
 | `TransactionTypeDb` | Financial classification | Name and optional owner; no owner means global |
 | `TransactionDb` | Signed financial entry | Date, value, descriptions, wallet, type, owner and reciprocal transfer link |
-| `ApplicationIdentityUser` | Identity account | Standard Identity properties and unique `LegacyUserId` mapping |
-| Identity tables | Authentication infrastructure | Password hashes, normalized identifiers, claims, tokens and security stamps |
+| Other Identity tables | Roles, claims, provider logins and account tokens | Numeric user/role references managed by Identity |
 
 ```mermaid
 erDiagram
     USER ||--o{ WALLET : owns
     USER ||--o{ TRANSACTION : owns
-    USER ||--o{ LOGIN : has
     USER ||--o{ COLOR : defines_private
     USER ||--o{ TRANSACTION_TYPE : defines_private
     WALLET ||--o{ TRANSACTION : contains
     COLOR ||--o{ WALLET : styles
     TRANSACTION_TYPE ||--o{ TRANSACTION : classifies
     TRANSACTION o|--o| TRANSACTION : transfer_pair
-    USER ||--|| IDENTITY_USER : maps_to
 ```
 
-Application table names include `user`, `wallet` and `transaction`; inspect the model/migrations rather than guessing SQL naming from C# plural names. API DTO limits can be stricter than database column lengths.
+Application table names include `AspNetUsers`, `wallet` and `transaction`; inspect the model/migrations rather than guessing SQL naming from C# plural names. API DTO limits can be stricter than database column lengths. `AspNetUsers.Id` is an auto-generated `BIGINT UNSIGNED`, referenced directly by financial owner/author foreign keys. Usernames and emails are stored only in Identity, with unique normalized indexes. The old `user` and `login` tables, password placeholder and mapping ID are absent from the new schema.
 
 ## 8.2 Ownership and reference data
 
@@ -64,7 +60,7 @@ Amounts are .NET `decimal` and MySQL `DECIMAL(19,2)`. The domain range is plus o
 
 The current frontend transports numbers as JavaScript numbers. At very large amounts, JavaScript cannot represent the backend decimal range exactly; backend storage precision does not guarantee identical precision in every client. Avoid treating the maximum database range as a tested browser-use range.
 
-Transaction dates are .NET `DateOnly` and MySQL `DATE`, with supported years 1000–9999. V1 uses calendar dates such as `2026-10-05`. Legacy timestamp parsing preserves the calendar component. Operational timestamps and sessions use UTC; choosing a display locale does not change stored financial dates.
+Transaction dates are .NET `DateOnly` and MySQL `DATE`, with supported years 1000–9999. The API uses calendar dates such as `2026-10-05`. Operational timestamps and sessions use UTC; choosing a display locale does not change stored financial dates.
 
 ## 8.4 Balance calculation
 
@@ -88,31 +84,27 @@ Creation and mutation of the pair are atomic. List queries hide the positive des
 
 | Context | Current initial migration |
 | --- | --- |
-| MoneyGestor | `20261001180542_InitialMoneyGestorSchema` |
-| Identity | `20261001181454_InitialIdentitySchema` |
+| MoneyGestor, including Identity and wallet details | `20261017084510_InitialUnifiedSchema` |
 
-The current migration baseline targets an empty database. An older populated schema without the new initial migration is refused. The old schema-adoption procedure mentioned in historical evidence is not the current startup behavior.
+The migration baseline was recreated during the refactor for an empty database, as there are no application data to migrate. It creates financial and Identity tables together. Previous migration chains have been replaced; this baseline is not an in-place upgrade of the old two-user schema. A database with any prior schema or migration history is refused. No database was recreated or migrated as part of generating these source files.
 
-Use `database.bootstrapMode=Migrate` only for a verified deployment target with adequate privileges and backups, then return to `Disabled`. Both contexts must be current for startup to succeed. Seed and integrity checks run after schema preparation.
+Use `database.bootstrapMode=Migrate` only for a verified deployment target with adequate privileges, then return to `Disabled`. The single context must be current for startup to succeed. Seed and integrity checks run after schema preparation.
 
 For reviewing SQL, restore the repository-local EF tool and set `MONEYGESTOR_DESIGN_CONNECTION_STRING` privately in the administrative environment:
 
 ```powershell
 dotnet tool restore
 dotnet tool run dotnet-ef migrations script --project backend/database/database.csproj --context MoneyGestorContext
-dotnet tool run dotnet-ef migrations script --project backend/database/database.csproj --context IdentityAccountContext
 ```
 
 Generating scripts does not apply them. Database-update commands and startup with `Migrate` do modify the configured target. The initial migrations' Down methods remove tables; recovery should use a verified backup in a separate schema and a compatible application version, rather than an unreviewed downgrade.
 
 ## 8.7 Integrity and recovery
 
-Migration `20261016164401_WalletDetails` adds wallet type, EUR currency, institution, optional IBAN,
+The initial unified migration includes wallet type, EUR currency, institution, optional IBAN,
 card metadata, credit limit/spending, statement/payment days, notes and shareable preference.
 The optional self-reference `LinkedAccountId` uses a restrictive foreign key and is indexed.
-Existing balance containers default to bank/EUR without changing names, balances or colours.
-Apply this migration on a verified deployment target before running the updated API; generating
-the migration does not apply it.
+Balance containers default to bank/EUR. Generating this migration does not apply it.
 
 Only bank/prepaid/cash own balances. Debit/credit keep zero opening/current values and are excluded
 from wealth. Account linking requires the same owner and a bank type. Commands lock affected
@@ -121,7 +113,7 @@ linked cards cannot be deleted. A balance-owning wallet with balances or movemen
 a balance-less card. Credit spending is stored separately as metadata; no billing automation or
 ledger adjustment is implied. Shareable does not implement shared ownership or permissions.
 
-Startup checks financial ownership, references, balances and transfer pairs and refuses known inconsistencies. Identity mapping also checks normalized account collisions. Failures expose technical identifiers/counts instead of automatically changing records.
+Startup checks financial ownership, references, balances and transfer pairs and refuses known inconsistencies. Identity account creation enforces unique normalized usernames/emails. Startup no longer imports historical accounts. Failures expose technical identifiers/counts instead of automatically changing records.
 
 For an old schema, preserve the original and plan an explicit conversion or separate installation. For corrupted/current data, collect technical evidence and use the [backup and staging restore workflow](09-operations-and-recovery.md). Changing bootstrap mode does not repair financial inconsistencies.
 

@@ -15,8 +15,6 @@ namespace logic.Commands.Transaction {
         private UInt64? walletDestinationId;
         private Decimal? value;
         private UInt64? transactionTypeId;
-        private UInt64? userId;
-        private Boolean overwriteNull;
         private Boolean overwriteDescription;
         private Boolean overwriteLongDescription;
 
@@ -28,8 +26,6 @@ namespace logic.Commands.Transaction {
                 UInt64? walletDestinationId = null,
                 Decimal? value = null,
                 UInt64? transactionTypeId = null,
-                UInt64? userId = null,
-                Boolean overwriteNull = false,
                 Boolean overwriteDescription = false,
                 Boolean overwriteLongDescription = false) {
             this.id = id;
@@ -40,13 +36,11 @@ namespace logic.Commands.Transaction {
             this.walletDestinationId = walletDestinationId;
             this.value = value;
             this.transactionTypeId = transactionTypeId;
-            this.userId = userId;
-            this.overwriteNull = overwriteNull;
             this.overwriteDescription = overwriteDescription;
             this.overwriteLongDescription = overwriteLongDescription;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             var ownerId = executorManager.UserId;
 
@@ -54,10 +48,6 @@ namespace logic.Commands.Transaction {
                 database,
                 id,
                 ownerId, cancellationToken);
-
-            if (userId != null && userId != ownerId) {
-                throw new UserPermissionException("Transaction owner cannot be supplied by the client");
-            }
 
             TransactionDb sourceTransaction = requestedTransaction;
             TransactionDb? destinationTransaction = null;
@@ -77,7 +67,7 @@ namespace logic.Commands.Transaction {
 
             if (finalIsTransfer) {
                 var finalDestinationWalletId = walletDestinationId
-                    ?? (!overwriteNull ? destinationTransaction?.WalletId : null);
+                    ?? destinationTransaction?.WalletId;
                 finalValue = value ?? Math.Abs(sourceTransaction.Value);
 
                 MonetaryValuePolicy.RequireValid(finalValue, allowZero: false);
@@ -125,8 +115,8 @@ namespace logic.Commands.Transaction {
                     finalDestinationWallet?.Id
                 }.Where(wallet => wallet.HasValue).Select(wallet => wallet!.Value).ToArray());
 
-            var finalDescription = overwriteNull || overwriteDescription ? description : description ?? sourceTransaction.Description;
-            var finalLongDescription = overwriteNull || overwriteLongDescription
+            var finalDescription = overwriteDescription ? description : description ?? sourceTransaction.Description;
+            var finalLongDescription = overwriteLongDescription
                 ? longDescription
                 : longDescription ?? sourceTransaction.LongDescription;
             var finalDate = date ?? sourceTransaction.Date;
@@ -187,7 +177,7 @@ namespace logic.Commands.Transaction {
                     await database.SaveChangesAsync(cancellationToken);
                 }
 
-                result = sourceTransaction.Id;
+                return sourceTransaction.Id;
             } catch (DbUpdateException exception) when (DatabaseUpdatePolicy.IsRetryable(exception)) {
                 throw;
             } catch (DbUpdateException) {

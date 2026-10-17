@@ -1,25 +1,10 @@
 using database;
-using database.Identity;
 using logic;
-using logic.Managers;
-using logic.Models;
 using logic.Security;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Security.Claims;
 
 namespace webserver.Api.V1;
-
-public interface IApiCurrentUser {
-    Task<UInt64> RequireIdAsync(ClaimsPrincipal principal);
-}
-
-public sealed class ApiCurrentUser(UserManager<ApplicationIdentityUser> users) : IApiCurrentUser {
-    public async Task<UInt64> RequireIdAsync(ClaimsPrincipal principal) =>
-        (await users.GetUserAsync(principal))?.LegacyUserId
-        ?? throw new UnauthorizedAccessException("Authenticated account mapping is unavailable.");
-}
 
 public interface IResourceQueryService {
     Task<IReadOnlyList<ColorResponse>> GetColorsAsync(UInt64 userId, CancellationToken cancellationToken);
@@ -30,9 +15,6 @@ public interface IResourceQueryService {
     Task<PageResponse<TransactionResponse>> GetTransactionsAsync(UInt64 userId, TransactionListQuery query, CancellationToken cancellationToken);
     Task<TransactionResponse?> GetTransactionAsync(UInt64 userId, UInt64 id, CancellationToken cancellationToken);
     Task<DashboardResponse> GetDashboardAsync(UInt64 userId, DashboardQuery range, CancellationToken cancellationToken);
-    Task<logic.Models.User?> GetLegacyUserAsync(UInt64 userId, CancellationToken cancellationToken);
-    Task<IReadOnlyList<logic.Models.Color>> GetLegacyColorsAsync(UInt64 userId, CancellationToken cancellationToken);
-    Task<PageResponse<TransactionResponse>> GetLegacyTransactionsAsync(UInt64 userId, ListFilter filter, CancellationToken cancellationToken);
 }
 
 public sealed class ResourceQueryService(MoneyGestorContext database) : IResourceQueryService {
@@ -162,25 +144,6 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .Where(transaction => transaction.Id == id)
             .Select(TransactionProjection())
             .SingleOrDefaultAsync(cancellationToken);
-
-    public Task<logic.Models.User?> GetLegacyUserAsync(UInt64 userId, CancellationToken cancellationToken) =>
-        database.Users.AsNoTracking().Where(user => user.Id == userId)
-            .Select(user => new logic.Models.User {
-                Id = user.Id, Firstname = user.Firstname, Lastname = user.Lastname, Username = user.Username, Email = user.Email
-            }).SingleOrDefaultAsync(cancellationToken);
-
-    public async Task<IReadOnlyList<logic.Models.Color>> GetLegacyColorsAsync(UInt64 userId, CancellationToken cancellationToken) =>
-        await OwnershipQueryPolicy.AvailableColors(database, userId).AsNoTracking().OrderBy(color => color.Id)
-            .Select(color => new logic.Models.Color { Id = color.Id, Name = color.Name, Value = color.Value, UserId = color.UserId })
-            .ToListAsync(cancellationToken);
-
-    public async Task<PageResponse<TransactionResponse>> GetLegacyTransactionsAsync(UInt64 userId, ListFilter filter, CancellationToken cancellationToken) {
-        var transactions = OwnershipQueryPolicy.OwnedTransactions(database, userId).AsNoTracking()
-            .Where(transaction => transaction.TransactionTypeId != DatabaseInitializer.TRANSFER.Id || transaction.Value < 0);
-        var count = await transactions.WhereByFilter(filter.Wheres).LongCountAsync(cancellationToken);
-        var rows = await transactions.ApplyFilter(filter).Select(TransactionProjection()).ToListAsync(cancellationToken);
-        return new PageResponse<TransactionResponse>(checked((Int32) filter.Offset + 1), (Int32) filter.Limit, count, rows);
-    }
 
     public async Task<DashboardResponse> GetDashboardAsync(UInt64 userId, DashboardQuery range, CancellationToken cancellationToken) {
         var from = range.From!.Value;

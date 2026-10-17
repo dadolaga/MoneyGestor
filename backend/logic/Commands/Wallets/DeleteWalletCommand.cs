@@ -14,7 +14,7 @@ namespace logic.Commands.Wallets {
             this.id = id;
         }
 
-        internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
+        internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
             await logic.Security.OwnershipPolicy.LockOwnedWalletsAsync(database, executorManager.UserId, cancellationToken, id);
 
@@ -34,7 +34,7 @@ namespace logic.Commands.Wallets {
 
             await database.SaveChangesAsync(cancellationToken);
 
-            result = id;
+            return id;
         }
     }
 }
