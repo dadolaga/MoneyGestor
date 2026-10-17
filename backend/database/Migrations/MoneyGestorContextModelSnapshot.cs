@@ -205,16 +205,74 @@ namespace database.Migrations
                     b.Property<ulong>("ColorId")
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<decimal?>("CreditLimit")
+                        .HasPrecision(19, 2)
+                        .HasColumnType("decimal(19,2)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)")
+                        .HasDefaultValue("EUR");
+
+                    b.Property<decimal?>("CurrentSpending")
+                        .HasPrecision(19, 2)
+                        .HasColumnType("decimal(19,2)");
+
                     b.Property<decimal>("CurrentValue")
                         .HasPrecision(19, 2)
                         .HasColumnType("decimal(19,2)");
 
+                    b.Property<string>("Expiry")
+                        .HasMaxLength(7)
+                        .HasColumnType("varchar(7)");
+
                     b.Property<bool>("Favorite")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Iban")
+                        .HasMaxLength(34)
+                        .HasColumnType("varchar(34)");
+
+                    b.Property<string>("Institution")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)")
+                        .HasDefaultValue("bank");
+
+                    b.Property<string>("LastFour")
+                        .HasMaxLength(4)
+                        .HasColumnType("varchar(4)");
+
+                    b.Property<ulong?>("LinkedAccountId")
+                        .HasColumnType("bigint unsigned");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Network")
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int?>("PaymentDay")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Shareable")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int?>("StatementDay")
+                        .HasColumnType("int");
 
                     b.Property<ulong>("UserId")
                         .HasColumnType("bigint unsigned");
@@ -228,6 +286,8 @@ namespace database.Migrations
                     b.HasIndex("ColorId");
 
                     b.HasIndex("Id");
+
+                    b.HasIndex("LinkedAccountId");
 
                     b.HasIndex("UserId");
 
@@ -318,6 +378,11 @@ namespace database.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("database.Models.WalletDb", "LinkedAccount")
+                        .WithMany()
+                        .HasForeignKey("LinkedAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("database.Models.UserDb", "User")
                         .WithMany("Wallets")
                         .HasForeignKey("UserId")
@@ -325,6 +390,8 @@ namespace database.Migrations
                         .IsRequired();
 
                     b.Navigation("Color");
+
+                    b.Navigation("LinkedAccount");
 
                     b.Navigation("User");
                 });

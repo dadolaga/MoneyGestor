@@ -67,7 +67,10 @@ Italian uses the same URLs with `/it` prepended. These are frontend routes; do n
 
 ## 5.4 Live data and development previews
 
-The current dashboard, wallet and transaction route files import `ApiDashboardPage`, `ApiWalletsPage` and `ApiTransactionsPage`. They perform real HTTP requests through `apiClient`.
+The dashboard and transaction routes import `ApiDashboardPage` and `ApiTransactionsPage`.
+The wallet route imports `WalletsDashboard`, with a shared `WalletEditorDialog` for creation/editing.
+They perform real HTTP requests through `apiClient`; wallet creation, metadata updates and confirmed
+deletion persist through v1 APIs. See the [wallet implementation notes](../../frontend/src/features/wallets/README.md).
 
 The development catalog and feature tests use fixtures and view models. These are useful for inspecting layout, themes and loading/empty/error states without a running backend, but editing a preview does not persist a real financial record. Some richer feature components expose more controls than the simpler live pages. Always inspect the route import before assuming a component is the production implementation.
 

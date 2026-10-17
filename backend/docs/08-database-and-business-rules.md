@@ -107,6 +107,20 @@ Generating scripts does not apply them. Database-update commands and startup wit
 
 ## 8.7 Integrity and recovery
 
+Migration `20261016164401_WalletDetails` adds wallet type, EUR currency, institution, optional IBAN,
+card metadata, credit limit/spending, statement/payment days, notes and shareable preference.
+The optional self-reference `LinkedAccountId` uses a restrictive foreign key and is indexed.
+Existing balance containers default to bank/EUR without changing names, balances or colours.
+Apply this migration on a verified deployment target before running the updated API; generating
+the migration does not apply it.
+
+Only bank/prepaid/cash own balances. Debit/credit keep zero opening/current values and are excluded
+from wealth. Account linking requires the same owner and a bank type. Commands lock affected
+wallets before linking, changing type, toggling favourite or deleting. A wallet with movements or
+linked cards cannot be deleted. A balance-owning wallet with balances or movements cannot become
+a balance-less card. Credit spending is stored separately as metadata; no billing automation or
+ledger adjustment is implied. Shareable does not implement shared ownership or permissions.
+
 Startup checks financial ownership, references, balances and transfer pairs and refuses known inconsistencies. Identity mapping also checks normalized account collisions. Failures expose technical identifiers/counts instead of automatically changing records.
 
 For an old schema, preserve the original and plan an explicit conversion or separate installation. For corrupted/current data, collect technical evidence and use the [backup and staging restore workflow](09-operations-and-recovery.md). Changing bootstrap mode does not repair financial inconsistencies.

@@ -1,4 +1,195 @@
 {
+    "CreateWallet": {
+        "title": "New wallet",
+        "editTitle": "Edit wallet",
+        "editDescription": "Update the selected wallet details.",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "created": "Wallet created.",
+        "updated": "Wallet updated.",
+        "errors": {
+            "signInAgain": "Your session has expired. Please sign in again.",
+            "conflict": "A wallet with this name already exists.",
+            "validation": "Check the indicated fields.",
+            "failed": "The wallet could not be saved. Please try again."
+        },
+        "namePlaceholder": "Wallet name",
+        "typeUnavailable": "The type is unavailable for this wallet. Select it to complete the details.",
+        "linkedCardsTypeLock": "This account has linked cards, so its type stays Current account.",
+        "description": "Add an account, card or wallet to track.",
+        "kind": "Wallet type",
+        "kinds": {
+            "bank": "Current account",
+            "prepaid": "Prepaid card",
+            "debit": "Debit card",
+            "credit": "Credit card",
+            "cash": "Cash"
+        },
+        "kindHints": {
+            "bank": "Has its own balance",
+            "prepaid": "Has its own balance",
+            "debit": "Uses a linked account",
+            "credit": "Billed at period end",
+            "cash": "Has its own balance"
+        },
+        "fields": {
+            "name": "Wallet name",
+            "institution": "Institution / bank",
+            "currency": "Currency",
+            "color": "Icon colour",
+            "initialBalance": "Opening balance",
+            "iban": "IBAN (optional)",
+            "lastFour": "Last 4 digits (optional)",
+            "network": "Card network",
+            "expiry": "Card expiry (optional)",
+            "linkedAccount": "Linked account",
+            "creditLimit": "Credit limit",
+            "currentSpending": "Current card spending",
+            "statementDay": "Statement closing day",
+            "paymentDay": "Payment day",
+            "notes": "Description / notes (optional)",
+            "shareable": "Shareable"
+        },
+        "namePlaceholders": {
+            "bank": "E.g. Main account",
+            "prepaid": "E.g. PostePay",
+            "debit": "E.g. Fideuram debit card",
+            "credit": "E.g. Visa Gold card",
+            "cash": "E.g. Cash wallet"
+        },
+        "colors": {
+            "red": "Red", "orange": "Orange", "yellow": "Yellow", "green": "Green",
+            "blue": "Blue", "purple": "Purple", "pink": "Pink", "grey": "Grey", "current": "Current colour"
+        },
+        "institutionPlaceholder": "E.g. Poste Italiane, Intesa Sanpaolo, Revolut",
+        "amountPlaceholder": "0.00",
+        "notesPlaceholder": "E.g. Wallet for everyday spending…",
+        "accountPlaceholder": "Select a current account",
+        "noAccounts": "Create a current account first to link this card.",
+        "inheritedCurrency": "Inherited from the linked account.",
+        "inheritedSharing": "Sharing is managed through the linked account.",
+        "includedInTotal": "Included in total wealth",
+        "excludedFromTotal": "Excluded from total wealth",
+        "cancel": "Cancel",
+        "create": "Create wallet",
+        "validation": {
+            "serverField": "Invalid value for this operation.",
+            "kind": "Select a valid wallet type.",
+            "currency": "The supported currency is EUR.",
+            "color": "Select a valid colour.",
+            "network": "Select a valid card network.",
+            "serverAmount": "Enter a non-negative amount with up to two decimal places, within the allowed limits.",
+            "incompatibleFields": "Some details are incompatible with the selected wallet type.",
+            "linkedCards": "This account has linked cards, so its type must stay Current account.",
+            "balanceOrMovements": "You cannot change this wallet to a debit or credit card: it has an opening balance, a current balance or recorded transactions.",
+            "required": "This field is required.",
+            "amount": "Enter a valid amount with up to two decimal places.",
+            "nonNegative": "Enter an amount greater than or equal to zero.",
+            "day": "Enter a day from 1 to 31.",
+            "iban": "Enter a valid IBAN.",
+            "lastFour": "Enter exactly four digits.",
+            "expiry": "Enter a valid expiry month that is not in the past.",
+            "account": "Select an available current account.",
+            "notes": "Enter no more than 200 characters."
+        }
+    },
+    "WalletsDashboard": {
+        "title": "Wallets",
+        "description": "Manage accounts, cards and wallets in one place.",
+        "actions": {
+            "create": "New wallet",
+            "connect": "Connect account",
+            "edit": "Edit",
+            "transfer": "Transfer",
+            "movement": "Add transaction",
+            "viewAll": "View all",
+            "editFor": "Edit {name}",
+            "deleteFor": "Delete {name}",
+            "delete": "Delete",
+            "cancel": "Cancel",
+            "clearSelection": "Clear selection",
+            "close": "Close",
+            "retry": "Retry"
+        },
+        "summary": {
+            "title": "Wallet overview",
+            "balance": "Total balance",
+            "accounts": "Accounts and cards",
+            "walletCount": "Registered wallets and cards",
+            "income": "Income this month",
+            "expense": "Expenses this month",
+            "currentMonth": "Current month total",
+            "comparisonUnavailable": "Monthly comparison unavailable",
+            "typesUnavailable": "Wallet types unavailable"
+        },
+        "list": { "title": "Your wallets" },
+        "delete": {
+            "title": "Delete wallet?",
+            "description": "{name} will be permanently deleted. This is only allowed without transactions or linked cards.",
+            "conflict": "The wallet has transactions or linked cards and cannot be deleted.",
+            "failed": "The wallet could not be deleted. Please try again.",
+            "deleted": "Wallet deleted."
+        },
+        "details": {
+            "title": "Wallet details",
+            "wallet": "Wallet",
+            "balance": "Current balance",
+            "availableBalance": "Available balance",
+            "bookBalance": "Book balance",
+            "type": "Type",
+            "institution": "Institution",
+            "iban": "IBAN",
+            "updated": "Last updated",
+            "statusUnavailable": "Status unavailable"
+        },
+        "movements": {
+            "title": "Recent transactions",
+            "linkedAccount": "Linked account transactions",
+            "loading": "Loading transactions…",
+            "empty": "No transactions in this wallet yet.",
+            "error": "Recent transactions could not be loaded.",
+            "untitled": "Untitled transaction"
+        },
+        "distribution": {
+            "title": "Wealth distribution",
+            "description": "Distribution of wallet balances. Amounts and percentages are listed in the legend.",
+            "total": "Total",
+            "byType": "Distribution by type",
+            "accounts": "Current accounts",
+            "cards": "Cards",
+            "investments": "Investments",
+            "cash": "Cash",
+            "prepaid": "Prepaid cards",
+            "excludedCards": "Debit and credit cards have no independent balance and are excluded from wealth.",
+            "unavailable": "Distribution is unavailable with a zero total or negative balances."
+        },
+        "table": {
+            "title": "All wallets",
+            "name": "Name",
+            "type": "Type",
+            "institution": "Institution",
+            "balance": "Balance",
+            "updated": "Last updated",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "dialogs": {
+            "create": "New wallet",
+            "connect": "Connect account",
+            "edit": "Edit wallet",
+            "transfer": "Transfer",
+            "movement": "Add transaction",
+            "allMovements": "All transactions"
+        },
+        "states": {
+            "loading": "Loading wallets…",
+            "empty": "No wallets yet. Add your first wallet to get started.",
+            "error": "Wallets could not be loaded.",
+            "summaryError": "Monthly totals are unavailable.",
+            "refreshError": "The operation completed, but the list could not be refreshed. Reload the wallets.",
+            "signInAgain": "Your session has expired. Please sign in again."
+        }
+    },
     "Wallets": {
         "title": "Your wallets",
         "description": "Keep accounts, cards, savings and investments in one place.",

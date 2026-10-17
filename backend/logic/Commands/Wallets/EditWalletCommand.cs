@@ -1,5 +1,6 @@
 ﻿using logic.Exceptions;
 using logic.Security;
+using logic.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,30 +14,39 @@ namespace logic.Commands.Wallets {
         private UInt64 walletIdToUpdate;
         private String? name;
         private UInt64? colorId;
+        private readonly WalletDetails? details;
+        private readonly UInt32? colorValue;
 
-        public EditWalletCommand(UInt64 walletIdToUpdate, String? name = null, UInt64? colorId = null) {
+        public EditWalletCommand(UInt64 walletIdToUpdate, String? name = null, UInt64? colorId = null, WalletDetails? details = null, UInt32? colorValue = null) {
             this.walletIdToUpdate = walletIdToUpdate;
             this.name = name;
             this.colorId = colorId;
+            this.details = details;
+            this.colorValue = colorValue;
         }
 
         internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
+            await OwnershipPolicy.LockOwnedWalletsAsync(database, executorManager.UserId, cancellationToken,
+                details?.LinkedAccountId is UInt64 accountId ? [walletIdToUpdate, accountId] : [walletIdToUpdate]);
 
             var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletIdToUpdate, executorManager.UserId, cancellationToken);
 
-            if (colorId != null) {
-                await OwnershipPolicy.RequireAvailableColorAsync(database, colorId.Value, executorManager.UserId, cancellationToken);
-            }
+            if (name != null && (String.IsNullOrWhiteSpace(name) || name.Trim().Length > 100)) throw new WalletValidationException("name", "required");
+            name = name?.Trim();
+            var resolvedColorId = colorId != null || colorValue != null
+                ? await WalletConfigurationPolicy.ResolveColorAsync(database, executorManager.UserId, colorId, colorValue, cancellationToken)
+                : wallet.ColorId;
+            if (details != null) await WalletConfigurationPolicy.ApplyAsync(database, wallet, details, executorManager.UserId, cancellationToken);
 
             if (await database.Wallets.AnyAsync(w => w.Id != walletIdToUpdate && w.UserId == executorManager.UserId && w.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException("Wallet already exist");
             }
 
             wallet.Name = name ?? wallet.Name;
-            wallet.ColorId = colorId ?? wallet.ColorId;
+            wallet.ColorId = resolvedColorId;
 
-            database.Update(wallet);
+            // Update only changed metadata; balances remain under the financial commands.
 
             try {
                 await database.SaveChangesAsync(cancellationToken);

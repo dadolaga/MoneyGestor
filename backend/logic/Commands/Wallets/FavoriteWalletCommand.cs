@@ -20,12 +20,11 @@ namespace logic.Commands.Wallets {
 
         internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
+            await OwnershipPolicy.LockOwnedWalletsAsync(database, executorManager.UserId, cancellationToken, walletId);
 
             var wallet = await OwnershipPolicy.RequireOwnedWalletAsync(database, walletId, executorManager.UserId, cancellationToken);
 
             wallet.Favorite = favorite ?? !wallet.Favorite;
-
-            database.Update(wallet);
 
             await database.SaveChangesAsync(cancellationToken);
 

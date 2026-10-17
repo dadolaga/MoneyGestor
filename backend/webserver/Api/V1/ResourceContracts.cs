@@ -27,7 +27,31 @@ public sealed class BusinessDateAttribute : ValidationAttribute {
 public sealed record ColorResponse(UInt64 Id, String? Name, UInt32 Value) {
     public Boolean IsGlobal { get; init; }
 }
-public sealed record WalletResponse(UInt64 Id, String Name, Decimal InitialValue, Decimal CurrentValue, Boolean Favorite, ColorResponse Color);
+public sealed record WalletResponse(UInt64 Id, String Name, Decimal InitialValue, Decimal CurrentValue, Boolean Favorite, ColorResponse Color) {
+    public WalletDetailsDto? Details { get; init; }
+    public Boolean HasOwnBalance { get; init; } = true;
+    public Boolean IncludedInTotal { get; init; } = true;
+}
+
+public sealed class WalletDetailsDto {
+    [Required, RegularExpression("^(bank|prepaid|debit|credit|cash)$")] public String Kind { get; init; } = String.Empty;
+    [Required, RegularExpression("^EUR$")] public String Currency { get; init; } = "EUR";
+    [StringLength(100)] public String? Institution { get; init; }
+    [StringLength(42)] public String? Iban { get; init; }
+    [RegularExpression(@"^\d{4}$")] public String? LastFour { get; init; }
+    [RegularExpression("^(visa|mastercard|amex|other)$")] public String? Network { get; init; }
+    [RegularExpression(@"^\d{4}-(0[1-9]|1[0-2])$")] public String? Expiry { get; init; }
+    [Range(1, UInt64.MaxValue)] public UInt64? LinkedAccountId { get; init; }
+    [MoneyAmount] public Decimal? CreditLimit { get; init; }
+    [MoneyAmount] public Decimal? CurrentSpending { get; init; }
+    [Range(1, 31)] public Int32? StatementDay { get; init; }
+    [Range(1, 31)] public Int32? PaymentDay { get; init; }
+    [StringLength(200)] public String? Notes { get; init; }
+    public Boolean Shareable { get; init; }
+
+    public logic.Models.WalletDetails ToModel() => new(Kind, Currency, Institution, Iban, LastFour, Network,
+        Expiry, LinkedAccountId, CreditLimit, CurrentSpending, StatementDay, PaymentDay, Notes, Shareable);
+}
 public sealed record TransactionTypeResponse(UInt64 Id, String Name, Boolean IsGlobal);
 public sealed record TransactionWalletResponse(UInt64 Id, String Name, ColorResponse Color);
 public sealed record TransactionResponse(
@@ -58,11 +82,17 @@ public sealed class DashboardQuery : IValidatableObject {
 public sealed record CreateWalletRequest(
     [Required, StringLength(100, MinimumLength = 1)] String Name,
     [MoneyAmount] Decimal InitialValue,
-    [Range(1, UInt64.MaxValue)] UInt64 ColorId);
+    [Range(1, UInt64.MaxValue)] UInt64? ColorId) {
+    [Range(0, 16777215)] public UInt32? ColorValue { get; init; }
+    public WalletDetailsDto? Details { get; init; }
+}
 
 public sealed record UpdateWalletRequest(
     [StringLength(100, MinimumLength = 1)] String? Name,
-    [Range(1, UInt64.MaxValue)] UInt64? ColorId);
+    [Range(1, UInt64.MaxValue)] UInt64? ColorId) {
+    [Range(0, 16777215)] public UInt32? ColorValue { get; init; }
+    public WalletDetailsDto? Details { get; init; }
+}
 
 public sealed record CreateTransactionTypeRequest([Required, StringLength(100, MinimumLength = 1)] String Name);
 

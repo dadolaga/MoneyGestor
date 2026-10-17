@@ -12,81 +12,11 @@ import { Input } from '@/components/ui/input';
 import { DashboardPreview } from '@/features/dashboard/dashboard-preview';
 import type { DashboardViewModel } from '@/features/dashboard/model';
 import { ApiProblemError } from '@/lib/api/client';
-import { apiClient, type ApiColor, type ApiTransaction, type ApiTransactionType, type ApiWallet, type TransactionQuery } from '@/lib/api/client';
+import { apiClient, type ApiTransaction, type ApiTransactionType, type ApiWallet, type TransactionQuery } from '@/lib/api/client';
 
 function useApiError() {
     const t = useTranslations('ApiFinance');
     return (error: unknown) => error instanceof ApiProblemError && error.code === 'authentication_required' ? t('signInAgain') : t('requestFailed');
-}
-
-export function ApiWalletsPage() {
-    const t = useTranslations('ApiFinance.wallets');
-    const tCommon = useTranslations('Common');
-    const format = useFormatter();
-    const errorText = useApiError();
-    const [wallets, setWallets] = useState<ApiWallet[]>([]);
-    const [colors, setColors] = useState<ApiColor[]>([]);
-    const [busy, setBusy] = useState(false);
-    const [error, setError] = useState('');
-    const [editing, setEditing] = useState<number | null>(null);
-    const [deleting, setDeleting] = useState<ApiWallet>();
-    const [name, setName] = useState('');
-    const [balance, setBalance] = useState('0');
-    const [colorId, setColorId] = useState('');
-    const load = useCallback(async (signal?: AbortSignal) => {
-        try {
-            const [nextWallets, nextColors] = await Promise.all([apiClient.wallets(signal), apiClient.colors(signal)]);
-            setWallets(nextWallets); setColors(nextColors); setError('');
-            setColorId((value) => value || String(nextColors[0]?.id ?? ''));
-        } catch (cause) { if (!signal?.aborted) setError(errorText(cause)); }
-    }, [errorText]);
-    useEffect(() => { const controller = new AbortController(); queueMicrotask(() => void load(controller.signal)); return () => controller.abort(); }, [load]);
-    const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault(); setBusy(true); setError('');
-        try {
-            if (editing === null) await apiClient.createWallet({ name: name.trim(), initialValue: Number(balance), colorId: Number(colorId) });
-            else await apiClient.updateWallet(editing, { name: name.trim(), colorId: Number(colorId) });
-            setEditing(null); setName(''); setBalance('0'); await load();
-        } catch (cause) { setError(errorText(cause)); } finally { setBusy(false); }
-    };
-    const beginEdit = (wallet: ApiWallet) => { setEditing(wallet.id); setName(wallet.name); setBalance(String(wallet.initialValue)); setColorId(String(wallet.color.id)); };
-    const money = (value: number) => format.number(value, { style: 'currency', currency: 'EUR' });
-    const walletFormTitle = editing === null ? t('create') : t('edit');
-    return <div className="mx-auto grid w-full gap-6">
-        <header><h1 className="m-0 text-3xl font-bold">{t('title')}</h1><p className="text-muted-foreground">{t('description')}</p></header>
-        <Card><CardHeader><CardTitle>{walletFormTitle}</CardTitle></CardHeader><CardContent>
-            <form className="grid gap-3 sm:grid-cols-4" onSubmit={(event) => void submit(event)}>
-                <Input required maxLength={100} aria-label={t('name')} placeholder={t('name')} value={name} onChange={(event) => setName(event.target.value)} />
-                <Input required type="number" step="0.01" aria-label={t('initialBalance')} disabled={editing !== null} value={balance} onChange={(event) => setBalance(event.target.value)} />
-                <select aria-label={t('color')} className="h-10 rounded-md border border-input bg-background px-3" required value={colorId} onChange={(event) => setColorId(event.target.value)}>{colors.map((color) => <option key={color.id} value={color.id}>{color.name ?? `#${color.value.toString(16).padStart(6, '0')}`}</option>)}</select>
-                <div className="flex gap-2"><Button disabled={busy || !colorId} type="submit">{t('save')}</Button>{editing !== null && <Button type="button" variant="outline" onClick={() => { setEditing(null); setName(''); }}>{t('cancel')}</Button>}</div>
-            </form>
-        </CardContent></Card>
-        {!!error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{wallets.map((wallet) => {
-            const favoriteLabel = wallet.favorite ? t('unfavorite') : t('favorite');
-            return <Card key={wallet.id}><CardContent className="flex items-center justify-between gap-3 p-5">
-            <div className="min-w-0"><h2 className="m-0 truncate font-semibold">{wallet.name}</h2><p className="m-0 mt-1 text-2xl font-bold">{money(wallet.currentValue)}</p><p className="m-0 text-xs text-muted-foreground">{wallet.color.name ?? `#${wallet.color.value.toString(16).padStart(6, '0')}`}</p></div>
-            <div className="flex flex-col gap-2"><Button type="button" variant="outline" onClick={() => void apiClient.setWalletFavorite(wallet.id, !wallet.favorite).then(() => load()).catch((cause: unknown) => setError(errorText(cause)))}>{favoriteLabel}</Button><Button type="button" variant="secondary" onClick={() => beginEdit(wallet)}>{t('edit')}</Button><Button type="button" variant="destructive" onClick={() => setDeleting(wallet)}>{t('delete')}</Button></div>
-        </CardContent></Card>;
-        })}</section>
-        {wallets.length === 0 && !error && <p className="text-muted-foreground">{t('empty')}</p>}
-        <ConfirmDeleteDialog
-            item={deleting}
-            title={t('deleteTitle')}
-            description={(wallet) => t('deleteDescription', { name: wallet.name })}
-            cancelLabel={tCommon('actions.cancel')}
-            confirmLabel={tCommon('actions.delete')}
-            pending={busy}
-            onOpenChange={(open) => { if (!open) setDeleting(undefined); }}
-            onConfirm={async (wallet) => {
-                setBusy(true);
-                try { await apiClient.deleteWallet(wallet.id); setDeleting(undefined); await load(); }
-                catch (cause) { setError(errorText(cause)); }
-                finally { setBusy(false); }
-            }}
-        />
-    </div>;
 }
 
 export function ApiTransactionsPage() {
@@ -120,10 +50,11 @@ export function ApiTransactionsPage() {
                 apiClient.transactions({ page, pageSize, search: search.length === 0 ? undefined : search, kind, sortBy: 'Date', direction: 'Descending' }, signal),
                 apiClient.transactionTypes(signal), apiClient.wallets(signal),
             ]);
-            setRows(result.items); setTotal(result.totalCount); setTypes(nextTypes); setWallets(nextWallets); setError('');
+            const balanceWallets = nextWallets.filter((wallet) => wallet.hasOwnBalance !== false);
+            setRows(result.items); setTotal(result.totalCount); setTypes(nextTypes); setWallets(balanceWallets); setError('');
             setTypeId((current) => current || String(nextTypes.find((type) => type.name.toLowerCase() !== 'transfer')?.id ?? nextTypes[0]?.id ?? ''));
-            setWalletId((current) => current || String(nextWallets[0]?.id ?? ''));
-            setDestinationId((current) => current || String(nextWallets[1]?.id ?? ''));
+            setWalletId((current) => current || String(balanceWallets[0]?.id ?? ''));
+            setDestinationId((current) => current || String(balanceWallets[1]?.id ?? ''));
         } catch (cause) { if (!signal?.aborted) setError(errorText(cause)); }
     }, [errorText, kind, page, pageSize, search]);
     useEffect(() => { const controller = new AbortController(); queueMicrotask(() => void load(controller.signal)); return () => controller.abort(); }, [load]);

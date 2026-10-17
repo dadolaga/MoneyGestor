@@ -19,14 +19,14 @@ public interface IResourceCommandService {
 public sealed class ResourceCommandService(ExecutorManager executor) : IResourceCommandService {
     public async Task<UInt64> CreateWalletAsync(UInt64 userId, CreateWalletRequest request, CancellationToken cancellationToken = default) {
         executor.UseAuthenticatedUser(userId);
-        var command = new AddNewWalletCommand(request.Name.Trim(), request.InitialValue, request.ColorId);
+        var command = new AddNewWalletCommand(request.Name.Trim(), request.InitialValue, request.ColorId, request.Details?.ToModel(), request.ColorValue);
         await executor.Execute(command, cancellationToken);
         return command.Result;
     }
 
     public async Task<UInt64> UpdateWalletAsync(UInt64 userId, UInt64 id, UpdateWalletRequest request, CancellationToken cancellationToken = default) {
         executor.UseAuthenticatedUser(userId);
-        var command = new EditWalletCommand(id, request.Name, request.ColorId);
+        var command = new EditWalletCommand(id, request.Name, request.ColorId, request.Details?.ToModel(), request.ColorValue);
         await executor.Execute(command, cancellationToken);
         return command.Result;
     }

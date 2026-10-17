@@ -56,20 +56,28 @@ public sealed class ResourceQueryService(MoneyGestorContext database) : IResourc
             .Select(color => new ColorResponse(color.Id, color.Name, color.Value) { IsGlobal = color.UserId == null })
             .ToListAsync(cancellationToken);
 
+    private static Expression<Func<global::database.Models.WalletDb, WalletResponse>> WalletProjection() => wallet => new WalletResponse(
+        wallet.Id, wallet.Name, wallet.Value, wallet.CurrentValue, wallet.Favorite,
+        new ColorResponse(wallet.Color!.Id, wallet.Color!.Name, wallet.Color!.Value) { IsGlobal = wallet.Color.UserId == null }) {
+        HasOwnBalance = wallet.Kind == "bank" || wallet.Kind == "prepaid" || wallet.Kind == "cash",
+        IncludedInTotal = wallet.Kind == "bank" || wallet.Kind == "prepaid" || wallet.Kind == "cash",
+        Details = new WalletDetailsDto {
+            Kind = wallet.Kind, Currency = wallet.Currency, Institution = wallet.Institution,
+            Iban = wallet.Iban, LastFour = wallet.LastFour, Network = wallet.Network, Expiry = wallet.Expiry,
+            LinkedAccountId = wallet.LinkedAccountId, CreditLimit = wallet.CreditLimit,
+            CurrentSpending = wallet.CurrentSpending, StatementDay = wallet.StatementDay,
+            PaymentDay = wallet.PaymentDay, Notes = wallet.Notes,
+            Shareable = wallet.Kind == "debit" && wallet.LinkedAccount != null ? wallet.LinkedAccount.Shareable : wallet.Shareable
+        }
+    };
+
     public async Task<IReadOnlyList<WalletResponse>> GetWalletsAsync(UInt64 userId, CancellationToken cancellationToken) =>
-        await OwnershipQueryPolicy.OwnedWallets(database, userId).AsNoTracking()
-            .OrderBy(wallet => wallet.Id)
-            .Select(wallet => new WalletResponse(
-                wallet.Id, wallet.Name, wallet.Value, wallet.CurrentValue, wallet.Favorite,
-                new ColorResponse(wallet.Color!.Id, wallet.Color!.Name, wallet.Color!.Value) { IsGlobal = wallet.Color!.UserId == null }))
-            .ToListAsync(cancellationToken);
+        await OwnershipQueryPolicy.OwnedWallets(database, userId).AsNoTracking().OrderBy(wallet => wallet.Id)
+            .Select(WalletProjection()).ToListAsync(cancellationToken);
 
     public Task<WalletResponse?> GetWalletAsync(UInt64 userId, UInt64 id, CancellationToken cancellationToken) =>
-        OwnershipQueryPolicy.OwnedWallets(database, userId).AsNoTracking()
-            .Where(wallet => wallet.Id == id)
-            .Select(wallet => new WalletResponse(wallet.Id, wallet.Name, wallet.Value, wallet.CurrentValue, wallet.Favorite,
-                new ColorResponse(wallet.Color!.Id, wallet.Color!.Name, wallet.Color!.Value) { IsGlobal = wallet.Color!.UserId == null }))
-            .SingleOrDefaultAsync(cancellationToken);
+        OwnershipQueryPolicy.OwnedWallets(database, userId).AsNoTracking().Where(wallet => wallet.Id == id)
+            .Select(WalletProjection()).SingleOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<TransactionTypeResponse>> GetTransactionTypesAsync(UInt64 userId, CancellationToken cancellationToken) =>
         await OwnershipQueryPolicy.AvailableTransactionTypes(database, userId).AsNoTracking()

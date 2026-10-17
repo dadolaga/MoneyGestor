@@ -16,6 +16,7 @@ namespace logic.Commands.Wallets {
 
         internal override async Task Execute(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
+            await logic.Security.OwnershipPolicy.LockOwnedWalletsAsync(database, executorManager.UserId, cancellationToken, id);
 
             var wallet = await logic.Security.OwnershipPolicy.RequireOwnedWalletAsync(
                 database,
@@ -24,6 +25,9 @@ namespace logic.Commands.Wallets {
 
             if (await database.Transactions.AnyAsync(t => t.WalletId == id, cancellationToken)) {
                 throw new NotValidForDeleteException("Transaction not empty for delete wallet");
+            }
+            if (await database.Wallets.AnyAsync(item => item.LinkedAccountId == id, cancellationToken)) {
+                throw new NotValidForDeleteException("Wallet has linked cards");
             }
 
             database.Wallets.Remove(wallet);

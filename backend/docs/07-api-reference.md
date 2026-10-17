@@ -24,7 +24,7 @@
 
 Use `/api/v1` for current integrations. It returns dedicated DTOs and HTTP statuses, uses Identity cookies and requires CSRF validation on mutations. Legacy non-versioned routes use a different envelope and raw-token contract; they are compatibility endpoints.
 
-The generated specifications are [v1.json](../../docs/all_modernization/openapi/v1.json) and [legacy.json](../../docs/all_modernization/openapi/legacy.json). Regenerate these artifacts when changing API contracts. Runtime Swagger is exposed in Development and Testing, not Production.
+The generated specifications are [v1.json](../../docs/openapi/v1.json) and [legacy.json](../../docs/openapi/legacy.json). Regenerate these artifacts when changing API contracts. Runtime Swagger is exposed in Development and Testing, not Production.
 
 Local base URLs are `http://localhost:5256` for development and `http://localhost:5000` for default Compose port exposure. Hosted clients must use the deployment's public API URL.
 
@@ -92,8 +92,8 @@ All endpoints below require a session. Mutations also require CSRF.
 | GET | `/api/v1/wallets` | 200 wallet array |
 | POST | `/api/v1/wallets` | 201 `{ "id": ... }` and Location |
 | GET | `/api/v1/wallets/{id}` | 200 wallet detail |
-| PUT | `/api/v1/wallets/{id}` | Update name/color; 204 |
-| DELETE | `/api/v1/wallets/{id}` | Delete wallet without transactions; 204 |
+| PUT | `/api/v1/wallets/{id}` | Update name/color and optional account/card details; 204 |
+| DELETE | `/api/v1/wallets/{id}` | Delete wallet without transactions or linked cards; 204 |
 | PUT | `/api/v1/wallets/{id}/favorite` | Set favorite using bare JSON `true` or `false`; 204 |
 | GET | `/api/v1/transaction-types` | 200 available type array |
 | GET | `/api/v1/transaction-types/{id}` | 200 type detail |
@@ -124,6 +124,57 @@ Update name/color without changing the opening balance:
 ```
 
 Wallet responses contain `id`, `name`, `initialValue`, `currentValue`, `favorite` and nested `color` (`id`, `name`, `value`, `isGlobal`). Color `value` is an integer RGB value, not a CSS string.
+
+### Wallet account/card metadata
+
+POST and PUT accept optional `details`. When present this is a complete replacement of the
+metadata: nullable fields omitted from that object are cleared. Omitting `details` preserves
+existing metadata on PUT and creates a generic bank/EUR balance container on POST for older clients.
+Opening balances remain immutable on PUT; this endpoint does not make ledger adjustments.
+
+Example prepaid creation (names and values are synthetic):
+
+```json
+{
+  "name": "Daily prepaid",
+  "initialValue": 150.00,
+  "colorValue": 3897855,
+  "details": {
+    "kind": "prepaid", "currency": "EUR", "institution": "Example bank",
+    "network": "visa", "lastFour": "1234", "expiry": "2029-08", "shareable": false
+  }
+}
+```
+
+Supply exactly one of `colorId` (owned/global existing colour) or `colorValue` (integer RGB,
+0 through 16777215) on creation. PUT may omit both to retain the existing colour.
+RGB values reuse an available colour, or create a private colour in the same transaction.
+No additional colour mutation endpoint is required.
+
+`details` contains `kind`, `currency`, `institution`, `iban`, `lastFour`, `network`, `expiry`,
+`linkedAccountId`, `creditLimit`, `currentSpending`, `statementDay`, `paymentDay`, `notes`, `shareable`.
+Kinds are `bank`, `prepaid`, `debit`, `credit`, `cash`; currency is currently EUR.
+Non-cash types require an institution. IBAN is optional for bank/prepaid and is normalized and
+checked with mod-97. Card networks are visa/mastercard/amex/other; last-four and expiry (YYYY-MM)
+are optional. Notes have at most 200 characters.
+
+Debit and credit require a different owned bank account. Debit inherits its currency and effective
+shareable flag from that account. Prepaid has its own balance and no linked account.
+Credit requires nonnegative monetary `creditLimit` and `currentSpending`, and statement/payment
+days from 1 to 31. Sharing is a stored preference, not an authorization grant or invitation.
+Fields inapplicable to a type are rejected. Type changes cannot orphan linked cards or convert
+a wallet with opening/current balance or movements to a balance-less card.
+
+GET responses additionally expose `details`, `hasOwnBalance` and `includedInTotal`.
+Bank/prepaid/cash own their balances and count in wealth; debit/credit do not and retain zero
+stored balances. Credit spending is metadata, not an independent wallet balance or an automatically
+posted debit. Existing movement APIs reject direct financial balance changes on debit/credit;
+use a balance-owning wallet. Automated billing and card-attributed transaction ledgers are deferred.
+
+Validation errors return 400 `validation_failed` with field keys, foreign/missing resources return
+404, and duplicate names or deletion with movements/linked cards return 409 `resource_conflict`.
+Ownership checks and account-link/type/deletion checks run within the command transaction and
+wallet locks. Existing legacy response envelopes remain unchanged.
 
 Create an expense:
 

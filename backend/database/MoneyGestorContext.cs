@@ -23,6 +23,20 @@ namespace database {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            var wallets = modelBuilder.Entity<WalletDb>();
+            wallets.Property(wallet => wallet.Kind).HasMaxLength(16).HasDefaultValue("bank");
+            wallets.Property(wallet => wallet.Currency).HasMaxLength(3).HasDefaultValue("EUR");
+            wallets.Property(wallet => wallet.Institution).HasMaxLength(100);
+            wallets.Property(wallet => wallet.Iban).HasMaxLength(34);
+            wallets.Property(wallet => wallet.LastFour).HasMaxLength(4);
+            wallets.Property(wallet => wallet.Network).HasMaxLength(16);
+            wallets.Property(wallet => wallet.Expiry).HasMaxLength(7);
+            wallets.Property(wallet => wallet.Notes).HasMaxLength(200);
+            wallets.Property(wallet => wallet.CreditLimit).HasPrecision(19, 2);
+            wallets.Property(wallet => wallet.CurrentSpending).HasPrecision(19, 2);
+            wallets.HasOne(wallet => wallet.LinkedAccount).WithMany()
+                .HasForeignKey(wallet => wallet.LinkedAccountId).OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<WalletDb>()
                 .Property(wallet => wallet.Value)
                 .HasPrecision(19, 2);

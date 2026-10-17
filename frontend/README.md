@@ -73,7 +73,7 @@ reserve space for images. Asset specifications, tokens and UI choices: [Flowiy h
 | --- | --- |
 | `/`, `/it` | Public Flowiy homepage in English and Italian |
 | `/dashboard` | Income, expense and category overview from `/api/v1` |
-| `/dashboard/wallet` | Wallet management through `/api/v1`, including favorites and balances |
+| `/dashboard/wallet` | Wallet overview and persistent v1 CRUD with a shared editor for five wallet types; other action dialogs deferred |
 | `/dashboard/transaction` | Movement CRUD with typed filters and server-side pagination |
 | `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |
 | `/login`, `/register` | Flowiy authentication pages with shared marketing layout and existing account API |
@@ -126,6 +126,14 @@ Italian adds the `/it` prefix to the same routes. Account, wallet, movement and 
 `/api/v1` with Identity cookies and antiforgery; fixtures remain available for previews and component tests.
 
 ## Organization
+
+The wallet page follows the supplied Portafogli reference, while keeping the shared header and sidebar.
+It reads existing v1 resources. The shared creation/editing dialog follows the account/card/cash field matrix;
+creation, edits and deletion persist through the v1 APIs, including account/card metadata.
+Cards support selection and deselection; the unselected view shows the table with edit/delete icons,
+while the selected view shows wallet details. Pending states, server validation, deployment migration
+and the remaining empty action dialogs are documented in the
+[wallet README](src/features/wallets/README.md).
 
 - `src/app`: routes and page-specific components.
 - `src/components/shared`: shared components for the new system, including forms, states and confirmations.

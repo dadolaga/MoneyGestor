@@ -24,6 +24,26 @@ export interface ApiWallet {
     currentValue: number;
     favorite: boolean;
     color: ApiColor;
+    details?: ApiWalletDetails | null;
+    hasOwnBalance?: boolean;
+    includedInTotal?: boolean;
+}
+
+export interface ApiWalletDetails {
+    kind: 'bank' | 'prepaid' | 'debit' | 'credit' | 'cash';
+    currency: 'EUR';
+    institution?: string | null;
+    iban?: string | null;
+    lastFour?: string | null;
+    network?: 'visa' | 'mastercard' | 'amex' | 'other' | null;
+    expiry?: string | null;
+    linkedAccountId?: number | null;
+    creditLimit?: number | null;
+    currentSpending?: number | null;
+    statementDay?: number | null;
+    paymentDay?: number | null;
+    notes?: string | null;
+    shareable: boolean;
 }
 
 export interface ApiTransactionType {
@@ -84,12 +104,16 @@ export interface TransactionQuery {
 export interface WalletCreate {
     name: string;
     initialValue: number;
-    colorId: number;
+    colorId?: number;
+    colorValue?: number;
+    details?: ApiWalletDetails;
 }
 
 export interface WalletUpdate {
     name?: string;
     colorId?: number;
+    colorValue?: number;
+    details?: ApiWalletDetails;
 }
 
 export interface TransactionCreate {

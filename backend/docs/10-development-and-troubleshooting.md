@@ -76,13 +76,13 @@ $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
 try {
     $env:ASPNETCORE_ENVIRONMENT = 'Testing'
     dotnet run --project .\backend\webserver\webserver.csproj --no-launch-profile -- `
-      --export-openapi docs/all_modernization/openapi
+      --export-openapi docs/openapi
 } finally {
     $env:ASPNETCORE_ENVIRONMENT = $previousEnvironment
 }
 ```
 
-The export branch starts a temporary local host and writes the specifications without calling normal database initialization. It is an artifact-generation command, not the normal API startup. Current export consumers can still expect older `docs/openapi` paths; coordinate any path changes with snapshot tests and [the API workflow](../../.github/workflows/api-contract.yml).
+The export branch starts a temporary local host and writes the specifications without calling normal database initialization. It is an artifact-generation command, not the normal API startup. The `docs/openapi` path matches the snapshot tests and [the API workflow](../../.github/workflows/api-contract.yml).
 
 ## 10.6 Startup and configuration problems
 

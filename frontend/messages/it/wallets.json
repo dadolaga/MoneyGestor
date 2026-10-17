@@ -1,4 +1,195 @@
 {
+    "CreateWallet": {
+        "title": "Nuovo portafoglio",
+        "editTitle": "Modifica portafoglio",
+        "editDescription": "Aggiorna i dati del portafoglio selezionato.",
+        "save": "Salva modifiche",
+        "saving": "Salvataggio…",
+        "created": "Portafoglio creato.",
+        "updated": "Portafoglio aggiornato.",
+        "errors": {
+            "signInAgain": "La sessione è scaduta. Accedi di nuovo.",
+            "conflict": "Esiste già un portafoglio con questo nome.",
+            "validation": "Controlla i campi indicati.",
+            "failed": "Impossibile salvare il portafoglio. Riprova."
+        },
+        "namePlaceholder": "Nome del portafoglio",
+        "typeUnavailable": "Il tipo non è disponibile per questo portafoglio. Selezionalo per completare i dati.",
+        "linkedCardsTypeLock": "Questo conto ha carte collegate: il tipo resta Conto corrente.",
+        "description": "Aggiungi un conto, una carta o un portafoglio da monitorare.",
+        "kind": "Tipo di portafoglio",
+        "kinds": {
+            "bank": "Conto corrente",
+            "prepaid": "Carta prepagata",
+            "debit": "Bancomat / Debito",
+            "credit": "Carta di credito",
+            "cash": "Contanti"
+        },
+        "kindHints": {
+            "bank": "Ha un saldo proprio",
+            "prepaid": "Ha un saldo proprio",
+            "debit": "Usa il conto collegato",
+            "credit": "Addebito a fine periodo",
+            "cash": "Ha un saldo proprio"
+        },
+        "fields": {
+            "name": "Nome portafoglio",
+            "institution": "Istituto / banca",
+            "currency": "Valuta",
+            "color": "Colore icona",
+            "initialBalance": "Saldo iniziale",
+            "iban": "IBAN (opzionale)",
+            "lastFour": "Ultime 4 cifre (opzionale)",
+            "network": "Circuito",
+            "expiry": "Scadenza carta (opzionale)",
+            "linkedAccount": "Conto collegato",
+            "creditLimit": "Plafond",
+            "currentSpending": "Spesa carta corrente",
+            "statementDay": "Giorno chiusura estratto",
+            "paymentDay": "Giorno addebito",
+            "notes": "Descrizione / note (opzionale)",
+            "shareable": "Condivisibile"
+        },
+        "namePlaceholders": {
+            "bank": "Es. Conto principale",
+            "prepaid": "Es. PostePay",
+            "debit": "Es. Bancomat Fideuram",
+            "credit": "Es. Carta Visa Gold",
+            "cash": "Es. Portafoglio contanti"
+        },
+        "colors": {
+            "red": "Rosso", "orange": "Arancione", "yellow": "Giallo", "green": "Verde",
+            "blue": "Blu", "purple": "Viola", "pink": "Rosa", "grey": "Grigio", "current": "Colore attuale"
+        },
+        "institutionPlaceholder": "Es. Poste Italiane, Intesa Sanpaolo, Revolut",
+        "amountPlaceholder": "0,00",
+        "notesPlaceholder": "Es. Portafoglio per le spese quotidiane…",
+        "accountPlaceholder": "Seleziona un conto corrente",
+        "noAccounts": "Crea prima un conto corrente per collegare questa carta.",
+        "inheritedCurrency": "Ereditata dal conto collegato.",
+        "inheritedSharing": "Condivisione tramite il conto collegato.",
+        "includedInTotal": "Incluso nel patrimonio totale",
+        "excludedFromTotal": "Escluso dal patrimonio totale",
+        "cancel": "Annulla",
+        "create": "Crea portafoglio",
+        "validation": {
+            "serverField": "Valore non valido per questa operazione.",
+            "kind": "Seleziona un tipo di portafoglio valido.",
+            "currency": "La valuta supportata è EUR.",
+            "color": "Seleziona un colore valido.",
+            "network": "Seleziona un circuito valido.",
+            "serverAmount": "Inserisci un importo non negativo con al massimo due decimali, entro i limiti consentiti.",
+            "incompatibleFields": "Alcuni dati non sono compatibili con il tipo di portafoglio selezionato.",
+            "linkedCards": "Il conto ha carte collegate: il tipo deve restare Conto corrente.",
+            "balanceOrMovements": "Non puoi trasformare questo portafoglio in una carta di debito o di credito: ha un saldo iniziale, un saldo attuale o dei movimenti registrati.",
+            "required": "Questo campo è obbligatorio.",
+            "amount": "Inserisci un importo valido con al massimo due decimali.",
+            "nonNegative": "Inserisci un importo maggiore o uguale a zero.",
+            "day": "Inserisci un giorno da 1 a 31.",
+            "iban": "Inserisci un IBAN valido.",
+            "lastFour": "Inserisci esattamente quattro cifre.",
+            "expiry": "Inserisci un mese di scadenza valido, non precedente a quello attuale.",
+            "account": "Seleziona un conto corrente disponibile.",
+            "notes": "Inserisci al massimo 200 caratteri."
+        }
+    },
+    "WalletsDashboard": {
+        "title": "Portafogli",
+        "description": "Gestisci conti, carte e portafogli in un unico posto.",
+        "actions": {
+            "create": "Nuovo portafoglio",
+            "connect": "Collega conto",
+            "edit": "Modifica",
+            "transfer": "Trasferisci",
+            "movement": "Aggiungi movimento",
+            "viewAll": "Vedi tutti",
+            "editFor": "Modifica {name}",
+            "deleteFor": "Elimina {name}",
+            "delete": "Elimina",
+            "cancel": "Annulla",
+            "clearSelection": "Deseleziona",
+            "close": "Chiudi",
+            "retry": "Riprova"
+        },
+        "summary": {
+            "title": "Riepilogo portafogli",
+            "balance": "Saldo totale",
+            "accounts": "Conti e carte",
+            "walletCount": "Portafogli e carte registrati",
+            "income": "Entrate questo mese",
+            "expense": "Uscite questo mese",
+            "currentMonth": "Totale del mese in corso",
+            "comparisonUnavailable": "Confronto mensile non disponibile",
+            "typesUnavailable": "Tipologie non disponibili"
+        },
+        "list": { "title": "I tuoi portafogli" },
+        "delete": {
+            "title": "Eliminare il portafoglio?",
+            "description": "{name} verrà eliminato definitivamente. L'operazione è consentita solo senza movimenti o carte collegate.",
+            "conflict": "Il portafoglio contiene movimenti o ha carte collegate e non può essere eliminato.",
+            "failed": "Impossibile eliminare il portafoglio. Riprova.",
+            "deleted": "Portafoglio eliminato."
+        },
+        "details": {
+            "title": "Dettaglio portafoglio",
+            "wallet": "Portafoglio",
+            "balance": "Saldo attuale",
+            "availableBalance": "Saldo disponibile",
+            "bookBalance": "Saldo contabile",
+            "type": "Tipo",
+            "institution": "Istituto",
+            "iban": "IBAN",
+            "updated": "Ultimo aggiornamento",
+            "statusUnavailable": "Stato non disponibile"
+        },
+        "movements": {
+            "title": "Ultimi movimenti",
+            "linkedAccount": "Movimenti del conto collegato",
+            "loading": "Caricamento movimenti…",
+            "empty": "Nessun movimento in questo portafoglio.",
+            "error": "Impossibile caricare gli ultimi movimenti.",
+            "untitled": "Movimento senza descrizione"
+        },
+        "distribution": {
+            "title": "Distribuzione patrimonio",
+            "description": "Distribuzione dei saldi dei portafogli. Importi e percentuali sono riportati nella legenda.",
+            "total": "Totale",
+            "byType": "Distribuzione per tipologia",
+            "accounts": "Conti correnti",
+            "cards": "Carte",
+            "investments": "Investimenti",
+            "cash": "Contanti",
+            "prepaid": "Carte prepagate",
+            "excludedCards": "Debito e credito non hanno saldo proprio e sono esclusi dal patrimonio.",
+            "unavailable": "Distribuzione non disponibile con saldo totale nullo o saldi negativi."
+        },
+        "table": {
+            "title": "Tutti i portafogli",
+            "name": "Nome",
+            "type": "Tipo",
+            "institution": "Istituto",
+            "balance": "Saldo",
+            "updated": "Ultimo aggiornamento",
+            "status": "Stato",
+            "actions": "Azioni"
+        },
+        "dialogs": {
+            "create": "Nuovo portafoglio",
+            "connect": "Collega conto",
+            "edit": "Modifica portafoglio",
+            "transfer": "Trasferisci",
+            "movement": "Aggiungi movimento",
+            "allMovements": "Tutti i movimenti"
+        },
+        "states": {
+            "loading": "Caricamento portafogli…",
+            "empty": "Non ci sono ancora portafogli. Aggiungi il primo per iniziare.",
+            "error": "Impossibile caricare i portafogli.",
+            "summaryError": "I totali del mese non sono disponibili.",
+            "refreshError": "Operazione completata, ma non è stato possibile aggiornare l'elenco. Ricarica i portafogli.",
+            "signInAgain": "La sessione è scaduta. Accedi di nuovo."
+        }
+    },
     "Wallets": {
         "title": "I tuoi portafogli",
         "description": "Gestisci conti, carte, risparmi e investimenti in un unico posto.",

@@ -19,8 +19,10 @@ shared fixtures live in `src/lib/fixtures`. Visual components receive data and s
 using the discriminated `FeatureState<T>` type.
 
 The `/dashboard`, `/dashboard/wallet` and `/dashboard/transaction` routes live in `(app)` and use
-`/api/v1`; wallets support creation/editing, favorites and deletion, while movements use filters and
-server-side pagination. Fixtures remain for previews and tests. The resource client is
+`/api/v1`; the wallet page now shows balances, selection, recent movements and distribution with
+a shared creation/editing dialog for five wallet types. CRUD and metadata persist through v1 APIs;
+other action dialogs remain empty (see the [wallet README](src/features/wallets/README.md)).
+Movements use filters and server-side pagination. Fixtures remain for previews and tests. The resource client is
 `src/lib/api/client.ts`; `useApi` remains only as a callback adapter for legacy account forms.
 
 The `AppShell` centralizes the header, desktop navigation, mobile Sheet, session state and language

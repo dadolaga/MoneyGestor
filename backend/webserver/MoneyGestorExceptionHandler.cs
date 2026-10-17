@@ -17,7 +17,7 @@ namespace webserver {
                 var (legacy, legacyStatus) = exception switch {
                     TokenExpiredException => (new BaseResponse { Code = 20, Message = "User token expiated" }, 403),
                     ObjectNotFoundException or UserPermissionException => (new BaseResponse { Code = 404, Message = "Resource not found" }, 404),
-                    ListFilterValidationException or MandatoryParamException => (new BaseResponse { Code = 10, Message = "Invalid request" }, 400),
+                    ListFilterValidationException or WalletValidationException or MandatoryParamException => (new BaseResponse { Code = 10, Message = "Invalid request" }, 400),
                     InvalidTransactionException => (new BaseResponse { Code = 302, Message = "Invalid transaction" }, 400),
                     NotValidForDeleteException => (new BaseResponse { Code = 202, Message = "Resource cannot be deleted" }, 409),
                     _ => (new BaseResponse { Code = 500, Message = "Unexpected error" }, 500)
@@ -32,6 +32,8 @@ namespace webserver {
             }
 
             var (status, code, title, errors) = exception switch {
+                WalletValidationException wallet => (400, "validation_failed", "Request validation failed",
+                    new Dictionary<String, String[]> { [wallet.Field] = [wallet.Reason] }),
                 ListFilterValidationException filter => (400, "validation_failed", "Request validation failed",
                     new Dictionary<String, String[]> { [filter.Field] = [filter.Reason] }),
                 MandatoryParamException => (400, "validation_failed", "Request validation failed", (IDictionary<String, String[]>?) null),

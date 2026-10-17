@@ -1,5 +1,5 @@
-import { ApiWalletsPage } from '@/features/api/api-finance-pages';
+import { WalletsDashboard } from '@/features/wallets/wallets-dashboard';
 
 export default function WalletPage() {
-    return <ApiWalletsPage />;
+    return <WalletsDashboard />;
 }
