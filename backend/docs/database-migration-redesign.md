@@ -113,13 +113,23 @@ Il cambio di database nella configurazione resta manuale, dopo l'import riuscito
 
 ### Comandi
 
-Eseguire dalla radice del repository. Predisporre prima un database MySQL esistente
-e vuoto per inizializzazione/import. Fornire privatamente
+La [guida della CLI](../ExportImportApplication/README.md) riepiloga argomenti,
+colori e utilizzo da Windows e Linux. L'avvio senza argomenti, `--help` o `-h`
+mostra la guida senza connettersi al database; `export --help` (oppure `help export`)
+mostra la guida del singolo comando. Gli errori indicano l'argomento mancante o
+non valido e come consultare la sintassi corretta.
+L'output usa colori nei terminali e testo semplice nei flussi reindirizzati;
+`--no-color`, `NO_COLOR` non vuoto o `TERM=dumb` disabilitano i colori.
+
+Eseguire dalla radice del repository con MySQL già raggiungibile. Inizializzazione
+e import creano il database selezionato se manca; se esiste già deve essere vuoto.
+L'utenza amministrativa deve avere i permessi per creare database e schema.
+L'import valida l'archivio prima di creare la destinazione. Fornire privatamente
 `MONEYGESTOR_ADMIN_CONNECTION_STRING` al processo: non viene letto alcun file
 di impostazioni e il database nella connessione deve corrispondere a `--database`.
 
 ```powershell
-# Prima installazione: connessione amministrativa al database vuoto moneygestor_v1.
+# Prima installazione: connessione amministrativa a moneygestor_v1, creato se manca.
 dotnet run --project backend/ExportImportApplication -- initialize --database moneygestor_v1
 
 # Prima di sostituire la release: applicazione ferma, connessione alla sorgente.
@@ -135,6 +145,10 @@ dotnet run --project backend/ExportImportApplication -- delete --database moneyg
 `--maintenance` dichiara che tutte le scritture sulla sorgente sono ferme; il tool
 non arresta l'applicazione. I nomi sono esempi: scegliere la destinazione reale e
 verificarla prima del comando. Un archivio esistente non viene sovrascritto.
+In export `--file` è facoltativo: se manca, il percorso è la directory corrente
+(`.`) e il nome è `export-yyyy-MM-dd-HHmmss.zip`, con data e ora UTC
+(per esempio `export-2026-10-18-143025.zip`). Il percorso compare nel riepilogo
+prima dell'esecuzione. In import `--file` resta obbligatorio.
 Il codice di uscita è `0` per successo, `1` per errore/cancellazione, `2` per uso
 o configurazione iniziale non validi. In caso di errore, nessuna destinazione viene
 promossa; eventuali file parziali restano da ispezionare.
@@ -143,8 +157,8 @@ promossa; eventuali file parziali restano da ispezionare.
 una risposta diversa o l'assenza di risposta annulla la cancellazione. La connessione
 deve corrispondere a `--database` e l'utenza deve avere il permesso `DROP`.
 I database di sistema sono rifiutati. Il comando elimina il database stesso:
-prima di un successivo `initialize` o `import` occorre predisporre nuovamente
-un database vuoto. Nessuna cancellazione viene eseguita automaticamente dagli altri comandi.
+un successivo `initialize` o `import` può ricrearlo automaticamente con i permessi
+appropriati. Nessuna cancellazione viene eseguita automaticamente dagli altri comandi.
 
 È possibile distribuire la CLI compilata con la release. Conservare la versione
 precedente dello strumento per esportare prima di un aggiornamento; non leggere
@@ -166,7 +180,8 @@ prima implementazione.
 Sono mantenuti EF Core, [database/Models](../database/Models),
 [MoneyGestorContext](../database/MoneyGestorContext.cs), Identity numerico e
 le API `/api/v1`. EF continua a mappare i dati e preparare lo schema corrente con
-`EnsureCreatedAsync` esclusivamente sulla destinazione verificata vuota. La vecchia
+`EnsureCreatedAsync` esclusivamente sulla destinazione verificata vuota, creata
+prima tramite il provider EF se non esiste. La vecchia
 cartella delle migrazioni, lo snapshot e la factory design-time sono stati rimossi.
 La versione è gestita da [DatabaseSchema](../database/DatabaseSchema.cs).
 

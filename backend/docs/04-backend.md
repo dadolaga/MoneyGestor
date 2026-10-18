@@ -61,7 +61,7 @@ Commands return `Task<T>` from `ExecuteAsync`. Within `logic`, a parent can call
 
 Normal startup loads and validates options, creates logging, registers services, builds the middleware pipeline and then validates the database before serving requests.
 
-Validation reads `database_metadata` and requires the schema version compiled into this release, validates reserved global reference data and runs a read-only financial integrity preflight. A failure stops startup and requests manual intervention. Startup never creates tables, applies migrations, seeds or repairs data. The separate administrative tool initializes an existing empty database or imports a supported versioned archive into one; see the [manual update workflow](database-migration-redesign.md).
+Validation reads `database_metadata` and requires the schema version compiled into this release, validates reserved global reference data and runs a read-only financial integrity preflight. A failure stops startup and requests manual intervention. Startup never creates tables, applies migrations, seeds or repairs data. The separate administrative tool initializes a database or imports a supported versioned archive, creating the database if missing and refusing an existing nonempty destination; see the [manual update workflow](database-migration-redesign.md).
 
 In Production, `DATA_PROTECTION_KEYS_PATH` is required, and an SMTP host/sender is required when email confirmation is enabled. SMTP remains necessary for password recovery in either mode. `Testing` supplies in-memory host configuration for tests and OpenAPI export; it is not a production mode or a normal setup shortcut.
 

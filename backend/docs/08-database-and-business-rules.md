@@ -87,8 +87,8 @@ row only after a successful initialization or import. The API checks this versio
 and reference/financial integrity without writing data. Missing, older or newer
 versions stop startup and require manual intervention.
 
-The administrative CLI creates the complete current schema through EF on an existing
-empty destination. There are no incremental EF migrations, model snapshot or migration
+The administrative CLI creates the database if missing and the complete current schema
+through EF; an existing destination must be empty. There are no incremental EF migrations, model snapshot or migration
 history. Future releases must review the schema version and explicit archive contract.
 Updates export data while the source application is stopped, then import into a new
 database, preserving IDs, Identity data, ownership and relationships. Format version `1`

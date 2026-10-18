@@ -44,8 +44,9 @@ public sealed class DatabaseTransferIntegrationTest {
         await container.DisposeAsync();
     }
 
-    [Test]
-    public async Task RoundTripPreservesIdentityMetadataPairsPrecisionAndNextIds() {
+    [TestCase(true)]
+    [TestCase(false)]
+    public async Task RoundTripPreservesIdentityMetadataPairsPrecisionAndNextIds(Boolean destinationExists) {
         await using var source = await CreateEmptyTarget();
         await DatabaseTransfer.InitializeAsync(source);
         var user = new ApplicationIdentityUser {
@@ -83,7 +84,7 @@ public sealed class DatabaseTransferIntegrationTest {
         var archive = TemporaryArchive();
         try {
             await DatabaseTransfer.ExportAsync(source, archive, TimeProvider.System);
-            await using var target = await CreateEmptyTarget();
+            await using var target = await CreateEmptyTarget(destinationExists);
             await DatabaseTransfer.ImportAsync(target, archive);
             await DatabaseSchema.RequireCurrentAsync(target);
             var imported = await target.Users.SingleAsync();
@@ -98,6 +99,31 @@ public sealed class DatabaseTransferIntegrationTest {
             target.Transactions.Add(new TransactionDb { WalletId = 50, UserId = 42, UserInsertId = 42, TransactionTypeId = 100, Value = -2m, Date = date });
             await target.SaveChangesAsync();
             Assert.That(await target.Transactions.MaxAsync(row => row.Id), Is.GreaterThan(202));
+        } finally { File.Delete(archive); }
+    }
+
+    [Test]
+    public async Task InitializeCreatesMissingDatabaseAndMarksItReady() {
+        await using var database = await CreateEmptyTarget(createDatabase: false);
+        Assert.ThrowsAsync<InvalidOperationException>(() => DatabaseSchema.RequireCurrentAsync(database));
+        Assert.That(await database.Database.CanConnectAsync(), Is.False);
+
+        await DatabaseTransfer.InitializeAsync(database);
+
+        await DatabaseSchema.RequireCurrentAsync(database);
+        Assert.That(await database.Colors.CountAsync(), Is.EqualTo(9));
+        Assert.ThrowsAsync<InvalidOperationException>(() => DatabaseTransfer.InitializeAsync(database));
+        Assert.That(await database.Colors.CountAsync(), Is.EqualTo(9));
+    }
+
+    [Test]
+    public async Task InvalidArchiveDoesNotCreateMissingDatabase() {
+        await using var database = await CreateEmptyTarget(createDatabase: false);
+        var archive = TemporaryArchive();
+        try {
+            await File.WriteAllTextAsync(archive, "not a zip archive");
+            Assert.ThrowsAsync<InvalidDataException>(() => DatabaseTransfer.ImportAsync(database, archive));
+            Assert.That(await database.Database.CanConnectAsync(), Is.False);
         } finally { File.Delete(archive); }
     }
 
@@ -245,17 +271,19 @@ public sealed class DatabaseTransferIntegrationTest {
         return process.ExitCode;
     }
 
-    private async Task<MoneyGestorContext> CreateEmptyTarget() {
+    private async Task<MoneyGestorContext> CreateEmptyTarget(Boolean createDatabase = true) {
         var name = $"mg_test_{runId}_{Guid.NewGuid():N}"[..63];
         if (!name.StartsWith($"mg_test_{runId}_", StringComparison.Ordinal)) {
             throw new InvalidOperationException("Unowned test database target.");
         }
 
         var connection = new MySqlConnectionStringBuilder(connectionString) { Database = String.Empty };
-        await using var server = new MySqlConnection(connection.ConnectionString);
-        await server.OpenAsync();
-        await using var command = new MySqlCommand($"CREATE DATABASE `{name}`", server);
-        await command.ExecuteNonQueryAsync();
+        if (createDatabase) {
+            await using var server = new MySqlConnection(connection.ConnectionString);
+            await server.OpenAsync();
+            await using var command = new MySqlCommand($"CREATE DATABASE `{name}`", server);
+            await command.ExecuteNonQueryAsync();
+        }
         connection.Database = name;
         return new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>().UseMySQL(connection.ConnectionString).Options);
     }

@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ExportImportApplication": {
+      "commandName": "Project",
+      "commandLineArgs": "import --database money_manager_new --file export-2026-10-18-154457.zip",
+      "environmentVariables": {
+        "MONEYGESTOR_ADMIN_CONNECTION_STRING": "Server=localhost;Port=3306;Database=money_manager_new;User ID=root;Password=mysql_root;"
+      }
+    }
+  }
+}

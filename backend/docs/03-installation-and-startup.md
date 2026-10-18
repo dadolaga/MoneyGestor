@@ -47,9 +47,9 @@ Only copy the example if a local settings file does not already exist. Edit the 
 
 ## 3.3 Initialize a fresh database
 
-1. Provision a new, existing empty MySQL database and a separate administrative account with schema permissions.
+1. Provide a reachable MySQL server and a separate administrative account with database/schema creation permissions. Choose a new database name; an existing destination must be empty.
 2. Privately supply its connection string in `MONEYGESTOR_ADMIN_CONNECTION_STRING` to the administrative tool.
-3. Run the command below, replacing the explicit name with that same database name.
+3. Run the command below, replacing the explicit name with that same database name. The tool creates the database if missing, then its schema and reference data.
 4. Configure `database.name` and the application's own credentials, which do not require DDL permissions.
 5. Start the backend. It only checks schema version, reference data and financial integrity before serving requests.
 

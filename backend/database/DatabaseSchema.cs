@@ -1,5 +1,7 @@
 using database.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 
 namespace database;
@@ -29,10 +31,15 @@ public static class DatabaseSchema {
     }
 
     public static async Task CreateEmptyAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
-        // Provisioning the database and its credentials remains an explicit administrator action.
+        // Only the explicit administrative initialize/import workflow calls this method.
+        var creator = database.GetService<IRelationalDatabaseCreator>();
+        if (!await creator.ExistsAsync(cancellationToken)) {
+            await creator.CreateAsync(cancellationToken);
+        }
+
         await database.Database.OpenConnectionAsync(cancellationToken);
         if (await CountObjectsAsync(database, String.Empty, cancellationToken) != 0) {
-            throw new InvalidOperationException("The destination must be an existing empty database. No tables were replaced or deleted.");
+            throw new InvalidOperationException("The destination must be missing or empty. No tables were replaced or deleted.");
         }
 
         if (!await database.Database.EnsureCreatedAsync(cancellationToken)) {
