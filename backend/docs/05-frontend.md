@@ -35,7 +35,7 @@ Routes are organized under `src/app/[locale]`. Route-group folders such as `(app
 | `/` | Application entry | Redirect to the dashboard |
 | `/dashboard` | Period totals and breakdowns | Live `/api/v1/dashboard` requests |
 | `/dashboard/wallet` | Wallet management | Live v1 wallet/color requests |
-| `/dashboard/transaction` | Transaction management | Live v1 CRUD, search, kind filter and pagination |
+| `/dashboard/transaction` | Transaction management | Live v1 dashboard, date/wallet/kind/category/search filters, server pagination, charts and CSV; creation dialog, editing/deletion deferred |
 | `/dashboard/transaction/add_mobile` | Old mobile URL | Redirect to the standard transactions page |
 | `/login`, `/register` | Sign-in and registration | Account pages outside the dashboard shell |
 | `/verify-email`, `/resend-confirmation` | Confirmation workflow | Account email links and resend form |
@@ -67,7 +67,11 @@ Italian uses the same URLs with `/it` prepended. These are frontend routes; do n
 
 ## 5.4 Live data and development previews
 
-The dashboard and transaction routes import `ApiDashboardPage` and `ApiTransactionsPage`.
+The dashboard route imports `ApiDashboardPage`; the transaction route imports `TransactionsDashboard`
+with v1 filters, server-side table pagination and complete-period analytics. The creation dialog saves single movements through the existing v1 API;
+editing and deletion dialogs remain deferred. Recurrence scheduling and receipt uploads have no API
+contract: the dialog provides a schedule preview and in-memory drafts, without creating future records
+or silently dropping recurrence/attachment settings. CSV export includes the full filtered period.
 The wallet route imports `WalletsDashboard`, with a shared `WalletEditorDialog` for creation/editing.
 They perform real HTTP requests through `apiClient`; wallet creation, metadata updates and confirmed
 deletion persist through v1 APIs. See the [wallet implementation notes](../../frontend/src/features/wallets/README.md).

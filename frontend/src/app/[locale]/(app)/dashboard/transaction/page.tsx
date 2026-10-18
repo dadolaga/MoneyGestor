@@ -1,5 +1,5 @@
-import { ApiTransactionsPage } from '@/features/api/api-finance-pages';
+import { TransactionsDashboard } from '@/features/transactions/transactions-dashboard';
 
 export default function TransactionPage() {
-    return <ApiTransactionsPage />;
+    return <TransactionsDashboard />;
 }

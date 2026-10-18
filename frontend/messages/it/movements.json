@@ -1,7 +1,7 @@
 {
     "Movements": {
         "title": "Movimenti",
-        "description": "Riepilogo completo di entrate, uscite e trasferimenti.",
+        "description": "Visualizza, filtra e gestisci tutte le entrate, uscite e trasferimenti in un unico posto.",
         "actions": {
             "add": "Nuovo movimento",
             "reset": "Reset filtri",
@@ -11,17 +11,28 @@
             "cancel": "Annulla",
             "save": "Salva movimento",
             "previous": "Pagina precedente",
-            "next": "Pagina successiva"
+            "next": "Pagina successiva",
+            "export": "Esporta",
+            "retry": "Riprova",
+            "deferred": "I dialog per modificare ed eliminare i movimenti saranno disponibili in un secondo momento."
         },
         "summary": {
-            "income": "Entrate del mese",
-            "expenses": "Uscite del mese",
+            "income": "Entrate questo mese",
+            "expenses": "Uscite questo mese",
             "transfers": "Trasferimenti",
-            "net": "Saldo netto"
+            "net": "Saldo netto",
+            "title": "Riepilogo movimenti",
+            "periodIncome": "Entrate nel periodo",
+            "periodExpenses": "Uscite nel periodo",
+            "total": "Movimenti totali",
+            "selectedPeriod": "nel periodo selezionato",
+            "comparison": "rispetto al periodo precedente",
+            "noComparison": "Nessun confronto disponibile",
+            "transferCount": "{count, plural, one {# movimento} other {# movimenti}}"
         },
         "filters": {
             "search": "Cerca movimenti",
-            "searchPlaceholder": "Cerca per descrizione, importo o nota...",
+            "searchPlaceholder": "Cerca per descrizione o nota...",
             "dateRange": "Intervallo date",
             "datePlaceholder": "Scegli un intervallo",
             "previousMonth": "Mese precedente",
@@ -32,11 +43,14 @@
             "allKinds": "Tutti i tipi",
             "income": "Entrata",
             "expense": "Uscita",
-            "transfer": "Trasferimento"
+            "transfer": "Trasferimento",
+            "title": "Filtri movimenti",
+            "category": "Categoria",
+            "allCategories": "Tutte le categorie"
         },
         "list": {
             "title": "Elenco movimenti",
-            "count": "{count, plural, =0 {Nessun movimento} one {# movimento} other {# movimenti}}",
+            "count": "{count, plural, one {# risultato} other {# risultati}}",
             "date": "Data",
             "description": "Descrizione",
             "kind": "Tipo",
@@ -46,7 +60,12 @@
             "actions": "Azioni",
             "untitled": "Movimento senza titolo",
             "perPage": "per pagina",
-            "range": "{from}-{to} di {total}"
+            "range": "{from}-{to} di {total}",
+            "show": "Mostra",
+            "ofResults": "di {total} risultati",
+            "pagination": "Paginazione movimenti",
+            "page": "Pagina {page}",
+            "destination": "Portafoglio destinazione"
         },
         "dialog": {
             "createTitle": "Nuovo movimento",
@@ -84,6 +103,114 @@
             "loading": "Caricamento movimenti…",
             "empty": "Nessun movimento corrisponde ai filtri.",
             "error": "Non è stato possibile caricare i movimenti."
+        },
+        "charts": {
+            "overview": "Analisi dei movimenti",
+            "categories": "Distribuzione per categoria",
+            "categoriesDescription": "Distribuzione delle uscite per categoria. Totale: {total}.",
+            "weekly": "Flusso settimanale",
+            "weeklyDescription": "Confronto tra entrate e uscite per settimana nel periodo selezionato; i trasferimenti sono esclusi.",
+            "income": "Entrate",
+            "expenses": "Uscite",
+            "empty": "Nessun dato da visualizzare nel periodo selezionato."
+        },
+        "recent": {
+            "title": "Ultimi movimenti rapidi"
+        },
+        "editor": {
+            "subtitle": "Registra una nuova entrata, uscita o trasferimento in Flowiy.",
+            "kindHints": {
+                "income": "Aumenta il saldo",
+                "expense": "Diminuisce il saldo",
+                "transfer": "Sposta tra portafogli"
+            },
+            "descriptionPlaceholders": {
+                "income": "Es. Stipendio, rimborso o regalo",
+                "expense": "Es. Spesa supermercato",
+                "transfer": "Es. Risparmi sul conto deposito"
+            },
+            "notes": "Nota (opzionale)",
+            "notesPlaceholder": "Aggiungi una nota o un dettaglio sul movimento...",
+            "selectWallet": "Seleziona un portafoglio",
+            "selectDestination": "Seleziona la destinazione",
+            "selectCategory": "Seleziona una categoria",
+            "recurring": "Movimento ricorrente",
+            "recurringHint": "Imposta quando ripetere questo movimento",
+            "attachReceipt": "Allega ricevuta",
+            "removeReceipt": "Rimuovi ricevuta",
+            "invalidReceipt": "Scegli un PDF o una foto JPG, PNG o WebP fino a 10 MB.",
+            "saveDraft": "Salva bozza",
+            "resumeDraft": "Riprendi bozza",
+            "draftSaved": "Bozza salvata per questa sessione. Verrà persa uscendo dalla pagina.",
+            "create": "Crea movimento",
+            "saving": "Salvataggio...",
+            "created": "Movimento creato.",
+            "previewOnly": "Ricorrenze e ricevute sono configurabili in anteprima. Per ora puoi conservarle nella bozza di questa pagina; l'attivazione delle ricorrenze e il caricamento delle ricevute saranno disponibili in seguito.",
+            "noWallets": "Per creare un movimento serve un portafoglio con saldo proprio.",
+            "loadingOptions": "Caricamento portafogli e categorie...",
+            "retry": "Riprova",
+            "missingTransferType": "La categoria di trasferimento non è disponibile. Ricarica le categorie e riprova.",
+            "invalidPrecision": "L'importo deve avere al massimo due decimali.",
+            "invalidDate": "Seleziona una data valida.",
+            "descriptionTooLong": "Usa al massimo 200 caratteri.",
+            "serverField": "Controlla questo campo e riprova.",
+            "signInAgain": "La sessione è scaduta. Accedi di nuovo.",
+            "invalidFields": "Controlla i campi indicati e riprova.",
+            "resourceMissing": "Il portafoglio o la categoria non sono più disponibili. Ricarica le opzioni e riprova.",
+            "saveFailed": "Impossibile salvare il movimento. I dati inseriti sono stati conservati.",
+            "recurrence": {
+                "title": "Programmazione ricorrenza",
+                "frequency": "Frequenza",
+                "every": "Ogni",
+                "frequencies": {
+                    "daily": "Giornaliera",
+                    "weekly": "Settimanale",
+                    "monthly": "Mensile",
+                    "yearly": "Annuale"
+                },
+                "units": {
+                    "daily": "giorni",
+                    "weekly": "settimane",
+                    "monthly": "mesi",
+                    "yearly": "anni"
+                },
+                "chooseDate": "Seleziona la data del movimento per impostare la prima occorrenza.",
+                "firstDate": "Prima occorrenza: {date}. Coincide con la data del movimento.",
+                "weekdays": "In quali giorni",
+                "weekdayHint": "Il giorno della prima occorrenza rimane selezionato. Puoi aggiungere altri giorni della settimana.",
+                "dayOfMonth": "Giorno del mese",
+                "timing": "Quando nel mese",
+                "onDay": "Il giorno {day}",
+                "lastDay": "L'ultimo giorno del mese",
+                "onWeekday": "{ordinal} {weekday} del mese",
+                "lastWeekday": "Ultimo {weekday} del mese",
+                "ordinals": {
+                    "1": "1°",
+                    "2": "2°",
+                    "3": "3°",
+                    "4": "4°",
+                    "5": "5°"
+                },
+                "monthHint": "Il giorno modifica anche la data in alto. Le opzioni di fine mese richiedono una prima data coerente. Nei mesi più corti si usa l'ultimo giorno disponibile; se manca la quinta occorrenza settimanale si usa la quarta.",
+                "month": "Mese",
+                "day": "Giorno",
+                "yearHint": "Giorno e mese aggiornano anche la data del movimento. Il 29 febbraio diventa 28 febbraio negli anni non bisestili.",
+                "ends": "Termina",
+                "endOptions": {
+                    "never": "Mai",
+                    "date": "In una data",
+                    "count": "Dopo un numero di occorrenze"
+                },
+                "endDate": "Ultima data (inclusa)",
+                "count": "Numero di occorrenze",
+                "countHint": "Include il primo movimento.",
+                "invalidInterval": "Inserisci un numero intero da 1 a 99.",
+                "invalidEndDate": "La fine non può precedere la data del movimento.",
+                "invalidCount": "Inserisci un numero intero da 2 a 999.",
+                "preview": "Anteprima delle prossime occorrenze",
+                "previewOnly": "Questa anteprima non crea movimenti futuri."
+            },
+            "noCategories": "Non sono disponibili categorie. Ricarica le opzioni e riprova."
         }
     }
 }

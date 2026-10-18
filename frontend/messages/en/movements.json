@@ -1,7 +1,7 @@
 {
     "Movements": {
         "title": "Transactions",
-        "description": "A complete view of your income, expenses and transfers.",
+        "description": "View, filter and manage all your income, expenses and transfers in one place.",
         "actions": {
             "add": "New transaction",
             "reset": "Reset filters",
@@ -11,17 +11,28 @@
             "cancel": "Cancel",
             "save": "Save transaction",
             "previous": "Previous page",
-            "next": "Next page"
+            "next": "Next page",
+            "export": "Export",
+            "retry": "Try again",
+            "deferred": "Dialogs for editing and deleting transactions will be available at a later stage."
         },
         "summary": {
             "income": "Income this month",
             "expenses": "Expenses this month",
             "transfers": "Transfers",
-            "net": "Net balance"
+            "net": "Net balance",
+            "title": "Transaction overview",
+            "periodIncome": "Income in this period",
+            "periodExpenses": "Expenses in this period",
+            "total": "Total transactions",
+            "selectedPeriod": "in the selected period",
+            "comparison": "compared with the previous period",
+            "noComparison": "No comparison available",
+            "transferCount": "{count, plural, one {# transaction} other {# transactions}}"
         },
         "filters": {
             "search": "Search transactions",
-            "searchPlaceholder": "Search by description, amount or note...",
+            "searchPlaceholder": "Search by description or note...",
             "dateRange": "Date range",
             "datePlaceholder": "Choose a date range",
             "previousMonth": "Previous month",
@@ -32,11 +43,14 @@
             "allKinds": "All types",
             "income": "Income",
             "expense": "Expense",
-            "transfer": "Transfer"
+            "transfer": "Transfer",
+            "title": "Transaction filters",
+            "category": "Category",
+            "allCategories": "All categories"
         },
         "list": {
             "title": "Transaction list",
-            "count": "{count, plural, =0 {No transactions} one {# transaction} other {# transactions}}",
+            "count": "{count, plural, one {# result} other {# results}}",
             "date": "Date",
             "description": "Description",
             "kind": "Type",
@@ -46,7 +60,12 @@
             "actions": "Actions",
             "untitled": "Untitled transaction",
             "perPage": "per page",
-            "range": "{from}-{to} of {total}"
+            "range": "{from}-{to} of {total}",
+            "show": "Show",
+            "ofResults": "of {total} results",
+            "pagination": "Transaction pagination",
+            "page": "Page {page}",
+            "destination": "Destination wallet"
         },
         "dialog": {
             "createTitle": "New transaction",
@@ -84,6 +103,114 @@
             "loading": "Loading transactions…",
             "empty": "No transactions match these filters.",
             "error": "Transactions could not be loaded."
+        },
+        "charts": {
+            "overview": "Transaction analysis",
+            "categories": "Distribution by category",
+            "categoriesDescription": "Expense distribution by category. Total: {total}.",
+            "weekly": "Weekly cash flow",
+            "weeklyDescription": "Weekly income and expense comparison in the selected period; transfers are excluded.",
+            "income": "Income",
+            "expenses": "Expenses",
+            "empty": "No data to display in the selected period."
+        },
+        "recent": {
+            "title": "Recent quick transactions"
+        },
+        "editor": {
+            "subtitle": "Record a new income, expense or transfer in Flowiy.",
+            "kindHints": {
+                "income": "Increases the balance",
+                "expense": "Decreases the balance",
+                "transfer": "Move between wallets"
+            },
+            "descriptionPlaceholders": {
+                "income": "E.g. Salary, refund or gift",
+                "expense": "E.g. Grocery shopping",
+                "transfer": "E.g. Savings account deposit"
+            },
+            "notes": "Note (optional)",
+            "notesPlaceholder": "Add a note or details about this transaction...",
+            "selectWallet": "Select a wallet",
+            "selectDestination": "Select the destination",
+            "selectCategory": "Select a category",
+            "recurring": "Recurring transaction",
+            "recurringHint": "Choose when to repeat this transaction",
+            "attachReceipt": "Attach receipt",
+            "removeReceipt": "Remove receipt",
+            "invalidReceipt": "Choose a PDF, JPG, PNG or WebP file up to 10 MB.",
+            "saveDraft": "Save draft",
+            "resumeDraft": "Resume draft",
+            "draftSaved": "Draft saved for this page session. It will be lost when you leave the page.",
+            "create": "Create transaction",
+            "saving": "Saving...",
+            "created": "Transaction created.",
+            "previewOnly": "Recurrences and receipts can be configured as a preview. You can currently keep them in a draft on this page; activating recurrences and uploading receipts will be available later.",
+            "noWallets": "You need a wallet with its own balance to create a transaction.",
+            "loadingOptions": "Loading wallets and categories...",
+            "retry": "Try again",
+            "missingTransferType": "The transfer category is unavailable. Reload the categories and try again.",
+            "invalidPrecision": "The amount can have at most two decimal places.",
+            "invalidDate": "Select a valid date.",
+            "descriptionTooLong": "Use at most 200 characters.",
+            "serverField": "Check this field and try again.",
+            "signInAgain": "Your session has expired. Sign in again.",
+            "invalidFields": "Check the highlighted fields and try again.",
+            "resourceMissing": "The wallet or category is no longer available. Reload the options and try again.",
+            "saveFailed": "The transaction could not be saved. Your entries have been kept.",
+            "recurrence": {
+                "title": "Recurrence schedule",
+                "frequency": "Frequency",
+                "every": "Every",
+                "frequencies": {
+                    "daily": "Daily",
+                    "weekly": "Weekly",
+                    "monthly": "Monthly",
+                    "yearly": "Yearly"
+                },
+                "units": {
+                    "daily": "days",
+                    "weekly": "weeks",
+                    "monthly": "months",
+                    "yearly": "years"
+                },
+                "chooseDate": "Select the transaction date to set the first occurrence.",
+                "firstDate": "First occurrence: {date}. This matches the transaction date.",
+                "weekdays": "On these days",
+                "weekdayHint": "The weekday of the first occurrence stays selected. You can add other weekdays.",
+                "dayOfMonth": "Day of the month",
+                "timing": "When in the month",
+                "onDay": "On day {day}",
+                "lastDay": "The last day of the month",
+                "onWeekday": "{ordinal} {weekday} of the month",
+                "lastWeekday": "Last {weekday} of the month",
+                "ordinals": {
+                    "1": "1st",
+                    "2": "2nd",
+                    "3": "3rd",
+                    "4": "4th",
+                    "5": "5th"
+                },
+                "monthHint": "Changing the day also updates the date above. Month-end options require a matching first date. Shorter months use the last available day; a missing fifth weekday uses the fourth.",
+                "month": "Month",
+                "day": "Day",
+                "yearHint": "Changing the day or month also updates the transaction date. February 29 becomes February 28 in non-leap years.",
+                "ends": "Ends",
+                "endOptions": {
+                    "never": "Never",
+                    "date": "On a date",
+                    "count": "After a number of occurrences"
+                },
+                "endDate": "Last date (inclusive)",
+                "count": "Number of occurrences",
+                "countHint": "Includes the first transaction.",
+                "invalidInterval": "Enter a whole number from 1 to 99.",
+                "invalidEndDate": "The end cannot be before the transaction date.",
+                "invalidCount": "Enter a whole number from 2 to 999.",
+                "preview": "Preview of upcoming occurrences",
+                "previewOnly": "This preview does not create future transactions."
+            },
+            "noCategories": "No categories are available. Reload the options and try again."
         }
     }
 }
