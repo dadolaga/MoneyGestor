@@ -165,15 +165,17 @@ namespace TestProject.Commands.Transaction {
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value - transferTransaction.Value));
 
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
-            Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
-            Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
-            Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
-            Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(secondTransactionDb.TransactionTypeId, Is.EqualTo(transferTransaction.TransactionTypeId));
-            Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
-            Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
+                Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
+                Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
+                Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
+                Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(secondTransactionDb.TransactionTypeId, Is.EqualTo(transferTransaction.TransactionTypeId));
+                Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
+                Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
+            }
 
             var secondWalletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletDestinationId);
             Assert.That(secondWalletDb.CurrentValue, Is.EqualTo(secondWallet.Value + transferTransaction.Value));
@@ -232,15 +234,17 @@ namespace TestProject.Commands.Transaction {
             Assert.That(walletDb.CurrentValue, Is.EqualTo(wallet.Value - transferTransaction.Value));
 
             var secondTransactionDb = db.Transactions.First(t => t.Id == transactionDb.TransactionDestinationId);
-            Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
-            Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
-            Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
-            Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
-            Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(secondTransactionDb.TransactionTypeId, Is.EqualTo(transferTransaction.TransactionTypeId));
-            Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
-            Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(secondTransactionDb.Description, Is.EqualTo(transferTransaction.Description));
+                Assert.That(secondTransactionDb.LongDescription, Is.EqualTo(transferTransaction.LongDescription));
+                Assert.That(transactionDb.Date, Is.EqualTo(transferTransaction.Date));
+                Assert.That(secondTransactionDb.Value, Is.EqualTo(transferTransaction.Value));
+                Assert.That(secondTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(secondTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(secondTransactionDb.TransactionTypeId, Is.EqualTo(transferTransaction.TransactionTypeId));
+                Assert.That(secondTransactionDb.WalletId, Is.EqualTo(transferTransaction.WalletDestinationId));
+                Assert.That(secondTransactionDb.TransactionDestinationId, Is.EqualTo(transferTransaction.AddTransactionCommand.Result));
+            }
 
             var secondWalletDb = await db.Wallets.FirstAsync(w => w.Id == transferTransaction.WalletDestinationId);
             Assert.That(secondWalletDb.CurrentValue, Is.EqualTo(secondWallet.Value + transferTransaction.Value));
@@ -260,7 +264,7 @@ namespace TestProject.Commands.Transaction {
                 await secondExecutor.Execute(negativeTransaction.AddTransactionCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.EqualTo(0));
+            Assert.That(db.Transactions.Count(), Is.Zero);
         }
 
         [Test]
@@ -293,8 +297,10 @@ namespace TestProject.Commands.Transaction {
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.Zero);
-            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Transactions.Count(), Is.Zero);
+                Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            }
         }
 
         [Test]
@@ -309,8 +315,10 @@ namespace TestProject.Commands.Transaction {
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.Zero);
-            Assert.That(db.Wallets.Single().CurrentValue, Is.EqualTo(wallet.Value));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Transactions.Count(), Is.Zero);
+                Assert.That(db.Wallets.Single().CurrentValue, Is.EqualTo(wallet.Value));
+            }
         }
 
         [TestCase(0)]
@@ -328,8 +336,10 @@ namespace TestProject.Commands.Transaction {
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.Zero);
-            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Transactions.Count(), Is.Zero);
+                Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            }
         }
 
         [Test]
@@ -349,8 +359,10 @@ namespace TestProject.Commands.Transaction {
                 await ExecutorManager.Execute(invalid.AddTransactionCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.Zero);
-            Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Transactions.Count(), Is.Zero);
+                Assert.That(db.Wallets.All(candidate => candidate.CurrentValue == candidate.Value), Is.True);
+            }
         }
     }
 }

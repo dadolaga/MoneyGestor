@@ -34,8 +34,10 @@ namespace TestProject {
 
             using var database = TestDatabaseRuntime.CreateContext();
 
-            Assert.That(database.Colors.Count(), Is.EqualTo(9));
-            Assert.That(database.TransactionTypes.Count(), Is.EqualTo(2));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(database.Colors.Count(), Is.EqualTo(9));
+                Assert.That(database.TransactionTypes.Count(), Is.EqualTo(2));
+            }
         }
 
         [Test]
@@ -58,11 +60,11 @@ namespace TestProject {
                 color => color.Id == DatabaseInitializer.RED.Id);
             var unchangedTransfer = await verification.TransactionTypes.SingleAsync(
                 type => type.Id == DatabaseInitializer.TRANSFER.Id);
-            Assert.Multiple(() => {
+            using (Assert.EnterMultipleScope()) {
                 Assert.That(unchangedRed.Name, Is.EqualTo("Wrong"));
                 Assert.That(unchangedRed.Value, Is.Zero);
                 Assert.That(unchangedTransfer.Name, Is.EqualTo("Wrong"));
-            });
+            }
             unchangedRed.Name = DatabaseInitializer.RED.Name;
             unchangedRed.Value = DatabaseInitializer.RED.Value;
             unchangedTransfer.Name = DatabaseInitializer.TRANSFER.Name;

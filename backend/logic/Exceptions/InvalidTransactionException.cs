@@ -1,6 +1,4 @@
 namespace logic.Exceptions;
 
-public sealed class InvalidTransactionException : ExecutorException {
-    public InvalidTransactionException(String message) : base(message) {
-    }
+public sealed class InvalidTransactionException(String message) : ExecutorException(message) {
 }

@@ -61,7 +61,7 @@ namespace TestProject.Commands.Transaction {
             Assert.ThrowsAsync<ObjectNotFoundException>(async () => await ExecutorManager.Execute(updateCommand));
 
             var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count(), Is.EqualTo(0));
+            Assert.That(db.Transactions.Count(), Is.Zero);
         }
 
         [Test]
@@ -92,14 +92,16 @@ namespace TestProject.Commands.Transaction {
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
-            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
+                Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+                Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            }
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value));
@@ -120,14 +122,16 @@ namespace TestProject.Commands.Transaction {
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.EqualTo(transaction.Description));
-            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
-            Assert.That(updateTransactionDb.Date, Is.EqualTo(transaction.Date));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(transaction.Value));
-            Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(transaction.WalletId));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(updateTransactionDb.Description, Is.EqualTo(transaction.Description));
+                Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(transaction.LongDescription));
+                Assert.That(updateTransactionDb.Date, Is.EqualTo(transaction.Date));
+                Assert.That(updateTransactionDb.Value, Is.EqualTo(transaction.Value));
+                Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(transaction.TransactionTypeId));
+                Assert.That(updateTransactionDb.WalletId, Is.EqualTo(transaction.WalletId));
+            }
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value + transaction.Value));
@@ -163,14 +167,16 @@ namespace TestProject.Commands.Transaction {
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.Null);
-            Assert.That(updateTransactionDb.LongDescription, Is.Null);
-            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(updateTransactionDb.Description, Is.Null);
+                Assert.That(updateTransactionDb.LongDescription, Is.Null);
+                Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            }
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value));
@@ -207,14 +213,16 @@ namespace TestProject.Commands.Transaction {
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
-            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
+                Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+                Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            }
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value));
@@ -268,15 +276,17 @@ namespace TestProject.Commands.Transaction {
             Assert.That(walletDb.CurrentValue, Is.EqualTo(walletSecond.Value - newValue));
 
             var destinationTransactionDb = db.Transactions.First(t => t.Id == baseTransactionDb.TransactionDestinationId);
-            Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
-            Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(destinationTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(destinationTransactionDb.WalletId, Is.EqualTo(newWalletDestination));
-            Assert.That(destinationTransactionDb.TransactionDestinationId, Is.EqualTo(updateCommand.Result));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
+                Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+                Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(destinationTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(destinationTransactionDb.WalletId, Is.EqualTo(newWalletDestination));
+                Assert.That(destinationTransactionDb.TransactionDestinationId, Is.EqualTo(updateCommand.Result));
+            }
 
             var destinationWalletDb = await db.Wallets.FirstAsync(w => w.Id == newWalletDestination);
             Assert.That(destinationWalletDb.CurrentValue, Is.EqualTo(wallet.Value + newValue));
@@ -317,15 +327,17 @@ namespace TestProject.Commands.Transaction {
             Assert.That(db.Transactions.Count, Is.EqualTo(1));
 
             var updateTransactionDb = db.Transactions.First();
-            Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
-            Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(updateTransactionDb.TransactionDestinationId, Is.Null);
-            Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(updateTransactionDb.Description, Is.EqualTo(newDescription));
+                Assert.That(updateTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+                Assert.That(updateTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(updateTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(updateTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(updateTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(updateTransactionDb.TransactionDestinationId, Is.Null);
+                Assert.That(updateTransactionDb.WalletId, Is.EqualTo(newWallet));
+            }
 
             var oldWalletDb = await db.Wallets.FirstAsync(w => w.Id == wallet.AddWalletCommand.Result);
             Assert.That(oldWalletDb.CurrentValue, Is.EqualTo(wallet.Value));
@@ -385,15 +397,17 @@ namespace TestProject.Commands.Transaction {
             Assert.That(walletDb.CurrentValue, Is.EqualTo(walletSecond.Value - newValue));
 
             var destinationTransactionDb = db.Transactions.First(t => t.Id == baseTransactionDb.TransactionDestinationId);
-            Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
-            Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
-            Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
-            Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
-            Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
-            Assert.That(destinationTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
-            Assert.That(destinationTransactionDb.WalletId, Is.EqualTo(newWalletDestination));
-            Assert.That(destinationTransactionDb.TransactionDestinationId, Is.EqualTo(updateCommand.Result));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(destinationTransactionDb.Description, Is.EqualTo(newDescription));
+                Assert.That(destinationTransactionDb.LongDescription, Is.EqualTo(newLongDescription));
+                Assert.That(baseTransactionDb.Date, Is.EqualTo(newDate));
+                Assert.That(destinationTransactionDb.Value, Is.EqualTo(newValue));
+                Assert.That(destinationTransactionDb.UserInsertId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(destinationTransactionDb.UserId, Is.EqualTo(user.AddNewUserExecutor.Result));
+                Assert.That(destinationTransactionDb.TransactionTypeId, Is.EqualTo(newTransactionType));
+                Assert.That(destinationTransactionDb.WalletId, Is.EqualTo(newWalletDestination));
+                Assert.That(destinationTransactionDb.TransactionDestinationId, Is.EqualTo(updateCommand.Result));
+            }
 
             var destinationWalletDb = await db.Wallets.FirstAsync(w => w.Id == newWalletDestination);
             Assert.That(destinationWalletDb.CurrentValue, Is.EqualTo(wallet.Value + newValue));

@@ -7,9 +7,9 @@ using logic.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
+using System.Diagnostics;
 using Testcontainers.MySql;
 using TestProject.Infrastructure;
-using System.Diagnostics;
 
 namespace DatabaseTransferTests;
 
@@ -37,6 +37,7 @@ public sealed class DatabaseTransferIntegrationTest {
     [OneTimeTearDown]
     public async Task StopOwnedContainer() {
         if (lease == null) { return; }
+
         var current = new MySqlConnectionStringBuilder(container.GetConnectionString());
         TestDatabaseOwnershipGuard.EnsureOwned(lease, true, runId, current.Database,
             current.Server, checked((UInt16) current.Port), container.Id);
@@ -86,12 +87,14 @@ public sealed class DatabaseTransferIntegrationTest {
             await DatabaseTransfer.ImportAsync(target, archive);
             await DatabaseSchema.RequireCurrentAsync(target);
             var imported = await target.Users.SingleAsync();
-            Assert.That(new PasswordHasher<ApplicationIdentityUser>().VerifyHashedPassword(imported, imported.PasswordHash!, "FamilyStrong123!"),
-                Is.EqualTo(PasswordVerificationResult.Success));
-            Assert.That(await target.UserTokens.CountAsync(), Is.EqualTo(1));
-            Assert.That((await target.TransactionTypes.SingleAsync(row => row.Id == 100)).UseInReports, Is.False);
-            Assert.That((await target.Wallets.SingleAsync(row => row.Id == 50)).BalanceVersion, Is.EqualTo(7));
-            Assert.That((await target.Transactions.SingleAsync(row => row.Id == 200)).TransactionDestinationId, Is.EqualTo(201));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(new PasswordHasher<ApplicationIdentityUser>().VerifyHashedPassword(imported, imported.PasswordHash!, "FamilyStrong123!"),
+                            Is.EqualTo(PasswordVerificationResult.Success));
+                Assert.That(await target.UserTokens.CountAsync(), Is.EqualTo(1));
+                Assert.That((await target.TransactionTypes.SingleAsync(row => row.Id == 100)).UseInReports, Is.False);
+                Assert.That((await target.Wallets.SingleAsync(row => row.Id == 50)).BalanceVersion, Is.EqualTo(7));
+                Assert.That((await target.Transactions.SingleAsync(row => row.Id == 200)).TransactionDestinationId, Is.EqualTo(201));
+            }
             target.Transactions.Add(new TransactionDb { WalletId = 50, UserId = 42, UserInsertId = 42, TransactionTypeId = 100, Value = -2m, Date = date });
             await target.SaveChangesAsync();
             Assert.That(await target.Transactions.MaxAsync(row => row.Id), Is.GreaterThan(202));
@@ -149,6 +152,7 @@ public sealed class DatabaseTransferIntegrationTest {
             command.CommandText = $"GRANT SELECT ON `{readOnly.Database}`.* TO '{userName}'@'%'";
             await command.ExecuteNonQueryAsync();
         }
+
         readOnly.UserID = userName;
         readOnly.Password = password;
         await using var verification = new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
@@ -172,8 +176,10 @@ public sealed class DatabaseTransferIntegrationTest {
             ArchiveFile.Write(conflicting, snapshot, TimeProvider.System);
             await using var target = await CreateEmptyTarget();
             Assert.ThrowsAsync<InvalidOperationException>(() => DatabaseTransfer.ImportAsync(target, conflicting));
-            Assert.That(await target.Metadata.AsNoTracking().CountAsync(), Is.Zero);
-            Assert.That(await target.Colors.AsNoTracking().CountAsync(), Is.Zero);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(await target.Metadata.AsNoTracking().CountAsync(), Is.Zero);
+                Assert.That(await target.Colors.AsNoTracking().CountAsync(), Is.Zero);
+            }
             Assert.ThrowsAsync<InvalidOperationException>(() => DatabaseSchema.RequireCurrentAsync(target));
             Assert.That((await source.Colors.AsNoTracking().SingleAsync(row => row.Id == 1)).Name, Is.EqualTo("Red"));
             await DatabaseSchema.RequireCurrentAsync(source);
@@ -194,6 +200,7 @@ public sealed class DatabaseTransferIntegrationTest {
         if (!name.StartsWith($"mg_test_{runId}_", StringComparison.Ordinal)) {
             throw new InvalidOperationException("Refusing to delete an unowned test database.");
         }
+
         await target.Database.CloseConnectionAsync();
 
         Assert.That(await RunDeleteCli(targetConnection, name, "wrong-name"), Is.EqualTo(1));
@@ -207,6 +214,7 @@ public sealed class DatabaseTransferIntegrationTest {
             command.Parameters.Add(parameter);
             Assert.That(Convert.ToInt32(await command.ExecuteScalarAsync()), Is.Zero);
         }
+
         await DatabaseSchema.RequireCurrentAsync(original);
         Assert.That(await original.Colors.CountAsync(), Is.EqualTo(9));
     }
@@ -232,6 +240,7 @@ public sealed class DatabaseTransferIntegrationTest {
             process.Kill(entireProcessTree: true);
             throw;
         }
+
         await Task.WhenAll(stdout, stderr);
         return process.ExitCode;
     }
@@ -241,6 +250,7 @@ public sealed class DatabaseTransferIntegrationTest {
         if (!name.StartsWith($"mg_test_{runId}_", StringComparison.Ordinal)) {
             throw new InvalidOperationException("Unowned test database target.");
         }
+
         var connection = new MySqlConnectionStringBuilder(connectionString) { Database = String.Empty };
         await using var server = new MySqlConnection(connection.ConnectionString);
         await server.OpenAsync();

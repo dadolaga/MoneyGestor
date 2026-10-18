@@ -13,9 +13,7 @@ public sealed class WalletConfigurationPolicyTest {
     [TestCase("cash", true)]
     [TestCase("debit", false)]
     [TestCase("credit", false)]
-    public void OnlyBalanceOwningTypesContributeToWealth(String kind, Boolean expected) {
-        Assert.That(WalletConfigurationPolicy.HasOwnBalance(kind), Is.EqualTo(expected));
-    }
+    public void OnlyBalanceOwningTypesContributeToWealth(String kind, Boolean expected) => Assert.That(WalletConfigurationPolicy.HasOwnBalance(kind), Is.EqualTo(expected));
 
     [Test]
     public void DebitRequiresAccountAndCannotCarryCreditFields() {
@@ -28,8 +26,15 @@ public sealed class WalletConfigurationPolicyTest {
 
     [Test]
     public void CreditRequiresAmountsAndValidClosingAndPaymentDays() {
-        var credit = Bank() with { Kind = "credit", Network = "visa", LinkedAccountId = 1,
-            CreditLimit = 2000, CurrentSpending = 50.25m, StatementDay = 28, PaymentDay = 15 };
+        var credit = Bank() with {
+            Kind = "credit",
+            Network = "visa",
+            LinkedAccountId = 1,
+            CreditLimit = 2000,
+            CurrentSpending = 50.25m,
+            StatementDay = 28,
+            PaymentDay = 15
+        };
         Assert.DoesNotThrow(() => WalletConfigurationPolicy.Validate(credit));
         Assert.Throws<WalletValidationException>(() => WalletConfigurationPolicy.Validate(credit with { CreditLimit = -1 }));
         Assert.Throws<WalletValidationException>(() => WalletConfigurationPolicy.Validate(credit with { CurrentSpending = 1.001m }));

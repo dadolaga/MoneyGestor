@@ -71,20 +71,20 @@ public sealed partial class ResourceQueryService(MoneyGestorContext database) : 
         await OwnershipQueryPolicy.AvailableTransactionTypes(database, userId).AsNoTracking()
             .OrderBy(type => type.Id)
             .Select(type => new TransactionTypeResponse(type.Id, type.Name, type.UserId == null) {
-            ParentId = type.ParentId, Icon = type.Icon, Color = type.Color, Description = type.Description,
-            Keywords = type.Keywords, UseInReports = type.UseInReports,
-            SystemKind = type.Id == DatabaseInitializer.TRANSFER.Id ? "Transfer" : type.Id == DatabaseInitializer.ADJUSTMENT.Id ? "Adjustment" : null
-        })
+                ParentId = type.ParentId, Icon = type.Icon, Color = type.Color, Description = type.Description,
+                Keywords = type.Keywords, UseInReports = type.UseInReports,
+                SystemKind = type.Id == DatabaseInitializer.TRANSFER.Id ? "Transfer" : type.Id == DatabaseInitializer.ADJUSTMENT.Id ? "Adjustment" : null
+            })
             .ToListAsync(cancellationToken);
 
     public Task<TransactionTypeResponse?> GetTransactionTypeAsync(UInt64 userId, UInt64 id, CancellationToken cancellationToken) =>
         OwnershipQueryPolicy.AvailableTransactionTypes(database, userId).AsNoTracking()
             .Where(type => type.Id == id)
             .Select(type => new TransactionTypeResponse(type.Id, type.Name, type.UserId == null) {
-            ParentId = type.ParentId, Icon = type.Icon, Color = type.Color, Description = type.Description,
-            Keywords = type.Keywords, UseInReports = type.UseInReports,
-            SystemKind = type.Id == DatabaseInitializer.TRANSFER.Id ? "Transfer" : type.Id == DatabaseInitializer.ADJUSTMENT.Id ? "Adjustment" : null
-        })
+                ParentId = type.ParentId, Icon = type.Icon, Color = type.Color, Description = type.Description,
+                Keywords = type.Keywords, UseInReports = type.UseInReports,
+                SystemKind = type.Id == DatabaseInitializer.TRANSFER.Id ? "Transfer" : type.Id == DatabaseInitializer.ADJUSTMENT.Id ? "Adjustment" : null
+            })
             .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<PageResponse<TransactionResponse>> GetTransactionsAsync(UInt64 userId, TransactionListQuery query, CancellationToken cancellationToken) {

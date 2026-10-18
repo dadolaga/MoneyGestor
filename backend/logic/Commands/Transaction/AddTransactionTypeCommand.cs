@@ -9,14 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
-    public class AddTransactionTypeCommand : ICommand<UInt64> {
-        public String name;
-        private readonly logic.Models.TransactionTypeDetails details;
-
-        public AddTransactionTypeCommand(String name, logic.Models.TransactionTypeDetails? details = null) {
-            this.name = name.Trim();
-            this.details = details ?? new();
-        }
+    public class AddTransactionTypeCommand(String name, logic.Models.TransactionTypeDetails? details = null) : ICommand<UInt64> {
+        public String name = name.Trim();
+        private readonly logic.Models.TransactionTypeDetails details = details ?? new();
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
@@ -24,21 +19,26 @@ namespace logic.Commands.Transaction {
             if (String.IsNullOrWhiteSpace(name) || name.Length > 100) {
                 throw new ResourceValidationException("name", "invalid_name");
             }
+
             if (!new[] { "shopping", "home", "transport", "food", "utilities", "work", "entertainment", "health", "tag" }.Contains(details.Icon)) {
                 throw new ResourceValidationException("icon", "invalid_icon");
             }
+
             if (!new[] { "red", "orange", "yellow", "green", "cyan", "blue", "purple", "grey" }.Contains(details.Color)) {
                 throw new ResourceValidationException("color", "invalid_color");
             }
+
             if (details.Description?.Length > 500 || details.Keywords?.Length > 1000) {
                 throw new ResourceValidationException(details.Description?.Length > 500 ? "description" : "keywords", "too_long");
             }
+
             var ancestors = new HashSet<UInt64>();
             var parentId = details.ParentId;
             while (parentId.HasValue) {
                 if (!ancestors.Add(parentId.Value) || parentId == DatabaseInitializer.TRANSFER.Id || parentId == DatabaseInitializer.ADJUSTMENT.Id) {
                     throw new ResourceValidationException("parentId", "invalid_parent");
                 }
+
                 var parent = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(database, parentId.Value, executorManager.UserId, cancellationToken);
                 parentId = parent.ParentId;
             }

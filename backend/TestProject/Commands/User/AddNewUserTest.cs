@@ -42,11 +42,13 @@ namespace TestProject.Commands.User {
             var user = db.Users.First(u => u.Id == executor.Result);
 
             Assert.That(user.Id, Is.EqualTo(executor.Result));
-            Assert.That(user.Firstname, Is.EqualTo("Test"));
-            Assert.That(user.Lastname, Is.EqualTo("Test"));
-            Assert.That(user.Email, Is.EqualTo("test@test.me"));
-            Assert.That(user.Username, Is.EqualTo("test_test"));
-            Assert.That(user.Password, Is.Not.EqualTo(password), "Password is not crypted");
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(user.Firstname, Is.EqualTo("Test"));
+                Assert.That(user.Lastname, Is.EqualTo("Test"));
+                Assert.That(user.Email, Is.EqualTo("test@test.me"));
+                Assert.That(user.Username, Is.EqualTo("test_test"));
+                Assert.That(user.Password, Is.Not.EqualTo(password), "Password is not crypted");
+            }
         }
 
         [Test]

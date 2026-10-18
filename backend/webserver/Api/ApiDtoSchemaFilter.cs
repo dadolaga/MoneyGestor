@@ -19,7 +19,7 @@ public sealed class ApiDtoSchemaFilter : ISchemaFilter {
         var constructor = context.Type.GetConstructors()
             .OrderByDescending(candidate => candidate.GetParameters().Length)
             .FirstOrDefault();
-        foreach (var parameter in constructor?.GetParameters() ?? Array.Empty<ParameterInfo>()) {
+        foreach (var parameter in constructor?.GetParameters() ?? []) {
             if (parameter.Name is null) {
                 continue;
             }

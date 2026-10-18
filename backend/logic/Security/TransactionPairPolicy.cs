@@ -44,7 +44,7 @@ internal static class TransactionPairPolicy {
         if (!isValid) {
             var ids = pair == null
                 ? new[] { transaction.Id }
-                : new[] { transaction.Id, pair.Id }.Distinct().OrderBy(id => id).ToArray();
+                : [.. new[] { transaction.Id, pair.Id }.Distinct().OrderBy(id => id)];
             throw new DataIntegrityException(new DataIntegrityReport(new[] {
                 new DataIntegrityIssue("transfer_pair_invariant", ids)
             }));

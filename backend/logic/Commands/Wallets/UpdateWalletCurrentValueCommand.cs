@@ -7,16 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Wallets {
-    public class UpdateWalletCurrentValueCommand : ICommand<UInt64> {
-        private UInt64 walletId;
-        private Decimal value;
-        private Boolean isDifferenze;
-
-        public UpdateWalletCurrentValueCommand(UInt64 walletId, Decimal value, Boolean isDifferenze = false) {
-            this.walletId = walletId;
-            this.value = value;
-            this.isDifferenze = isDifferenze;
-        }
+    public class UpdateWalletCurrentValueCommand(UInt64 walletId, Decimal value, Boolean isDifferenze = false) : ICommand<UInt64> {
+        private readonly UInt64 walletId = walletId;
+        private readonly Decimal value = value;
+        private readonly Boolean isDifferenze = isDifferenze;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;

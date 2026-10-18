@@ -56,7 +56,7 @@ namespace TestProject.Commands.Transaction {
             await ExecutorManager.Execute(deleteCommand);
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count, Is.EqualTo(0));
+            Assert.That(db.Transactions.Count, Is.Zero);
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace TestProject.Commands.Transaction {
             await ExecutorManager.Execute(deleteCommand);
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Transactions.Count, Is.EqualTo(0));
+            Assert.That(db.Transactions.Count, Is.Zero);
         }
 
         [Test]

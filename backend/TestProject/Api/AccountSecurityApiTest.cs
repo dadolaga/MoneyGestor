@@ -78,8 +78,10 @@ internal sealed class AccountSecurityApiTest {
             email = "secure@test.me",
             password = "VeryStrong123!"
         }, csrf);
-        Assert.That(registration.StatusCode, Is.EqualTo(HttpStatusCode.Accepted), await registration.Content.ReadAsStringAsync());
-        Assert.That(emails.ConfirmationLink, Is.Not.Null);
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(registration.StatusCode, Is.EqualTo(HttpStatusCode.Accepted), await registration.Content.ReadAsStringAsync());
+            Assert.That(emails.ConfirmationLink, Is.Not.Null);
+        }
         var duplicate = await PostAsync("/api/v1/auth/register", new {
             firstname = "Secure",
             lastname = "User",
@@ -114,28 +116,34 @@ internal sealed class AccountSecurityApiTest {
             password = "VeryStrong123!",
             remember = false
         }, csrf);
-        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-        Assert.That(login.Headers.TryGetValues("Set-Cookie", out var cookies), Is.True);
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(login.Headers.TryGetValues("Set-Cookie", out var cookies), Is.True);
+        }
         var authCookie = cookies!.Single(value => value.StartsWith("MoneyGestor.Auth="));
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(authCookie, Does.Contain("httponly").IgnoreCase);
             Assert.That(authCookie, Does.Contain("secure").IgnoreCase);
             Assert.That(authCookie, Does.Contain("samesite=lax").IgnoreCase);
-        });
+        }
 
         var session = await client.GetAsync("/api/v1/auth/session");
         Assert.That(session.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using (var json = JsonDocument.Parse(await session.Content.ReadAsStringAsync())) {
-            Assert.That(json.RootElement.GetProperty("email").GetString(), Is.EqualTo("secure@test.me"));
-            Assert.That(json.RootElement.TryGetProperty("password", out _), Is.False);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(json.RootElement.GetProperty("email").GetString(), Is.EqualTo("secure@test.me"));
+                Assert.That(json.RootElement.TryGetProperty("password", out _), Is.False);
+            }
         }
 
         var bridgedLegacySession = await client.GetAsync("/user/info");
         Assert.That(bridgedLegacySession.StatusCode, Is.EqualTo(HttpStatusCode.OK), await bridgedLegacySession.Content.ReadAsStringAsync());
 
         var logout = await PostAsync("/api/v1/auth/logout", new { }, csrf);
-        Assert.That(logout.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-        Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(logout.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        }
     }
 
     [Test]
@@ -150,8 +158,10 @@ internal sealed class AccountSecurityApiTest {
     [Test]
     public async Task V1ResourceRoutesRequireIdentityAndUseDTOsWithAntiforgery() {
         var anonymous = await client.GetAsync("/api/v1/wallets");
-        Assert.That(anonymous.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
-        Assert.That(anonymous.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/problem+json"));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(anonymous.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(anonymous.Content.Headers.ContentType?.MediaType, Is.EqualTo("application/problem+json"));
+        }
 
         var csrf = await GetCsrfAsync();
         await RegisterAndConfirmAsync("resource_user", "resource@test.me", "VeryStrong123!", csrf);
@@ -183,12 +193,12 @@ internal sealed class AccountSecurityApiTest {
         Assert.That(list.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using var listJson = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
         var wallet = listJson.RootElement.EnumerateArray().Single();
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(wallet.GetProperty("initialValue").GetDecimal(), Is.EqualTo(25.50m));
             Assert.That(wallet.GetProperty("currentValue").GetDecimal(), Is.EqualTo(25.50m));
             Assert.That(wallet.GetProperty("favorite").GetBoolean(), Is.False);
             Assert.That(wallet.TryGetProperty("userId", out _), Is.False);
-        });
+        }
 
         var dashboard = await client.GetAsync("/api/v1/dashboard?from=2026-09-01&to=2026-09-30");
         Assert.That(dashboard.StatusCode, Is.EqualTo(HttpStatusCode.OK), await dashboard.Content.ReadAsStringAsync());
@@ -202,15 +212,17 @@ internal sealed class AccountSecurityApiTest {
             user = "reset@test.me",
             password = "VeryStrong123!"
         }, csrf);
-        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-        Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
 
         var missing = await PostAsync("/api/v1/auth/forgot-password", new { email = "missing@test.me" }, csrf);
         var existing = await PostAsync("/api/v1/auth/forgot-password", new { email = "reset@test.me" }, csrf);
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(missing.StatusCode, Is.EqualTo(HttpStatusCode.Accepted));
             Assert.That(existing.StatusCode, Is.EqualTo(HttpStatusCode.Accepted));
-        });
+        }
 
         var query = ParseQuery(emails.ResetLink!);
         var reset = await PostAsync("/api/v1/auth/reset-password", new {
@@ -218,8 +230,10 @@ internal sealed class AccountSecurityApiTest {
             token = query["token"],
             password = "EvenStronger456!"
         }, csrf);
-        Assert.That(reset.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
-        Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(reset.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That((await client.GetAsync("/api/v1/auth/session")).StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        }
 
         var reused = await PostAsync("/api/v1/auth/reset-password", new {
             email = query["email"],
@@ -323,8 +337,10 @@ internal sealed class AccountSecurityApiTest {
             guard.Permit("login", "198.51.100.1", $"identity-{attempt}", 2, TimeSpan.FromHours(1));
         }
 
-        Assert.That(guard.TrackedIdentityCount, Is.LessThanOrEqualTo(8));
-        Assert.That(guard.Permit("login", "198.51.100.2", "new-user", 2, TimeSpan.FromHours(1)), Is.True);
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(guard.TrackedIdentityCount, Is.LessThanOrEqualTo(8));
+            Assert.That(guard.Permit("login", "198.51.100.2", "new-user", 2, TimeSpan.FromHours(1)), Is.True);
+        }
     }
 
     [Test]
@@ -386,8 +402,10 @@ internal sealed class AccountSecurityApiTest {
         Assert.That(clearShort.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await clearShort.Content.ReadAsStringAsync());
         var afterShort = await client.GetAsync($"/api/v1/transactions/{id}");
         using (var json = JsonDocument.Parse(await afterShort.Content.ReadAsStringAsync())) {
-            Assert.That(json.RootElement.GetProperty("description").ValueKind, Is.EqualTo(JsonValueKind.Null));
-            Assert.That(json.RootElement.GetProperty("longDescription").GetString(), Is.EqualTo("Long"));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(json.RootElement.GetProperty("description").ValueKind, Is.EqualTo(JsonValueKind.Null));
+                Assert.That(json.RootElement.GetProperty("longDescription").GetString(), Is.EqualTo("Long"));
+            }
         }
 
         var clearLong = await patchAsync(new { longDescription = (String?) null });
@@ -403,8 +421,10 @@ internal sealed class AccountSecurityApiTest {
         allowed.Headers.Add("Origin", "http://localhost:3000");
         allowed.Headers.Add("Access-Control-Request-Method", "POST");
         var allowedResponse = await client.SendAsync(allowed);
-        Assert.That(allowedResponse.Headers.GetValues("Access-Control-Allow-Origin"), Is.EqualTo(new[] { "http://localhost:3000" }));
-        Assert.That(allowedResponse.Headers.GetValues("Access-Control-Allow-Credentials"), Is.EqualTo(new[] { "true" }));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(allowedResponse.Headers.GetValues("Access-Control-Allow-Origin"), Is.EqualTo(["http://localhost:3000"]));
+            Assert.That(allowedResponse.Headers.GetValues("Access-Control-Allow-Credentials"), Is.EqualTo(["true"]));
+        }
 
         using var denied = new HttpRequestMessage(HttpMethod.Options, "/api/v1/auth/login");
         denied.Headers.Add("Origin", "https://example.invalid");

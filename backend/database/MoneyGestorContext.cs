@@ -5,17 +5,13 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace database {
-    public class MoneyGestorContext : IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64> {
+    public class MoneyGestorContext(DbContextOptions<MoneyGestorContext> options) : IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64>(options) {
 
         public DbSet<ColorDb> Colors { get; set; }
         public DbSet<WalletDb> Wallets { get; set; }
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
         public DbSet<DatabaseMetadata> Metadata { get; set; }
-
-        public MoneyGestorContext(DbContextOptions<MoneyGestorContext> options)
-            : base(options) {
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);

@@ -29,6 +29,6 @@ namespace database.Models {
         public ColorDb? Color { get; set; }
         public UInt64 UserId { get; set; }
         public ApplicationIdentityUser? User { get; set; }
-        public ICollection<TransactionDb> Transactions { get; set; } = new List<TransactionDb>();
+        public ICollection<TransactionDb> Transactions { get; set; } = [];
     }
 }

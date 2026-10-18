@@ -148,7 +148,7 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
             Assert.That(exception!.Message, Does.Not.Contain("must-not-enter-report"));
         }
 
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(report.IsValid, Is.False);
             Assert.That(report.Issues.Single(issue => issue.Code == "wallet_color_owner_mismatch").EntityIds,
                 Does.Contain(mismatchedWalletId));
@@ -160,12 +160,12 @@ internal sealed class DataIntegrityPreflightTest : DatabaseBase {
                 Does.Contain(mismatchedTransactionId));
             Assert.That(report.Issues.Single(issue => issue.Code == "transfer_pair_invariant").EntityIds,
                 Does.Contain(invalidTransferId));
-        });
+        }
 
         using var assertionDatabase = TestDatabaseRuntime.CreateContext();
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(assertionDatabase.Wallets.Count(), Is.EqualTo(2));
             Assert.That(assertionDatabase.Transactions.Count(), Is.EqualTo(2));
-        });
+        }
     }
 }

@@ -16,6 +16,6 @@ namespace database.Models {
         public String? Description { get; set; }
         public String? Keywords { get; set; }
         public Boolean UseInReports { get; set; } = true;
-        public ICollection<TransactionDb> Transactions { get; set; } = new List<TransactionDb>();
+        public ICollection<TransactionDb> Transactions { get; set; } = [];
     }
 }

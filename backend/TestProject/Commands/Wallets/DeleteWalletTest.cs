@@ -51,7 +51,7 @@ namespace TestProject.Commands.Wallets {
             Assert.That(deleteCommand.Result, Is.EqualTo(wallet.AddWalletCommand.Result));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Wallets.Count(), Is.EqualTo(0));
+            Assert.That(db.Wallets.Count(), Is.Zero);
         }
 
         [Test]
@@ -67,8 +67,10 @@ namespace TestProject.Commands.Wallets {
             Assert.ThrowsAsync<NotValidForDeleteException>(async () => await ExecutorManager.Execute(deleteWallet));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Wallets.Any(w => w.Id == wallet.AddWalletCommand.Result), Is.True);
-            Assert.That(db.Transactions.Any(t => t.Id == transaction.AddTransactionCommand.Result), Is.True);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Wallets.Any(w => w.Id == wallet.AddWalletCommand.Result), Is.True);
+                Assert.That(db.Transactions.Any(t => t.Id == transaction.AddTransactionCommand.Result), Is.True);
+            }
         }
 
         [Test]
@@ -99,8 +101,10 @@ namespace TestProject.Commands.Wallets {
                 await otherExecutor.Execute(new DeleteWalletCommand(wallet.AddWalletCommand.Result)));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Wallets.Any(candidate => candidate.Id == wallet.AddWalletCommand.Result), Is.True);
-            Assert.That(db.Transactions.Any(candidate => candidate.Id == transaction.AddTransactionCommand.Result), Is.True);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(db.Wallets.Any(candidate => candidate.Id == wallet.AddWalletCommand.Result), Is.True);
+                Assert.That(db.Transactions.Any(candidate => candidate.Id == transaction.AddTransactionCommand.Result), Is.True);
+            }
         }
     }
 }

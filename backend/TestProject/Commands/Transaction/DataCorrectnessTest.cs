@@ -43,22 +43,22 @@ internal sealed class DataCorrectnessTest : DatabaseBase {
         Assert.ThrowsAsync<InvalidTransactionException>(async () => await executor.Execute(invalid));
 
         await using var database = TestDatabaseRuntime.CreateContext();
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(database.Transactions.Sum(transaction => transaction.Value), Is.EqualTo(0.30m));
             Assert.That(database.Wallets.Single().CurrentValue, Is.EqualTo(0.30m));
-        });
+        }
     }
 
     [Test]
     public void MonetaryRangeUsesDecimal19Scale2Boundaries() {
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.DoesNotThrow(() => MonetaryValuePolicy.RequireValid(MonetaryValuePolicy.Maximum));
             Assert.DoesNotThrow(() => MonetaryValuePolicy.RequireValid(-MonetaryValuePolicy.Maximum));
             Assert.Throws<InvalidTransactionException>(() =>
                 MonetaryValuePolicy.RequireValid(MonetaryValuePolicy.Maximum + 0.01m));
             Assert.Throws<InvalidTransactionException>(() =>
                 MonetaryValuePolicy.RequireValid(Decimal.MinValue));
-        });
+        }
     }
 
     [TestCase("2024-02-29")]

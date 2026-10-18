@@ -61,12 +61,12 @@ internal sealed class BalanceConcurrencyTest : DatabaseBase {
         var storedWallet = await assertionDatabase.Wallets.SingleAsync();
         var transactionCount = await assertionDatabase.Transactions.CountAsync();
         var reconciliation = await new BalanceReconciliationService(assertionDatabase).InspectAsync();
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(transactionCount, Is.EqualTo(12));
             Assert.That(storedWallet.CurrentValue, Is.EqualTo(1.20m));
             Assert.That(storedWallet.BalanceVersion, Is.EqualTo(12));
             Assert.That(reconciliation.IsValid, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -106,11 +106,11 @@ internal sealed class BalanceConcurrencyTest : DatabaseBase {
         await using var assertionDatabase = TestDatabaseRuntime.CreateContext();
         var wallets = await assertionDatabase.Wallets.OrderBy(wallet => wallet.Id).ToArrayAsync();
         var reconciliation = await new BalanceReconciliationService(assertionDatabase).InspectAsync();
-        Assert.Multiple(() => {
-            Assert.That(wallets.Select(wallet => wallet.CurrentValue), Is.EqualTo(new[] { 0m, 0m }));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(wallets.Select(wallet => wallet.CurrentValue), Is.EqualTo([0m, 0m]));
             Assert.That(assertionDatabase.Transactions.Count(), Is.EqualTo(16));
             Assert.That(reconciliation.IsValid, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -152,12 +152,12 @@ internal sealed class BalanceConcurrencyTest : DatabaseBase {
         var storedTransactions = await assertionDatabase.Transactions.ToArrayAsync();
         var storedWallet = await assertionDatabase.Wallets.SingleAsync();
         var reconciliation = await new BalanceReconciliationService(assertionDatabase).InspectAsync();
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(storedTransactions, Has.Length.LessThanOrEqualTo(1));
             Assert.That(storedWallet.CurrentValue,
                 Is.EqualTo(storedTransactions.Length == 0 ? 0m : storedTransactions[0].Value));
             Assert.That(reconciliation.IsValid, Is.True);
-        });
+        }
     }
 
     [Test]

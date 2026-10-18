@@ -44,13 +44,13 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
 
         interceptor.Reset();
         var sample = await service.GetDashboardAsync(userId, query, CancellationToken.None);
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(sample.Incoming, Is.EqualTo(1350m));
             Assert.That(sample.Expense, Is.EqualTo(-700m));
             Assert.That(sample.IncomingCategories.Single().Value, Is.EqualTo(1350m));
             Assert.That(sample.ExpenseCategories.Single().Value, Is.EqualTo(-700m));
             Assert.That(interceptor.Count, Is.EqualTo(1), "Optimized dashboard round-trips.");
-        });
+        }
 
         var sql = interceptor.Sql.ToArray();
         interceptor.Reset();
@@ -60,8 +60,10 @@ internal sealed class DashboardAggregationPerformanceTest : DatabaseBase {
             var started = Stopwatch.GetTimestamp();
             var response = await service.GetDashboardAsync(userId, query, CancellationToken.None);
             elapsedMilliseconds[index] = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-            Assert.That(response.Incoming, Is.EqualTo(1350m));
-            Assert.That(response.Expense, Is.EqualTo(-700m));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(response.Incoming, Is.EqualTo(1350m));
+                Assert.That(response.Expense, Is.EqualTo(-700m));
+            }
         }
 
         var allocated = (GC.GetTotalAllocatedBytes(true) - allocatedBefore) / elapsedMilliseconds.Length;

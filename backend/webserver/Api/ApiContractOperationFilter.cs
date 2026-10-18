@@ -30,7 +30,7 @@ public sealed class ApiContractOperationFilter : IOperationFilter {
             operation.Security = [requirement];
         }
 
-        operation.Responses ??= new OpenApiResponses();
+        operation.Responses ??= [];
         foreach (var status in ProblemStatuses) {
             var key = status.ToString(System.Globalization.CultureInfo.InvariantCulture);
             if (operation.Responses.ContainsKey(key)) {

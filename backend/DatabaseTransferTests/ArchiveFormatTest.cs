@@ -40,12 +40,13 @@ public sealed class ArchiveFormatTest {
         var path = Path.Combine(Path.GetTempPath(), $"mg-archive-{Guid.NewGuid():N}.zip");
         try {
             WriteEmpty(path);
-            Assert.That(ArchiveFile.Read(path).Rows.Count, Is.EqualTo(ArchiveTable.All.Length));
+            Assert.That(ArchiveFile.Read(path).Rows, Has.Count.EqualTo(ArchiveTable.All.Length));
             using (var zip = ZipFile.Open(path, ZipArchiveMode.Update)) {
                 zip.GetEntry("manifest.json")!.Delete();
                 using var stream = zip.CreateEntry("manifest.json").Open();
                 JsonSerializer.Serialize(stream, new { formatVersion = 999, schemaVersion = 1 });
             }
+
             Assert.Throws<InvalidDataException>(() => ArchiveFile.Read(path));
             File.Delete(path);
             WriteEmpty(path);
@@ -54,10 +55,12 @@ public sealed class ArchiveFormatTest {
                 using var writer = new StreamWriter(zip.CreateEntry("colors.csv").Open());
                 writer.Write("corrupt");
             }
+
             Assert.Throws<InvalidDataException>(() => ArchiveFile.Read(path));
             File.Delete(path);
             WriteEmpty(path);
             using (var zip = ZipFile.Open(path, ZipArchiveMode.Update)) { zip.CreateEntry("colors.csv"); }
+
             Assert.Throws<InvalidDataException>(() => ArchiveFile.Read(path));
         } finally { File.Delete(path); }
     }
@@ -76,6 +79,7 @@ public sealed class ArchiveFormatTest {
     private static void WriteEmpty(String path) {
         var snapshot = new ArchiveSnapshot();
         foreach (var table in ArchiveTable.All) { snapshot.Rows.Add(table.EntityType, []); }
+
         ArchiveFile.Write(path, snapshot, TimeProvider.System);
     }
 }

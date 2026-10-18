@@ -60,10 +60,12 @@ internal class LegacyApiCharacterizationTest {
 
         Assert.That(registerResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using (var registerJson = JsonDocument.Parse(await registerResponse.Content.ReadAsStringAsync())) {
-            Assert.That(registerJson.RootElement.GetProperty("code").GetUInt32(), Is.Zero);
-            Assert.That(registerJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("user"));
-            Assert.That(registerJson.RootElement.GetProperty("data").GetUInt64(), Is.GreaterThan(0));
-            Assert.That(registerJson.RootElement.TryGetProperty("Code", out _), Is.False);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(registerJson.RootElement.GetProperty("code").GetUInt32(), Is.Zero);
+                Assert.That(registerJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("user"));
+                Assert.That(registerJson.RootElement.GetProperty("data").GetUInt64(), Is.GreaterThan(0));
+                Assert.That(registerJson.RootElement.TryGetProperty("Code", out _), Is.False);
+            }
         }
 
         var loginResponse = await client.PostAsJsonAsync("/user/login", new {
@@ -74,8 +76,10 @@ internal class LegacyApiCharacterizationTest {
 
         Assert.That(loginResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         using var loginJson = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync());
-        Assert.That(loginJson.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(111));
-        Assert.That(loginJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login fail"));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(loginJson.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(111));
+            Assert.That(loginJson.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login fail"));
+        }
     }
 
     [Test]
@@ -88,9 +92,11 @@ internal class LegacyApiCharacterizationTest {
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(111));
-        Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login fail"));
-        Assert.That(json.RootElement.GetProperty("data").ValueKind, Is.EqualTo(JsonValueKind.Null));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(111));
+            Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Login fail"));
+            Assert.That(json.RootElement.GetProperty("data").ValueKind, Is.EqualTo(JsonValueKind.Null));
+        }
     }
 
     [Test]
@@ -104,8 +110,10 @@ internal class LegacyApiCharacterizationTest {
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(10));
-        Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Not all mandatory data inserted"));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(10));
+            Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Not all mandatory data inserted"));
+        }
     }
 
     [Test]
@@ -126,9 +134,11 @@ internal class LegacyApiCharacterizationTest {
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var paths = json.RootElement.GetProperty("paths");
-        Assert.That(paths.TryGetProperty("/user/login", out _), Is.True);
-        Assert.That(paths.TryGetProperty("/wallet", out _), Is.True);
-        Assert.That(paths.TryGetProperty("/transaction", out _), Is.True);
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(paths.TryGetProperty("/user/login", out _), Is.True);
+            Assert.That(paths.TryGetProperty("/wallet", out _), Is.True);
+            Assert.That(paths.TryGetProperty("/transaction", out _), Is.True);
+        }
     }
 
     [Test]
@@ -160,8 +170,10 @@ internal class LegacyApiCharacterizationTest {
             var response = await client.SendAsync(request);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound), path);
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(404), path);
-            Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Resource not found"), path);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(json.RootElement.GetProperty("code").GetUInt32(), Is.EqualTo(404), path);
+                Assert.That(json.RootElement.GetProperty("message").GetString(), Is.EqualTo("Resource not found"), path);
+            }
         }
     }
 
@@ -202,10 +214,10 @@ internal class LegacyApiCharacterizationTest {
 
         using (var database = TestDatabaseRuntime.CreateContext()) {
             var stored = await database.Transactions.SingleAsync(transaction => transaction.Id == transactionId);
-            Assert.Multiple(() => {
+            using (Assert.EnterMultipleScope()) {
                 Assert.That(stored.UserId, Is.EqualTo(actor.AddNewUserExecutor.Result));
                 Assert.That(stored.UserInsertId, Is.EqualTo(actor.AddNewUserExecutor.Result));
-            });
+            }
         }
 
         using var getRequest = new HttpRequestMessage(HttpMethod.Get, $"/transaction/{transactionId}");
@@ -216,10 +228,10 @@ internal class LegacyApiCharacterizationTest {
         Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using var getJson = JsonDocument.Parse(await getResponse.Content.ReadAsStringAsync());
         var data = getJson.RootElement.GetProperty("data");
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(data.GetProperty("user").ValueKind, Is.EqualTo(JsonValueKind.Null));
             Assert.That(data.GetProperty("userInsert").ValueKind, Is.EqualTo(JsonValueKind.Null));
-        });
+        }
     }
 
     [Test]
@@ -245,8 +257,10 @@ internal class LegacyApiCharacterizationTest {
         Assert.That(listResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using (var listJson = JsonDocument.Parse(await listResponse.Content.ReadAsStringAsync())) {
             var listData = listJson.RootElement.GetProperty("data");
-            Assert.That(listData.GetProperty("length").GetInt32(), Is.Zero);
-            Assert.That(listData.GetProperty("data").GetArrayLength(), Is.Zero);
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(listData.GetProperty("length").GetInt32(), Is.Zero);
+                Assert.That(listData.GetProperty("data").GetArrayLength(), Is.Zero);
+            }
         }
 
         using var dashboardRequest = new HttpRequestMessage(
@@ -259,9 +273,9 @@ internal class LegacyApiCharacterizationTest {
         Assert.That(dashboardResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         using var dashboardJson = JsonDocument.Parse(await dashboardResponse.Content.ReadAsStringAsync());
         var dashboard = dashboardJson.RootElement.GetProperty("data");
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(dashboard.GetProperty("incoming").GetDouble(), Is.Zero);
             Assert.That(dashboard.GetProperty("expense").GetDouble(), Is.Zero);
-        });
+        }
     }
 }

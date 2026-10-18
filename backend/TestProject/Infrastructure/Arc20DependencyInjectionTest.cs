@@ -36,10 +36,10 @@ internal sealed class Arc20DependencyInjectionTest : DatabaseBase {
         };
 
         Assert.That(webserver.DatabaseOptions.IsValid(invalid), Is.False);
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(invalid.User, Is.Empty);
             Assert.That(invalid.Password, Is.Empty);
-        });
+        }
     }
 
     [Test]
@@ -57,13 +57,13 @@ internal sealed class Arc20DependencyInjectionTest : DatabaseBase {
         using var secondScope = factory.Services.CreateScope();
         var second = secondScope.ServiceProvider.GetRequiredService<MoneyGestorContext>();
 
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(sameScope, Is.SameAs(first));
             Assert.That(second, Is.Not.SameAs(first));
             Assert.That(
                 firstScope.ServiceProvider.GetRequiredService<IOptions<webserver.DatabaseOptions>>().Value.Password,
                 Is.Not.Empty);
-        });
+        }
     }
 
     [Test]
@@ -79,12 +79,12 @@ internal sealed class Arc20DependencyInjectionTest : DatabaseBase {
 
         await mutationExecutor.Execute(new AddNewWalletCommand("single-context", 10, 1));
 
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(interceptor.ContextIds, Has.Count.EqualTo(1));
             Assert.That(interceptor.ContextIds.Single(), Is.EqualTo(mutationDatabase.ContextId.InstanceId));
             Assert.That(interceptor.SaveCalls, Is.GreaterThanOrEqualTo(2),
                 "Token refresh and the mutation must save through the same scoped context.");
-        });
+        }
     }
 
     private sealed class ContextRecordingInterceptor : SaveChangesInterceptor {

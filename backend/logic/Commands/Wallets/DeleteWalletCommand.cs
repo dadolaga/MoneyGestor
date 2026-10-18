@@ -7,12 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Wallets {
-    public class DeleteWalletCommand : ICommand<UInt64> {
-        private UInt64 id;
-
-        public DeleteWalletCommand(UInt64 id) {
-            this.id = id;
-        }
+    public class DeleteWalletCommand(UInt64 id) : ICommand<UInt64> {
+        private readonly UInt64 id = id;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
@@ -26,6 +22,7 @@ namespace logic.Commands.Wallets {
             if (await database.Transactions.AnyAsync(t => t.WalletId == id, cancellationToken)) {
                 throw new NotValidForDeleteException("Transaction not empty for delete wallet");
             }
+
             if (await database.Wallets.AnyAsync(item => item.LinkedAccountId == id, cancellationToken)) {
                 throw new NotValidForDeleteException("Wallet has linked cards");
             }

@@ -64,7 +64,7 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
-            Assert.That(loginNumber, Is.EqualTo(0));
+            Assert.That(loginNumber, Is.Zero);
         }
 
         [Test]
@@ -76,7 +76,7 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
-            Assert.That(loginNumber, Is.EqualTo(0));
+            Assert.That(loginNumber, Is.Zero);
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace TestProject.Commands.User {
             using var db = TestDatabaseRuntime.CreateContext();
             var loginNumber = db.Logins.Count();
 
-            Assert.That(loginNumber, Is.EqualTo(0));
+            Assert.That(loginNumber, Is.Zero);
         }
 
         [Test]

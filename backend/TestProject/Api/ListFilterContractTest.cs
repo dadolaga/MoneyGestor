@@ -11,12 +11,12 @@ internal sealed class ListFilterContractTest {
     [Test]
     public void ValidLegacyFilterUsesPageOffsetAndDeclaredFields() {
         var filter = ListFilterUtils.Convert("!Date+Id", 25, 2, "Value>-10.25&Description~rent");
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(filter.Limit, Is.EqualTo(25));
             Assert.That(filter.Offset, Is.EqualTo(2));
             Assert.That(filter.Orders, Has.Count.EqualTo(2));
             Assert.That(filter.Wheres, Has.Count.EqualTo(2));
-        });
+        }
     }
 
     [TestCase("Description=")]
@@ -42,8 +42,10 @@ internal sealed class ListFilterContractTest {
         command.CommandText = "EXPLAIN SELECT `Id` FROM `transaction` WHERE `UserId` = 1 AND `Date` >= '2026-01-01' AND `Date` <= '2026-12-31' ORDER BY `Date`, `Id` LIMIT 50";
 
         await using var plan = await command.ExecuteReaderAsync();
-        Assert.That(await plan.ReadAsync(), Is.True);
-        Assert.That(Convert.ToString(plan["possible_keys"], System.Globalization.CultureInfo.InvariantCulture),
-            Does.Contain("IX_transaction_UserId_Date"));
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(await plan.ReadAsync(), Is.True);
+            Assert.That(Convert.ToString(plan["possible_keys"], System.Globalization.CultureInfo.InvariantCulture),
+                Does.Contain("IX_transaction_UserId_Date"));
+        }
     }
 }

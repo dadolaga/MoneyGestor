@@ -32,19 +32,22 @@ internal static class ArchiveFile {
                     CsvCodec.WriteRow(writer, table.Properties.Select(property => CsvCodec.Format(property.GetValue(row))));
                 }
             }
+
             var bytes = csv.ToArray();
             totalBytes += bytes.Length;
             if (bytes.Length > 268_435_456 || totalBytes > 1_073_741_824) {
                 throw new InvalidDataException("The exported data exceeds the supported archive size.");
             }
+
             using (var entry = zip.CreateEntry(table.FileName).Open()) {
                 entry.Write(bytes);
             }
+
             files.Add(new ArchiveFileInfo(table.FileName, rows.Count, Convert.ToHexStringLower(SHA256.HashData(bytes))));
         }
 
         var manifest = new ArchiveManifest(CurrentFormatVersion, DatabaseSchema.CurrentVersion,
-            typeof(ArchiveFile).Assembly.GetName().Version?.ToString() ?? "unknown", timeProvider.GetUtcNow(), files.ToArray());
+            typeof(ArchiveFile).Assembly.GetName().Version?.ToString() ?? "unknown", timeProvider.GetUtcNow(), [.. files]);
         using var manifestStream = zip.CreateEntry("manifest.json").Open();
         JsonSerializer.Serialize(manifestStream, manifest, JsonOptions);
     }
@@ -57,6 +60,7 @@ internal static class ArchiveFile {
             zip.Entries.Sum(entry => entry.Length) > 1_073_741_824) {
             throw new InvalidDataException("The archive has duplicate/unexpected entries or exceeds the supported size.");
         }
+
         var manifestEntry = zip.GetEntry("manifest.json");
         if (manifestEntry == null || manifestEntry.Length > 1_048_576) {
             throw new InvalidDataException("The archive manifest is missing or exceeds the supported size.");
@@ -75,6 +79,7 @@ internal static class ArchiveFile {
             manifest.SchemaVersion > DatabaseSchema.CurrentVersion) {
             throw new InvalidDataException("The archive version is unsupported. Use an importer with a complete conversion path for this version.");
         }
+
         if (String.IsNullOrWhiteSpace(manifest.ApplicationVersion) || manifest.ExportedAtUtc == default ||
             manifest.Files == null || manifest.Files.Length != ArchiveTable.All.Length ||
             manifest.Files.Any(info => info == null) ||
@@ -89,23 +94,28 @@ internal static class ArchiveFile {
             if (info == null || info.RowCount < 0 || entry == null) {
                 throw new InvalidDataException("The archive is missing a required data file.");
             }
+
             using var bytes = new MemoryStream();
             using (var stream = entry.Open()) { stream.CopyTo(bytes); }
+
             if (!String.Equals(Convert.ToHexStringLower(SHA256.HashData(bytes.ToArray())), info.Sha256, StringComparison.Ordinal)) {
                 throw new InvalidDataException("An archive file checksum does not match the manifest.");
             }
+
             bytes.Position = 0;
             using var reader = new StreamReader(bytes, Utf8, detectEncodingFromByteOrderMarks: false);
             var header = CsvCodec.ReadRow(reader);
             if (header == null || !header.SequenceEqual(table.Properties.Select(property => property.Name))) {
                 throw new InvalidDataException("An archive CSV header does not match its versioned contract.");
             }
+
             var rows = new List<Object>();
             String?[]? values;
             while ((values = CsvCodec.ReadRow(reader)) != null) {
                 if (values.Length != table.Properties.Length || rows.Count >= info.RowCount) {
                     throw new InvalidDataException("An archive CSV has an unexpected row or column count.");
                 }
+
                 var row = Activator.CreateInstance(table.EntityType)!;
                 try {
                     for (var column = 0; column < values.Length; column++) {
@@ -114,13 +124,17 @@ internal static class ArchiveFile {
                 } catch (Exception exception) when (exception is FormatException or OverflowException or ArgumentException) {
                     throw new InvalidDataException("An archive CSV contains an invalid scalar value.");
                 }
+
                 rows.Add(row);
             }
+
             if (rows.Count != info.RowCount) {
                 throw new InvalidDataException("An archive CSV row count does not match the manifest.");
             }
+
             snapshot.Rows.Add(table.EntityType, rows);
         }
+
         return snapshot;
     }
 }

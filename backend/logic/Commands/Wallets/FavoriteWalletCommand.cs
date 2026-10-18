@@ -9,14 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Wallets {
-    public class FavoriteWalletCommand : ICommand<UInt64> {
-        private UInt64 walletId;
-        private readonly Boolean favorite;
-
-        public FavoriteWalletCommand(UInt64 walletId, Boolean favorite) {
-            this.walletId = walletId;
-            this.favorite = favorite;
-        }
+    public class FavoriteWalletCommand(UInt64 walletId, Boolean favorite) : ICommand<UInt64> {
+        private readonly UInt64 walletId = walletId;
+        private readonly Boolean favorite = favorite;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;

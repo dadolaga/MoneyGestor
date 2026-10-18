@@ -14,6 +14,7 @@ public static class DatabaseTransfer {
         if (String.IsNullOrWhiteSpace(name) || !String.Equals(name, confirmedDatabaseName, StringComparison.Ordinal)) {
             throw new InvalidOperationException("Deletion requires confirmation of the exact configured database name.");
         }
+
         if (new[] { "mysql", "sys", "information_schema", "performance_schema" }.Contains(name, StringComparer.OrdinalIgnoreCase)) {
             throw new InvalidOperationException("System databases cannot be deleted by this tool.");
         }
@@ -41,6 +42,7 @@ public static class DatabaseTransfer {
         foreach (var table in ArchiveTable.All) {
             snapshot.Rows.Add(table.EntityType, await table.LoadAsync(database, cancellationToken));
         }
+
         ArchiveValidation.RequireValid(database, snapshot);
         cancellationToken.ThrowIfCancellationRequested();
         ArchiveFile.Write(archivePath, snapshot, timeProvider);
@@ -58,17 +60,23 @@ public static class DatabaseTransfer {
         var parents = snapshot.Get<TransactionTypeDb>().Select(row => (Row: row, Parent: row.ParentId)).ToArray();
         var links = snapshot.Get<WalletDb>().Select(row => (Row: row, Link: row.LinkedAccountId)).ToArray();
         var pairs = snapshot.Get<TransactionDb>().Select(row => (Row: row, Pair: row.TransactionDestinationId)).ToArray();
-        foreach (var item in parents) { item.Row.ParentId = null; }
-        foreach (var item in links) { item.Row.LinkedAccountId = null; }
-        foreach (var item in pairs) { item.Row.TransactionDestinationId = null; }
+        foreach (var (Row, Parent) in parents) { Row.ParentId = null; }
+
+        foreach (var (Row, Link) in links) { Row.LinkedAccountId = null; }
+
+        foreach (var (Row, Pair) in pairs) { Row.TransactionDestinationId = null; }
 
         foreach (var table in ArchiveTable.All) {
             database.AddRange(snapshot.Rows[table.EntityType]);
             await database.SaveChangesAsync(cancellationToken);
         }
-        foreach (var item in parents) { item.Row.ParentId = item.Parent; }
-        foreach (var item in links) { item.Row.LinkedAccountId = item.Link; }
-        foreach (var item in pairs) { item.Row.TransactionDestinationId = item.Pair; }
+
+        foreach (var (Row, Parent) in parents) { Row.ParentId = Parent; }
+
+        foreach (var (Row, Link) in links) { Row.LinkedAccountId = Link; }
+
+        foreach (var (Row, Pair) in pairs) { Row.TransactionDestinationId = Pair; }
+
         await database.SaveChangesAsync(cancellationToken);
 
         await ValidateAsync(database, cancellationToken);
@@ -81,6 +89,7 @@ public static class DatabaseTransfer {
                 throw new InvalidDataException("Imported records differ from the validated archive. The destination was not marked ready.");
             }
         }
+
         await DatabaseSchema.MarkReadyAsync(database, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }

@@ -47,26 +47,26 @@ internal sealed class SafeLoggingTest {
             }
         };
 
-        controller.Respond(new {
+        TestController.Respond(new {
             Password = password,
             Token = token,
             Description = description
         });
 
         var renderedLog = sink.RenderedLog;
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(renderedLog, Does.Contain("/user/login"));
             Assert.That(renderedLog, Does.Contain(traceId));
             Assert.That(renderedLog, Does.Contain("200"));
             Assert.That(renderedLog, Does.Not.Contain(password));
             Assert.That(renderedLog, Does.Not.Contain(token));
             Assert.That(renderedLog, Does.Not.Contain(description));
-        });
+        }
     }
 
     [Test]
     public void DatabaseLoggingRequiresDevelopmentAndTrace() {
-        Assert.Multiple(() => {
+        using (Assert.EnterMultipleScope()) {
             Assert.That(
                 webserver.Program.ShouldEnableDatabaseLogging(
                     isDevelopment: false,
@@ -83,15 +83,15 @@ internal sealed class SafeLoggingTest {
                     isDevelopment: true,
                     configuredLevel: LogEventLevel.Verbose),
                 Is.True);
-        });
+        }
     }
 
     private sealed class TestController : MoneyManagerController {
-        internal IActionResult Respond(Object payload) => OkResponse(payload, "safe message");
+        internal static IActionResult Respond(Object payload) => OkResponse(payload, "safe message");
     }
 
     private sealed class CollectingSink : ILogEventSink {
-        private readonly List<LogEvent> events = new();
+        private readonly List<LogEvent> events = [];
 
         internal String RenderedLog => String.Join(
             Environment.NewLine,

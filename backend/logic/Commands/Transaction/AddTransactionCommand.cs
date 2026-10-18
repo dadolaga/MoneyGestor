@@ -6,24 +6,14 @@ using System;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
-    public class AddTransactionCommand : ICommand<UInt64> {
-        private String? description;
-        private String? longDescription;
-        private DateOnly date;
-        private UInt64 walletId;
-        private UInt64? walletDestinationId;
-        private Decimal value;
-        private UInt64 transactionTypeId;
-
-        public AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Decimal value, UInt64 transactionTypeId, UInt64? walletDestinationId = null) {
-            this.description = description;
-            this.longDescription = longDescription;
-            this.date = date;
-            this.walletId = walletId;
-            this.walletDestinationId = walletDestinationId;
-            this.value = value;
-            this.transactionTypeId = transactionTypeId;
-        }
+    public class AddTransactionCommand(String? description, String? longDescription, DateOnly date, UInt64 walletId, Decimal value, UInt64 transactionTypeId, UInt64? walletDestinationId = null) : ICommand<UInt64> {
+        private readonly String? description = description;
+        private readonly String? longDescription = longDescription;
+        private readonly DateOnly date = date;
+        private readonly UInt64 walletId = walletId;
+        private readonly UInt64? walletDestinationId = walletDestinationId;
+        private readonly Decimal value = value;
+        private readonly UInt64 transactionTypeId = transactionTypeId;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;

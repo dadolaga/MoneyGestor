@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace webserver;
 
-internal sealed class RequestCorrelationMiddleware(RequestDelegate next, ILogger<RequestCorrelationMiddleware> logger) {
-    private static readonly Regex ValidExternalId = new("^[A-Za-z0-9._-]{1,64}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+internal sealed partial class RequestCorrelationMiddleware(RequestDelegate next, ILogger<RequestCorrelationMiddleware> logger) {
+    private static readonly Regex ValidExternalId = MyRegex();
 
     public async Task InvokeAsync(HttpContext context) {
         var traceId = Activity.Current?.TraceId.ToString();
@@ -67,4 +67,7 @@ internal sealed class RequestCorrelationMiddleware(RequestDelegate next, ILogger
                 context.Response.ContentType ?? "not specified");
         }
     }
+
+    [GeneratedRegex("^[A-Za-z0-9._-]{1,64}$", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    private static partial Regex MyRegex();
 }

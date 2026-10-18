@@ -22,7 +22,7 @@ public static class OpenApiSnapshotWriter {
     private static JsonNode Canonicalize(JsonNode node) => node switch {
         JsonObject jsonObject => new JsonObject(jsonObject.OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => KeyValuePair.Create(pair.Key, pair.Value == null ? null : Canonicalize(pair.Value)))),
-        JsonArray jsonArray => new JsonArray(jsonArray.Select(item => item == null ? null : Canonicalize(item)).ToArray()),
+        JsonArray jsonArray => new JsonArray([.. jsonArray.Select(item => item == null ? null : Canonicalize(item))]),
         _ => node.DeepClone()
     };
 }

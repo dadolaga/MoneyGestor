@@ -10,6 +10,7 @@ internal static class CsvCodec {
         if (fields.Length > 100 || fields.Any(value => value?.Length > 1_048_576)) {
             throw new InvalidDataException("An archive CSV row exceeds the supported size.");
         }
+
         writer.WriteLine(String.Join(',', fields.Select(value => value == null ? "\\N" : "\"" + value.Replace("\"", "\"\"") + "\"")));
     }
 
@@ -29,22 +30,26 @@ internal static class CsvCodec {
                     if (character == -1) {
                         throw new InvalidDataException("An archive CSV contains an unterminated quoted field.");
                     }
+
                     if (character == '"') {
                         if (reader.Peek() != '"') {
                             break;
                         }
+
                         reader.Read();
                     }
+
                     text.Append((Char) character);
                     if (text.Length > 1_048_576) {
                         throw new InvalidDataException("An archive CSV field exceeds the supported size.");
                     }
                 }
+
                 value = text.ToString();
-            } else if (prefix == '\\' && reader.Read() == 'N') {
-                value = null;
             } else {
-                throw new InvalidDataException("Archive CSV fields must be quoted or use the null token.");
+                value = prefix == '\\' && reader.Read() == 'N'
+                    ? null
+                    : throw new InvalidDataException("Archive CSV fields must be quoted or use the null token.");
             }
 
             fields.Add(value);
@@ -53,8 +58,10 @@ internal static class CsvCodec {
                 if (fields.Count > 100) {
                     throw new InvalidDataException("An archive CSV contains too many columns.");
                 }
+
                 continue;
             }
+
             if (separator == '\r') {
                 if (reader.Read() != '\n') {
                     throw new InvalidDataException("An archive CSV contains an invalid line ending.");
@@ -62,7 +69,8 @@ internal static class CsvCodec {
             } else if (separator != '\n' && separator != -1) {
                 throw new InvalidDataException("An archive CSV contains an invalid separator.");
             }
-            return fields.ToArray();
+
+            return [.. fields];
         }
     }
 
@@ -83,18 +91,27 @@ internal static class CsvCodec {
             return !propertyType.IsValueType || Nullable.GetUnderlyingType(propertyType) != null
                 ? null : throw new InvalidDataException("An archive contains null for a required value.");
         }
+
         if (type == typeof(String)) { return value; }
+
         if (type == typeof(UInt64)) { return UInt64.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture); }
+
         if (type == typeof(UInt32)) { return UInt32.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture); }
+
         if (type == typeof(Int32)) { return Int32.Parse(value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture); }
+
         if (type == typeof(Decimal)) {
             return Decimal.Parse(value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         }
+
         if (type == typeof(Boolean)) {
             return value switch { "true" => true, "false" => false, _ => throw new FormatException() };
         }
+
         if (type == typeof(DateOnly)) { return DateOnly.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture); }
-        if (type == typeof(DateTimeOffset)) { return DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture); }
-        throw new InvalidDataException("An unsupported scalar type was found in the archive contract.");
+
+        return type == typeof(DateTimeOffset)
+            ? (Object) DateTimeOffset.ParseExact(value, "O", CultureInfo.InvariantCulture)
+            : throw new InvalidDataException("An unsupported scalar type was found in the archive contract.");
     }
 }

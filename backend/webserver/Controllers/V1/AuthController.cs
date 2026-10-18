@@ -37,7 +37,7 @@ public sealed class AuthController(
         try {
             await accounts.RegisterAsync(request, cancellationToken);
         } catch (AccountValidationException exception) {
-            return ValidationFailure("Account validation failed", "account", exception.Errors.ToArray());
+            return ValidationFailure("Account validation failed", "account", [.. exception.Errors]);
         }
 
         return Accepted(new AccountRegistrationResponse(
@@ -136,7 +136,7 @@ public sealed class AuthController(
         } catch (AccountTokenException) {
             return InvalidToken();
         } catch (AccountValidationException exception) {
-            return ValidationFailure("Password validation failed", "password", exception.Errors.ToArray());
+            return ValidationFailure("Password validation failed", "password", [.. exception.Errors]);
         }
     }
 

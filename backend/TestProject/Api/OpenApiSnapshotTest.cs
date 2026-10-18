@@ -46,14 +46,16 @@ internal sealed class OpenApiSnapshotTest {
             File.WriteAllText(snapshotPath, snapshot);
         }
 
-        Assert.That(File.Exists(snapshotPath), Is.True, $"Missing snapshot {snapshotPath}. Set UPDATE_OPENAPI_SNAPSHOT=1 to regenerate it.");
-        Assert.That(File.ReadAllText(snapshotPath), Is.EqualTo(snapshot), $"OpenAPI {documentName} changed. Review and regenerate the snapshot intentionally.");
+        using (Assert.EnterMultipleScope()) {
+            Assert.That(File.Exists(snapshotPath), Is.True, $"Missing snapshot {snapshotPath}. Set UPDATE_OPENAPI_SNAPSHOT=1 to regenerate it.");
+            Assert.That(File.ReadAllText(snapshotPath), Is.EqualTo(snapshot), $"OpenAPI {documentName} changed. Review and regenerate the snapshot intentionally.");
+        }
     }
 
     private static JsonNode Canonicalize(JsonNode node) => node switch {
         JsonObject jsonObject => new JsonObject(jsonObject.OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => KeyValuePair.Create(pair.Key, pair.Value == null ? null : Canonicalize(pair.Value)))),
-        JsonArray jsonArray => new JsonArray(jsonArray.Select(item => item == null ? null : Canonicalize(item)).ToArray()),
+        JsonArray jsonArray => new JsonArray([.. jsonArray.Select(item => item == null ? null : Canonicalize(item))]),
         _ => node.DeepClone()
     };
 

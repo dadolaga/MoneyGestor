@@ -5,12 +5,8 @@ using System;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
-    public class DeleteTransactionCommand : ICommand<UInt64> {
-        private UInt64 id;
-
-        public DeleteTransactionCommand(UInt64 id) {
-            this.id = id;
-        }
+    public class DeleteTransactionCommand(UInt64 id) : ICommand<UInt64> {
+        private readonly UInt64 id = id;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;

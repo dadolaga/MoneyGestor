@@ -46,7 +46,7 @@ namespace TestProject.Commands.Wallets {
             Assert.ThrowsAsync<TokenExpiredException>(async () => await ExecutorManager.Execute(wallet.AddWalletCommand));
 
             using var db = TestDatabaseRuntime.CreateContext();
-            Assert.That(db.Wallets.Count, Is.EqualTo(0));
+            Assert.That(db.Wallets.Count, Is.Zero);
         }
 
         [Test]
@@ -58,9 +58,11 @@ namespace TestProject.Commands.Wallets {
 
             var dbWallet = await db.Wallets.FirstAsync();
             Assert.That(dbWallet.Id, Is.EqualTo(wallet.AddWalletCommand.Result));
-            Assert.That(dbWallet.Name, Is.EqualTo(wallet.Name));
-            Assert.That(dbWallet.Value, Is.EqualTo(wallet.Value));
-            Assert.That(dbWallet.ColorId, Is.EqualTo(wallet.ColorId));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(dbWallet.Name, Is.EqualTo(wallet.Name));
+                Assert.That(dbWallet.Value, Is.EqualTo(wallet.Value));
+                Assert.That(dbWallet.ColorId, Is.EqualTo(wallet.ColorId));
+            }
         }
 
         [Test]
@@ -73,9 +75,11 @@ namespace TestProject.Commands.Wallets {
 
             var dbWallet = await db.Wallets.FirstAsync();
             Assert.That(dbWallet.Id, Is.EqualTo(negativeWallet.AddWalletCommand.Result));
-            Assert.That(dbWallet.Name, Is.EqualTo(negativeWallet.Name));
-            Assert.That(dbWallet.Value, Is.EqualTo(negativeWallet.Value));
-            Assert.That(dbWallet.ColorId, Is.EqualTo(negativeWallet.ColorId));
+            using (Assert.EnterMultipleScope()) {
+                Assert.That(dbWallet.Name, Is.EqualTo(negativeWallet.Name));
+                Assert.That(dbWallet.Value, Is.EqualTo(negativeWallet.Value));
+                Assert.That(dbWallet.ColorId, Is.EqualTo(negativeWallet.ColorId));
+            }
         }
 
         [Test]
@@ -113,10 +117,10 @@ namespace TestProject.Commands.Wallets {
                 captureAsync(firstExecutor, firstCommand),
                 captureAsync(secondExecutor, secondCommand));
 
-            Assert.Multiple(() => {
+            using (Assert.EnterMultipleScope()) {
                 Assert.That(outcomes.Count(outcome => outcome == null), Is.EqualTo(1));
                 Assert.That(outcomes.Single(outcome => outcome != null), Is.TypeOf<DuplicateObjectException>());
-            });
+            }
 
             using var db = TestDatabaseRuntime.CreateContext();
             Assert.That(db.Wallets.Count(wallet => wallet.Name == "concurrent-wallet"), Is.EqualTo(1));

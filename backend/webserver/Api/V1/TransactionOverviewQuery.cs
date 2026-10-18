@@ -1,17 +1,24 @@
-using System.Data;
 using logic;
 using logic.Exceptions;
 using logic.Security;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace webserver.Api.V1;
 
 public static class TransactionPeriodPolicy {
     public static TransactionPeriod RequirePeriod(TransactionFilterQuery query) {
-        if (!query.From.HasValue || !BusinessDatePolicy.IsValid(query.From.Value)) throw new ListFilterValidationException("from", "required_date");
-        if (!query.To.HasValue || !BusinessDatePolicy.IsValid(query.To.Value)) throw new ListFilterValidationException("to", "required_date");
-        if (query.From > query.To) throw new ListFilterValidationException("to", "invalid_date_range");
-        return new(query.From.Value, query.To.Value);
+        if (!query.From.HasValue || !BusinessDatePolicy.IsValid(query.From.Value)) {
+            throw new ListFilterValidationException("from", "required_date");
+        }
+
+        if (!query.To.HasValue || !BusinessDatePolicy.IsValid(query.To.Value)) {
+            throw new ListFilterValidationException("to", "required_date");
+        }
+
+        return query.From > query.To
+            ? throw new ListFilterValidationException("to", "invalid_date_range")
+            :  new(query.From.Value, query.To.Value);
     }
 
     public static TransactionPeriod Previous(TransactionPeriod period) {
@@ -19,13 +26,13 @@ public static class TransactionPeriodPolicy {
             && period.To.Day == DateTime.DaysInMonth(period.From.Year, period.From.Month);
         var length = period.To.DayNumber - period.From.DayNumber + 1;
         var minimum = new DateOnly(1000, 1, 1);
-        if (period.From <= minimum || !wholeMonth && period.From.DayNumber - length < minimum.DayNumber) {
+        if (period.From <= minimum || (!wholeMonth && period.From.DayNumber - length < minimum.DayNumber)) {
             throw new ListFilterValidationException("from", "previous_period_out_of_range");
         }
+
         var end = period.From.AddDays(-1);
         var start = wholeMonth ? new DateOnly(end.Year, end.Month, 1) : period.From.AddDays(-length);
-        if (start < minimum) throw new ListFilterValidationException("from", "previous_period_out_of_range");
-        return new(start, end);
+        return start < minimum ? throw new ListFilterValidationException("from", "previous_period_out_of_range") :  new(start, end);
     }
 }
 

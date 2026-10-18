@@ -31,16 +31,21 @@ internal static class ArchiveValidation {
                         (value is String text && property.GetMaxLength() is Int32 maximum && text.Length > maximum)) {
                         throw new InvalidDataException("Archive data violates a required field or column length.");
                     }
+
                     if (value is Decimal money) { MonetaryValuePolicy.RequireValid(money); }
+
                     if (value is DateOnly date) { BusinessDatePolicy.RequireValid(date); }
                 }
+
                 if (primaryKey.Properties.Any(property => property.PropertyInfo!.GetValue(row) is null or 0UL or 0)) {
                     throw new InvalidDataException("An archive contains an empty primary key.");
                 }
+
                 if (!values.Add(Key(primaryKey.Properties, row))) {
                     throw new InvalidDataException("An archive contains duplicate primary keys.");
                 }
             }
+
             keys.Add(table.EntityType, values);
         }
 
@@ -49,6 +54,7 @@ internal static class ArchiveValidation {
             foreach (var row in snapshot.Rows[table.EntityType]) {
                 foreach (var foreignKey in entity.GetForeignKeys()) {
                     if (foreignKey.Properties.Any(property => property.PropertyInfo!.GetValue(row) == null)) { continue; }
+
                     if (!keys[foreignKey.PrincipalEntityType.ClrType].Contains(Key(foreignKey.Properties, row))) {
                         throw new InvalidDataException("An archive contains a reference to a missing record.");
                     }
@@ -66,6 +72,7 @@ internal static class ArchiveValidation {
                     (parent.UserId != null && parent.UserId != type.UserId)) {
                     throw new InvalidDataException("An archive contains an invalid category hierarchy.");
                 }
+
                 parentId = parent.ParentId;
             }
         }
@@ -74,6 +81,7 @@ internal static class ArchiveValidation {
         foreach (var row in transactions.Values) {
             MonetaryValuePolicy.RequireValid(row.Value, allowZero: false);
             if (row.TransactionTypeId != 1) { continue; }
+
             if (row.TransactionDestinationId == null ||
                 transactions[row.TransactionDestinationId.Value].Date != row.Date) {
                 throw new InvalidDataException("An archive contains an incomplete transfer or mismatched transfer dates.");

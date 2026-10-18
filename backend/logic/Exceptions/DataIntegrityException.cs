@@ -1,22 +1,13 @@
 namespace logic.Exceptions;
 
-public sealed class DataIntegrityException : DatabaseException {
-    public DataIntegrityException(DataIntegrityReport report)
-        : base(report.ToSafeSummary()) {
-        Report = report;
-    }
-
-    public DataIntegrityReport Report { get; }
+public sealed class DataIntegrityException(DataIntegrityReport report) : DatabaseException(report.ToSafeSummary()) {
+    public DataIntegrityReport Report { get; } = report;
 }
 
 public sealed record DataIntegrityIssue(String Code, IReadOnlyList<UInt64> EntityIds);
 
-public sealed class DataIntegrityReport {
-    public DataIntegrityReport(IReadOnlyList<DataIntegrityIssue> issues) {
-        Issues = issues;
-    }
-
-    public IReadOnlyList<DataIntegrityIssue> Issues { get; }
+public sealed class DataIntegrityReport(IReadOnlyList<DataIntegrityIssue> issues) {
+    public IReadOnlyList<DataIntegrityIssue> Issues { get; } = issues;
     public Boolean IsValid => Issues.Count == 0;
 
     public String ToSafeSummary() {

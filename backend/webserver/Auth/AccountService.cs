@@ -35,11 +35,9 @@ public sealed class AccountService(
         }
 
         if (!created.Succeeded) {
-            if (created.Errors.Any(error => error.Code is "DuplicateUserName" or "DuplicateEmail")) {
-                return null;
-            }
-
-            throw new AccountValidationException(created.Errors.Select(error => error.Code).ToArray());
+            return created.Errors.Any(error => error.Code is "DuplicateUserName" or "DuplicateEmail")
+                ?  null
+                : throw new AccountValidationException([.. created.Errors.Select(error => error.Code)]);
         }
 
         if (RequireConfirmedEmail) {
@@ -159,7 +157,7 @@ public sealed class AccountService(
                 throw new AccountTokenException();
             }
 
-            throw new AccountValidationException(result.Errors.Select(error => error.Code).ToArray());
+            throw new AccountValidationException([.. result.Errors.Select(error => error.Code)]);
         }
 
         await userManager.UpdateSecurityStampAsync(user);

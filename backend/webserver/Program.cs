@@ -31,7 +31,7 @@ public class Program {
 
         if (args.Length > 0 && args[0] == "--export-openapi") {
             var output = args.Length > 1 ? args[1] : "docs/openapi";
-            var exportApplication = BuildApplication(Array.Empty<String>());
+            var exportApplication = BuildApplication([]);
             try {
                 exportApplication.Urls.Add("http://127.0.0.1:0");
                 await exportApplication.StartAsync();
@@ -265,9 +265,7 @@ public class Program {
         app.UseExceptionHandler();
         if (app.Environment.IsDevelopment() || isTesting) {
             app.UseSwagger();
-            app.UseSwaggerUI(options => {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "MoneyGestor API v1");
-            });
+            app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "MoneyGestor API v1"));
         }
 
         app.UseHttpsRedirection();

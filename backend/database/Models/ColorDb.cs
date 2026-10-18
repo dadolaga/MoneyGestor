@@ -10,6 +10,6 @@ namespace database.Models {
         public UInt32 Value { get; set; }
         public UInt64? UserId { get; set; }
         public ApplicationIdentityUser? User { get; set; }
-        public ICollection<WalletDb> Wallets { get; set; } = new List<WalletDb>();
+        public ICollection<WalletDb> Wallets { get; set; } = [];
     }
 }

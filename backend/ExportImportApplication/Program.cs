@@ -23,6 +23,7 @@ internal static class Program {
                 Console.Error.WriteLine("MONEYGESTOR_ADMIN_CONNECTION_STRING must be supplied privately. No settings file is read.");
                 return 2;
             }
+
             var connection = new MySqlConnectionStringBuilder(configured);
             if (String.IsNullOrWhiteSpace(connection.Server) || String.IsNullOrWhiteSpace(connection.UserID) ||
                 String.IsNullOrWhiteSpace(databaseName) || connection.Database != databaseName) {
@@ -41,6 +42,7 @@ internal static class Program {
                     return 1;
                 }
             }
+
             await using var database = new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
                 .UseMySQL(connection.ConnectionString).Options);
             if (operation == "initialize") {
@@ -52,6 +54,7 @@ internal static class Program {
             } else {
                 await DatabaseTransfer.DeleteAsync(database, deletionConfirmation!, cancellation.Token);
             }
+
             Console.WriteLine("Operation completed successfully. Application configuration was not changed.");
             return 0;
         } catch (OperationCanceledException) {
@@ -73,11 +76,12 @@ internal static class Program {
         var maintenance = false;
         for (var index = 1; index < args.Length; index++) {
             if (args[index] == "--maintenance" && !maintenance) { maintenance = true; continue; }
+
             if (index + 1 >= args.Length) { return false; }
-            if (args[index] == "--database" && databaseName.Length == 0) { databaseName = args[++index]; }
-            else if (args[index] == "--file" && archivePath == null) { archivePath = args[++index]; }
-            else { return false; }
+
+            if (args[index] == "--database" && databaseName.Length == 0) { databaseName = args[++index]; } else if (args[index] == "--file" && archivePath == null) { archivePath = args[++index]; } else { return false; }
         }
+
         return databaseName.Length > 0 && (operation switch {
             "initialize" or "delete" => archivePath == null && !maintenance,
             "export" => !String.IsNullOrWhiteSpace(archivePath) && maintenance,

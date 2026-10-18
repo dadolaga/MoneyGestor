@@ -6,7 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TestProject.Samples {
-    internal class UserSample {
+    internal class UserSample(String username = UserSample.DEFAULT_USERNAME,
+            String firstName = UserSample.DEFAULT_FIRST_NAME,
+            String lastName = UserSample.DEFAULT_LAST_NAME,
+            String email = UserSample.DEFAULT_EMAIL,
+            String password = UserSample.DEFAULT_PASSWORD) {
         private const String DEFAULT_USERNAME = "TestTest";
         private const String DEFAULT_FIRST_NAME = "Test";
         private const String DEFAULT_LAST_NAME = "Test";
@@ -15,11 +19,11 @@ namespace TestProject.Samples {
 
         private AddNewUserCommand? addNewUserCommand;
 
-        public String Username { get; private set; }
-        public String FirstName { get; private set; }
-        public String LastName { get; private set; }
-        public String Email { get; private set; }
-        public String Password { get; private set; }
+        public String Username { get; private set; } = username;
+        public String FirstName { get; private set; } = firstName;
+        public String LastName { get; private set; } = lastName;
+        public String Email { get; private set; } = email;
+        public String Password { get; private set; } = password;
 
         public AddNewUserCommand AddNewUserExecutor {
             get {
@@ -27,18 +31,6 @@ namespace TestProject.Samples {
 
                 return addNewUserCommand;
             }
-        }
-
-        public UserSample(String username = DEFAULT_USERNAME,
-                String firstName = DEFAULT_FIRST_NAME,
-                String lastName = DEFAULT_LAST_NAME,
-                String email = DEFAULT_EMAIL,
-                String password = DEFAULT_PASSWORD) {
-            Username = username;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            Password = password;
         }
     }
 }

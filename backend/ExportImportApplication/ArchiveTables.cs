@@ -16,10 +16,10 @@ internal sealed class ArchiveTable {
     private static ArchiveTable Define<T>(String fileName, params String[] columns) where T : class => new() {
         FileName = fileName,
         EntityType = typeof(T),
-        Properties = columns.Select(column => typeof(T).GetProperty(column)
-            ?? throw new InvalidOperationException("The archive contract contains an unknown property.")).ToArray(),
+        Properties = [.. columns.Select(column => typeof(T).GetProperty(column)
+            ?? throw new InvalidOperationException("The archive contract contains an unknown property."))],
         LoadAsync = async (database, cancellationToken) =>
-            (await database.Set<T>().AsNoTracking().ToListAsync(cancellationToken)).Cast<Object>().ToList()
+            [.. (await database.Set<T>().AsNoTracking().ToListAsync(cancellationToken)).Cast<Object>()]
     };
 
     // Explicit columns are the versioned logical format. Navigation properties are never exported.

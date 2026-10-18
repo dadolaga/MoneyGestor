@@ -6,39 +6,26 @@ using System;
 using System.Threading.Tasks;
 
 namespace logic.Commands.Transaction {
-    public class UpdateTransactionCommand : ICommand<UInt64> {
-        private UInt64 id;
-        private String? description;
-        private String? longDescription;
-        private DateOnly? date;
-        private UInt64? walletId;
-        private UInt64? walletDestinationId;
-        private Decimal? value;
-        private UInt64? transactionTypeId;
-        private Boolean overwriteDescription;
-        private Boolean overwriteLongDescription;
-
-        public UpdateTransactionCommand(UInt64 id,
-                String? description = null,
-                String? longDescription = null,
-                DateOnly? date = null,
-                UInt64? walletId = null,
-                UInt64? walletDestinationId = null,
-                Decimal? value = null,
-                UInt64? transactionTypeId = null,
-                Boolean overwriteDescription = false,
-                Boolean overwriteLongDescription = false) {
-            this.id = id;
-            this.description = description;
-            this.longDescription = longDescription;
-            this.date = date;
-            this.walletId = walletId;
-            this.walletDestinationId = walletDestinationId;
-            this.value = value;
-            this.transactionTypeId = transactionTypeId;
-            this.overwriteDescription = overwriteDescription;
-            this.overwriteLongDescription = overwriteLongDescription;
-        }
+    public class UpdateTransactionCommand(UInt64 id,
+            String? description = null,
+            String? longDescription = null,
+            DateOnly? date = null,
+            UInt64? walletId = null,
+            UInt64? walletDestinationId = null,
+            Decimal? value = null,
+            UInt64? transactionTypeId = null,
+            Boolean overwriteDescription = false,
+            Boolean overwriteLongDescription = false) : ICommand<UInt64> {
+        private readonly UInt64 id = id;
+        private readonly String? description = description;
+        private readonly String? longDescription = longDescription;
+        private readonly DateOnly? date = date;
+        private readonly UInt64? walletId = walletId;
+        private readonly UInt64? walletDestinationId = walletDestinationId;
+        private readonly Decimal? value = value;
+        private readonly UInt64? transactionTypeId = transactionTypeId;
+        private readonly Boolean overwriteDescription = overwriteDescription;
+        private readonly Boolean overwriteLongDescription = overwriteLongDescription;
 
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
@@ -108,12 +95,12 @@ namespace logic.Commands.Transaction {
 
             await OwnershipPolicy.LockOwnedWalletsAsync(
                 database, ownerId, cancellationToken,
-                new[] {
+                [.. new[] {
                     sourceTransaction.WalletId,
                     destinationTransaction?.WalletId,
                     finalSourceWallet.Id,
                     finalDestinationWallet?.Id
-                }.Where(wallet => wallet.HasValue).Select(wallet => wallet!.Value).ToArray());
+                }.Where(wallet => wallet.HasValue).Select(wallet => wallet!.Value)]);
 
             var finalDescription = overwriteDescription ? description : description ?? sourceTransaction.Description;
             var finalLongDescription = overwriteLongDescription
