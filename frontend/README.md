@@ -46,7 +46,7 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. Set `NEXT_PUBLIC_API_URL` explicitly for reproducible development.
-Account and resource clients share `apiBaseUrl` from `src/lib/api/client.ts`; the public environment
+Account and resource calls use the shared Promise client in `src/lib/api/client.ts`; the public environment
 variable takes precedence over its development fallback. Logging in through `localhost` does not
 authenticate requests sent to a LAN IP. For phone access, open the frontend through the PC's LAN IP
 and use the same scheme and IP for the API (with its backend port). Allow that frontend origin in
@@ -149,17 +149,16 @@ and the Coming soon dialog for deferred actions are documented in the
 - `src/app`: routes and page-specific components.
 - `src/components/shared`: shared components for the new system, including forms, states and confirmations.
 - `src/component` and `src/context`: legacy MUI components, retained while they have consumers.
-- `src/hooks/useApi.ts`: callback adapter for `/api/v1` account endpoints used by legacy forms.
-- `src/lib/api/client.ts`: Promise-based client with cookies, antiforgery, typed errors and cancellation for v1 resources.
+- `src/lib/api/client.ts`: shared Promise-based client with cookies, antiforgery, typed errors and cancellation for all v1 account and resource endpoints.
 - `src/features`: view models, pure adapters and visual components driven through props.
 - `src/lib/fixtures`: realistic development and test data without a backend.
 - `src/types/feature-state.ts`: shared `idle`, `loading`, `ready`, `empty` and `error` states.
-- `src/models/backend.ts`: API contract types.
+- `src/models/backend.ts`: legacy types retained for fixtures and adapters; active API contracts live in `src/lib/api/client.ts`.
 - `src/utilis`: conversions for filters, colors and monetary values.
 
 Migrated pages do not read authentication tokens; they use the HttpOnly Identity cookie and send the
-antiforgery header before mutations. The legacy server-side client remains isolated until the compatibility
-window ends.
+antiforgery header before mutations. Authentication, session UI and financial features all use the same
+client and `ApiProblemError` error contract.
 
 For internal conventions, see [README_DEV.md](README_DEV.md). For development issues, see
 [troubleshooting](../backend/docs/10-development-and-troubleshooting.md).

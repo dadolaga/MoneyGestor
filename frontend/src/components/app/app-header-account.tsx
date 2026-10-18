@@ -8,8 +8,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LogIn, LogOut, UserPlus } from '@/components/ui/icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import useApi from '@/hooks/useApi';
 import { useRouter } from '@/i18n/navigation';
+import { apiClient } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 
 function initials(name: string) {
@@ -30,27 +30,29 @@ interface AppHeaderAccountProps {
 export function AppHeaderAccount({ loginHref, registerHref }: AppHeaderAccountProps) {
     const t = useTranslations('Navigation');
     const router = useRouter();
-    const api = useApi();
     const [userName, setUserName] = useState<string>();
     const [isLoadingSession, setIsLoadingSession] = useState(true);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     useEffect(() => {
+        const controller = new AbortController();
         const timeout = window.setTimeout(() => {
-            api.account
-                .session()
-                .onSuccess((user) => setUserName(`${user.firstname} ${user.lastname}`))
-                .onError(() => {
-                    setUserName(undefined);
+            void apiClient.session(controller.signal)
+                .then((user) => {
+                    if (!controller.signal.aborted) setUserName(`${user.firstname} ${user.lastname}`);
                 })
-                .onFinish(() => setIsLoadingSession(false))
-                .execute();
+                .catch(() => {
+                    if (!controller.signal.aborted) setUserName(undefined);
+                })
+                .finally(() => {
+                    if (!controller.signal.aborted) setIsLoadingSession(false);
+                });
         }, 0);
 
-        return () => window.clearTimeout(timeout);
-        // `useApi` exposes an intentionally lightweight fluent client whose object identity is not stable.
-        // The session is refreshed once when the shell mounts.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => {
+            window.clearTimeout(timeout);
+            controller.abort();
+        };
     }, []);
 
     const loginClickHandler = useCallback(() => {
@@ -61,21 +63,21 @@ export function AppHeaderAccount({ loginHref, registerHref }: AppHeaderAccountPr
         router.push(registerHref);
     }, [router, registerHref]);
 
-    const logoutClickHandler = useCallback(() => {
+    const logoutClickHandler = useCallback(async () => {
         if (isLoggingOut) return;
         setIsLoggingOut(true);
         const notificationId = notify.loading(t('loggingOut'), 'account:logout');
-        api.account
-            .logout()
-            .onSuccess(() => {
-                setUserName(undefined);
-                notify.success(t('logoutSuccess'), notificationId);
-                router.push(loginHref);
-            })
-            .onError(() => notify.error(t('logoutFailed'), notificationId))
-            .onFinish(() => setIsLoggingOut(false))
-            .execute();
-    }, [api.account, router, t, loginHref, isLoggingOut]);
+        try {
+            await apiClient.logout();
+            setUserName(undefined);
+            notify.success(t('logoutSuccess'), notificationId);
+            router.push(loginHref);
+        } catch {
+            notify.error(t('logoutFailed'), notificationId);
+        } finally {
+            setIsLoggingOut(false);
+        }
+    }, [router, t, loginHref, isLoggingOut]);
 
     return (
         <div className="app-header-account">

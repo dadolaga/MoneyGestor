@@ -45,8 +45,7 @@ Read the [README](README.md), [conventions](README_DEV.md) and
 - `src/components/ui`: local React/HTML UI primitives with shared Tailwind variants.
 - `src/components/shared`: form fields, states, dialogs and common components.
 - `src/components/app/app-shell.tsx`: dashboard shell shared by desktop and mobile.
-- `src/lib/api/client.ts`: Promise-based client for `/api/v1` resources.
-- `src/hooks/useApi.ts`: account callback adapter; respect its actual contract.
+- `src/lib/api/client.ts`: shared Promise-based client for all `/api/v1` account and resource calls.
 - `src/i18n` and `messages/en`, `messages/it`: navigation and local dictionaries.
 - `src/component` and `src/context`: legacy areas to retain while they have consumers.
 
@@ -85,8 +84,8 @@ to resolve a UI request. Use existing clients instead of scattering Axios instan
 
 The browser uses HttpOnly Identity cookies and antiforgery. Do not read or store authentication
 tokens in JavaScript. Preserve field errors, loading/empty/error states and cancellation where present.
-Callback calls must finish loading state even on errors through `onFinish`; do not treat `execute()`
-as a Promise if it does not return one.
+API calls must finish loading state even on errors through `finally`. Use the shared Promise client
+for authentication, session handling and financial resources.
 
 Use React Hook Form for state, errors and submission in new forms. Convert runtime values explicitly:
 a TypeScript cast does not convert a string. Normalize amounts once at the presentation boundary

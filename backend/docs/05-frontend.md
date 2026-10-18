@@ -57,8 +57,7 @@ Italian uses the same URLs with `/it` prepended. These are frontend routes; do n
 | `src/components/shared` | Form controls, date fields, loading/error states and confirmation dialogs |
 | `src/features/api/api-finance-pages.tsx` | Current live financial page components |
 | `src/features/dashboard`, `wallets`, `transactions` | Feature models, adapters and visual components, including richer fixture previews |
-| `src/lib/api/client.ts` | Promise-based v1 resource client, DTO types, CSRF and typed errors |
-| `src/hooks/useApi.ts` | Callback-style account API adapter used by account forms and session UI |
+| `src/lib/api/client.ts` | Shared Promise-based v1 account/resource client, DTO types, CSRF and typed errors |
 | `src/i18n` | Routing, dictionaries, request configuration and locale-aware navigation |
 | `src/lib/money.ts` | Shared money-input normalization |
 | `src/lib/fixtures` | Synthetic development and test data |
@@ -84,11 +83,11 @@ The development catalog and feature tests use fixtures and view models. These ar
 
 ## 5.5 API integration
 
-Both active clients use `NEXT_PUBLIC_API_URL`, currently falling back to `http://localhost:5256`. Axios requests include credentials so the browser can send the Identity cookie. Before each mutation, both clients obtain a fresh CSRF request token and include `X-CSRF-TOKEN`. Tokens are not cached across mutations, so subsequent operations follow the current cookie identity after login, logout or account changes in another tab. Token-fetch failures stop the mutation and use the existing error flow.
+All account and financial calls use `apiClient` in `src/lib/api/client.ts`, with one Axios instance configured through `NEXT_PUBLIC_API_URL`, currently falling back to `http://localhost:5256`. Requests include credentials so the browser can send the Identity cookie. Before each mutation, the client obtains a fresh CSRF request token and includes `X-CSRF-TOKEN`. Tokens are not cached across mutations, so subsequent operations follow the current cookie identity after login, logout or account changes in another tab. Token-fetch failures stop the mutation and use the existing error flow.
 
 The Promise client represents API failures as `ApiProblemError`, with HTTP status, stable code and optional field errors. Live pages currently map many failures to generic localized text. They support AbortSignal cancellation when loading data.
 
-The account adapter uses a fluent callback interface (`onSuccess`, `onError`, `onFinish`). Follow its actual return contract rather than assuming it behaves like the resource Promise client. Do not store authentication tokens in localStorage or readable cookies.
+Account forms and session UI use the same Promise and `ApiProblemError` contract as financial resources. Callers own localized error presentation and finish loading state in `finally`. Cancellation is propagated to CSRF token requests as well as resource calls. Do not store authentication tokens in localStorage or readable cookies.
 
 Authentication reads GET `/api/v1/auth/configuration` to follow the backend's `requireConfirmedEmail` policy. Login offers confirmation resend only when enabled, and the verification page explains when confirmation is unnecessary. Registration uses the same flag returned with 202 acceptance to show either confirmation instructions or immediate-login guidance. Configuration requests support cancellation and a localized retry state; login remains available if configuration cannot be loaded.
 

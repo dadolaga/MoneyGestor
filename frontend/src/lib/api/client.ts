@@ -13,6 +13,32 @@ export interface AccountConfiguration {
     requireConfirmedEmail: boolean;
 }
 
+export interface AccountRegistration {
+    firstname: string;
+    lastname: string;
+    username: string;
+    email: string;
+    password: string;
+}
+
+export interface AccountRegistrationResponse extends AccountConfiguration {
+    message: string;
+}
+
+export interface AccountLogin {
+    user: string;
+    password: string;
+    remember: boolean;
+}
+
+export interface AccountProfile {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+}
+
 export interface ApiColor {
     id: number;
     name: string | null;
@@ -185,9 +211,9 @@ export class ApiProblemError extends Error {
     }
 }
 
-async function requestCsrf(): Promise<string> {
+async function requestCsrf(signal?: AxiosRequestConfig['signal']): Promise<string> {
     // Fetch for each mutation so login/logout and other tabs cannot leave a cached identity token.
-    const response = await http.get<{ token: string }>('/api/v1/auth/antiforgery');
+    const response = await http.get<{ token: string }>('/api/v1/auth/antiforgery', { signal });
     return response.data.token;
 }
 
@@ -223,7 +249,7 @@ async function exportTransactions(params: TransactionQuery & { locale: string },
 
 async function send<T>(config: AxiosRequestConfig, unsafe = false): Promise<T> {
     try {
-        const csrf = unsafe ? await requestCsrf() : undefined;
+        const csrf = unsafe ? await requestCsrf(config.signal) : undefined;
         const response: AxiosResponse<T> = await http.request<T>({
             ...config,
             headers: { ...config.headers, ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}) },
@@ -236,8 +262,14 @@ async function send<T>(config: AxiosRequestConfig, unsafe = false): Promise<T> {
 
 export const apiClient = {
     accountConfiguration: (signal?: AbortSignal) => send<AccountConfiguration>({ method: 'GET', url: '/api/v1/auth/configuration', signal }),
-    session: (signal?: AbortSignal) => send<{ id: number; firstname: string; lastname: string; email: string; username: string }>({ method: 'GET', url: '/api/v1/auth/session', signal }),
+    register: (body: AccountRegistration, signal?: AbortSignal) => send<AccountRegistrationResponse>({ method: 'POST', url: '/api/v1/auth/register', data: body, signal }, true),
+    login: (body: AccountLogin, signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/login', data: body, signal }, true),
+    session: (signal?: AbortSignal) => send<AccountProfile>({ method: 'GET', url: '/api/v1/auth/session', signal }),
     logout: (signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/logout', signal }, true),
+    forgotPassword: (email: string, signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/forgot-password', data: { email }, signal }, true),
+    resendConfirmation: (email: string, signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/resend-confirmation', data: { email }, signal }, true),
+    resetPassword: (email: string, token: string, password: string, signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/reset-password', data: { email, token, password }, signal }, true),
+    confirmEmail: (userId: string, token: string, signal?: AbortSignal) => send<void>({ method: 'POST', url: '/api/v1/auth/confirm-email', data: { userId, token }, signal }, true),
     colors: (signal?: AbortSignal) => send<ApiColor[]>({ method: 'GET', url: '/api/v1/colors', signal }),
     wallets: (signal?: AbortSignal) => send<ApiWallet[]>({ method: 'GET', url: '/api/v1/wallets', signal }),
     createWallet: (body: WalletCreate, signal?: AbortSignal) => send<{ id: number }>({ method: 'POST', url: '/api/v1/wallets', data: body, signal }, true),

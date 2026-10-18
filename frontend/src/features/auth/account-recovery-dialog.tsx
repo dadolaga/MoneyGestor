@@ -10,7 +10,7 @@ import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Mail } from '@/components/ui/icons';
-import useApi from '@/hooks/useApi';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
 
 export type RecoveryAction = 'forgot' | 'resend';
 
@@ -18,7 +18,6 @@ export function AccountRecoveryDialog({ action, children, defaultOpen = false }:
     const t = useTranslations('Auth.recovery');
     const common = useTranslations('Common.actions');
     const { resolvedTheme } = useTheme();
-    const api = useApi();
     const [isOpen, setIsOpen] = useState(defaultOpen);
     const [isPending, setIsPending] = useState(false);
     const [isAccepted, setIsAccepted] = useState(false);
@@ -37,21 +36,23 @@ export function AccountRecoveryDialog({ action, children, defaultOpen = false }:
         setIsOpen(open);
     };
 
-    const submitHandler = ({ email }: { email: string }) => {
+    const submitHandler = async ({ email }: { email: string }) => {
         if (isPending) return;
         setIsPending(true);
         setSubmitError(undefined);
-        const request = action === 'forgot' ? api.account.forgotPassword(email.trim()) : api.account.resendConfirmation(email.trim());
-        request
-            .onSuccess(() => setIsAccepted(true))
-            .onError((error) => {
-                const message = error.status === 429 ? t('tooManyRequests')
-                    : error.status === 0 ? t('networkError')
-                    : t('requestError');
-                setSubmitError(message);
-            })
-            .onFinish(() => setIsPending(false))
-            .execute();
+        try {
+            if (action === 'forgot') await apiClient.forgotPassword(email.trim());
+            else await apiClient.resendConfirmation(email.trim());
+            setIsAccepted(true);
+        } catch (error) {
+            const status = error instanceof ApiProblemError ? error.status : undefined;
+            const message = status === 429 ? t('tooManyRequests')
+                : status === 0 ? t('networkError')
+                : t('requestError');
+            setSubmitError(message);
+        } finally {
+            setIsPending(false);
+        }
     };
 
     return (

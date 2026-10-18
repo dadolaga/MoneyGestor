@@ -12,8 +12,8 @@ import { UserRound } from '@/components/ui/icons';
 import { AccountRecoveryDialog, type RecoveryAction } from '@/features/auth/account-recovery-dialog';
 import { AuthPasswordField } from '@/features/auth/auth-password-field';
 import { useAccountConfiguration } from '@/hooks/useAccountConfiguration';
-import useApi from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
 
 interface LoginFormValues {
     username: string;
@@ -30,7 +30,6 @@ export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
     const t = useTranslations('Auth.login');
     const configurationText = useTranslations('Auth.configuration');
     const router = useRouter();
-    const api = useApi();
     const { configuration, reloadConfiguration } = useAccountConfiguration();
     const [submitError, setSubmitError] = useState<string>();
     const [isPending, setIsPending] = useState(false);
@@ -40,24 +39,24 @@ export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
         onDirtyChange?.(form.formState.isDirty);
     }, [form.formState.isDirty, onDirtyChange]);
 
-    const submitHandler = (values: LoginFormValues) => {
+    const submitHandler = async (values: LoginFormValues) => {
+        if (isPending) return;
         setSubmitError(undefined);
         setIsPending(true);
-        api.account
-            .login({ user: values.username, password: values.password, remember: values.remember })
-            .onSuccess(() => {
-                router.replace('/dashboard');
-            })
-            .onError((error) => {
-                const message = error.status === 401 ? t('errors.invalidCredentials')
-                    : error.status === 423 ? t('errors.locked')
-                    : error.status === 429 ? t('errors.tooManyRequests')
-                    : error.status === 0 ? t('errors.network')
-                    : t('errors.generic');
-                setSubmitError(message);
-            })
-            .onFinish(() => setIsPending(false))
-            .execute();
+        try {
+            await apiClient.login({ user: values.username, password: values.password, remember: values.remember });
+            router.replace('/dashboard');
+        } catch (error) {
+            const status = error instanceof ApiProblemError ? error.status : undefined;
+            const message = status === 401 ? t('errors.invalidCredentials')
+                : status === 423 ? t('errors.locked')
+                : status === 429 ? t('errors.tooManyRequests')
+                : status === 0 ? t('errors.network')
+                : t('errors.generic');
+            setSubmitError(message);
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const onInvalid = () => setSubmitError(t('errors.summary'));

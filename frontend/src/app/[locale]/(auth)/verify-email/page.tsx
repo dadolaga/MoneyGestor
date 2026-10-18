@@ -7,8 +7,8 @@ import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAccountConfiguration } from '@/hooks/useAccountConfiguration';
-import useApi from '@/hooks/useApi';
 import { Link } from '@/i18n/navigation';
+import { apiClient } from '@/lib/api/client';
 
 export default function VerifyEmailPage() {
     return <Suspense><VerifyEmailContent /></Suspense>;
@@ -17,7 +17,6 @@ export default function VerifyEmailPage() {
 function VerifyEmailContent() {
     const t = useTranslations('Auth.verification');
     const configurationText = useTranslations('Auth.configuration');
-    const api = useApi();
     const { configuration, reloadConfiguration } = useAccountConfiguration();
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
@@ -29,9 +28,10 @@ function VerifyEmailContent() {
         if (configuration.status !== 'ready' || !configuration.data.requireConfirmedEmail || started.current) return;
         started.current = true;
         if (!userId || !token) return;
-        api.account.confirmEmail(userId, token).onSuccess(() => setStatus('success')).onError(() => setStatus('error')).execute();
         // Submit the one-time token once, after loading the backend's confirmation policy.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        void apiClient.confirmEmail(userId, token)
+            .then(() => setStatus('success'))
+            .catch(() => setStatus('error'));
     }, [configuration, userId, token]);
 
     const isConfirmationDisabled = configuration.status === 'ready' && !configuration.data.requireConfirmedEmail;

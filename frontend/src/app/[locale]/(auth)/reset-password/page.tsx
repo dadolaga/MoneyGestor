@@ -9,8 +9,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import useApi from '@/hooks/useApi';
 import { Link } from '@/i18n/navigation';
+import { apiClient } from '@/lib/api/client';
 
 type ResetForm = { email: string; password: string; confirmPassword: string };
 
@@ -20,7 +20,6 @@ export default function ResetPasswordPage() {
 
 function ResetPasswordForm() {
     const t = useTranslations('Auth.recovery');
-    const api = useApi();
     const searchParams = useSearchParams();
     const token = searchParams.get('token') ?? '';
     const [pending, setPending] = useState(false);
@@ -30,16 +29,27 @@ function ResetPasswordForm() {
     const password = useWatch({ control: form.control, name: 'password' });
     const submitLabel = pending ? t('pending') : t('reset');
 
+    const submitHandler = async (values: ResetForm) => {
+        if (pending) return;
+        if (!token) { setError(true); return; }
+        setPending(true);
+        setError(false);
+        try {
+            await apiClient.resetPassword(values.email, token, values.password);
+            setComplete(true);
+        } catch {
+            setError(true);
+        } finally {
+            setPending(false);
+        }
+    };
+
     return (
         <Card className="w-md">
             <CardHeader><CardTitle>{t('resetTitle')}</CardTitle></CardHeader>
             <CardContent className="grid gap-5">
                 {complete ? <p aria-live="polite" className="text-sm">{t('resetSuccess')}</p> : (
-                    <form className="grid gap-5" onSubmit={form.handleSubmit((values) => {
-                        if (!token) { setError(true); return; }
-                        setPending(true); setError(false);
-                        api.account.resetPassword(values.email, token, values.password).onSuccess(() => setComplete(true)).onError(() => setError(true)).onFinish(() => setPending(false)).execute();
-                    })}>
+                    <form className="grid gap-5" onSubmit={form.handleSubmit(submitHandler)}>
                         {!!error && <p role="alert" className="text-sm text-destructive">{t('genericError')}</p>}
                         <InputField autoComplete="email" control={form.control} disabled={pending} label={t('email')} name="email" rules={{ required: t('required') }} type="email" />
                         <InputField kind="password" autoComplete="new-password" control={form.control} disabled={pending} label={t('password')} name="password" rules={{ required: t('required'), minLength: { value: 12, message: t('passwordLength') } }} />

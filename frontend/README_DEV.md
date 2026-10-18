@@ -22,8 +22,8 @@ The `/dashboard`, `/dashboard/wallet` and `/dashboard/transaction` routes live i
 `/api/v1`; the wallet page now shows balances, selection, recent movements and distribution with
 a shared creation/editing dialog for five wallet types. CRUD and metadata persist through v1 APIs;
 other actions show a shared Coming soon dialog (see the [wallet README](src/features/wallets/README.md)).
-Movements use filters and server-side pagination. Fixtures remain for previews and tests. The resource client is
-`src/lib/api/client.ts`; `useApi` remains only as a callback adapter for legacy account forms.
+Movements use filters and server-side pagination. Fixtures remain for previews and tests. Authentication,
+session UI and financial resources share the Promise client in `src/lib/api/client.ts`.
 
 The `AppShell` centralizes the header, desktop navigation, mobile Sheet, session state and language
 selector. Flowiy login and registration live in `(flowiy-auth)` with their shared marketing layout.
@@ -108,8 +108,7 @@ feedback, without a separate page notification banner.
 
 Keep validation, form submission errors and page load/retry states in their existing context. Do not
 show a second toast for an error already handled there, and do not notify on cancelled requests or
-expected anonymous session checks. The account callback adapter uses a translated fallback toast
-only when no `onError` handler is registered. The Promise API client leaves error presentation to its
+expected anonymous session checks. The shared Promise API client leaves error presentation to its
 caller. Logout uses one loading/outcome notification and disables resubmission while pending.
 
 ## Internationalization
@@ -159,11 +158,11 @@ When a `useEffect` uses a loading function declared later, the function must be 
 
 ## API calls
 
-V1 resources go through `src/lib/api/client.ts`; do not create Axios instances directly in pages.
-Every call that increments loading state must also decrement it on errors using `onFinish`.
-
-The `ApiRequest` wrapper currently does not return a Promise from `execute`. Until it is refactored,
-handle success, error and completion through available callbacks and do not use `await execute()`.
+All v1 account and resource calls go through `apiClient` in `src/lib/api/client.ts`; do not create
+Axios instances directly in pages or hooks. The client returns Promises and normalizes HTTP and
+network failures as `ApiProblemError`, preserving status, code and field errors. Use `try`/`catch`
+with `finally` to finish loading state on success and failure. Pass an `AbortSignal` for cancellable
+loads and avoid updating state or showing notifications after cancellation.
 
 ## Forms
 

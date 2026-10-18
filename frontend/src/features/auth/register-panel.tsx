@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AtSign, Mail, UserRound } from '@/components/ui/icons';
 import { AuthPasswordField } from '@/features/auth/auth-password-field';
-import useApi from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 
 interface RegistrationFormValues {
@@ -30,7 +30,6 @@ interface PanelProps {
 export function RegisterPanel({ onDirtyChange }: PanelProps) {
     const t = useTranslations('Auth.register');
     const router = useRouter();
-    const api = useApi();
     const [submitError, setSubmitError] = useState<string>();
     const [isPending, setIsPending] = useState(false);
     const form = useForm<RegistrationFormValues>({
@@ -41,30 +40,30 @@ export function RegisterPanel({ onDirtyChange }: PanelProps) {
         onDirtyChange?.(form.formState.isDirty);
     }, [form.formState.isDirty, onDirtyChange]);
 
-    const submitHandler = (values: RegistrationFormValues) => {
+    const submitHandler = async (values: RegistrationFormValues) => {
+        if (isPending) return;
         setSubmitError(undefined);
         setIsPending(true);
-        api.account
-            .register({
+        try {
+            const response = await apiClient.register({
                 firstname: values.firstName,
                 lastname: values.lastName,
                 username: values.username,
                 email: values.email,
                 password: values.password,
-            })
-            .onSuccess((response) => {
-                notify.success(t(response.requireConfirmedEmail ? 'success' : 'successWithoutConfirmation'));
-                router.replace('/login');
-            })
-            .onError((error) => {
-                const message = error.status === 429 ? t('errors.tooManyRequests')
-                    : error.status === 0 ? t('errors.network')
-                    : error.status === 400 && error.message === 'validation_failed' ? t('errors.validation')
-                    : t('errors.generic');
-                setSubmitError(message);
-            })
-            .onFinish(() => setIsPending(false))
-            .execute();
+            });
+            notify.success(t(response.requireConfirmedEmail ? 'success' : 'successWithoutConfirmation'));
+            router.replace('/login');
+        } catch (error) {
+            const status = error instanceof ApiProblemError ? error.status : undefined;
+            const message = status === 429 ? t('errors.tooManyRequests')
+                : status === 0 ? t('errors.network')
+                : error instanceof ApiProblemError && status === 400 && error.code === 'validation_failed' ? t('errors.validation')
+                : t('errors.generic');
+            setSubmitError(message);
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const onInvalid = () => setSubmitError(t('errors.summary'));
