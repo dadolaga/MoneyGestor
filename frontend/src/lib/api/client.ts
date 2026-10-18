@@ -1,8 +1,10 @@
 import axios from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
+export const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5256';
+
 const http = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5256',
+    baseURL: apiBaseUrl,
     withCredentials: true,
     headers: { Accept: 'application/json, application/problem+json' },
 });

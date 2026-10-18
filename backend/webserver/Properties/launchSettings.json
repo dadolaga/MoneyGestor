@@ -6,10 +6,12 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "BACKEND_APP_SETTINGS": "../../settings.json",
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "security__allowedOrigins__0": "http://localhost:3000",
+        "security__allowedOrigins__1": "http://192.168.178.56:3000"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5256"
+      "applicationUrl": "http://0.0.0.0:5256"
     },
     "https": {
       "commandName": "Project",

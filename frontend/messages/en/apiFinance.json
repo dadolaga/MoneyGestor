@@ -15,6 +15,8 @@
       "loading": "Loading…", "empty": "No data for this month.",
       "requestFailed": "Unable to load dashboard data.",
       "summary": "Financial summary",
+      "selectedMonth": "Movements · {month}",
+      "mobileSummary": { "wealth": "Total balance", "income": "Income", "expense": "Expenses", "savings": "Savings" },
       "wealth": "Total wealth", "income": "Monthly income", "expense": "Monthly expenses", "savings": "Monthly savings",
       "currentBalances": "Current wallet balances",
       "comparison": "compared with last month", "noComparison": "Comparison unavailable", "unavailable": "Data unavailable",
@@ -23,6 +25,8 @@
       "recent": "Recent movements", "viewAll": "View all", "emptyMovements": "No movements this month.",
       "date": "Date", "descriptionField": "Description", "category": "Category", "wallet": "Wallet", "amount": "Amount",
       "quickActions": "Quick actions", "newMovement": "New movement", "addWallet": "Add wallet",
+      "quickMovementDescription": "Add income or an expense in seconds",
+      "categoryShortcuts": "New expense by category",
       "newIncome": "New income", "newExpense": "New expense", "transfer": "Transfer money", "retry": "Retry"
     }
   }

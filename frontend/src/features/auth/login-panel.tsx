@@ -113,7 +113,7 @@ export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
                             {isPending ? t('pending') : t('submit')}
                         </Button>
                     </form>
-                    <p className="mb-0 mt-6 text-center text-sm text-muted-foreground">
+                    <div className="mb-0 mt-6 text-center text-sm text-muted-foreground">
                         <AccountRecoveryDialog action="forgot" defaultOpen={initialRecovery === 'forgot'}>
                             {t('forgotPassword')}
                         </AccountRecoveryDialog>
@@ -125,7 +125,7 @@ export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
                                 </AccountRecoveryDialog>
                             </>
                         )}
-                    </p>
+                    </div>
                     {configuration.status === 'error' && (
                         <p className="mb-0 mt-3 text-center text-sm text-muted-foreground" role="status">
                             {configurationText('error')}{' '}

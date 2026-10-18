@@ -4,6 +4,21 @@ The live `/dashboard` route uses `Dashboard.tsx`, replacing the former category 
 Its responsive layout follows the supplied dashboard reference and retains the shared application
 header, navigation, theme tokens and English/Italian localization.
 
+On phones, the same dashboard prioritizes a full-width current balance, three compact monthly
+totals, a prominent New movement action and recent movements before charts and distribution.
+The selected month is labelled above the summary and can still be changed in the monthly chart.
+Recent movements reuse the existing table and display helpers, hiding secondary columns and showing
+the date and wallet under the description on phones. Desktop retains its existing layout.
+The shared shell adds Home / Movements / More navigation below the desktop breakpoint; More opens
+the existing navigation sheet, and content reserves space for the bar and the device safe area.
+
+`DashboardQuickActions.tsx` reuses the shared movement editor. On phones it offers shortcuts for
+the first four available non-system categories in API order, using their existing names, icons and
+colors, and preselects the category for a new expense. The main action opens the full editor with
+all categories and movement kinds. With no categories, income/expense/transfer shortcuts remain
+available; loading and metadata errors still use the shared editor's states. Add wallet remains
+available through the existing wallet editor. There is no separate mobile route or financial logic.
+
 - `useDashboard.ts` loads the selected calendar month's overview and six most recent movements,
   with cancellation, loading/error states and retry. Wallets and categories load separately.
 - `DashboardSummary.tsx` shows current wealth, monthly income, expenses and savings. Period totals,

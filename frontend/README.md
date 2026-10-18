@@ -45,8 +45,17 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. If `NEXT_PUBLIC_API_URL` is unset, the client currently uses
-`http://localhost:5256`; always setting this variable makes development more reproducible.
+Open `http://localhost:3000`. Set `NEXT_PUBLIC_API_URL` explicitly for reproducible development.
+Account and resource clients share `apiBaseUrl` from `src/lib/api/client.ts`; the public environment
+variable takes precedence over its development fallback. Logging in through `localhost` does not
+authenticate requests sent to a LAN IP. For phone access, open the frontend through the PC's LAN IP
+and use the same scheme and IP for the API (with its backend port). Allow that frontend origin in
+the backend CORS configuration. Rebuild/restart the frontend after changing the public variable,
+then sign in again through the matching address.
+The backend `http` launch profile listens on all IPv4 interfaces and explicitly allows
+`http://localhost:3000` and `http://192.168.178.56:3000` through indexed environment overrides.
+These LAN development addresses must be updated together if the PC's IP or frontend port changes;
+restart the backend with that profile for the overrides to take effect.
 
 ## Scripts
 
@@ -98,6 +107,8 @@ or clearing the login form. Each dialog validates the email and displays loading
 or request errors using the existing account API. Old direct URLs redirect to `/login?recovery=forgot`
 or `/login?recovery=resend`, opening the same dialogs. Token-based password reset and email
 verification remain dedicated pages.
+Recovery triggers and their native dialogs use a block container, avoiding invalid paragraph/dialog
+nesting and the resulting server/client hydration mismatch.
 The backend controls email verification through `security.requireConfirmedEmail` (enabled by default).
 Login and verification read `/api/v1/auth/configuration`; resend is hidden when verification is disabled.
 Registration acceptance includes the same flag so the success message reflects the active policy.

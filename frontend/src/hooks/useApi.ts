@@ -4,6 +4,7 @@ import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
 
+import { apiBaseUrl } from '@/lib/api/client';
 import type { AccountConfiguration } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 import type { Login, User } from '@/models/backend';
@@ -45,7 +46,7 @@ export default function useApi() {
 
     const myAxios = useMemo<AxiosInstance>(() => {
         const instance = axios.create({
-            baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5256',
+            baseURL: apiBaseUrl,
             withCredentials: true,
         });
 

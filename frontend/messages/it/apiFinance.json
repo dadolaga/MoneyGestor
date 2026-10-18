@@ -15,6 +15,8 @@
       "loading": "Caricamento…", "empty": "Nessun dato per questo mese.",
       "requestFailed": "Impossibile caricare i dati della dashboard.",
       "summary": "Riepilogo delle finanze",
+      "selectedMonth": "Movimenti · {month}",
+      "mobileSummary": { "wealth": "Saldo totale", "income": "Entrate", "expense": "Uscite", "savings": "Risparmio" },
       "wealth": "Patrimonio totale", "income": "Entrate del mese", "expense": "Uscite del mese", "savings": "Risparmio del mese",
       "currentBalances": "Saldi attuali dei portafogli",
       "comparison": "rispetto al mese scorso", "noComparison": "Confronto non disponibile", "unavailable": "Dati non disponibili",
@@ -23,6 +25,8 @@
       "recent": "Ultimi movimenti", "viewAll": "Vedi tutti", "emptyMovements": "Nessun movimento in questo mese.",
       "date": "Data", "descriptionField": "Descrizione", "category": "Categoria", "wallet": "Portafoglio", "amount": "Importo",
       "quickActions": "Azioni rapide", "newMovement": "Nuovo movimento", "addWallet": "Aggiungi portafoglio",
+      "quickMovementDescription": "Inserisci spesa o entrata in pochi secondi",
+      "categoryShortcuts": "Nuova uscita per categoria",
       "newIncome": "Nuova entrata", "newExpense": "Nuova uscita", "transfer": "Trasferisci denaro", "retry": "Riprova"
     }
   }

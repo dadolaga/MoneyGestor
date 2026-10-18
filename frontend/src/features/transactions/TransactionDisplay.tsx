@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { transactionKind } from './transaction-kind';
 
 export function CategoryMark({ row, className }: { row: ApiTransaction; className?: string }) {
-    return <span className={cn('inline-flex size-5 shrink-0 [&>svg]:size-full', className)}><CategoryIcon type={row.type} /></span>;
+    return <span className={cn('inline-flex size-5 shrink-0 [&>span]:size-full [&>svg]:size-full', className)}><CategoryIcon type={row.type} /></span>;
 }
 
 export function WalletLabel({ row, compact = false }: { row: ApiTransaction; compact?: boolean }) {
