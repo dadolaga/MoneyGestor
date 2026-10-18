@@ -15,7 +15,7 @@ import {
 import type { ApiTransaction } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
-import { transactionKind } from './use-transactions-dashboard';
+import { transactionKind } from './transaction-kind';
 
 export const categoryColors = [
     'var(--expense)',

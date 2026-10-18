@@ -1,16 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useTranslations } from 'next-intl';
 
 import { ApiProblemError, apiClient } from '@/lib/api/client';
 import type { ApiTransaction, ApiTransactionType, ApiWallet, TransactionQuery } from '@/lib/api/client';
-
-export function transactionKind(row: ApiTransaction) {
-    return row.destination !== null ? 'Transfer' : row.value >= 0 ? 'Income' : 'Expense';
-}
 
 async function loadPeriod(query: TransactionQuery, signal: AbortSignal) {
     const first = await apiClient.transactions(
@@ -55,7 +51,6 @@ export function useTransactionsDashboard() {
     const [metadataError, setMetadataError] = useState('');
     const [metadataLoading, setMetadataLoading] = useState(true);
     const [revision, setRevision] = useState(0);
-    const query = useMemo(() => ({ ...filters }), [filters]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -102,7 +97,7 @@ export function useTransactionsDashboard() {
             setLoading(true);
             setError('');
             try {
-                const result = await apiClient.transactions({ ...query, ...sort, page, pageSize }, controller.signal);
+                const result = await apiClient.transactions({ ...filters, ...sort, page, pageSize }, controller.signal);
                 if (controller.signal.aborted) return;
                 const lastPage = Math.max(1, Math.ceil(result.totalCount / pageSize));
                 if (page > lastPage) {
@@ -123,15 +118,15 @@ export function useTransactionsDashboard() {
             }
         })();
         return () => controller.abort();
-    }, [page, pageSize, query, revision, sort, t]);
+    }, [page, pageSize, filters, revision, sort, t]);
 
     useEffect(() => {
         const controller = new AbortController();
         void (async () => {
             setSummaryLoading(true);
             setSummaryError('');
-            const start = dayjs(query.from);
-            const end = dayjs(query.to);
+            const start = dayjs(filters.from);
+            const end = dayjs(filters.to);
             const isWholeMonth = start.date() === 1 && end.isSame(start.endOf('month'), 'day');
             const previousEnd = start.subtract(1, 'day');
             const previousStart = isWholeMonth
@@ -139,9 +134,9 @@ export function useTransactionsDashboard() {
                 : start.subtract(end.diff(start, 'day') + 1, 'day');
             try {
                 const [currentRows, previousRows] = await Promise.all([
-                    loadPeriod(query, controller.signal),
+                    loadPeriod(filters, controller.signal),
                     loadPeriod(
-                        { ...query, from: previousStart.format('YYYY-MM-DD'), to: previousEnd.format('YYYY-MM-DD') },
+                        { ...filters, from: previousStart.format('YYYY-MM-DD'), to: previousEnd.format('YYYY-MM-DD') },
                         controller.signal,
                     ),
                 ]);
@@ -160,7 +155,7 @@ export function useTransactionsDashboard() {
             }
         })();
         return () => controller.abort();
-    }, [query, revision, t]);
+    }, [filters, revision, t]);
 
     function filterHandler(update: Partial<TransactionQuery>) {
         setFilters((current) => ({ ...current, ...update }));

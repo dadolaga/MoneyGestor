@@ -1,4 +1,3 @@
-
 import { FeatureStateBoundary } from '@/components/shared/feature-state';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';

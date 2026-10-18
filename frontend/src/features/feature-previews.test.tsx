@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { DashboardPreview } from '@/features/dashboard/dashboard-preview';
-import { TransactionsPreview } from '@/features/transactions/transactions-preview';
+import { TransactionsPreview } from '@/features/transactions/TransactionsPreview';
 import { WalletsPreview } from '@/features/wallets/WalletsPreview';
 import { dashboardStateFixtures, transactionStateFixtures, walletStateFixtures } from '@/lib/fixtures/finance';
 
