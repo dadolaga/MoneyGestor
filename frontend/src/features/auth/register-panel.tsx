@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 
 import { InputField } from '@/components/shared/form-controls';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { AtSign, Mail, UserRound } from '@/components/ui/icons';
 import { AuthPasswordField } from '@/features/auth/auth-password-field';
 import useApi from '@/hooks/useApi';
 import { Link, useRouter } from '@/i18n/navigation';
+import { notify } from '@/lib/notifications';
 
 interface RegistrationFormValues {
     firstName: string;
@@ -53,7 +53,7 @@ export function RegisterPanel({ onDirtyChange }: PanelProps) {
                 password: values.password,
             })
             .onSuccess((response) => {
-                toast.success(t(response.requireConfirmedEmail ? 'success' : 'successWithoutConfirmation'));
+                notify.success(t(response.requireConfirmedEmail ? 'success' : 'successWithoutConfirmation'));
                 router.replace('/login');
             })
             .onError((error) => {

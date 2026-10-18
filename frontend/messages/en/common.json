@@ -13,6 +13,15 @@
             "description": "We're still working on this section to make it truly useful and well crafted. Check back soon, or keep using the features already available in Flowiy.",
             "confirm": "Got it"
         },
+        "notifications": {
+            "label": "Notifications",
+            "close": "Dismiss notification",
+            "networkError": "Unable to connect. Check your connection and try again.",
+            "sessionExpired": "Your session has expired. Please log in again.",
+            "forbidden": "You do not have permission to perform this action.",
+            "tooManyRequests": "Too many requests. Please wait and try again.",
+            "requestFailed": "The operation could not be completed. Please try again."
+        },
         "theme": {
             "label": "Theme",
             "light": "Light",

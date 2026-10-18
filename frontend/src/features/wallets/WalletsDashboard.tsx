@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { ComingSoonDialog } from '@/components/shared/coming-soon-dialog';
 import { ConfirmDeleteDialog } from '@/components/shared/confirm-delete-dialog';
@@ -13,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { Landmark, Plus } from '@/components/ui/icons';
 import { apiClient, ApiProblemError } from '@/lib/api/client';
 import type { ApiDashboard, ApiTransaction, ApiWallet } from '@/lib/api/client';
+import { notify } from '@/lib/notifications';
 import '@/styles/wallets.css';
 
 import { walletDraftFromApi, walletRequestFromDraft } from './wallet-adapter';
@@ -136,7 +136,7 @@ export function WalletsDashboard() {
             const data = await apiClient.wallets();
             setWalletState({ status: 'ready', data });
         } catch (error: unknown) {
-            toast.error(t('states.refreshError'));
+            notify.error(t('states.refreshError'));
             setWalletState({
                 status: 'error',
                 authenticationRequired: error instanceof ApiProblemError && error.status === 401,
@@ -158,7 +158,7 @@ export function WalletsDashboard() {
                     details: body.details,
                 });
             setDialog(undefined);
-            toast.success(tCreate(editingWallet === undefined ? 'created' : 'updated'));
+            notify.success(tCreate(editingWallet === undefined ? 'created' : 'updated'));
             await refreshWallets();
         } finally {
             setPending(false);
@@ -178,7 +178,7 @@ export function WalletsDashboard() {
             await apiClient.deleteWallet(wallet.id);
             if (wallet.id === selectedWalletId) setSelectedId(undefined);
             setDeletingWallet(undefined);
-            toast.success(t('delete.deleted'));
+            notify.success(t('delete.deleted'));
             await refreshWallets();
         } catch (error: unknown) {
             setDeleteError(

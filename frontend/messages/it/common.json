@@ -13,6 +13,15 @@
             "description": "Stiamo ancora lavorando a questa sezione per renderla davvero utile e ben fatta. Torna presto oppure continua a usare le funzionalità già disponibili in Flowiy.",
             "confirm": "Ho capito"
         },
+        "notifications": {
+            "label": "Notifiche",
+            "close": "Chiudi notifica",
+            "networkError": "Connessione non riuscita. Controlla la connessione e riprova.",
+            "sessionExpired": "La sessione è scaduta. Accedi di nuovo.",
+            "forbidden": "Non hai i permessi per eseguire questa operazione.",
+            "tooManyRequests": "Troppe richieste. Attendi e riprova.",
+            "requestFailed": "Impossibile completare l'operazione. Riprova."
+        },
         "theme": {
             "label": "Tema",
             "light": "Chiaro",

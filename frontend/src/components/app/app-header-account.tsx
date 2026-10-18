@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { LogIn, LogOut, UserPlus } from '@/components/ui/icons';
 import { Skeleton } from '@/components/ui/skeleton';
 import useApi from '@/hooks/useApi';
 import { useRouter } from '@/i18n/navigation';
+import { notify } from '@/lib/notifications';
 
 function initials(name: string) {
     return name
@@ -33,6 +33,7 @@ export function AppHeaderAccount({ loginHref, registerHref }: AppHeaderAccountPr
     const api = useApi();
     const [userName, setUserName] = useState<string>();
     const [isLoadingSession, setIsLoadingSession] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     useEffect(() => {
         const timeout = window.setTimeout(() => {
@@ -61,15 +62,20 @@ export function AppHeaderAccount({ loginHref, registerHref }: AppHeaderAccountPr
     }, [router, registerHref]);
 
     const logoutClickHandler = useCallback(() => {
+        if (isLoggingOut) return;
+        setIsLoggingOut(true);
+        const notificationId = notify.loading(t('loggingOut'), 'account:logout');
         api.account
             .logout()
             .onSuccess(() => {
                 setUserName(undefined);
-                toast.success(t('logoutSuccess'));
+                notify.success(t('logoutSuccess'), notificationId);
                 router.push(loginHref);
             })
+            .onError(() => notify.error(t('logoutFailed'), notificationId))
+            .onFinish(() => setIsLoggingOut(false))
             .execute();
-    }, [api.account, router, t, loginHref]);
+    }, [api.account, router, t, loginHref, isLoggingOut]);
 
     return (
         <div className="app-header-account">
@@ -85,7 +91,7 @@ export function AppHeaderAccount({ loginHref, registerHref }: AppHeaderAccountPr
                         </AvatarFallback>
                     </Avatar>
                     <span className="hidden max-w-36 truncate text-sm font-semibold sm:block">{userName}</span>
-                    <Button aria-label={t('logout')} size="icon" variant="ghost" onClick={logoutClickHandler}>
+                    <Button aria-label={t('logout')} disabled={isLoggingOut} size="icon" variant="ghost" onClick={logoutClickHandler}>
                         <LogOut aria-hidden="true" />
                     </Button>
                 </div>

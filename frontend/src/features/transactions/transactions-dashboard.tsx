@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useFormatter, useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { DateRangeField } from '@/components/shared/date-range-field';
 import type { DayjsDateRange } from '@/components/shared/date-range-field';
@@ -26,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { ApiTransaction, TransactionQuery } from '@/lib/api/client';
+import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 
 import { TransactionCharts, TransactionSummary } from './transaction-charts';
@@ -96,13 +96,13 @@ export function TransactionsDashboard() {
         setEditorOpen(false);
         setDraft(undefined);
         dashboard.retryHandler();
-        toast.success(t('editor.created'));
+        notify.success(t('editor.created'));
     }
 
     function saveDraftHandler(nextDraft: TransactionDraft) {
         setDraft(nextDraft);
         setEditorOpen(false);
-        toast.success(t('editor.draftSaved'));
+        notify.success(t('editor.draftSaved'));
     }
 
     function exportHandler() {

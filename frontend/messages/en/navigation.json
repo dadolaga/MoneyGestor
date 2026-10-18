@@ -19,6 +19,8 @@
         "enter": "Entra",
         "register": "Create account",
         "logout": "Log out",
+        "loggingOut": "Logging out…",
+        "logoutFailed": "Unable to log out. Please try again.",
         "logoutSuccess": "You have been logged out.",
         "sessionExpired": "Your session has expired. Please log in again."
     }

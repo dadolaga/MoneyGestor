@@ -2,10 +2,10 @@ import { useCallback, useMemo } from 'react';
 
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
-import type { EnqueueSnackbar } from 'notistack';
-import { useSnackbar } from 'notistack';
+import { useTranslations } from 'next-intl';
 
 import type { AccountConfiguration } from '@/lib/api/client';
+import { notify } from '@/lib/notifications';
 import type { Login, User } from '@/models/backend';
 
 export interface AccountRegistrationResponse extends AccountConfiguration {
@@ -30,7 +30,18 @@ export class AccountResponseError extends Error {
 }
 
 export default function useApi() {
-    const { enqueueSnackbar } = useSnackbar();
+    const t = useTranslations('Common.notifications');
+    const notifyRequestError = useCallback(
+        (error: AccountResponseError) => {
+            let key = 'requestFailed';
+            if (error.message === 'network_error') key = 'networkError';
+            else if (error.status === 401) key = 'sessionExpired';
+            else if (error.status === 403) key = 'forbidden';
+            else if (error.status === 429) key = 'tooManyRequests';
+            notify.error(t(key));
+        },
+        [t],
+    );
 
     const myAxios = useMemo<AxiosInstance>(() => {
         const instance = axios.create({
@@ -56,42 +67,42 @@ export default function useApi() {
             register: (user: User) =>
                 new AccountApiRequest<AccountRegistrationResponse>(
                     () => accountRequest<AccountRegistrationResponse>('POST', '/api/v1/auth/register', user),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             login: (login: Login) =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/login', login),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             session: () =>
                 new AccountApiRequest<AccountProfile>(
                     () => accountRequest<AccountProfile>('GET', '/api/v1/auth/session'),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             logout: () =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/logout'),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             forgotPassword: (email: string) =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/forgot-password', { email }),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             resendConfirmation: (email: string) =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/resend-confirmation', { email }),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             resetPassword: (email: string, token: string, password: string) =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/reset-password', { email, token, password }),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
             confirmEmail: (userId: string, token: string) =>
                 new AccountApiRequest<void>(
                     () => accountRequest<void>('POST', '/api/v1/auth/confirm-email', { userId, token }),
-                    enqueueSnackbar,
+                    notifyRequestError,
                 ),
         },
     };
@@ -104,7 +115,7 @@ export class AccountApiRequest<T_RETURN> {
 
     constructor(
         private readonly actionFunction: () => Promise<AxiosResponse<T_RETURN>>,
-        private readonly enqueueSnackbar: EnqueueSnackbar,
+        private readonly onUnhandledError: (_error: AccountResponseError) => void,
     ) {}
 
     onSuccess(callback: (data: T_RETURN) => void) {
@@ -126,16 +137,18 @@ export class AccountApiRequest<T_RETURN> {
         this.actionFunction()
             .then((response) => this.successFunction(response.data))
             .catch((error: unknown) => {
-                if (!axios.isAxiosError<{ code?: string }>(error)) {
-                    this.errorFunction?.(new AccountResponseError(0, 'request_failed'));
-                    return;
+                if (axios.isCancel(error)) return;
+
+                let responseError = new AccountResponseError(0, 'request_failed');
+                if (axios.isAxiosError<{ code?: string }>(error)) {
+                    const code = error.response?.data?.code;
+                    responseError = new AccountResponseError(
+                        error.response?.status ?? 0,
+                        typeof code === 'string' ? code : error.response ? 'request_failed' : 'network_error',
+                    );
                 }
-                const status = error.response?.status ?? 0;
-                const code = error.response?.data?.code;
-                if (error.code === 'ERR_NETWORK' && !this.errorFunction) {
-                    this.enqueueSnackbar('Server error', { variant: 'error' });
-                }
-                this.errorFunction?.(new AccountResponseError(status, typeof code === 'string' ? code : 'request_failed'));
+                // A form or page handler owns its error; do not also show a global toast.
+                (this.errorFunction ?? this.onUnhandledError)(responseError);
             })
             .finally(this.finishFunction);
     }

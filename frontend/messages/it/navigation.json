@@ -19,6 +19,8 @@
         "enter": "Entra",
         "register": "Crea account",
         "logout": "Esci",
+        "loggingOut": "Uscita in corso…",
+        "logoutFailed": "Impossibile uscire. Riprova.",
         "logoutSuccess": "Hai effettuato il logout.",
         "sessionExpired": "La sessione è scaduta. Accedi di nuovo."
     }

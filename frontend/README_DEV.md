@@ -71,6 +71,36 @@ headers and footers remain outside that region and do not shrink. Forms between 
 its body use `min-h-0` and `overflow-hidden`. Keep disabled fieldsets inside the scrolling body,
 with footer actions disabled explicitly while a request is pending.
 
+## Application notifications
+
+Sonner is the only toast system. `AppProviders` mounts one shared `Toaster` from
+`src/components/ui/sonner.tsx` in the locale layout, covering public, account and dashboard pages.
+It follows the saved application theme, uses shared surface tokens, translated accessibility labels
+and responsive offsets, and shows up to three notifications at once.
+
+Use `notify` from `@/lib/notifications` with translated strings instead of importing Sonner directly:
+
+```ts
+notify.success(t('saved'));
+notify.error(t('refreshFailed'));
+
+const id = notify.loading(t('saving'), 'feature:save');
+// In the request's success/error handlers, update the same notification:
+notify.success(t('saved'), id);
+// On failure, use notify.error(t('saveFailed'), id) instead.
+```
+
+Success notifications last four seconds and errors six seconds. Loading notifications remain until
+updated or dismissed with `notify.dismiss(id)`. Without an explicit ID, identical messages of the same
+type update one notification; supply an operation ID to share a notification across loading and outcome.
+Sonner owns the queue and timers; do not add parallel notification state.
+
+Keep validation, form submission errors and page load/retry states in their existing context. Do not
+show a second toast for an error already handled there, and do not notify on cancelled requests or
+expected anonymous session checks. The account callback adapter uses a translated fallback toast
+only when no `onError` handler is registered. The Promise API client leaves error presentation to its
+caller. Logout uses one loading/outcome notification and disables resubmission while pending.
+
 ## Internationalization
 
 The public homepage slice is implemented in `src/features/home`, with the `Home` namespace in English
