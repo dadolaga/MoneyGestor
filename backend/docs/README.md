@@ -74,6 +74,12 @@ Maintain the application, diagnose issues and recover data.
 
 MUI remains in legacy frontend areas during migration. MySQL is managed separately from the application containers.
 
+## Implementation plans
+
+Il [README di integrazione della dashboard transazioni](transactions-dashboard/README.md) descrive
+le API già disponibili e gli interventi proposti su database, categorie,
+aggregazioni ed export. È un piano di implementazione, non un elenco di funzionalità già attive.
+
 ## Choose a reading path
 
 | Your goal | Recommended chapters |

@@ -10,11 +10,12 @@ import { cn } from '@/lib/utils';
 
 import { transactionKind } from './transaction-kind';
 import { TransactionActions } from './TransactionActions';
+import type { TransactionActionHandlers } from './TransactionActions';
 import { CategoryMark, TransactionAmount, WalletLabel } from './TransactionDisplay';
 import { TransactionsPagination } from './TransactionsPagination';
 import { useTransactionFormatting } from './useTransactionFormatting';
 
-interface TransactionsListProps {
+interface TransactionsListProps extends TransactionActionHandlers {
     rows: ApiTransaction[];
     loading: boolean;
     error: string;
@@ -38,6 +39,8 @@ export function TransactionsList({
     onSortChange,
     onPageChange,
     onPageSizeChange,
+    onEdit,
+    onDelete,
 }: TransactionsListProps) {
     const t = useTranslations('Movements');
     const { money, date } = useTransactionFormatting();
@@ -162,7 +165,7 @@ export function TransactionsList({
                                             <TransactionAmount row={row} money={money} />
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <TransactionActions row={row} />
+                                            <TransactionActions row={row} onEdit={onEdit} onDelete={onDelete} />
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -189,7 +192,7 @@ export function TransactionsList({
                             </div>
                             <div className="flex flex-col items-end gap-1 text-sm">
                                 <TransactionAmount row={row} money={money} />
-                                <TransactionActions row={row} />
+                                <TransactionActions row={row} onEdit={onEdit} onDelete={onDelete} />
                             </div>
                         </article>
                     ))}

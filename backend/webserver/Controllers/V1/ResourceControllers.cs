@@ -68,7 +68,7 @@ public sealed class TransactionTypesController(IApiCurrentUser currentUser, IRes
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateTransactionTypeRequest request, CancellationToken cancellationToken) {
-        var id = await executor.ExecuteAsync(currentUser.RequireId(User), new AddTransactionTypeCommand(request.Name.Trim()), cancellationToken);
+        var id = await executor.ExecuteAsync(currentUser.RequireId(User), new AddTransactionTypeCommand(request.Name, request.ToModel()), cancellationToken);
         return Created($"/api/v1/transaction-types/{id}", new { id });
     }
 }
@@ -78,6 +78,17 @@ public sealed class TransactionsController(IApiCurrentUser currentUser, IResourc
     [HttpGet]
     public async Task<ActionResult<PageResponse<TransactionResponse>>> Get([FromQuery] TransactionListQuery query, CancellationToken cancellationToken) =>
         Ok(await queries.GetTransactionsAsync(currentUser.RequireId(User), query, cancellationToken));
+
+    [HttpGet("overview")]
+    public async Task<ActionResult<TransactionOverview>> Overview([FromQuery] TransactionPeriodQuery query, CancellationToken cancellationToken) =>
+        Ok(await queries.GetTransactionOverviewAsync(currentUser.RequireId(User), query, cancellationToken));
+
+    [HttpGet("export")]
+    [Produces("text/csv")]
+    public IActionResult Export([FromQuery] TransactionExportQuery query) {
+        var period = TransactionPeriodPolicy.RequirePeriod(query);
+        return new TransactionCsvResult(queries.ExportTransactions(currentUser.RequireId(User), query), period, query.Locale);
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetSingle(UInt64 id, CancellationToken cancellationToken) =>

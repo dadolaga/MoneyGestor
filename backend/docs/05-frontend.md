@@ -35,7 +35,7 @@ Routes are organized under `src/app/[locale]`. Route-group folders such as `(app
 | `/` | Application entry | Redirect to the dashboard |
 | `/dashboard` | Period totals and breakdowns | Live `/api/v1/dashboard` requests |
 | `/dashboard/wallet` | Wallet management | Live v1 wallet/color requests |
-| `/dashboard/transaction` | Transaction management | Live v1 dashboard, date/wallet/kind/category/search filters, server pagination, charts and CSV; creation dialog, editing/deletion deferred |
+| `/dashboard/transaction` | Transaction management | Live v1 overview, filters, server pagination/charts/CSV; category metadata, single-movement creation, editing and confirmed deletion |
 | `/dashboard/transaction/add_mobile` | Old mobile URL | Redirect to the standard transactions page |
 | `/login`, `/register` | Sign-in and registration | Account pages outside the dashboard shell |
 | `/verify-email`, `/resend-confirmation` | Confirmation workflow | Account email links and resend form |
@@ -68,10 +68,14 @@ Italian uses the same URLs with `/it` prepended. These are frontend routes; do n
 ## 5.4 Live data and development previews
 
 The dashboard route imports `ApiDashboardPage`; the transaction route imports `TransactionsDashboard`
-with v1 filters, server-side table pagination and complete-period analytics. The creation dialog saves single movements through the existing v1 API;
-editing and deletion dialogs remain deferred. Recurrence scheduling and receipt uploads have no API
-contract: the dialog provides a schedule preview and in-memory drafts, without creating future records
-or silently dropping recurrence/attachment settings. CSV export includes the full filtered period.
+with v1 filters and server-side pagination. KPI, comparison, daily miniatures and weekly/category
+charts use the server overview; recent movements use a four-row request and CSV streams from the server.
+The shared editor creates and edits single movements. The recurrence switch is disabled and
+labelled "To be implemented"; no recurrence API or scheduler is provided.
+The category dialog persists all metadata and reads back the canonical category. Icons/colors and
+reserved types use server metadata. Edit loads transaction detail and PATCHes through the existing
+API; confirmed deletion removes the movement or transfer pair and refreshes rows, balances and summaries.
+Receipt and draft controls are removed.
 The wallet route imports `WalletsDashboard`, with a shared `WalletEditorDialog` for creation/editing.
 They perform real HTTP requests through `apiClient`; wallet creation, metadata updates and confirmed
 deletion persist through v1 APIs. See the [wallet implementation notes](../../frontend/src/features/wallets/README.md).

@@ -1,64 +1,12 @@
-import {
-    ArrowLeftRight,
-    ArrowRight,
-    Briefcase,
-    Car,
-    Gamepad2,
-    Heart,
-    House,
-    ShoppingCart,
-    Tag,
-    Utensils,
-    Wallet,
-    Zap,
-} from '@/components/ui/icons';
+import { ArrowRight, Wallet } from '@/components/ui/icons';
+import { CategoryIcon } from '@/features/categories/category-display';
 import type { ApiTransaction } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
 
 import { transactionKind } from './transaction-kind';
 
-export const categoryColors = [
-    'var(--expense)',
-    'var(--warning)',
-    'var(--chart-5)',
-    'var(--transfer)',
-    'var(--chart-6)',
-    'var(--income)',
-    'var(--muted-foreground)',
-];
-
 export function CategoryMark({ row, className }: { row: ApiTransaction; className?: string }) {
-    const name = row.type.name.toLowerCase();
-    const Icon =
-        row.destination !== null
-            ? ArrowLeftRight
-            : /lavor|stipend|salary|work/.test(name)
-              ? Briefcase
-              : /spesa|aliment|grocer|shopping/.test(name)
-                ? ShoppingCart
-                : /casa|affitto|home|rent/.test(name)
-                  ? House
-                  : /ristor|restaurant|food/.test(name)
-                    ? Utensils
-                    : /utenz|bollett|utilit/.test(name)
-                      ? Zap
-                      : /trasport|transport|fuel/.test(name)
-                        ? Car
-                        : /intratten|entertain|gaming/.test(name)
-                          ? Gamepad2
-                          : /salute|sport|health/.test(name)
-                            ? Heart
-                            : Tag;
-    return (
-        <Icon
-            aria-hidden="true"
-            className={cn('size-5 shrink-0', className)}
-            style={{
-                color:
-                    row.destination !== null ? 'var(--transfer)' : categoryColors[row.type.id % categoryColors.length],
-            }}
-        />
-    );
+    return <span className={cn('inline-flex size-5 shrink-0 [&>svg]:size-full', className)}><CategoryIcon type={row.type} /></span>;
 }
 
 export function WalletLabel({ row, compact = false }: { row: ApiTransaction; compact?: boolean }) {
@@ -85,7 +33,7 @@ export function WalletLabel({ row, compact = false }: { row: ApiTransaction; com
 export function TransactionAmount({ row, money }: { row: ApiTransaction; money: (value: number) => string }) {
     const kind = transactionKind(row);
     const sign = kind === 'Income' ? '+' : kind === 'Expense' ? '−' : '';
-    // Transfers are returned once, from the source wallet, with a positive API magnitude.
+    // Transfers are returned once with the signed source value; display their magnitude.
     return (
         <strong
             className={cn(

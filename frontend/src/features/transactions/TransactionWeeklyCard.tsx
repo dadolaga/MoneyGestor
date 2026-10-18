@@ -7,23 +7,17 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { ChartContainer } from '@/components/shared/chart-container';
 import { Card } from '@/components/ui/card';
 
-import { transactionTotals } from './transaction-analytics';
 import type { TransactionAnalyticsProps } from './transaction-analytics';
 import { useTransactionFormatting } from './useTransactionFormatting';
 
-export function TransactionWeeklyCard({ rows, from, to, loading, failed }: TransactionAnalyticsProps) {
+export function TransactionWeeklyCard({ overview, loading, failed }: TransactionAnalyticsProps) {
     const t = useTranslations('Movements');
     const format = useFormatter();
     const { money } = useTransactionFormatting();
-    const weeks = [];
-    for (let start = dayjs(from); !start.isAfter(dayjs(to), 'day'); start = start.add(7, 'day')) {
-        const end = start.add(6, 'day').isAfter(dayjs(to), 'day') ? dayjs(to) : start.add(6, 'day');
-        const values = transactionTotals(
-            rows.filter((row) => !dayjs(row.date).isBefore(start, 'day') && !dayjs(row.date).isAfter(end, 'day')),
-        );
-        const dateLabel = (date: dayjs.Dayjs) => format.dateTime(date.toDate(), { day: 'numeric', month: 'short' });
-        weeks.push({ name: `${dateLabel(start)} – ${dateLabel(end)}`, income: values.income, expense: values.expense });
-    }
+    const dateLabel = (date: string) => format.dateTime(dayjs(date).toDate(), { day: 'numeric', month: 'short' });
+    const weeks = (overview?.weekly ?? []).map((week) => ({
+        name: `${dateLabel(week.from)} – ${dateLabel(week.to)}`, income: week.income, expense: week.expense,
+    }));
     const emptyLabel = loading ? t('states.loading') : failed ? t('states.error') : t('charts.empty');
     const canShow = !loading && !failed;
 
@@ -42,7 +36,7 @@ export function TransactionWeeklyCard({ rows, from, to, loading, failed }: Trans
                     </span>
                 </div>
             </div>
-            {canShow && rows.some((row) => row.destination === null) ? (
+            {canShow && weeks.some((week) => week.income > 0 || week.expense > 0) ? (
                 <ChartContainer description={t('charts.weeklyDescription')} className="h-[140px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={weeks} margin={{ top: 4, right: 2, left: -22, bottom: 0 }} barGap={5}>

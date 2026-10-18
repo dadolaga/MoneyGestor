@@ -155,6 +155,7 @@ public class Program {
                 .WithOrigins(security.AllowedOrigins)
                 .AllowCredentials()
                 .AllowAnyHeader()
+                .WithExposedHeaders("Content-Disposition")
                 .AllowAnyMethod();
         }));
 

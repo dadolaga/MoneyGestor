@@ -99,8 +99,10 @@ All endpoints below require a session. Mutations also require CSRF.
 | PUT | `/api/v1/wallets/{id}/favorite` | Set favorite using bare JSON `true` or `false`; 204 |
 | GET | `/api/v1/transaction-types` | 200 available type array |
 | GET | `/api/v1/transaction-types/{id}` | 200 type detail |
-| POST | `/api/v1/transaction-types` | Create private type from `{ "name": "..." }`; 201 ID |
+| POST | `/api/v1/transaction-types` | Create a private category with optional metadata; 201 ID and Location |
 | GET | `/api/v1/transactions` | 200 paginated transaction DTOs |
+| GET | `/api/v1/transactions/overview` | Complete-period aggregates, comparison and chart series |
+| GET | `/api/v1/transactions/export` | Stream the complete filtered period as CSV |
 | GET | `/api/v1/transactions/{id}` | 200 transaction detail |
 | POST | `/api/v1/transactions` | 201 ID and Location |
 | PATCH | `/api/v1/transactions/{id}` | Partial update; 204 |
@@ -247,6 +249,38 @@ The response shape is:
 ```
 
 The array above is abbreviated; a real response contains matching rows. Dashboard responses contain `incoming`, `expense`, `incomingCategories` and `expenseCategories`. Expenses are negative. Breakdown objects contain a type and its net signed value. Transfers are excluded.
+
+### Extended categories, transaction overview and CSV
+
+POST `/api/v1/transaction-types` still accepts a name alone. Optional fields: `parentId` (null),
+`icon` (tag), `color` (grey), `description` (500 characters), `keywords` (1000 characters),
+`useInReports` (true). Text is trimmed; names remain nonblank and at most 100 characters.
+The report preference does not change dashboard totals, balances or exports. Keywords do not
+automatically classify transactions. Icons: shopping, home, transport, food, utilities, work,
+entertainment, health, tag. Colors: red, orange, yellow, green, cyan, blue, purple, grey.
+Parents must be available ordinary categories; reserved Transfer/Adjustment and cyclic chains are
+rejected. Category GETs and nested types include all metadata and `systemKind` (Transfer,
+Adjustment or null), derived from reserved IDs. Category PATCH/DELETE are not provided.
+
+GET `/api/v1/transactions/overview` requires inclusive `from`/`to` and shares wallet/type/kind/search
+filters with the list, including destination wallets and notes. Its response contains `period`,
+`totals`, `previous`, `expenseCategories` (typeId/value), `weekly` and `daily`. Totals contain
+nonnegative income/expense/transfer volume, incomeCount/expenseCount/transferCount and movementCount.
+Transfers count once and never enter income/expense; category expenses are not offset by income.
+Daily includes empty days; weekly contains seven-day blocks anchored to from, with a partial last
+block. Aggregates use one MySQL repeatable-read transaction. Separate list requests may observe a
+different instant. Full months compare with the preceding calendar month; other periods compare
+with the immediately preceding inclusive interval of equal length. Unsupported previous dates
+return 400. Zero comparison bases are exposed as totals without server percentage division.
+The existing `/api/v1/dashboard` keeps its signed-expense contract. Latest rows use the ordinary
+list with pageSize=4 and Date/Descending, preserving all filters.
+
+GET `/api/v1/transactions/export` requires the period, shares those filters, and accepts locale=en|it
+(default en). It streams all matches in date/ID descending order, independently of table pagination.
+UTF-8 CSV includes BOM, semicolons, ISO dates, invariant numeric amounts, quoted/formula-protected
+text and Content-Disposition attachment. Columns: date, description, kind, category, source wallet,
+destination, signed amount. Empty results include headers only. Content-Disposition is exposed by
+CORS; configure proxy timeouts for the expected export volume.
 
 ## 7.7 Errors and correlation
 

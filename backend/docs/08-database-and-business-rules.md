@@ -28,7 +28,7 @@ One external MySQL database stores financial and Identity tables. `MoneyGestorCo
 | `ApplicationIdentityUser` | Single application and Identity user, stored in `AspNetUsers` | Numeric ID, first/last name, username, email, Identity password hash and security state |
 | `WalletDb` | Owned balance container | Opening `Value`, `CurrentValue`, `BalanceVersion`, favorite, color and owner |
 | `ColorDb` | Wallet styling | RGB value and optional owner; no owner means global |
-| `TransactionTypeDb` | Financial classification | Name and optional owner; no owner means global |
+| `TransactionTypeDb` | Financial classification | Optional parent, icon/color, description, keywords, report preference and owner |
 | `TransactionDb` | Signed financial entry | Date, value, descriptions, wallet, type, owner and reciprocal transfer link |
 | Other Identity tables | Roles, claims, provider logins and account tokens | Numeric user/role references managed by Identity |
 
@@ -85,6 +85,7 @@ Creation and mutation of the pair are atomic. List queries hide the positive des
 | Context | Current initial migration |
 | --- | --- |
 | MoneyGestor, including Identity and wallet details | `20261017084510_InitialUnifiedSchema` |
+| Incremental category metadata | `20261018115443_ExtendTransactionTypes` |
 
 The migration baseline was recreated during the refactor for an empty database, as there are no application data to migrate. It creates financial and Identity tables together. Previous migration chains have been replaced; this baseline is not an in-place upgrade of the old two-user schema. A database with any prior schema or migration history is refused. No database was recreated or migrated as part of generating these source files.
 
@@ -100,6 +101,14 @@ dotnet tool run dotnet-ef migrations script --project backend/database/database.
 Generating scripts does not apply them. Database-update commands and startup with `Migrate` do modify the configured target. The initial migrations' Down methods remove tables; recovery should use a verified backup in a separate schema and a compatible application version, rather than an unreviewed downgrade.
 
 ## 8.7 Integrity and recovery
+
+The incremental dashboard migration adds category metadata with compatible defaults (parent null,
+tag, grey, report preference true), without changing existing movements. Parent FKs are restrictive.
+Private parents must be global ordinary categories or belong to the same owner; reserved types
+and cyclic chains are rejected. User APIs do not modify global categories.
+
+The category migration/snapshot were generated only: application requires a verified target and
+backup. The initial baseline remains unchanged.
 
 The initial unified migration includes wallet type, EUR currency, institution, optional IBAN,
 card metadata, credit limit/spending, statement/payment days, notes and shareable preference.

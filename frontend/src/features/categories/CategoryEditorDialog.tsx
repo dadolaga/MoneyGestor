@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
@@ -16,9 +16,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Briefcase, Car, Gamepad2, Heart, House, ShoppingCart, Tag, Utensils, Zap } from '@/components/ui/icons';
+import { Tag } from '@/components/ui/icons';
 import { ApiProblemError, apiClient } from '@/lib/api/client';
 import type { ApiTransactionType } from '@/lib/api/client';
+
+import { categoryIcons, categoryColors, CategoryIcon } from './category-display';
 
 interface CategoryFormValues {
     name: string;
@@ -39,32 +41,10 @@ interface CategoryEditorDialogProps {
     onCreated: (category: ApiTransactionType) => void;
 }
 
-const icons = [
-    { value: 'shopping', component: ShoppingCart },
-    { value: 'home', component: House },
-    { value: 'transport', component: Car },
-    { value: 'food', component: Utensils },
-    { value: 'utilities', component: Zap },
-    { value: 'work', component: Briefcase },
-    { value: 'entertainment', component: Gamepad2 },
-    { value: 'health', component: Heart },
-    { value: 'tag', component: Tag },
-];
-
-const colors = [
-    { name: 'red', value: 'var(--primary)' },
-    { name: 'orange', value: '#f97316' },
-    { name: 'yellow', value: 'var(--warning)' },
-    { name: 'green', value: 'var(--income)' },
-    { name: 'cyan', value: 'var(--chart-6)' },
-    { name: 'blue', value: 'var(--transfer)' },
-    { name: 'purple', value: 'var(--chart-5)' },
-    { name: 'grey', value: 'var(--muted-foreground)' },
-];
-
 export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, onCreated }: CategoryEditorDialogProps) {
     const t = useTranslations('Movements.categoryEditor');
     const id = useId();
+    const [createdId, setCreatedId] = useState<number>();
     const {
         control,
         register,
@@ -84,24 +64,37 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
             useInReports: true,
         },
     });
-    const categories = types.filter((type) => type.name.toLowerCase() !== 'transfer');
+    const categories = types.filter((type) => type.systemKind === null);
 
     async function submitHandler(values: CategoryFormValues) {
         clearErrors('root');
         const name = values.name.trim();
-        let categoryId: number;
+        let category: ApiTransactionType;
         try {
-            // The current API stores names only; the other controls are explicitly marked as previews.
-            const result = await apiClient.createTransactionType(name);
-            categoryId = result.id;
+            let id = createdId;
+            if (id === undefined) {
+                const result = await apiClient.createTransactionType({
+                    name, parentId: values.parentId ? Number(values.parentId) : null,
+                    icon: values.icon, color: values.color, description: values.description.trim() || null,
+                    keywords: values.keywords.trim() || null, useInReports: values.useInReports,
+                });
+                id = result.id;
+                setCreatedId(id);
+            }
+            category = await apiClient.transactionType(id);
         } catch (cause: unknown) {
             if (cause instanceof ApiProblemError) {
                 if (cause.status === 409) {
                     setError('name', { message: t('duplicateName') }, { shouldFocus: true });
                     return;
                 }
-                if (Object.keys(cause.fieldErrors).some((field) => field.split('.').at(-1)?.toLowerCase() === 'name')) {
-                    setError('name', { message: t('invalidName') }, { shouldFocus: true });
+                const fields: Record<string, keyof CategoryFormValues> = {
+                    name: 'name', parentid: 'parentId', icon: 'icon', color: 'color',
+                    description: 'description', keywords: 'keywords', useinreports: 'useInReports',
+                };
+                for (const field of Object.keys(cause.fieldErrors)) {
+                    const name = fields[field.split('.').at(-1)?.toLowerCase() ?? ''];
+                    if (name) setError(name, { message: t('invalidField') });
                 }
             }
             setError('root.server', {
@@ -109,7 +102,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
             });
             return;
         }
-        onCreated({ id: categoryId, name, isGlobal: false });
+        onCreated(category);
     }
 
     return (
@@ -139,7 +132,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                     onSubmit={handleSubmit(submitHandler)}
                 >
                     <DialogBody className="px-5 py-5 sm:px-7">
-                        <fieldset disabled={isSubmitting || loading} className="m-0 grid min-w-0 gap-4 border-0 p-0">
+                        <fieldset disabled={isSubmitting || loading || createdId !== undefined} className="m-0 grid min-w-0 gap-4 border-0 p-0">
                             <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2">
                                 <InputField
                                     control={control}
@@ -171,7 +164,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                         ...categories.map((category) => ({
                                             value: String(category.id),
                                             label: category.name,
-                                            icon: <Tag />,
+                                            icon: <CategoryIcon type={category} />,
                                         })),
                                     ]}
                                 />
@@ -181,7 +174,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                     id={`${id}-icon`}
                                     kind="select"
                                     label={t('icon')}
-                                    options={icons.map(({ value, component: Icon }) => ({
+                                    options={Object.entries(categoryIcons).map(([value, Icon]) => ({
                                         value,
                                         label: t(`icons.${value}`),
                                         icon: <Icon />,
@@ -190,18 +183,18 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                 <fieldset className="m-0 min-w-0 border-0 p-0">
                                     <legend className="mb-2 p-0 text-sm font-medium">{t('color')}</legend>
                                     <div className="flex min-h-10 flex-wrap items-center gap-3 px-1">
-                                        {colors.map((option) => (
-                                            <label key={option.name} className="relative inline-flex cursor-pointer">
+                                        {Object.entries(categoryColors).map(([name, value]) => (
+                                            <label key={name} className="relative inline-flex cursor-pointer">
                                                 <input
                                                     {...register('color')}
                                                     type="radio"
-                                                    value={option.name}
-                                                    aria-label={t(`colors.${option.name}`)}
+                                                    value={name}
+                                                    aria-label={t(`colors.${name}`)}
                                                     className="peer sr-only"
                                                 />
                                                 <span
                                                     className="size-7 rounded-full border-2 border-solid border-transparent ring-offset-4 ring-offset-popover peer-checked:ring-2 peer-checked:ring-foreground peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-ring"
-                                                    style={{ backgroundColor: option.value }}
+                                                    style={{ backgroundColor: value }}
                                                 />
                                             </label>
                                         ))}
@@ -214,6 +207,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                 id={`${id}-description`}
                                 label={t('description')}
                                 placeholder={t('descriptionPlaceholder')}
+                                maxLength={500}
                             />
                             <InputField
                                 control={control}
@@ -221,6 +215,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                 id={`${id}-keywords`}
                                 label={t('keywords')}
                                 placeholder={t('keywordsPlaceholder')}
+                                maxLength={1000}
                             />
                             <SwitchField
                                 control={control}
@@ -229,7 +224,6 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                 label={t('useInReports')}
                                 description={t('reportsHint')}
                             />
-                            <p className="m-0 text-xs leading-5 text-muted-foreground">{t('previewNotice')}</p>
                             {!!errors.root?.server?.message && (
                                 <p role="alert" className="m-0 text-sm text-destructive">
                                     {errors.root.server.message}
@@ -265,7 +259,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                             {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={isSubmitting || loading || !!error}>
-                            {t(isSubmitting ? 'saving' : 'create')}
+                            {t(isSubmitting ? 'saving' : createdId !== undefined ? 'retry' : 'create')}
                         </Button>
                     </DialogFooter>
                 </form>

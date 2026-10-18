@@ -4,10 +4,12 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { ConfirmDeleteDialog } from '@/components/shared/confirm-delete-dialog';
 import { Button } from '@/components/ui/button';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
+import type { ApiTransaction } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 
-import type { TransactionDraft } from './transaction-editor-model';
 import { TransactionCategoriesCard } from './TransactionCategoriesCard';
 import { TransactionEditorDialog } from './TransactionEditorDialog';
 import { TransactionsFilters } from './TransactionsFilters';
@@ -21,34 +23,56 @@ import { useTransactionsDashboard } from './useTransactionsDashboard';
 export function TransactionsDashboard() {
     const t = useTranslations('Movements');
     const dashboard = useTransactionsDashboard();
-    const { filters, period, previous, wallets, types, summaryLoading } = dashboard;
+    const { filters, overview, recent, wallets, types, summaryLoading } = dashboard;
     const [editorOpen, setEditorOpen] = useState(false);
-    const [draft, setDraft] = useState<TransactionDraft>();
+    const [editing, setEditing] = useState<ApiTransaction>();
+    const [deleting, setDeleting] = useState<ApiTransaction>();
+    const [deletingPending, setDeletingPending] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
     const error = dashboard.error || dashboard.metadataError || dashboard.summaryError;
     const analytics = {
-        rows: period,
+        overview,
         from: filters.from!,
         to: filters.to!,
         loading: summaryLoading,
         failed: dashboard.summaryError.length > 0,
     };
 
-    function createdHandler() {
+    function savedHandler() {
         setEditorOpen(false);
-        setDraft(undefined);
+        setEditing(undefined);
         dashboard.retryHandler();
-        notify.success(t('editor.created'));
+        notify.success(t(editing ? 'editor.updated' : 'editor.created'));
     }
 
-    function saveDraftHandler(nextDraft: TransactionDraft) {
-        setDraft(nextDraft);
-        setEditorOpen(false);
-        notify.success(t('editor.draftSaved'));
+    async function editHandler(row: ApiTransaction) {
+        try {
+            const transaction = await apiClient.transaction(row.id);
+            setEditing(transaction);
+            setEditorOpen(true);
+        } catch (cause) {
+            notify.error(t(cause instanceof ApiProblemError && cause.status === 401 ? 'editor.signInAgain' : 'editor.loadFailed'));
+        }
     }
+
+    async function deleteHandler(row: ApiTransaction) {
+        setDeletingPending(true);
+        setDeleteError('');
+        try {
+            await apiClient.deleteTransaction(row.id);
+            setDeleting(undefined);
+            dashboard.retryHandler();
+            notify.success(t('editor.deleted'));
+        } catch (cause) {
+            setDeleteError(t(cause instanceof ApiProblemError && cause.status === 401 ? 'editor.signInAgain' : 'editor.deleteFailed'));
+        } finally { setDeletingPending(false); }
+    }
+
+    const actions = { onEdit: editHandler, onDelete: (row: ApiTransaction) => { setDeleteError(''); setDeleting(row); } };
 
     return (
         <div className="mx-auto grid w-full min-w-0 gap-3.5">
-            <TransactionsHeader {...analytics} hasDraft={draft !== undefined} onAdd={() => setEditorOpen(true)} />
+            <TransactionsHeader filters={filters} onAdd={() => { setEditing(undefined); setEditorOpen(true); }} />
 
             {!!editorOpen && (
                 <TransactionEditorDialog
@@ -56,18 +80,17 @@ export function TransactionsDashboard() {
                     types={types}
                     walletId={filters.walletId}
                     typeId={filters.typeId}
-                    draft={draft}
+                    transaction={editing}
                     metadataLoading={dashboard.metadataLoading}
                     metadataError={dashboard.metadataError}
                     onRetry={dashboard.retryHandler}
                     onClose={() => setEditorOpen(false)}
-                    onCreated={createdHandler}
-                    onSaveDraft={saveDraftHandler}
+                    onSaved={savedHandler}
                     onCategoryCreated={dashboard.categoryCreatedHandler}
                 />
             )}
 
-            <TransactionSummary {...analytics} previous={previous} />
+            <TransactionSummary {...analytics} />
             <TransactionsFilters
                 filters={filters}
                 search={dashboard.search}
@@ -92,6 +115,7 @@ export function TransactionsDashboard() {
 
             <div className="grid min-w-0 items-start gap-3 min-[1380px]:grid-cols-[minmax(0,1.9fr)_minmax(350px,1fr)]">
                 <TransactionsList
+                    {...actions}
                     rows={dashboard.rows}
                     loading={dashboard.loading}
                     error={dashboard.error}
@@ -107,11 +131,19 @@ export function TransactionsDashboard() {
                     className="grid min-w-0 gap-2.5 sm:grid-cols-2 min-[1380px]:grid-cols-1"
                     aria-label={t('charts.overview')}
                 >
-                    <TransactionCategoriesCard {...analytics} />
+                    <TransactionCategoriesCard {...analytics} types={types} />
                     <TransactionWeeklyCard {...analytics} />
-                    <TransactionsRecent {...analytics} />
+                    <TransactionsRecent rows={recent} loading={summaryLoading} failed={analytics.failed} {...actions} />
                 </aside>
             </div>
+            <ConfirmDeleteDialog
+                item={deleting} title={t('dialog.deleteTitle')}
+                description={(row) => t('dialog.deleteDescription', { name: row.description ?? t('list.untitled') })}
+                pending={deletingPending} error={deleteError}
+                cancelLabel={t('actions.cancel')} confirmLabel={t('actions.delete')}
+                onOpenChange={(open) => { if (!open && !deletingPending) setDeleting(undefined); }}
+                onConfirm={deleteHandler}
+            />
         </div>
     );
 }

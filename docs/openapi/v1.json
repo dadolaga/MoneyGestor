@@ -111,14 +111,49 @@
       "CreateTransactionTypeRequest": {
         "additionalProperties": false,
         "properties": {
+          "color": {
+            "minLength": 1,
+            "pattern": "^(red|orange|yellow|green|cyan|blue|purple|grey)$",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 500,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
+          "icon": {
+            "minLength": 1,
+            "pattern": "^(shopping|home|transport|food|utilities|work|entertainment|health|tag)$",
+            "type": "string"
+          },
+          "keywords": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true,
+            "type": "string"
+          },
           "name": {
             "maxLength": 100,
             "minLength": 1,
             "type": "string"
+          },
+          "parentId": {
+            "format": "int64",
+            "maximum": 1.8446744073709552E+19,
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
+          "useInReports": {
+            "type": "boolean"
           }
         },
         "required": [
-          "name"
+          "color",
+          "icon",
+          "name",
+          "useInReports"
         ],
         "type": "object"
       },
@@ -294,6 +329,69 @@
         "format": "int32",
         "type": "integer"
       },
+      "TransactionDaily": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "format": "date",
+            "type": "string"
+          },
+          "expense": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "income": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "movementCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "transfers": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "expense",
+          "income",
+          "movementCount",
+          "transfers"
+        ],
+        "type": "object"
+      },
+      "TransactionExpenseCategory": {
+        "additionalProperties": false,
+        "properties": {
+          "typeId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "value": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "typeId",
+          "value"
+        ],
+        "type": "object"
+      },
       "TransactionOrderBy": {
         "enum": [
           0,
@@ -304,6 +402,81 @@
         ],
         "format": "int32",
         "type": "integer"
+      },
+      "TransactionOverview": {
+        "additionalProperties": false,
+        "properties": {
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/TransactionDaily"
+            },
+            "type": "array"
+          },
+          "expenseCategories": {
+            "items": {
+              "$ref": "#/components/schemas/TransactionExpenseCategory"
+            },
+            "type": "array"
+          },
+          "period": {
+            "$ref": "#/components/schemas/TransactionPeriod"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/TransactionPrevious"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TransactionTotals"
+          },
+          "weekly": {
+            "items": {
+              "$ref": "#/components/schemas/TransactionWeekly"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "daily",
+          "expenseCategories",
+          "period",
+          "previous",
+          "totals",
+          "weekly"
+        ],
+        "type": "object"
+      },
+      "TransactionPeriod": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "format": "date",
+            "type": "string"
+          },
+          "to": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "TransactionPrevious": {
+        "additionalProperties": false,
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/TransactionPeriod"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TransactionTotals"
+          }
+        },
+        "required": [
+          "period",
+          "totals"
+        ],
+        "type": "object"
       },
       "TransactionResponse": {
         "additionalProperties": false,
@@ -380,9 +553,71 @@
         ],
         "type": "object"
       },
+      "TransactionTotals": {
+        "additionalProperties": false,
+        "properties": {
+          "expense": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "expenseCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "income": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "incomeCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "movementCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "transferCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "transfers": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "expense",
+          "expenseCount",
+          "income",
+          "incomeCount",
+          "movementCount",
+          "transferCount",
+          "transfers"
+        ],
+        "type": "object"
+      },
       "TransactionTypeResponse": {
         "additionalProperties": false,
         "properties": {
+          "color": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
           "id": {
             "format": "int64",
             "type": "integer"
@@ -390,14 +625,33 @@
           "isGlobal": {
             "type": "boolean"
           },
+          "keywords": {
+            "nullable": true,
+            "type": "string"
+          },
           "name": {
             "type": "string"
+          },
+          "parentId": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "systemKind": {
+            "nullable": true,
+            "type": "string"
+          },
+          "useInReports": {
+            "type": "boolean"
           }
         },
         "required": [
+          "color",
+          "icon",
           "id",
           "isGlobal",
-          "name"
+          "name",
+          "useInReports"
         ],
         "type": "object"
       },
@@ -419,6 +673,40 @@
           "color",
           "id",
           "name"
+        ],
+        "type": "object"
+      },
+      "TransactionWeekly": {
+        "additionalProperties": false,
+        "properties": {
+          "expense": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "from": {
+            "format": "date",
+            "type": "string"
+          },
+          "income": {
+            "format": "double",
+            "maximum": 99999999999999999.99,
+            "minimum": -99999999999999999.99,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "to": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expense",
+          "from",
+          "income",
+          "to"
         ],
         "type": "object"
       },
@@ -7147,6 +7435,20 @@
           },
           {
             "in": "query",
+            "name": "SortBy",
+            "schema": {
+              "$ref": "#/components/schemas/TransactionOrderBy"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Direction",
+            "schema": {
+              "$ref": "#/components/schemas/SortDirection"
+            }
+          },
+          {
+            "in": "query",
             "name": "From",
             "schema": {
               "format": "date",
@@ -7195,20 +7497,6 @@
               "maxLength": 100,
               "minLength": 0,
               "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "SortBy",
-            "schema": {
-              "$ref": "#/components/schemas/TransactionOrderBy"
-            }
-          },
-          {
-            "in": "query",
-            "name": "Direction",
-            "schema": {
-              "$ref": "#/components/schemas/SortDirection"
             }
           }
         ],
@@ -8063,6 +8351,969 @@
         "security": [
           {
             "AntiforgeryHeader": [],
+            "MoneyGestorCookie": []
+          }
+        ],
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/export": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "Locale",
+            "schema": {
+              "pattern": "^(en|it)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "From",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "To",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "WalletId",
+            "schema": {
+              "format": "int64",
+              "maximum": 1.8446744073709552E+19,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "TypeId",
+            "schema": {
+              "format": "int64",
+              "maximum": 1.8446744073709552E+19,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Kind",
+            "schema": {
+              "$ref": "#/components/schemas/MovementKind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Search",
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation or antiforgery failed"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required or credentials invalid"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Operation forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Domain rule violated"
+          },
+          "423": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account locked"
+          },
+          "429": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "500": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected error"
+          }
+        },
+        "security": [
+          {
+            "MoneyGestorCookie": []
+          }
+        ],
+        "tags": [
+          "Transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/overview": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "From",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "To",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "WalletId",
+            "schema": {
+              "format": "int64",
+              "maximum": 1.8446744073709552E+19,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "TypeId",
+            "schema": {
+              "format": "int64",
+              "maximum": 1.8446744073709552E+19,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Kind",
+            "schema": {
+              "$ref": "#/components/schemas/MovementKind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "Search",
+            "schema": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOverview"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOverview"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionOverview"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation or antiforgery failed"
+          },
+          "401": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Authentication required or credentials invalid"
+          },
+          "403": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Operation forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Resource conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Domain rule violated"
+          },
+          "423": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Account locked"
+          },
+          "429": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "500": {
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "traceId": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "format": "uri",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "status",
+                    "code",
+                    "traceId"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected error"
+          }
+        },
+        "security": [
+          {
             "MoneyGestorCookie": []
           }
         ],

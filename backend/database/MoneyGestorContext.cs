@@ -19,6 +19,14 @@ namespace database {
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
+            var types = modelBuilder.Entity<TransactionTypeDb>();
+            types.Property(type => type.Icon).HasMaxLength(32).HasDefaultValue("tag");
+            types.Property(type => type.Color).HasMaxLength(16).HasDefaultValue("grey");
+            types.Property(type => type.Description).HasMaxLength(500);
+            types.Property(type => type.Keywords).HasMaxLength(1000);
+            types.Property(type => type.UseInReports).HasDefaultValue(true);
+            types.HasOne(type => type.Parent).WithMany().HasForeignKey(type => type.ParentId).OnDelete(DeleteBehavior.Restrict);
+
             var users = modelBuilder.Entity<ApplicationIdentityUser>();
             users.Property(user => user.Id).ValueGeneratedOnAdd();
             users.Property(user => user.Firstname).HasMaxLength(100).IsRequired();

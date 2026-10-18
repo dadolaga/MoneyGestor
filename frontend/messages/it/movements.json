@@ -4,7 +4,6 @@
         "categoryEditor": {
             "title": "Nuova categoria",
             "subtitle": "Crea una categoria personalizzata per organizzare meglio i tuoi movimenti.",
-            "previewNotice": "Per ora viene salvato solo il nome della categoria. Gli altri campi sono in anteprima e non vengono salvati né applicati a movimenti e report.",
             "name": "Nome categoria",
             "namePlaceholder": "Es. Spesa alimentare",
             "parent": "Categoria padre",
@@ -16,7 +15,7 @@
             "keywords": "Parole chiave (opzionali)",
             "keywordsPlaceholder": "Es. supermercato, spesa, conad, esselunga",
             "useInReports": "Usa nei report",
-            "reportsHint": "Mostra questa categoria nei grafici e nelle statistiche",
+            "reportsHint": "Preferenza per i report; non modifica saldi e riepiloghi di questa pagina.",
             "cancel": "Annulla",
             "create": "Crea categoria",
             "saving": "Salvataggio...",
@@ -48,7 +47,8 @@
                 "blue": "Blu",
                 "purple": "Viola",
                 "grey": "Grigio"
-            }
+            },
+            "invalidField": "Controlla questo campo e riprova."
         },
         "description": "Visualizza, filtra e gestisci tutte le entrate, uscite e trasferimenti in un unico posto.",
         "actions": {
@@ -63,7 +63,8 @@
             "next": "Pagina successiva",
             "export": "Esporta",
             "retry": "Riprova",
-            "deferred": "I dialog per modificare ed eliminare i movimenti saranno disponibili in un secondo momento."
+            "deferred": "I dialog per modificare ed eliminare i movimenti saranno disponibili in un secondo momento.",
+            "exportFailed": "Esportazione non riuscita. Riprova."
         },
         "summary": {
             "income": "Entrate questo mese",
@@ -145,7 +146,7 @@
             "invalidAmount": "Inserisci un importo maggiore di zero.",
             "differentWallet": "Scegli un portafoglio di destinazione diverso.",
             "deleteTitle": "Eliminare il movimento?",
-            "deleteDescription": "{name} verrà rimosso da questa anteprima locale."
+            "deleteDescription": "Il movimento «{name}» verrà eliminato e i saldi saranno aggiornati. Per un trasferimento vengono eliminate entrambe le registrazioni."
         },
         "states": {
             "idle": "I movimenti sono pronti per essere caricati.",
@@ -184,17 +185,10 @@
             "selectDestination": "Seleziona la destinazione",
             "selectCategory": "Seleziona una categoria",
             "recurring": "Movimento ricorrente",
-            "recurringHint": "Imposta quando ripetere questo movimento",
-            "attachReceipt": "Allega ricevuta",
-            "removeReceipt": "Rimuovi ricevuta",
-            "invalidReceipt": "Scegli un PDF o una foto JPG, PNG o WebP fino a 10 MB.",
-            "saveDraft": "Salva bozza",
-            "resumeDraft": "Riprendi bozza",
-            "draftSaved": "Bozza salvata per questa sessione. Verrà persa uscendo dalla pagina.",
+            "recurringHint": "To be implemented",
             "create": "Crea movimento",
             "saving": "Salvataggio...",
             "created": "Movimento creato.",
-            "previewOnly": "Ricorrenze e ricevute sono configurabili in anteprima. Per ora puoi conservarle nella bozza di questa pagina; l'attivazione delle ricorrenze e il caricamento delle ricevute saranno disponibili in seguito.",
             "noWallets": "Per creare un movimento serve un portafoglio con saldo proprio.",
             "loadingOptions": "Caricamento portafogli e categorie...",
             "retry": "Riprova",
@@ -207,59 +201,15 @@
             "invalidFields": "Controlla i campi indicati e riprova.",
             "resourceMissing": "Il portafoglio o la categoria non sono più disponibili. Ricarica le opzioni e riprova.",
             "saveFailed": "Impossibile salvare il movimento. I dati inseriti sono stati conservati.",
-            "recurrence": {
-                "title": "Programmazione ricorrenza",
-                "frequency": "Frequenza",
-                "every": "Ogni",
-                "frequencies": {
-                    "daily": "Giornaliera",
-                    "weekly": "Settimanale",
-                    "monthly": "Mensile",
-                    "yearly": "Annuale"
-                },
-                "units": {
-                    "daily": "giorni",
-                    "weekly": "settimane",
-                    "monthly": "mesi",
-                    "yearly": "anni"
-                },
-                "chooseDate": "Seleziona la data del movimento per impostare la prima occorrenza.",
-                "firstDate": "Prima occorrenza: {date}. Coincide con la data del movimento.",
-                "weekdays": "In quali giorni",
-                "weekdayHint": "Il giorno della prima occorrenza rimane selezionato. Puoi aggiungere altri giorni della settimana.",
-                "dayOfMonth": "Giorno del mese",
-                "timing": "Quando nel mese",
-                "onDay": "Il giorno {day}",
-                "lastDay": "L'ultimo giorno del mese",
-                "onWeekday": "{ordinal} {weekday} del mese",
-                "lastWeekday": "Ultimo {weekday} del mese",
-                "ordinals": {
-                    "1": "1°",
-                    "2": "2°",
-                    "3": "3°",
-                    "4": "4°",
-                    "5": "5°"
-                },
-                "monthHint": "Il giorno modifica anche la data in alto. Le opzioni di fine mese richiedono una prima data coerente. Nei mesi più corti si usa l'ultimo giorno disponibile; se manca la quinta occorrenza settimanale si usa la quarta.",
-                "month": "Mese",
-                "day": "Giorno",
-                "yearHint": "Giorno e mese aggiornano anche la data del movimento. Il 29 febbraio diventa 28 febbraio negli anni non bisestili.",
-                "ends": "Termina",
-                "endOptions": {
-                    "never": "Mai",
-                    "date": "In una data",
-                    "count": "Dopo un numero di occorrenze"
-                },
-                "endDate": "Ultima data (inclusa)",
-                "count": "Numero di occorrenze",
-                "countHint": "Include il primo movimento.",
-                "invalidInterval": "Inserisci un numero intero da 1 a 99.",
-                "invalidEndDate": "La fine non può precedere la data del movimento.",
-                "invalidCount": "Inserisci un numero intero da 2 a 999.",
-                "preview": "Anteprima delle prossime occorrenze",
-                "previewOnly": "Questa anteprima non crea movimenti futuri."
-            },
-            "noCategories": "Non sono disponibili categorie. Ricarica le opzioni e riprova."
+            "noCategories": "Non sono disponibili categorie. Ricarica le opzioni e riprova.",
+            "save": "Salva movimento",
+            "updated": "Movimento aggiornato.",
+            "deleted": "Movimento eliminato.",
+            "loadFailed": "Impossibile caricare il movimento. Riprova.",
+            "deleteFailed": "Impossibile eliminare il movimento. Riprova.",
+            "conflict": "I dati sono cambiati. Controlla i dati e riprova.",
+            "domainError": "Operazione non valida. Controlla importo, categoria e portafogli.",
+            "csrfFailed": "La verifica di sicurezza è scaduta. Riprova per aggiornarla."
         }
     }
 }

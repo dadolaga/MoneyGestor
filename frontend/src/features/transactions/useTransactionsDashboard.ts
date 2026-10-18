@@ -6,24 +6,7 @@ import dayjs from 'dayjs';
 import { useTranslations } from 'next-intl';
 
 import { ApiProblemError, apiClient } from '@/lib/api/client';
-import type { ApiTransaction, ApiTransactionType, ApiWallet, TransactionQuery } from '@/lib/api/client';
-
-async function loadPeriod(query: TransactionQuery, signal: AbortSignal) {
-    const first = await apiClient.transactions(
-        { ...query, page: 1, pageSize: 100, sortBy: 'Date', direction: 'Descending' },
-        signal,
-    );
-    const rows = [...first.items];
-    // The API caps each page at 100. Totals and charts must include every matching page.
-    for (let page = 2; page <= Math.ceil(first.totalCount / 100); page++) {
-        const next = await apiClient.transactions(
-            { ...query, page, pageSize: 100, sortBy: 'Date', direction: 'Descending' },
-            signal,
-        );
-        rows.push(...next.items);
-    }
-    return rows;
-}
+import type { ApiTransaction, ApiTransactionType, ApiWallet, TransactionOverview, TransactionQuery } from '@/lib/api/client';
 
 export function useTransactionsDashboard() {
     const t = useTranslations('ApiFinance');
@@ -39,8 +22,8 @@ export function useTransactionsDashboard() {
         direction: 'Descending',
     });
     const [rows, setRows] = useState<ApiTransaction[]>([]);
-    const [period, setPeriod] = useState<ApiTransaction[]>([]);
-    const [previous, setPrevious] = useState<ApiTransaction[]>([]);
+    const [overview, setOverview] = useState<TransactionOverview>();
+    const [recent, setRecent] = useState<ApiTransaction[]>([]);
     const [wallets, setWallets] = useState<ApiWallet[]>([]);
     const [types, setTypes] = useState<ApiTransactionType[]>([]);
     const [total, setTotal] = useState(0);
@@ -125,24 +108,14 @@ export function useTransactionsDashboard() {
         void (async () => {
             setSummaryLoading(true);
             setSummaryError('');
-            const start = dayjs(filters.from);
-            const end = dayjs(filters.to);
-            const isWholeMonth = start.date() === 1 && end.isSame(start.endOf('month'), 'day');
-            const previousEnd = start.subtract(1, 'day');
-            const previousStart = isWholeMonth
-                ? previousEnd.startOf('month')
-                : start.subtract(end.diff(start, 'day') + 1, 'day');
             try {
-                const [currentRows, previousRows] = await Promise.all([
-                    loadPeriod(filters, controller.signal),
-                    loadPeriod(
-                        { ...filters, from: previousStart.format('YYYY-MM-DD'), to: previousEnd.format('YYYY-MM-DD') },
-                        controller.signal,
-                    ),
+                const [nextOverview, nextRecent] = await Promise.all([
+                    apiClient.transactionOverview(filters, controller.signal),
+                    apiClient.transactions({ ...filters, page: 1, pageSize: 4, sortBy: 'Date', direction: 'Descending' }, controller.signal),
                 ]);
                 if (controller.signal.aborted) return;
-                setPeriod(currentRows);
-                setPrevious(previousRows);
+                setOverview(nextOverview);
+                setRecent(nextRecent.items);
             } catch (cause) {
                 if (!controller.signal.aborted)
                     setSummaryError(
@@ -182,8 +155,8 @@ export function useTransactionsDashboard() {
         filterHandler,
         resetHandler,
         rows,
-        period,
-        previous,
+        overview,
+        recent,
         wallets,
         types,
         categoryCreatedHandler,

@@ -6,10 +6,11 @@ import { Card } from '@/components/ui/card';
 
 import type { TransactionPeriodProps } from './transaction-analytics';
 import { TransactionActions } from './TransactionActions';
+import type { TransactionActionHandlers } from './TransactionActions';
 import { CategoryMark, TransactionAmount, WalletLabel } from './TransactionDisplay';
 import { useTransactionFormatting } from './useTransactionFormatting';
 
-export function TransactionsRecent({ rows, loading, failed }: TransactionPeriodProps) {
+export function TransactionsRecent({ rows, loading, failed, onEdit, onDelete }: TransactionPeriodProps & TransactionActionHandlers) {
     const t = useTranslations('Movements');
     const { money, date } = useTransactionFormatting();
     const recentStatus = loading ? t('states.loading') : failed ? t('states.error') : t('states.empty');
@@ -38,7 +39,7 @@ export function TransactionsRecent({ rows, loading, failed }: TransactionPeriodP
                         <span className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline">
                             {date(row.date)}
                         </span>
-                        <TransactionActions row={row} />
+                        <TransactionActions row={row} onEdit={onEdit} onDelete={onDelete} />
                     </div>
                 ))}
             {!!(loading || failed || rows.length === 0) && (

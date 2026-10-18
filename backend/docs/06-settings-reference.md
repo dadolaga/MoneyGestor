@@ -2,6 +2,8 @@
 
 # 06 · Settings reference
 
+CSV downloads expose Content-Disposition through CORS. Configure proxy streaming timeouts for expected export volumes.
+
 > Configure database access, logging, security, email and observability.
 
 <details>

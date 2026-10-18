@@ -1,53 +1,37 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Download, Plus } from '@/components/ui/icons';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
+import type { TransactionQuery } from '@/lib/api/client';
+import { notify } from '@/lib/notifications';
 
-import type { TransactionAnalyticsProps } from './transaction-analytics';
-import { transactionKind } from './transaction-kind';
-
-interface TransactionsHeaderProps extends TransactionAnalyticsProps {
-    hasDraft: boolean;
+interface TransactionsHeaderProps {
+    filters: TransactionQuery;
     onAdd: () => void;
 }
 
-export function TransactionsHeader({ rows, from, to, loading, failed, hasDraft, onAdd }: TransactionsHeaderProps) {
+export function TransactionsHeader({ filters, onAdd }: TransactionsHeaderProps) {
     const t = useTranslations('Movements');
-    const addLabel = hasDraft ? t('editor.resumeDraft') : t('actions.add');
-
-    function exportHandler() {
-        const escape = (value: string) =>
-            `"${(/^[=+\-@\t\r]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`;
-        const content = [
-            [
-                t('list.date'),
-                t('list.description'),
-                t('list.kind'),
-                t('list.category'),
-                t('list.wallet'),
-                t('list.destination'),
-                t('list.amount'),
-            ],
-            ...rows.map((row) => [
-                row.date,
-                row.description ?? '',
-                t(`filters.${transactionKind(row).toLowerCase()}`),
-                row.type.name,
-                row.wallet.name,
-                row.destination?.name ?? '',
-                String(row.value),
-            ]),
-        ]
-            .map((line) => line.map(escape).join(';'))
-            .join('\r\n');
-        const url = URL.createObjectURL(new Blob(['\uFEFF', content], { type: 'text/csv;charset=utf-8;' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `flowiy-${from}-${to}.csv`;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 0);
+    const locale = useLocale();
+    const [exporting, setExporting] = useState(false);
+    async function exportHandler() {
+        setExporting(true);
+        try {
+            const { blob, filename } = await apiClient.exportTransactions({ ...filters, locale });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        } catch (cause) {
+            notify.error(t(cause instanceof ApiProblemError && cause.status === 401 ? 'editor.signInAgain' : 'actions.exportFailed'));
+        } finally { setExporting(false); }
     }
 
     return (
@@ -59,13 +43,13 @@ export function TransactionsHeader({ rows, from, to, loading, failed, hasDraft, 
             <div className="flex flex-wrap items-center gap-3">
                 <Button type="button" className="h-11 px-5" onClick={onAdd}>
                     <Plus aria-hidden="true" className="size-5" />
-                    {addLabel}
+                    {t('actions.add')}
                 </Button>
                 <Button
                     type="button"
                     variant="outline"
                     className="h-11 border border-solid border-input px-5"
-                    disabled={loading || failed || rows.length === 0}
+                    disabled={exporting}
                     onClick={exportHandler}
                 >
                     <Download aria-hidden="true" className="size-5" />

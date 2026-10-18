@@ -2,24 +2,27 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Ellipsis } from '@/components/ui/icons';
 import type { ApiTransaction } from '@/lib/api/client';
-import { notify } from '@/lib/notifications';
 
-export function TransactionActions({ row }: { row: ApiTransaction }) {
+export interface TransactionActionHandlers {
+    onEdit: (row: ApiTransaction) => void;
+    onDelete: (row: ApiTransaction) => void;
+}
+
+export function TransactionActions({ row, onEdit, onDelete }: TransactionActionHandlers & { row: ApiTransaction }) {
     const t = useTranslations('Movements');
     return (
-        <Button
-            type="button"
-            size="icon"
-            variant="transparent"
-            className="size-7"
-            aria-label={t('actions.more', { name: row.description ?? t('list.untitled') })}
-            title={t('actions.deferred')}
-            onClick={() => notify.info(t('actions.deferred'))}
-        >
-            <Ellipsis aria-hidden="true" className="size-5" />
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger className="inline-flex size-7 items-center justify-center rounded-md border-0 bg-transparent text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={t('actions.more', { name: row.description ?? t('list.untitled') })}>
+                <Ellipsis aria-hidden="true" className="size-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => onEdit(row)}>{t('actions.edit')}</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onDelete(row)} className="text-destructive">{t('actions.delete')}</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

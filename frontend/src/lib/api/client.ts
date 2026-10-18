@@ -50,6 +50,23 @@ export interface ApiTransactionType {
     id: number;
     name: string;
     isGlobal: boolean;
+    parentId: number | null;
+    icon: string;
+    color: string;
+    description: string | null;
+    keywords: string | null;
+    useInReports: boolean;
+    systemKind: 'Transfer' | 'Adjustment' | null;
+}
+
+export interface TransactionTypeCreate {
+    name: string;
+    parentId?: number | null;
+    icon?: string;
+    color?: string;
+    description?: string | null;
+    keywords?: string | null;
+    useInReports?: boolean;
 }
 
 export interface ApiWalletReference {
@@ -67,6 +84,25 @@ export interface ApiTransaction {
     type: ApiTransactionType;
     wallet: ApiWalletReference;
     destination: ApiWalletReference | null;
+}
+
+export interface TransactionTotals {
+    income: number;
+    expense: number;
+    transfers: number;
+    incomeCount: number;
+    expenseCount: number;
+    transferCount: number;
+    movementCount: number;
+}
+
+export interface TransactionOverview {
+    period: { from: string; to: string };
+    totals: TransactionTotals;
+    previous: { period: { from: string; to: string }; totals: TransactionTotals };
+    expenseCategories: { typeId: number; value: number }[];
+    weekly: { from: string; to: string; income: number; expense: number }[];
+    daily: { date: string; income: number; expense: number; transfers: number; movementCount: number }[];
 }
 
 export interface ApiPage<T> {
@@ -168,6 +204,21 @@ function toApiProblem(error: unknown): Error {
     );
 }
 
+async function exportTransactions(params: TransactionQuery & { locale: string }, signal?: AbortSignal) {
+    try {
+        const response = await http.get<Blob>('/api/v1/transactions/export', { params, signal, responseType: 'blob' });
+        const disposition = String(response.headers['content-disposition'] ?? '');
+        const filename = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? `flowiy-${params.from}-${params.to}.csv`;
+        return { blob: response.data, filename };
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+            const content = await error.response.data.text();
+            try { error.response.data = JSON.parse(content); } catch { /* Non-JSON HTTP errors use the status fallback. */ }
+        }
+        throw toApiProblem(error);
+    }
+}
+
 async function send<T>(config: AxiosRequestConfig, unsafe = false): Promise<T> {
     try {
         const csrf = unsafe ? await requestCsrf() : undefined;
@@ -192,7 +243,11 @@ export const apiClient = {
     deleteWallet: (id: number, signal?: AbortSignal) => send<void>({ method: 'DELETE', url: `/api/v1/wallets/${id}`, signal }, true),
     setWalletFavorite: (id: number, favorite: boolean, signal?: AbortSignal) => send<void>({ method: 'PUT', url: `/api/v1/wallets/${id}/favorite`, data: favorite, signal }, true),
     transactionTypes: (signal?: AbortSignal) => send<ApiTransactionType[]>({ method: 'GET', url: '/api/v1/transaction-types', signal }),
-    createTransactionType: (name: string, signal?: AbortSignal) => send<{ id: number }>({ method: 'POST', url: '/api/v1/transaction-types', data: { name }, signal }, true),
+    transactionType: (id: number, signal?: AbortSignal) => send<ApiTransactionType>({ method: 'GET', url: `/api/v1/transaction-types/${id}`, signal }),
+    createTransactionType: (body: TransactionTypeCreate, signal?: AbortSignal) => send<{ id: number }>({ method: 'POST', url: '/api/v1/transaction-types', data: body, signal }, true),
+    transaction: (id: number, signal?: AbortSignal) => send<ApiTransaction>({ method: 'GET', url: `/api/v1/transactions/${id}`, signal }),
+    transactionOverview: (params: TransactionQuery, signal?: AbortSignal) => send<TransactionOverview>({ method: 'GET', url: '/api/v1/transactions/overview', params, signal }),
+    exportTransactions,
     transactions: (params: TransactionQuery = {}, signal?: AbortSignal) => send<ApiPage<ApiTransaction>>({ method: 'GET', url: '/api/v1/transactions', params, signal }),
     createTransaction: (body: TransactionCreate, signal?: AbortSignal) => send<{ id: number }>({ method: 'POST', url: '/api/v1/transactions', data: body, signal }, true),
     updateTransaction: (id: number, body: TransactionUpdate, signal?: AbortSignal) => send<void>({ method: 'PATCH', url: `/api/v1/transactions/${id}`, data: body, signal }, true),

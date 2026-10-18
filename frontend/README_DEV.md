@@ -100,7 +100,7 @@ updated or dismissed with `notify.dismiss(id)`. Without an explicit ID, identica
 type update one notification; supply an operation ID to share a notification across loading and outcome.
 Sonner owns the queue and timers; do not add parallel notification state.
 
-The live transactions page uses this shared system for creation, draft saving and deferred-action
+The live transactions page uses this shared system for creation, editing and deletion
 feedback, without a separate page notification banner.
 
 Keep validation, form submission errors and page load/retry states in their existing context. Do not

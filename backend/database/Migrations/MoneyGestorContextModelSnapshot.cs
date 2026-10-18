@@ -315,14 +315,46 @@ namespace database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint unsigned");
 
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)")
+                        .HasDefaultValue("grey");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)")
+                        .HasDefaultValue("tag");
+
+                    b.Property<string>("Keywords")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
+
+                    b.Property<ulong?>("ParentId")
+                        .HasColumnType("bigint unsigned");
+
+                    b.Property<bool>("UseInReports")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true);
 
                     b.Property<ulong?>("UserId")
                         .HasColumnType("bigint unsigned");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("UserId", "Name")
                         .IsUnique();
@@ -540,10 +572,17 @@ namespace database.Migrations
 
             modelBuilder.Entity("database.Models.TransactionTypeDb", b =>
                 {
+                    b.HasOne("database.Models.TransactionTypeDb", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("database.Identity.ApplicationIdentityUser", "User")
                         .WithMany("Types")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Parent");
 
                     b.Navigation("User");
                 });

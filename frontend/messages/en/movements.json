@@ -4,7 +4,6 @@
         "categoryEditor": {
             "title": "New category",
             "subtitle": "Create a custom category to better organize your transactions.",
-            "previewNotice": "Only the category name is saved for now. The other fields are a preview and will not be saved or applied to transactions and reports.",
             "name": "Category name",
             "namePlaceholder": "E.g. Grocery shopping",
             "parent": "Parent category",
@@ -16,7 +15,7 @@
             "keywords": "Keywords (optional)",
             "keywordsPlaceholder": "E.g. supermarket, groceries, weekly shop",
             "useInReports": "Use in reports",
-            "reportsHint": "Show this category in charts and statistics",
+            "reportsHint": "A preference for reports; balances and summaries on this page are unchanged.",
             "cancel": "Cancel",
             "create": "Create category",
             "saving": "Saving...",
@@ -48,7 +47,8 @@
                 "blue": "Blue",
                 "purple": "Purple",
                 "grey": "Grey"
-            }
+            },
+            "invalidField": "Check this field and try again."
         },
         "description": "View, filter and manage all your income, expenses and transfers in one place.",
         "actions": {
@@ -63,7 +63,8 @@
             "next": "Next page",
             "export": "Export",
             "retry": "Try again",
-            "deferred": "Dialogs for editing and deleting transactions will be available at a later stage."
+            "deferred": "Dialogs for editing and deleting transactions will be available at a later stage.",
+            "exportFailed": "Export failed. Try again."
         },
         "summary": {
             "income": "Income this month",
@@ -145,7 +146,7 @@
             "invalidAmount": "Enter an amount greater than zero.",
             "differentWallet": "Choose a different destination wallet.",
             "deleteTitle": "Delete transaction?",
-            "deleteDescription": "{name} will be removed from this local preview."
+            "deleteDescription": "“{name}” will be deleted and balances updated. Both entries of a transfer are deleted."
         },
         "states": {
             "idle": "Transactions are ready to load.",
@@ -184,17 +185,10 @@
             "selectDestination": "Select the destination",
             "selectCategory": "Select a category",
             "recurring": "Recurring transaction",
-            "recurringHint": "Choose when to repeat this transaction",
-            "attachReceipt": "Attach receipt",
-            "removeReceipt": "Remove receipt",
-            "invalidReceipt": "Choose a PDF, JPG, PNG or WebP file up to 10 MB.",
-            "saveDraft": "Save draft",
-            "resumeDraft": "Resume draft",
-            "draftSaved": "Draft saved for this page session. It will be lost when you leave the page.",
+            "recurringHint": "To be implemented",
             "create": "Create transaction",
             "saving": "Saving...",
             "created": "Transaction created.",
-            "previewOnly": "Recurrences and receipts can be configured as a preview. You can currently keep them in a draft on this page; activating recurrences and uploading receipts will be available later.",
             "noWallets": "You need a wallet with its own balance to create a transaction.",
             "loadingOptions": "Loading wallets and categories...",
             "retry": "Try again",
@@ -207,59 +201,15 @@
             "invalidFields": "Check the highlighted fields and try again.",
             "resourceMissing": "The wallet or category is no longer available. Reload the options and try again.",
             "saveFailed": "The transaction could not be saved. Your entries have been kept.",
-            "recurrence": {
-                "title": "Recurrence schedule",
-                "frequency": "Frequency",
-                "every": "Every",
-                "frequencies": {
-                    "daily": "Daily",
-                    "weekly": "Weekly",
-                    "monthly": "Monthly",
-                    "yearly": "Yearly"
-                },
-                "units": {
-                    "daily": "days",
-                    "weekly": "weeks",
-                    "monthly": "months",
-                    "yearly": "years"
-                },
-                "chooseDate": "Select the transaction date to set the first occurrence.",
-                "firstDate": "First occurrence: {date}. This matches the transaction date.",
-                "weekdays": "On these days",
-                "weekdayHint": "The weekday of the first occurrence stays selected. You can add other weekdays.",
-                "dayOfMonth": "Day of the month",
-                "timing": "When in the month",
-                "onDay": "On day {day}",
-                "lastDay": "The last day of the month",
-                "onWeekday": "{ordinal} {weekday} of the month",
-                "lastWeekday": "Last {weekday} of the month",
-                "ordinals": {
-                    "1": "1st",
-                    "2": "2nd",
-                    "3": "3rd",
-                    "4": "4th",
-                    "5": "5th"
-                },
-                "monthHint": "Changing the day also updates the date above. Month-end options require a matching first date. Shorter months use the last available day; a missing fifth weekday uses the fourth.",
-                "month": "Month",
-                "day": "Day",
-                "yearHint": "Changing the day or month also updates the transaction date. February 29 becomes February 28 in non-leap years.",
-                "ends": "Ends",
-                "endOptions": {
-                    "never": "Never",
-                    "date": "On a date",
-                    "count": "After a number of occurrences"
-                },
-                "endDate": "Last date (inclusive)",
-                "count": "Number of occurrences",
-                "countHint": "Includes the first transaction.",
-                "invalidInterval": "Enter a whole number from 1 to 99.",
-                "invalidEndDate": "The end cannot be before the transaction date.",
-                "invalidCount": "Enter a whole number from 2 to 999.",
-                "preview": "Preview of upcoming occurrences",
-                "previewOnly": "This preview does not create future transactions."
-            },
-            "noCategories": "No categories are available. Reload the options and try again."
+            "noCategories": "No categories are available. Reload the options and try again.",
+            "save": "Save transaction",
+            "updated": "Transaction updated.",
+            "deleted": "Transaction deleted.",
+            "loadFailed": "The transaction could not be loaded. Try again.",
+            "deleteFailed": "The transaction could not be deleted. Try again.",
+            "conflict": "The data has changed. Check your entries and try again.",
+            "domainError": "This operation is invalid. Check the amount, category and wallets.",
+            "csrfFailed": "The security check has expired. Try again to refresh it."
         }
     }
 }

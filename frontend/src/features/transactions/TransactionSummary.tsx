@@ -7,23 +7,17 @@ import { Area, AreaChart, Bar, BarChart, ResponsiveContainer } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { ArrowDown, ArrowLeftRight, ArrowUp, List, TrendingDown, TrendingUp } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
-import type { ApiTransaction } from '@/lib/api/client';
 
-import { transactionTotals } from './transaction-analytics';
+import { emptyTransactionTotals } from './transaction-analytics';
 import type { TransactionAnalyticsProps } from './transaction-analytics';
-import { transactionKind } from './transaction-kind';
 import { useTransactionFormatting } from './useTransactionFormatting';
 
-interface TransactionSummaryProps extends TransactionAnalyticsProps {
-    previous: ApiTransaction[];
-}
-
-export function TransactionSummary({ rows, previous, from, to, loading, failed }: TransactionSummaryProps) {
+export function TransactionSummary({ overview, from, to, loading, failed }: TransactionAnalyticsProps) {
     const t = useTranslations('Movements');
     const format = useFormatter();
     const { money } = useTransactionFormatting();
-    const current = transactionTotals(rows);
-    const past = transactionTotals(previous);
+    const current = overview?.totals ?? emptyTransactionTotals;
+    const past = overview?.previous.totals ?? emptyTransactionTotals;
     const isCurrentMonth =
         from === dayjs().startOf('month').format('YYYY-MM-DD') && to === dayjs().endOf('month').format('YYYY-MM-DD');
     const buckets = Array.from({ length: 12 }, (_, index) => ({
@@ -34,14 +28,12 @@ export function TransactionSummary({ rows, previous, from, to, loading, failed }
         index,
     }));
     const days = Math.max(1, dayjs(to).diff(dayjs(from), 'day') + 1);
-    for (const row of rows) {
-        const bucket =
-            buckets[Math.min(11, Math.max(0, Math.floor((dayjs(row.date).diff(dayjs(from), 'day') / days) * 12)))];
-        const kind = transactionKind(row);
-        if (kind === 'Income') bucket.income += row.value;
-        else if (kind === 'Expense') bucket.expense += Math.abs(row.value);
-        else bucket.transfers += Math.abs(row.value);
-        bucket.count++;
+    for (const day of overview?.daily ?? []) {
+        const bucket = buckets[Math.min(11, Math.max(0, Math.floor((dayjs(day.date).diff(dayjs(from), 'day') / days) * 12)))];
+        bucket.income += day.income;
+        bucket.expense += day.expense;
+        bucket.transfers += day.transfers;
+        bucket.count += day.movementCount;
     }
     const cards: {
         key: 'income' | 'expense' | 'transfers' | 'count';
@@ -77,7 +69,7 @@ export function TransactionSummary({ rows, previous, from, to, loading, failed }
         {
             key: 'count',
             label: t('summary.total'),
-            value: format.number(rows.length),
+            value: format.number(current.movementCount),
             icon: List,
             color: 'var(--chart-5)',
         },

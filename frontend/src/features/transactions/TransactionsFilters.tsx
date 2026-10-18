@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowUpDown, RotateCcw, Search, Tag, Wallet } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { CategoryIcon } from '@/features/categories/category-display';
 import type { ApiTransactionType, ApiWallet, TransactionQuery } from '@/lib/api/client';
 
 interface TransactionsFiltersProps {
@@ -139,14 +140,11 @@ export function TransactionsFilters({
                     aria-label={t('filters.category')}
                     value={filters.typeId ?? ''}
                     onValueChange={(value) => onFilterChange({ typeId: value ? Number(value) : undefined })}
-                >
-                    <option value="">{t('filters.allCategories')}</option>
-                    {types.map((type) => (
-                        <option key={type.id} value={type.id}>
-                            {type.name}
-                        </option>
-                    ))}
-                </Select>
+                    options={[
+                        { value: '', label: t('filters.allCategories') },
+                        ...types.map((type) => ({ value: String(type.id), label: type.name, icon: <CategoryIcon type={type} /> })),
+                    ]}
+                />
             </div>
             <Button
                 type="button"

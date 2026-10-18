@@ -12,6 +12,8 @@ namespace webserver {
             }
 
             var (status, code, title, errors) = exception switch {
+                ResourceValidationException resource => (400, "validation_failed", "Request validation failed",
+                    new Dictionary<String, String[]> { [resource.Field] = [resource.Reason] }),
                 WalletValidationException wallet => (400, "validation_failed", "Request validation failed",
                     new Dictionary<String, String[]> { [wallet.Field] = [wallet.Reason] }),
                 ListFilterValidationException filter => (400, "validation_failed", "Request validation failed",

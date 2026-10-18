@@ -74,7 +74,7 @@ reserve space for images. Asset specifications, tokens and UI choices: [Flowiy h
 | `/`, `/it` | Public Flowiy homepage in English and Italian |
 | `/dashboard` | Income, expense and category overview from `/api/v1` |
 | `/dashboard/wallet` | Wallet overview and persistent v1 CRUD with a shared editor for five wallet types; other action dialogs deferred |
-| `/dashboard/transaction` | Movement dashboard with period summaries, filters, server-side pagination, charts and CSV export, with a creation dialog; editing/deletion deferred |
+| `/dashboard/transaction` | Movement dashboard with server summaries/charts/CSV, filters, pagination, complete categories, single-movement creation, editing and confirmed deletion |
 | `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |
 | `/login`, `/register` | Flowiy authentication pages with shared marketing layout and existing account API |
 | `/login-flowiy`, `/register-flowiy` | Compatibility redirects to `/login` and `/register` |
@@ -157,9 +157,9 @@ The movement dashboard follows the supplied Movimenti reference and reuses the s
 controls, table and chart library. It reads v1 transactions, wallets and categories; category/weekly charts,
 period comparisons, recent rows and CSV export include all filtered pages. Transfers are shown once from
 the source wallet and excluded from income/expense totals. The creation dialog saves single movements through the existing API. Income and expense share fields;
-transfers add a distinct destination wallet. Recurrence settings and receipt selection are previews only,
-with single-page memory drafts; recurring/attached records cannot be submitted as ordinary movements.
-Editing and deletion remain deferred. The fixture preview is used by the development catalog.
+transfers add a distinct destination wallet. The recurrence switch is disabled and labelled
+"To be implemented". Receipts and drafts are excluded. Editing and confirmed deletion use the
+existing v1 APIs. The fixture preview is used by the development catalog.
 The live dashboard is split into dedicated cards and form sections; see the
 [transactions source map](src/features/transactions/README.md).
 The movement creation form opens New category from the plus button beside its category selector.

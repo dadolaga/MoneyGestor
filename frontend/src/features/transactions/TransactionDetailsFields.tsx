@@ -10,6 +10,7 @@ import { FormField } from '@/components/shared/form-field';
 import { Button } from '@/components/ui/button';
 import { FileText, Plus, Tag, Wallet } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { CategoryIcon } from '@/features/categories/category-display';
 import type { ApiTransactionType, ApiWallet } from '@/lib/api/client';
 import { parseLocalizedAmount } from '@/lib/money';
 
@@ -41,7 +42,7 @@ export function TransactionDetailsFields({
     const [kind, sourceId] = useWatch({ control, name: ['kind', 'walletId'] });
     const isTransfer = kind === 'transfer';
     const walletLabel = isTransfer ? tDialog('sourceWallet') : tDialog('wallet');
-    const categoryOptions = categories.map((type) => ({ value: String(type.id), label: type.name, icon: <Tag /> }));
+    const categoryOptions = categories.map((type) => ({ value: String(type.id), label: type.name, icon: <CategoryIcon type={type} /> }));
     const walletOptions = balanceWallets.map((wallet) => ({
         value: String(wallet.id),
         label: wallet.name,

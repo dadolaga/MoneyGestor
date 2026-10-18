@@ -5,30 +5,21 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { ChartContainer } from '@/components/shared/chart-container';
 import { Card } from '@/components/ui/card';
+import { categoryColors } from '@/features/categories/category-display';
+import type { ApiTransactionType } from '@/lib/api/client';
 
-import type { TransactionPeriodProps } from './transaction-analytics';
-import { transactionKind } from './transaction-kind';
-import { categoryColors } from './TransactionDisplay';
+import type { TransactionAnalyticsProps } from './transaction-analytics';
 import { useTransactionFormatting } from './useTransactionFormatting';
 
-export function TransactionCategoriesCard({ rows, loading, failed }: TransactionPeriodProps) {
+export function TransactionCategoriesCard({ overview, types, loading, failed }: TransactionAnalyticsProps & { types: ApiTransactionType[] }) {
     const t = useTranslations('Movements');
     const format = useFormatter();
     const { money } = useTransactionFormatting();
-    const expenses = rows.filter((row) => transactionKind(row) === 'Expense');
-    const categories = new Map<number, { id: number; name: string; value: number; color: string }>();
-    for (const row of expenses) {
-        const category = categories.get(row.type.id) ?? {
-            id: row.type.id,
-            name: row.type.name,
-            value: 0,
-            color: categoryColors[row.type.id % categoryColors.length],
-        };
-        category.value += Math.abs(row.value);
-        categories.set(row.type.id, category);
-    }
-    const distribution = [...categories.values()].sort((a, b) => b.value - a.value);
-    const expenseTotal = expenses.reduce((total, row) => total + Math.abs(row.value), 0);
+    const distribution = (overview?.expenseCategories ?? []).map((item) => {
+        const type = types.find((type) => type.id === item.typeId);
+        return { id: item.typeId, name: type?.name ?? '', value: item.value, color: categoryColors[type?.color ?? 'grey'] ?? categoryColors.grey };
+    });
+    const expenseTotal = overview?.totals.expense ?? 0;
     const emptyLabel = loading ? t('states.loading') : failed ? t('states.error') : t('charts.empty');
     const canShow = !loading && !failed;
 

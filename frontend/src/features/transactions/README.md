@@ -1,30 +1,36 @@
 # Transactions
 
-The live `/dashboard/transaction` route imports `TransactionsDashboard.tsx`. It composes the
-page sections and coordinates the creation dialog and its in-memory draft.
+The live /dashboard/transaction route imports TransactionsDashboard.tsx. It reuses the shared editor,
+API client, row actions, confirmation dialog and display components for desktop and mobile.
+See the [backend specification and delivery status](../../../../backend/docs/transactions-dashboard/README.md)
+and [API contracts](../../../../backend/docs/07-api-reference.md).
 
 | Files | Responsibility |
 | --- | --- |
-| `TransactionsHeader.tsx` | Page actions and CSV export of the complete filtered period |
-| `TransactionSummary.tsx` | Income, expense, transfer and movement-count cards |
-| `TransactionsFilters.tsx` | Search, date range, wallet, kind and category controls |
-| `TransactionsList.tsx`, `TransactionsPagination.tsx` | Desktop table, mobile list, sorting and server-side pagination |
-| `TransactionCategoriesCard.tsx`, `TransactionWeeklyCard.tsx` | Expense distribution and weekly income/expense charts |
-| `TransactionsRecent.tsx` | Recent movements in the selected period |
-| `TransactionActions.tsx`, `TransactionDisplay.tsx` | Shared row actions, category marks, wallet labels and amounts |
-| `TransactionEditorDialog.tsx` | Shared form state, creation request, server errors and draft saving |
-| `TransactionKindFields.tsx`, `TransactionDetailsFields.tsx`, `TransactionAdditionalFields.tsx` | Movement kind, required fields, notes, receipt selection and recurrence switch |
-| `TransactionRecurrenceFields.tsx`, `transaction-editor-model.ts` | Recurrence controls, form types, defaults, validation and schedule preview |
-| `useTransactionsDashboard.ts` | API loading, filters, pagination, sorting, cancellation and retry state |
-| `transaction-kind.ts`, `transaction-analytics.ts`, `useTransactionFormatting.ts` | Shared classification, period totals and localized formatting |
-| `TransactionsPreview.tsx`, `model.ts`, `adapter.ts` | Fixture-based development catalog and feature previews |
+| TransactionsHeader.tsx | Ordinary creation action and complete-period server CSV download |
+| TransactionSummary.tsx | Overview totals, previous-period comparison and 12 daily-data miniatures |
+| TransactionsFilters.tsx | Date/wallet/kind/category/search filters, shared with overview/recent/export |
+| TransactionsList.tsx, TransactionsPagination.tsx | Server pagination and sorting, desktop/mobile presentation |
+| TransactionCategoriesCard.tsx, TransactionWeeklyCard.tsx | Server expense distribution and seven-day blocks |
+| TransactionsRecent.tsx | Latest four filtered movements, with the same row actions |
+| TransactionActions.tsx, TransactionDisplay.tsx | Existing menu primitives, canonical category icons/colors and amounts |
+| TransactionEditorDialog.tsx | Shared React Hook Form for creation/editing, API field errors |
+| TransactionKindFields.tsx, TransactionDetailsFields.tsx, TransactionAdditionalFields.tsx | Kind, financial fields and notes (up to the existing API limit of 2000) |
+| transaction-editor-model.ts | Shared form defaults and date validation |
+| useTransactionsDashboard.ts | Metadata, paginated rows, overview, recent rows, cancellation and refresh |
+| TransactionsPreview.tsx, model.ts, adapter.ts | Fixture development catalog, separate from the live flow |
 
-All editor sections share the same React Hook Form instance. Receipt selection and recurrence remain
-previews saved only in the page draft; they cannot be submitted as ordinary movements. Editing and
-deletion remain deferred. Transfers appear once and are excluded from income/expense totals.
+Category creation persists name, parent, icon, color, description, keywords and report preference,
+then reads the canonical DTO. Reserved types are identified by systemKind, never by their name.
+The report preference does not remove movements from this dashboard. Transfer responses carry the
+negative source value; the editor displays its magnitude and submits a positive transfer amount.
 
-The unused `transactions-page.tsx` implementation has been removed. The development preview and its
-adapter remain because the catalog and fixture consumers still use them.
+The recurrence switch is disabled and labelled "To be implemented". No schedule editor, recurrence
+request, backend scheduler or recurrence persistence is provided. Receipts and drafts remain excluded.
 
-For ordinary frontend verification, follow [AGENTS.md](../../../AGENTS.md): run
-`npm --prefix frontend run build` from the repository root, without separate tests or browser checks.
+After writes, rows, wallets, types, overview and recent rows are refreshed. The browser never loads
+all movement pages for analytics or export. English/Italian dictionaries cover field errors, session
+expiry, security failures, conflicts and domain errors without clearing entered form values.
+
+For ordinary verification, follow [AGENTS.md](../../../AGENTS.md): run
+npm --prefix frontend run build, without separate frontend tests, servers or browser checks.

@@ -52,7 +52,15 @@ public sealed class WalletDetailsDto {
     public logic.Models.WalletDetails ToModel() => new(Kind, Currency, Institution, Iban, LastFour, Network,
         Expiry, LinkedAccountId, CreditLimit, CurrentSpending, StatementDay, PaymentDay, Notes, Shareable);
 }
-public sealed record TransactionTypeResponse(UInt64 Id, String Name, Boolean IsGlobal);
+public sealed record TransactionTypeResponse(UInt64 Id, String Name, Boolean IsGlobal) {
+    public UInt64? ParentId { get; init; }
+    public String Icon { get; init; } = "tag";
+    public String Color { get; init; } = "grey";
+    public String? Description { get; init; }
+    public String? Keywords { get; init; }
+    public Boolean UseInReports { get; init; } = true;
+    public String? SystemKind { get; init; }
+}
 public sealed record TransactionWalletResponse(UInt64 Id, String Name, ColorResponse Color);
 public sealed record TransactionResponse(
     UInt64 Id,
@@ -94,7 +102,15 @@ public sealed record UpdateWalletRequest(
     public WalletDetailsDto? Details { get; init; }
 }
 
-public sealed record CreateTransactionTypeRequest([Required, StringLength(100, MinimumLength = 1)] String Name);
+public sealed record CreateTransactionTypeRequest([Required, StringLength(100, MinimumLength = 1)] String Name) {
+    [Range(1, UInt64.MaxValue)] public UInt64? ParentId { get; init; }
+    [Required, RegularExpression("^(shopping|home|transport|food|utilities|work|entertainment|health|tag)$")] public String Icon { get; init; } = "tag";
+    [Required, RegularExpression("^(red|orange|yellow|green|cyan|blue|purple|grey)$")] public String Color { get; init; } = "grey";
+    [StringLength(500)] public String? Description { get; init; }
+    [StringLength(1000)] public String? Keywords { get; init; }
+    public Boolean UseInReports { get; init; } = true;
+    public logic.Models.TransactionTypeDetails ToModel() => new(ParentId, Icon, Color, Description, Keywords, UseInReports);
+}
 
 public sealed record CreateTransactionRequest(
     [StringLength(200)] String? Description,
@@ -139,21 +155,44 @@ public enum MovementKind { Income, Expense, Transfer }
 public enum TransactionOrderBy { Date, Description, Value, Type, Wallet }
 public enum SortDirection { Ascending, Descending }
 
-public sealed class TransactionListQuery : IValidatableObject {
-    [Range(1, Int32.MaxValue)] public Int32 Page { get; init; } = 1;
-    [Range(1, 100)] public Int32 PageSize { get; init; } = 50;
-    public DateOnly? From { get; init; }
-    public DateOnly? To { get; init; }
+public class TransactionFilterQuery : IValidatableObject {
+    [BusinessDate] public virtual DateOnly? From { get; init; }
+    [BusinessDate] public virtual DateOnly? To { get; init; }
     [Range(1, UInt64.MaxValue)] public UInt64? WalletId { get; init; }
     [Range(1, UInt64.MaxValue)] public UInt64? TypeId { get; init; }
     [EnumDataType(typeof(MovementKind))] public MovementKind? Kind { get; init; }
     [StringLength(100)] public String? Search { get; init; }
-    [EnumDataType(typeof(TransactionOrderBy))] public TransactionOrderBy SortBy { get; init; } = TransactionOrderBy.Date;
-    [EnumDataType(typeof(SortDirection))] public SortDirection Direction { get; init; } = SortDirection.Descending;
-
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
         if (From.HasValue && To.HasValue && From.Value > To.Value) {
             yield return new ValidationResult("invalid_date_range", [nameof(To)]);
         }
     }
 }
+
+public sealed class TransactionListQuery : TransactionFilterQuery {
+    [Range(1, Int32.MaxValue)] public Int32 Page { get; init; } = 1;
+    [Range(1, 100)] public Int32 PageSize { get; init; } = 50;
+    [EnumDataType(typeof(TransactionOrderBy))] public TransactionOrderBy SortBy { get; init; } = TransactionOrderBy.Date;
+    [EnumDataType(typeof(SortDirection))] public SortDirection Direction { get; init; } = SortDirection.Descending;
+
+}
+
+public class TransactionPeriodQuery : TransactionFilterQuery {
+    [Required, BusinessDate] public override DateOnly? From { get; init; }
+    [Required, BusinessDate] public override DateOnly? To { get; init; }
+}
+
+public sealed class TransactionExportQuery : TransactionPeriodQuery {
+    [RegularExpression("^(en|it)$")] public String Locale { get; init; } = "en";
+}
+
+public sealed record TransactionPeriod(DateOnly From, DateOnly To);
+public sealed record TransactionTotals(Decimal Income, Decimal Expense, Decimal Transfers,
+    Int64 IncomeCount, Int64 ExpenseCount, Int64 TransferCount, Int64 MovementCount);
+public sealed record TransactionPrevious(TransactionPeriod Period, TransactionTotals Totals);
+public sealed record TransactionExpenseCategory(UInt64 TypeId, Decimal Value);
+public sealed record TransactionWeekly(DateOnly From, DateOnly To, Decimal Income, Decimal Expense);
+public sealed record TransactionDaily(DateOnly Date, Decimal Income, Decimal Expense, Decimal Transfers, Int64 MovementCount);
+public sealed record TransactionOverview(TransactionPeriod Period, TransactionTotals Totals, TransactionPrevious Previous,
+    IReadOnlyList<TransactionExpenseCategory> ExpenseCategories, IReadOnlyList<TransactionWeekly> Weekly,
+    IReadOnlyList<TransactionDaily> Daily);

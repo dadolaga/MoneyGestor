@@ -18,34 +18,32 @@ import {
 import { ArrowLeftRight, Plus } from '@/components/ui/icons';
 import { CategoryEditorDialog } from '@/features/categories/CategoryEditorDialog';
 import { ApiProblemError, apiClient } from '@/lib/api/client';
-import type { ApiTransactionType, ApiWallet, TransactionCreate } from '@/lib/api/client';
+import type { ApiTransaction, ApiTransactionType, ApiWallet, TransactionCreate } from '@/lib/api/client';
 import { parseLocalizedAmount } from '@/lib/money';
 import { notify } from '@/lib/notifications';
 
 import { createTransactionDefaults } from './transaction-editor-model';
-import type { TransactionDraft, TransactionFormValues } from './transaction-editor-model';
+import type { TransactionFormValues } from './transaction-editor-model';
 import { TransactionAdditionalFields } from './TransactionAdditionalFields';
 import { TransactionDetailsFields } from './TransactionDetailsFields';
 import { TransactionKindFields } from './TransactionKindFields';
-import { TransactionRecurrenceFields } from './TransactionRecurrenceFields';
 
 interface TransactionEditorDialogProps {
     wallets: ApiWallet[];
     types: ApiTransactionType[];
     walletId?: number;
     typeId?: number;
-    draft?: TransactionDraft;
+    transaction?: ApiTransaction;
     metadataLoading: boolean;
     metadataError: string;
     onRetry: () => void;
     onClose: () => void;
-    onCreated: () => void;
-    onSaveDraft: (draft: TransactionDraft) => void;
+    onSaved: () => void;
     onCategoryCreated: (category: ApiTransactionType) => void;
 }
 
 function isTransferType(type: ApiTransactionType) {
-    return type.name.toLowerCase() === 'transfer';
+    return type.systemKind === 'Transfer';
 }
 
 export function TransactionEditorDialog({
@@ -53,13 +51,12 @@ export function TransactionEditorDialog({
     types,
     walletId,
     typeId,
-    draft,
+    transaction,
     metadataLoading,
     metadataError,
     onRetry,
     onClose,
-    onCreated,
-    onSaveDraft,
+    onSaved,
     onCategoryCreated,
 }: TransactionEditorDialogProps) {
     const t = useTranslations('Movements.editor');
@@ -68,32 +65,36 @@ export function TransactionEditorDialog({
     const locale = useLocale();
     const id = useId();
     const balanceWallets = wallets.filter((wallet) => wallet.hasOwnBalance !== false);
-    const categories = types.filter((type) => !isTransferType(type));
+    const categories = types.filter((type) => type.systemKind === null);
     const transferType = types.find(isTransferType);
-    const [defaults] = useState(
+    const [defaults] = useState<TransactionFormValues>(
         () =>
-            draft?.values ??
-            createTransactionDefaults(
+            transaction ? {
+                ...createTransactionDefaults(),
+                kind: transaction.type.systemKind === 'Transfer' ? 'transfer' : transaction.value > 0 ? 'income' : 'expense',
+                amount: new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB', { useGrouping: false, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(transaction.value)),
+                date: transaction.date, description: transaction.description ?? '', notes: transaction.longDescription ?? '',
+                walletId: String(transaction.wallet.id), typeId: String(transaction.type.id),
+                destinationWalletId: transaction.destination ? String(transaction.destination.id) : '',
+            } : createTransactionDefaults(
                 balanceWallets.find((wallet) => wallet.id === walletId)?.id ?? balanceWallets[0]?.id,
                 categories.find((type) => type.id === typeId)?.id,
             ),
     );
-    const [receipt, setReceipt] = useState(draft?.receipt);
     const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const form = useForm<TransactionFormValues>({ defaultValues: defaults, mode: 'onBlur' });
     const {
         control,
         handleSubmit,
-        getValues,
         clearErrors,
         setError,
         setValue,
         formState: { errors, isSubmitting },
     } = form;
-    const [kind, recurring] = useWatch({ control, name: ['kind', 'recurring'] });
+    const kind = useWatch({ control, name: 'kind' });
     const isTransfer = kind === 'transfer';
-    const unavailable = recurring || receipt !== undefined;
-    const submitLabel = isSubmitting ? t('saving') : t('create');
+    const subtitle = transaction === undefined ? t('subtitle') : tDialog('editDescription');
+    const submitLabel = isSubmitting ? t('saving') : transaction ? t('save') : t('create');
     const metadataMessage =
         metadataError ||
         (!metadataLoading && balanceWallets.length === 0
@@ -113,10 +114,6 @@ export function TransactionEditorDialog({
 
     async function submitHandler(values: TransactionFormValues) {
         clearErrors('root');
-        if (values.recurring || receipt !== undefined) {
-            setError('root.server', { message: t('previewOnly') });
-            return;
-        }
         const amount = parseLocalizedAmount(values.amount, locale);
         if (amount === undefined || amount <= 0) {
             setError('amount', { message: tDialog('invalidAmount') });
@@ -127,7 +124,7 @@ export function TransactionEditorDialog({
             return;
         }
         const body: TransactionCreate = {
-            description: values.description.trim(),
+            description: values.description.trim() || null,
             longDescription: values.notes.trim() || null,
             date: values.date,
             value: values.kind === 'expense' ? -amount : amount,
@@ -136,8 +133,12 @@ export function TransactionEditorDialog({
             destinationWalletId: values.kind === 'transfer' ? Number(values.destinationWalletId) : null,
         };
         try {
-            await apiClient.createTransaction(body);
-            onCreated();
+            if (transaction) {
+                await apiClient.updateTransaction(transaction.id, body);
+            } else {
+                await apiClient.createTransaction(body);
+            }
+            onSaved();
         } catch (error: unknown) {
             if (error instanceof ApiProblemError) {
                 for (const field of Object.keys(error.fieldErrors)) {
@@ -148,17 +149,19 @@ export function TransactionEditorDialog({
             const message =
                 error instanceof ApiProblemError && error.status === 401
                     ? 'signInAgain'
-                    : error instanceof ApiProblemError && error.status === 400
+                    : error instanceof ApiProblemError && error.status === 400 && error.code !== 'antiforgery_validation_failed'
                       ? 'invalidFields'
                       : error instanceof ApiProblemError && error.status === 404
                         ? 'resourceMissing'
-                        : 'saveFailed';
+                        : error instanceof ApiProblemError && error.status === 409
+                          ? 'conflict'
+                          : error instanceof ApiProblemError && error.status === 422
+                            ? 'domainError'
+                            : error instanceof ApiProblemError && error.code === 'antiforgery_validation_failed'
+                              ? 'csrfFailed'
+                              : 'saveFailed';
             setError('root.server', { message: t(message) });
         }
-    }
-
-    function saveDraftHandler() {
-        onSaveDraft({ values: { ...getValues(), weekdays: [...getValues('weekdays')] }, receipt });
     }
 
     function categoryCreatedHandler(category: ApiTransactionType) {
@@ -187,14 +190,14 @@ export function TransactionEditorDialog({
                         <ArrowLeftRight aria-hidden="true" className="absolute bottom-2 size-7" />
                     </span>
                     <div>
-                        <DialogTitle className="m-0 text-2xl font-semibold">{tDialog('createTitle')}</DialogTitle>
-                        <DialogDescription className="mt-1 text-sm">{t('subtitle')}</DialogDescription>
+                        <DialogTitle className="m-0 text-2xl font-semibold">{tDialog(transaction ? 'editTitle' : 'createTitle')}</DialogTitle>
+                        <DialogDescription className="mt-1 text-sm">{subtitle}</DialogDescription>
                     </div>
                 </DialogHeader>
                 <form
                     className="flex min-h-0 flex-1 flex-col overflow-hidden"
                     noValidate
-                    onSubmit={handleSubmit(submitHandler)}
+                    onSubmit={(event) => { void handleSubmit(submitHandler)(event); }}
                 >
                     <DialogBody className="px-5 py-5 sm:px-7">
                         <fieldset
@@ -209,18 +212,7 @@ export function TransactionEditorDialog({
                                 categories={categories}
                                 onAddCategory={() => setCategoryEditorOpen(true)}
                             />
-                            <TransactionAdditionalFields
-                                form={form}
-                                id={id}
-                                receipt={receipt}
-                                onReceiptChange={setReceipt}
-                            />
-                            {!!recurring && <TransactionRecurrenceFields form={form} id={id} />}
-                            {!!unavailable && (
-                                <p role="status" className="m-0 text-xs text-muted-foreground">
-                                    {t('previewOnly')}
-                                </p>
-                            )}
+                            <TransactionAdditionalFields form={form} id={id} editing={transaction !== undefined} />
                             {!!errors.root?.server?.message && (
                                 <p role="alert" className="m-0 text-sm text-destructive">
                                     {errors.root.server.message}
@@ -257,20 +249,10 @@ export function TransactionEditorDialog({
                             {tDialog('cancel')}
                         </Button>
                         <Button
-                            type="button"
-                            variant="outline"
-                            className="border border-solid border-input"
-                            disabled={isSubmitting || metadataLoading}
-                            onClick={saveDraftHandler}
-                        >
-                            {t('saveDraft')}
-                        </Button>
-                        <Button
                             type="submit"
                             disabled={
                                 isSubmitting ||
                                 metadataLoading ||
-                                unavailable ||
                                 balanceWallets.length === 0 ||
                                 types.length === 0
                             }

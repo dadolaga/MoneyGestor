@@ -1,6 +1,4 @@
-import type { ApiTransaction } from '@/lib/api/client';
-
-import { transactionKind } from './transaction-kind';
+import type { ApiTransaction, TransactionOverview } from '@/lib/api/client';
 
 export interface TransactionPeriodProps {
     rows: ApiTransaction[];
@@ -8,23 +6,13 @@ export interface TransactionPeriodProps {
     failed: boolean;
 }
 
-export interface TransactionAnalyticsProps extends TransactionPeriodProps {
+export interface TransactionAnalyticsProps {
+    overview?: TransactionOverview;
+    loading: boolean;
+    failed: boolean;
     from: string;
     to: string;
 }
 
-export function transactionTotals(rows: ApiTransaction[]) {
-    return rows.reduce(
-        (result, row) => {
-            const kind = transactionKind(row);
-            if (kind === 'Income') result.income += row.value;
-            else if (kind === 'Expense') result.expense += Math.abs(row.value);
-            else {
-                result.transfers += Math.abs(row.value);
-                result.transferCount++;
-            }
-            return result;
-        },
-        { income: 0, expense: 0, transfers: 0, transferCount: 0 },
-    );
-}
+
+export const emptyTransactionTotals = { income: 0, expense: 0, transfers: 0, incomeCount: 0, expenseCount: 0, transferCount: 0, movementCount: 0 };
