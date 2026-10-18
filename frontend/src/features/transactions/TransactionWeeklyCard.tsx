@@ -22,8 +22,8 @@ export function TransactionWeeklyCard({ overview, loading, failed }: Transaction
     const canShow = !loading && !failed;
 
     return (
-        <Card className="rounded-lg p-3.5 shadow-none" aria-busy={loading}>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <Card className="flex grow flex-col rounded-lg p-3.5 shadow-none" aria-busy={loading}>
+            <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
                 <h2 className="m-0 text-base font-semibold">{t('charts.weekly')}</h2>
                 <div className="flex gap-4 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1.5">
@@ -37,8 +37,8 @@ export function TransactionWeeklyCard({ overview, loading, failed }: Transaction
                 </div>
             </div>
             {canShow && weeks.some((week) => week.income > 0 || week.expense > 0) ? (
-                <ChartContainer description={t('charts.weeklyDescription')} className="h-[140px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                <ChartContainer description={t('charts.weeklyDescription')} className="relative min-h-[140px] flex-1">
+                    <ResponsiveContainer width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
                         <BarChart data={weeks} margin={{ top: 4, right: 2, left: -22, bottom: 0 }} barGap={5}>
                             <CartesianGrid stroke="var(--border)" strokeOpacity={0.5} vertical={false} />
                             <XAxis
@@ -87,7 +87,7 @@ export function TransactionWeeklyCard({ overview, loading, failed }: Transaction
                 </ChartContainer>
             ) : (
                 <p
-                    className="flex min-h-[140px] items-center justify-center text-center text-sm text-muted-foreground"
+                    className="m-0 flex min-h-[140px] flex-1 items-center justify-center text-center text-sm text-muted-foreground"
                     role="status"
                 >
                     {emptyLabel}

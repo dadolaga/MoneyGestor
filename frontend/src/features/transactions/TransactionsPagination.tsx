@@ -33,7 +33,7 @@ export function TransactionsPagination({
     }
 
     return (
-        <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border p-3 text-xs text-muted-foreground">
+        <footer className="mt-auto flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border p-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
                 <span>{t('list.show')}</span>
                 <Select

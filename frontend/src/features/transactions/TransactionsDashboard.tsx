@@ -15,7 +15,6 @@ import { TransactionEditorDialog } from './TransactionEditorDialog';
 import { TransactionsFilters } from './TransactionsFilters';
 import { TransactionsHeader } from './TransactionsHeader';
 import { TransactionsList } from './TransactionsList';
-import { TransactionsRecent } from './TransactionsRecent';
 import { TransactionSummary } from './TransactionSummary';
 import { TransactionWeeklyCard } from './TransactionWeeklyCard';
 import { useTransactionsDashboard } from './useTransactionsDashboard';
@@ -23,7 +22,7 @@ import { useTransactionsDashboard } from './useTransactionsDashboard';
 export function TransactionsDashboard() {
     const t = useTranslations('Movements');
     const dashboard = useTransactionsDashboard();
-    const { filters, overview, recent, wallets, types, summaryLoading } = dashboard;
+    const { filters, overview, wallets, types, summaryLoading } = dashboard;
     const [editorOpen, setEditorOpen] = useState(false);
     const [editing, setEditing] = useState<ApiTransaction>();
     const [deleting, setDeleting] = useState<ApiTransaction>();
@@ -71,7 +70,7 @@ export function TransactionsDashboard() {
     const actions = { onEdit: editHandler, onDelete: (row: ApiTransaction) => { setDeleteError(''); setDeleting(row); } };
 
     return (
-        <div className="mx-auto grid w-full min-w-0 gap-3.5">
+        <div className="mx-auto flex w-full min-w-0 flex-col gap-3.5 min-[1380px]:h-full min-[1380px]:min-h-0 [&>header]:shrink-0 [&>section]:shrink-0 [&>[role=alert]]:shrink-0">
             <TransactionsHeader filters={filters} onAdd={() => { setEditing(undefined); setEditorOpen(true); }} />
 
             {!!editorOpen && (
@@ -113,7 +112,7 @@ export function TransactionsDashboard() {
                 </div>
             )}
 
-            <div className="grid min-w-0 items-start gap-3 min-[1380px]:grid-cols-[minmax(0,1.9fr)_minmax(350px,1fr)]">
+            <div className="grid min-h-0 min-w-0 items-start gap-3 min-[1380px]:flex-1 min-[1380px]:grid-cols-[minmax(0,1.9fr)_minmax(350px,1fr)] min-[1380px]:grid-rows-[minmax(0,1fr)] min-[1380px]:items-stretch">
                 <TransactionsList
                     {...actions}
                     rows={dashboard.rows}
@@ -128,12 +127,12 @@ export function TransactionsDashboard() {
                     onPageSizeChange={dashboard.setPageSize}
                 />
                 <aside
-                    className="grid min-w-0 gap-2.5 sm:grid-cols-2 min-[1380px]:grid-cols-1"
+                    className="flex min-h-0 min-w-0 flex-col gap-2.5 min-[1380px]:overflow-y-auto min-[1380px]:[&>*]:shrink-0"
                     aria-label={t('charts.overview')}
                 >
                     <TransactionCategoriesCard {...analytics} types={types} />
                     <TransactionWeeklyCard {...analytics} />
-                    <TransactionsRecent rows={recent} loading={summaryLoading} failed={analytics.failed} {...actions} />
+                    {/* <TransactionsRecent rows={recent} loading={summaryLoading} failed={analytics.failed} {...actions} /> */}
                 </aside>
             </div>
             <ConfirmDeleteDialog

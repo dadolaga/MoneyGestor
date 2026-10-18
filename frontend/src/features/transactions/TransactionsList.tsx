@@ -92,17 +92,25 @@ export function TransactionsList({
 
     return (
         <Card
-            className="flex min-w-0 flex-col overflow-hidden rounded-lg shadow-none min-[1380px]:min-h-[570px]"
+            className="box-border flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg shadow-none min-[1380px]:h-full"
             aria-busy={loading}
         >
-            <div className="px-3.5 pb-3 pt-3">
+            <div className="shrink-0 px-3.5 pb-3 pt-3">
                 <h2 className="m-0 text-xl font-semibold">{t('list.title')}</h2>
                 <p className="m-0 mt-1 text-xs text-muted-foreground" aria-live="polite">
                     {listStatus}
                 </p>
             </div>
-            <div className="hidden px-1.5 md:block">
-                <Table className="border-collapse whitespace-nowrap text-xs [&_td]:border-b [&_td]:border-border/50 [&_td]:px-2 [&_td]:py-2 [&_th]:h-8 [&_th]:bg-muted/40 [&_th]:px-2 [&_th]:text-[11px]">
+            <div className="hidden min-h-0 flex-1 px-1.5 md:block">
+                <Table
+                    containerProps={{
+                        className: 'max-h-[60dvh] overscroll-contain min-[1380px]:h-full min-[1380px]:max-h-none',
+                        tabIndex: 0,
+                        role: 'region',
+                        'aria-label': t('list.title'),
+                    }}
+                    className="border-collapse whitespace-nowrap text-xs [&_td]:border-b [&_td]:border-border/50 [&_td]:px-2 [&_td]:py-2 [&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:h-8 [&_th]:bg-muted [&_th]:px-2 [&_th]:text-[11px]"
+                >
                     <TableHeader>
                         <TableRow>
                             {columns.map((column) => (
@@ -128,7 +136,6 @@ export function TransactionsList({
                                         <TableCell>{date(row.date)}</TableCell>
                                         <TableCell>
                                             <span className="flex items-center gap-2.5">
-                                                <CategoryMark row={row} />
                                                 <span
                                                     className="max-w-48 truncate"
                                                     title={row.description ?? undefined}
@@ -173,7 +180,7 @@ export function TransactionsList({
                     </TableBody>
                 </Table>
             </div>
-            <div className="grid gap-0 px-3 md:hidden">
+            <div className="grid max-h-[60dvh] gap-0 overflow-auto overscroll-contain px-3 md:hidden">
                 {!loading &&
                     !error &&
                     rows.map((row) => (
@@ -200,7 +207,7 @@ export function TransactionsList({
             {!!(loading || error || rows.length === 0) && (
                 <p
                     role="status"
-                    className="m-0 flex min-h-64 items-center justify-center p-6 text-center text-sm text-muted-foreground"
+                    className="m-0 flex min-h-64 flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground min-[1380px]:min-h-0"
                 >
                     {emptyStatus}
                 </p>

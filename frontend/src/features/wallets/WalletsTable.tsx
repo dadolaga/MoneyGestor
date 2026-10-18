@@ -29,9 +29,17 @@ export function WalletsTable({ wallets, isLoading, isReady, onSelect, onEdit, on
     const t = useTranslations('WalletsDashboard');
 
     return (
-        <Card aria-busy={isLoading} className="min-h-[360px] min-w-0 overflow-hidden shadow-none">
-            <h2 className="m-0 px-5 py-4 text-lg font-[650]">{t('table.title')}</h2>
-            <Table className="min-w-[780px] border-collapse">
+        <Card aria-busy={isLoading} className="flex min-h-[360px] min-w-0 flex-col overflow-hidden shadow-none min-[1301px]:min-h-0">
+            <h2 className="m-0 shrink-0 px-5 py-4 text-lg font-[650]">{t('table.title')}</h2>
+            <Table
+                containerProps={{
+                    className: 'min-h-0 max-h-[60dvh] flex-1 overscroll-contain min-[1301px]:max-h-none',
+                    tabIndex: 0,
+                    role: 'region',
+                    'aria-label': t('table.title'),
+                }}
+                className="min-w-[780px] border-collapse [&_th]:sticky [&_th]:top-0 [&_th]:z-10"
+            >
                 <TableHeader>
                     <TableRow>
                         {['name', 'type', 'institution', 'balance', 'updated', 'status', 'actions'].map((key) => (

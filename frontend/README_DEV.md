@@ -46,6 +46,9 @@ During the transition:
 - Desktop and mobile share form fields, components and state.
 - New forms use React Hook Form only for state, errors and submission; domain rules remain in the backend.
 - User-entered amounts are normalized once at the presentation boundary using the active locale.
+- Wallet and movement amounts accept either `.` or `,` as the decimal separator (for example,
+  `12.50` and `12,50` both mean 12 euros and 50 cents). If both separators occur, the active locale
+  determines decimal and grouping separators. A single separator is always treated as decimal.
 - `DateRangeField` exchanges `Date` values with the calendar and converts to Day.js at its boundary.
 - Day.js is the only date library.
 - Light and dark themes use the same tokens, including configurable brand red.

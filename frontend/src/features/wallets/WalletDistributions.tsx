@@ -32,7 +32,7 @@ export function WalletDistributions({ wallets, total, isLoading, isReady }: Wall
 
     return (
         <aside
-            className="grid min-w-0 gap-5 min-[701px]:max-[1301px]:grid-cols-2 min-[1301px]:grid-rows-[minmax(260px,1fr)_auto]"
+            className="grid min-w-0 gap-5 min-[701px]:max-[1301px]:grid-cols-2 min-[1301px]:grid-rows-[minmax(min-content,1fr)_auto]"
             aria-label={t('distribution.title')}
         >
             <WealthDistribution
@@ -78,10 +78,10 @@ function WealthDistribution({ distribution, total, canShowDistribution, isLoadin
 
     return (
         <Card aria-busy={isLoading} className="@container flex min-h-[260px] min-w-0 flex-col p-5 shadow-none">
-            <h2 className="mt-0 mb-4 text-lg font-[650]">{t('distribution.title')}</h2>
+            <h2 className="mt-0 mb-4 shrink-0 text-lg font-[650]">{t('distribution.title')}</h2>
             {!!isReady &&
                 (canShowDistribution ? (
-                    <div className="wallet-content-enter grid flex-1 grid-cols-1 items-center gap-5 @min-[300px]:grid-cols-[minmax(156px,1fr)_minmax(0,1fr)]">
+                    <div className="wallet-content-enter grid grow shrink-0 grid-cols-1 items-center gap-5 @min-[300px]:grid-cols-[minmax(156px,1fr)_minmax(0,1fr)]">
                         <div
                             className="relative h-[200px] w-full max-w-[240px] min-w-0 justify-self-center @min-[440px]:h-[220px]"
                             role="img"

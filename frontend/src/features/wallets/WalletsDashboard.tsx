@@ -13,6 +13,7 @@ import { Landmark, Plus } from '@/components/ui/icons';
 import { apiClient, ApiProblemError } from '@/lib/api/client';
 import type { ApiDashboard, ApiTransaction, ApiWallet } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
+import { cn } from '@/lib/utils';
 import '@/styles/wallets.css';
 
 import { walletDraftFromApi, walletRequestFromDraft } from './wallet-adapter';
@@ -208,7 +209,10 @@ export function WalletsDashboard() {
     }
 
     return (
-        <div className="flex min-h-full min-w-0 flex-col gap-5 box-border [&_*]:box-border [&_button]:[font-family:inherit] [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-ring [&_button:focus-visible]:outline-offset-[3px]">
+        <div className={cn(
+            'flex min-h-full min-w-0 flex-col gap-5 box-border [&_*]:box-border [&_button]:[font-family:inherit] [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-ring [&_button:focus-visible]:outline-offset-[3px] [&>header]:shrink-0 [&>section]:shrink-0 [&>[role=alert]]:shrink-0',
+            selected === undefined && 'min-[1301px]:h-full min-[1301px]:min-h-0',
+        )}>
             <WalletsHeader
                 onCreate={() => setDialog({ action: 'create' })}
                 onConnect={() => setDialog({ action: 'connect' })}
@@ -243,7 +247,12 @@ export function WalletsDashboard() {
                 onSelect={selectWalletHandler}
             />
 
-            <div className="grid flex-1 grid-cols-1 items-stretch gap-5 min-[1301px]:min-h-[480px] min-[1301px]:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]">
+            <div className={cn(
+                'grid min-w-0 flex-1 grid-cols-1 items-stretch gap-5 min-[1301px]:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]',
+                selected === undefined
+                    ? 'min-[1301px]:min-h-0 min-[1301px]:grid-rows-[minmax(0,1fr)] min-[1301px]:[&>aside]:min-h-0 min-[1301px]:[&>aside]:overflow-y-auto'
+                    : 'min-[1301px]:min-h-[480px]',
+            )}>
                 {selected === undefined ? (
                     <WalletsTable
                         wallets={wallets}

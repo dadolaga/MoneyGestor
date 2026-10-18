@@ -2,6 +2,10 @@
 
 The live /dashboard/transaction route imports TransactionsDashboard.tsx. It reuses the shared editor,
 API client, row actions, confirmation dialog and display components for desktop and mobile.
+On wide desktop layouts, the list fills the remaining page height and only its rows scroll;
+the title, column headings and pagination stay visible. Narrow layouts bound the list to 60dvh
+while keeping normal page scrolling for the stacked summaries and charts.
+The weekly chart fills its card's available height below the heading and legend, with a minimum plot height of 140px.
 See the [backend specification and delivery status](../../../../backend/docs/transactions-dashboard/README.md)
 and [API contracts](../../../../backend/docs/07-api-reference.md).
 

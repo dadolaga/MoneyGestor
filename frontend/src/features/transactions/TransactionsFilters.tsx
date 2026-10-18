@@ -48,7 +48,7 @@ export function TransactionsFilters({
 
     return (
         <Card
-            className="grid min-w-0 gap-2.5 rounded-lg p-2.5 shadow-none sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.3fr)_minmax(235px,1.15fr)_minmax(145px,.9fr)_minmax(130px,.8fr)_minmax(150px,1fr)_auto]"
+            className="grid min-w-0 shrink-0 gap-2.5 rounded-lg p-2.5 shadow-none sm:grid-cols-2 xl:grid-cols-[minmax(180px,1.3fr)_minmax(235px,1.15fr)_minmax(145px,.9fr)_minmax(130px,.8fr)_minmax(150px,1fr)_auto]"
             aria-label={t('filters.title')}
         >
             <div className="relative min-w-0">

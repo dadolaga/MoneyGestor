@@ -8,14 +8,18 @@ function escapeForCharacterClass(value: string) {
 }
 
 /**
- * Converts a value typed using the active locale into a neutral number.
+ * Accepts either a dot or a comma as the decimal separator. When both are
+ * present, uses the active locale to interpret decimal and grouping separators.
  * Domain rules such as allowed ranges and precision deliberately belong to
  * the API; this only makes the browser input usable in the active language.
  */
 export function parseLocalizedAmount(value: string, locale: string): number | undefined {
     const parts = new Intl.NumberFormat(regionByLocale[locale] ?? locale).formatToParts(12345.6);
-    const group = parts.find((part) => part.type === 'group')?.value ?? ',';
-    const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.';
+    const localeDecimal = parts.find((part) => part.type === 'decimal')?.value ?? '.';
+    const hasDot = value.includes('.');
+    const hasComma = value.includes(',');
+    const decimal = hasDot && hasComma ? localeDecimal : hasComma ? ',' : '.';
+    const group = decimal === '.' ? ',' : '.';
     const normalized = value
         .trim()
         .replace(/\s/g, '')

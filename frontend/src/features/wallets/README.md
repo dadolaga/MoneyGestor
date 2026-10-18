@@ -50,6 +50,12 @@ page and dialog have been removed with those components.
 
 ## Selection and presentation
 
+On wide desktop layouts, the table fills the remaining page height and scrolls internally,
+with its title and column headings kept visible. The adjacent distribution panels scroll separately
+when needed. Narrow layouts bound the table to 60dvh while retaining normal page scrolling.
+The wealth distribution row respects its content's minimum height, including the heading, chart,
+legend and padding, so the doughnut stays inside its card when the side panel scrolls.
+
 No wallet is selected initially. Clicking a card or table name selects it; clicking the active card again or Clear
 selection deselects it. Without a selection the table is shown; with a selection the detail replaces it. The
 distributions stay alongside this content. Wallet cards keep a fixed width in a single horizontal row. The row scrolls
