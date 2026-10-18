@@ -160,3 +160,10 @@ the source wallet and excluded from income/expense totals. The creation dialog s
 transfers add a distinct destination wallet. Recurrence settings and receipt selection are previews only,
 with single-page memory drafts; recurring/attached records cannot be submitted as ordinary movements.
 Editing and deletion remain deferred. The older fixture components are not used by the live route.
+The movement creation form opens New category from the plus button beside its category selector.
+The category dialog uses the same surface, header, spacing and footer as the movement dialog,
+with no movement-kind selector, automatic-suggestion switch, rules panel or draft action.
+Creation saves the category name through the existing v1 transaction-types API, updates the category
+options and selects the new category without clearing the movement form. Parent category, icon,
+color, description, keywords and report visibility are explicitly labelled as previews: the current
+API does not store or apply these settings. English/Italian and light/dark themes are supported.

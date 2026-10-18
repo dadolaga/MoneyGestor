@@ -666,6 +666,7 @@ export function TransactionsPage({ initialState }: TransactionsPageProps) {
                     <label className="grid gap-1.5 text-sm font-medium">
                         {t('filters.wallet')}
                         <Select
+                            searchable
                             value={walletFilter}
                             onValueChange={(value) => {
                                 setWalletFilter(value);

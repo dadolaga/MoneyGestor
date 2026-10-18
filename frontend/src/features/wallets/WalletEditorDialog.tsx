@@ -481,6 +481,7 @@ export function WalletEditorDialog({
                                             control={control}
                                             name="linkedAccountId"
                                             kind="select"
+                                            searchable
                                             label={requiredLabel(t('fields.linkedAccount'))}
                                             description={accountDescription}
                                             placeholder={t('accountPlaceholder')}

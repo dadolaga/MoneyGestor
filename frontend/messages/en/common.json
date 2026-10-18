@@ -1,5 +1,9 @@
 {
     "Common": {
+        "select": {
+            "search": "Search by name...",
+            "noResults": "No results found"
+        },
         "actions": {
             "close": "Close",
             "cancel": "Cancel",

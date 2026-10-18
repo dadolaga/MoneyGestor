@@ -59,8 +59,12 @@ During the transition:
 
 ## Shared UI primitives
 
-Shared controls are owned by this repository. Selects, checkboxes and progress indicators use
-native HTML elements; modal dialogs and mobile sheets use `dialog.showModal()` for focus containment,
+Shared controls are owned by this repository. Selects use a button or editable input with the shared
+native popover, one selected-row treatment (tinted background and checkmark), and optional option icons.
+Enable `searchable` for name-based lists: filtering happens in the upper control, with no search field
+inside the list. `InputField` forwards `options` and `searchable` to this same primitive. Arrow keys,
+Home/End (Ctrl+Home/End while editing), Enter and Escape operate the list without moving input focus.
+Checkboxes and progress indicators use native HTML elements; modal dialogs and mobile sheets use `dialog.showModal()` for focus containment,
 background inertness and focus restoration. Confirmation dialogs initially focus Cancel and do not
 dismiss on backdrop clicks. Calendar popups and action menus use the native Popover API in the
 browser top layer, including inside dialogs. Menus support arrows, Home/End, typing and Escape.

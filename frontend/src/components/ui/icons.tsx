@@ -14,7 +14,7 @@ function createIcon(icon: string, displayName: string): IconComponent {
     const IconComponent = ({ className, strokeWidth, ...props }: IconComponentProps) => (
         <span
             {...props}
-            className={cn('inline-flex shrink-0', className)}
+            className={cn('inline-flex items-center justify-center shrink-0', className)}
             role={props['aria-label'] === undefined ? undefined : 'img'}
         >
             <Icon aria-hidden="true" className="size-full" icon={icon} strokeWidth={strokeWidth} />

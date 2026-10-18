@@ -162,8 +162,7 @@ export function TransactionRecurrenceFields({ form, id }: { form: UseFormReturn<
                             id={`${id}-month-timing`}
                             value={timing}
                             disabled={anchor === undefined}
-                            onChange={(event) => {
-                                const value = event.target.value;
+                            onValueChange={(value) => {
                                 if (
                                     value === 'day' ||
                                     value === 'lastDay' ||

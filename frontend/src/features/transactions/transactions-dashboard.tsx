@@ -191,7 +191,7 @@ export function TransactionsDashboard() {
                     <h1 className="m-0 text-3xl font-bold tracking-tight sm:text-4xl">{t('title')}</h1>
                     <p className="m-0 mt-1.5 text-sm text-muted-foreground sm:text-base">{t('description')}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <Button type="button" className="h-11 px-5" onClick={() => setEditorOpen(true)}>
                         <Plus aria-hidden="true" className="size-5" />
                         {addLabel}
@@ -222,6 +222,7 @@ export function TransactionsDashboard() {
                     onClose={() => setEditorOpen(false)}
                     onCreated={createdHandler}
                     onSaveDraft={saveDraftHandler}
+                    onCategoryCreated={dashboard.categoryCreatedHandler}
                 />
             )}
 
@@ -277,6 +278,7 @@ export function TransactionsDashboard() {
                     />
                     <Select
                         className="pl-9 text-xs"
+                        searchable
                         aria-label={t('filters.wallet')}
                         value={filters.walletId ?? ''}
                         onValueChange={(value) =>
@@ -322,6 +324,7 @@ export function TransactionsDashboard() {
                     />
                     <Select
                         className="pl-9 text-xs"
+                        searchable
                         aria-label={t('filters.category')}
                         value={filters.typeId ?? ''}
                         onValueChange={(value) =>
@@ -476,7 +479,7 @@ export function TransactionsDashboard() {
                         <div className="flex items-center gap-2">
                             <span>{t('list.show')}</span>
                             <Select
-                                className="h-8 w-16 py-1 text-xs"
+                                className="h-8 w-20 py-1 text-xs"
                                 aria-label={t('list.perPage')}
                                 value={pageSize}
                                 disabled={loading}

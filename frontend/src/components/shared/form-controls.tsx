@@ -8,7 +8,7 @@ import { FormField, fieldAriaProps } from '@/components/shared/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FieldAdornment, FieldControl, fieldControlInputClassName } from '@/components/ui/field-control';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import { Select, type SelectOption } from '@/components/ui/select';
 import { Switch, type SwitchProps } from '@/components/ui/switch';
 import { parseLocalizedAmount } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -24,11 +24,7 @@ type NativeInputProps = Omit<
     'defaultValue' | 'disabled' | 'name' | 'onBlur' | 'onChange' | 'ref' | 'value'
 >;
 
-export interface SelectOption {
-    value: string;
-    label: ReactNode;
-    disabled?: boolean;
-}
+export type { SelectOption } from '@/components/ui/select';
 
 export type InputFieldProps<T extends FieldValues> = ControlledProps<T> &
     NativeInputProps & {
@@ -37,6 +33,7 @@ export type InputFieldProps<T extends FieldValues> = ControlledProps<T> &
         endAdornment?: ReactNode;
         locale?: string;
         options?: SelectOption[];
+        searchable?: boolean;
     };
 
 /** A single API for text, password, amount and select fields. */
@@ -49,6 +46,7 @@ export function InputField<T extends FieldValues>({
     endAdornment,
     locale,
     options = [],
+    searchable = false,
     control,
     name,
     rules,
@@ -93,7 +91,7 @@ export function InputField<T extends FieldValues>({
 
         const selectValue = field.value == null ? '' : String(field.value);
         return (
-            <FieldControl invalid={error !== undefined} disabled={disabled} className={className}>
+            <FieldControl invalid={error !== undefined} disabled={disabled} className={cn('rounded-xl focus-within:border-primary focus-within:ring-primary/20', className)}>
                 {startAdornment !== undefined && <FieldAdornment position="start">{startAdornment}</FieldAdornment>}
                 <Select
                     ref={field.ref}
@@ -104,15 +102,13 @@ export function InputField<T extends FieldValues>({
                     onValueChange={field.onChange}
                     onBlur={field.onBlur}
                     placeholder={inputProps.placeholder}
-                    className={fieldControlInputClassName}
+                    aria-required={inputProps['aria-required']}
+                    required={inputProps.required}
+                    searchable={searchable}
+                    options={options}
+                    className={cn(fieldControlInputClassName, 'py-0 focus-within:ring-0 data-[state=open]:ring-0')}
                     {...fieldAriaProps(id, error, description)}
-                >
-                    {options.map((option) => (
-                        <option key={option.value} value={option.value} disabled={option.disabled}>
-                            {option.label}
-                        </option>
-                    ))}
-                </Select>
+                />
                 {endAdornment !== undefined && <FieldAdornment position="end">{endAdornment}</FieldAdornment>}
             </FieldControl>
         );

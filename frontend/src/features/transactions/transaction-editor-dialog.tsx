@@ -30,9 +30,11 @@ import {
     Wallet,
 } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
+import { CategoryEditorDialog } from '@/features/categories/CategoryEditorDialog';
 import { ApiProblemError, apiClient } from '@/lib/api/client';
 import type { ApiTransactionType, ApiWallet, TransactionCreate } from '@/lib/api/client';
 import { parseLocalizedAmount } from '@/lib/money';
+import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 
 import { createTransactionDefaults, isCalendarDate } from './transaction-editor-model';
@@ -51,6 +53,7 @@ interface TransactionEditorDialogProps {
     onClose: () => void;
     onCreated: () => void;
     onSaveDraft: (draft: TransactionDraft) => void;
+    onCategoryCreated: (category: ApiTransactionType) => void;
 }
 
 const movementKinds = [
@@ -93,10 +96,12 @@ export function TransactionEditorDialog({
     onClose,
     onCreated,
     onSaveDraft,
+    onCategoryCreated,
 }: TransactionEditorDialogProps) {
     const t = useTranslations('Movements.editor');
     const tDialog = useTranslations('Movements.dialog');
     const tKinds = useTranslations('Movements.filters');
+    const tCategory = useTranslations('Movements.categoryEditor');
     const locale = useLocale();
     const format = useFormatter();
     const id = useId();
@@ -113,6 +118,7 @@ export function TransactionEditorDialog({
     );
     const [receipt, setReceipt] = useState(draft?.receipt);
     const [receiptError, setReceiptError] = useState('');
+    const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const receiptInput = useRef<HTMLInputElement>(null);
     const form = useForm<TransactionFormValues>({ defaultValues: defaults, mode: 'onBlur' });
     const {
@@ -122,6 +128,7 @@ export function TransactionEditorDialog({
         getValues,
         clearErrors,
         setError,
+        setValue,
         formState: { errors, isSubmitting },
     } = form;
     const [kind, sourceId, recurring, notes] = useWatch({ control, name: ['kind', 'walletId', 'recurring', 'notes'] });
@@ -129,8 +136,8 @@ export function TransactionEditorDialog({
     const unavailable = recurring || receipt !== undefined;
     const submitLabel = isSubmitting ? t('saving') : t('create');
     const walletLabel = isTransfer ? tDialog('sourceWallet') : tDialog('wallet');
-    const categoryOptions = categories.map((type) => ({ value: String(type.id), label: type.name }));
-    const walletOptions = balanceWallets.map((wallet) => ({ value: String(wallet.id), label: wallet.name }));
+    const categoryOptions = categories.map((type) => ({ value: String(type.id), label: type.name, icon: <Tag /> }));
+    const walletOptions = balanceWallets.map((wallet) => ({ value: String(wallet.id), label: wallet.name, icon: <Wallet /> }));
     const destinationOptions = walletOptions.filter((wallet) => wallet.value !== sourceId);
     const metadataMessage =
         metadataError ||
@@ -208,6 +215,14 @@ export function TransactionEditorDialog({
 
     function saveDraftHandler() {
         onSaveDraft({ values: { ...getValues(), weekdays: [...getValues('weekdays')] }, receipt });
+    }
+
+    function categoryCreatedHandler(category: ApiTransactionType) {
+        onCategoryCreated(category);
+        setValue('typeId', String(category.id), { shouldDirty: true });
+        clearErrors('typeId');
+        setCategoryEditorOpen(false);
+        notify.success(tCategory('created'));
     }
 
     function receiptHandler(file?: File) {
@@ -342,9 +357,9 @@ export function TransactionEditorDialog({
                                     name="walletId"
                                     id={`${id}-wallet`}
                                     kind="select"
+                                    searchable
                                     label={requiredLabel(walletLabel)}
                                     placeholder={t('selectWallet')}
-                                    startAdornment={<Wallet aria-hidden="true" className="size-4" />}
                                     options={walletOptions}
                                     aria-required
                                     rules={{
@@ -360,9 +375,23 @@ export function TransactionEditorDialog({
                                         name="typeId"
                                         id={`${id}-type`}
                                         kind="select"
+                                        searchable
                                         label={requiredLabel(tDialog('category'))}
                                         placeholder={t('selectCategory')}
-                                        startAdornment={<Tag aria-hidden="true" className="size-4 text-warning" />}
+                                        endAdornment={
+                                            <Button
+                                                type="button"
+                                                variant="transparent"
+                                                size="icon"
+                                                className="size-7"
+                                                aria-label={tCategory('title')}
+                                                title={tCategory('title')}
+                                                aria-haspopup="dialog"
+                                                onClick={() => setCategoryEditorOpen(true)}
+                                            >
+                                                <Plus aria-hidden="true" className="size-4" />
+                                            </Button>
+                                        }
                                         options={categoryOptions}
                                         aria-required
                                         rules={{
@@ -396,11 +425,9 @@ export function TransactionEditorDialog({
                                             name="destinationWalletId"
                                             id={`${id}-destination`}
                                             kind="select"
+                                            searchable
                                             label={requiredLabel(tDialog('destinationWallet'))}
                                             placeholder={t('selectDestination')}
-                                            startAdornment={
-                                                <Wallet aria-hidden="true" className="size-4 text-transfer" />
-                                            }
                                             options={destinationOptions}
                                             aria-required
                                             rules={{
@@ -580,6 +607,16 @@ export function TransactionEditorDialog({
                     </DialogFooter>
                 </form>
             </DialogContent>
+            {!!categoryEditorOpen && (
+                <CategoryEditorDialog
+                    types={types}
+                    loading={metadataLoading}
+                    error={metadataError}
+                    onRetry={onRetry}
+                    onClose={() => setCategoryEditorOpen(false)}
+                    onCreated={categoryCreatedHandler}
+                />
+            )}
         </Dialog>
     );
 }

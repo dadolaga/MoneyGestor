@@ -167,6 +167,10 @@ export function useTransactionsDashboard() {
         setPage(1);
     }
 
+    function categoryCreatedHandler(category: ApiTransactionType) {
+        setTypes((current) => [...current.filter((type) => type.id !== category.id), category]);
+    }
+
     function resetHandler() {
         setSearch('');
         setFilters({
@@ -187,6 +191,7 @@ export function useTransactionsDashboard() {
         previous,
         wallets,
         types,
+        categoryCreatedHandler,
         page,
         setPage,
         pageSize,

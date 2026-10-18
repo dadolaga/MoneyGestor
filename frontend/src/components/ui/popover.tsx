@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 const PopoverContext = React.createContext<{
     open: boolean;
     setOpen: (open: boolean) => void;
-    triggerRef: React.RefObject<HTMLButtonElement | null>;
+    triggerRef: React.RefObject<HTMLElement | null>;
+    anchorRef?: React.RefObject<HTMLElement | null>;
     triggerId: string;
     contentId: string;
 } | null>(null);
@@ -19,27 +20,28 @@ function usePopover() {
     return context;
 }
 
-function Popover({ children, open: controlledOpen, defaultOpen = false, onOpenChange }: {
+function Popover({ children, open: controlledOpen, defaultOpen = false, onOpenChange, anchorRef }: {
     children: React.ReactNode;
     open?: boolean;
     defaultOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
+    anchorRef?: React.RefObject<HTMLElement | null>;
 }) {
     const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
-    const triggerRef = React.useRef<HTMLButtonElement>(null);
+    const triggerRef = React.useRef<HTMLElement>(null);
     const id = React.useId();
     const setOpen = (nextOpen: boolean) => {
         if (controlledOpen === undefined) setInternalOpen(nextOpen);
         onOpenChange?.(nextOpen);
     };
     return (
-        <PopoverContext.Provider value={{ open: controlledOpen ?? internalOpen, setOpen, triggerRef, triggerId: `${id}-trigger`, contentId: `${id}-content` }}>
+        <PopoverContext.Provider value={{ open: controlledOpen ?? internalOpen, setOpen, triggerRef, anchorRef, triggerId: `${id}-trigger`, contentId: `${id}-content` }}>
             {children}
         </PopoverContext.Provider>
     );
 }
 
-const PopoverTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<'button'> & { asChild?: boolean }>(
+const PopoverTrigger = React.forwardRef<HTMLElement, React.ComponentPropsWithoutRef<'button'> & { asChild?: boolean }>(
     ({ asChild, onClick, ...props }, forwardedRef) => {
         const { open, setOpen, triggerRef, triggerId, contentId } = usePopover();
         const Component = asChild ? Slot : 'button';
@@ -51,7 +53,7 @@ const PopoverTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsW
                 aria-expanded={open}
                 aria-controls={contentId}
                 {...props}
-                ref={(element: HTMLButtonElement | null) => {
+                ref={(element: HTMLElement | null) => {
                     triggerRef.current = element;
                     if (typeof forwardedRef === 'function') forwardedRef(element);
                     else if (forwardedRef) forwardedRef.current = element;
@@ -69,12 +71,15 @@ PopoverTrigger.displayName = 'PopoverTrigger';
 interface PopoverContentProps extends React.ComponentPropsWithoutRef<'div'> {
     align?: 'start' | 'center' | 'end';
     sideOffset?: number;
+    focusOnOpen?: boolean;
+    matchTriggerWidth?: boolean;
+    maxHeight?: number;
 }
 
 /** The browser top layer keeps calendar popups visible inside modal dialogs. */
 const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
-    ({ className, children, align = 'center', sideOffset = 4, style, onToggle, onKeyDown, ...props }, forwardedRef) => {
-        const { open, setOpen, triggerRef, triggerId, contentId } = usePopover();
+    ({ className, children, align = 'center', sideOffset = 4, focusOnOpen = true, matchTriggerWidth = false, maxHeight, style, onToggle, onKeyDown, ...props }, forwardedRef) => {
+        const { open, setOpen, triggerRef, anchorRef, triggerId, contentId } = usePopover();
         const ref = React.useRef<HTMLDivElement>(null);
         const [position, setPosition] = React.useState<React.CSSProperties>({});
         const [labelledBy, setLabelledBy] = React.useState(triggerId);
@@ -90,9 +95,10 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
             setLabelledBy(triggerRef.current?.id ?? triggerId);
             element.showPopover();
             const updatePosition = () => {
-                const trigger = triggerRef.current;
+                const trigger = anchorRef?.current ?? triggerRef.current;
                 if (!trigger) return;
                 const anchor = trigger.getBoundingClientRect();
+                if (matchTriggerWidth) element.style.width = `${anchor.width}px`;
                 const width = element.offsetWidth;
                 const height = element.offsetHeight;
                 const availableBelow = window.innerHeight - anchor.bottom - sideOffset - 8;
@@ -105,7 +111,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
                     inset: 'auto',
                     left: Math.max(8, Math.min(left, window.innerWidth - width - 8)),
                     top: placeAbove ? Math.max(8, anchor.top - sideOffset - height) : anchor.bottom + sideOffset,
-                    maxHeight: Math.max(0, placeAbove ? availableAbove : availableBelow),
+                    maxHeight: Math.min(maxHeight ?? Infinity, Math.max(0, placeAbove ? availableAbove : availableBelow)),
                     maxWidth: 'calc(100vw - 1rem)',
                 });
             };
@@ -114,14 +120,14 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
             observer.observe(element);
             window.addEventListener('resize', updatePosition);
             window.addEventListener('scroll', updatePosition, true);
-            element.querySelector<HTMLElement>('[autofocus], [role="menuitem"]:not(:disabled), [tabindex="0"], button:not(:disabled), input:not(:disabled)')?.focus();
+            if (focusOnOpen) element.querySelector<HTMLElement>('[autofocus], [role="menuitem"]:not(:disabled), [tabindex="0"], button:not(:disabled), input:not(:disabled)')?.focus();
             return () => {
                 observer.disconnect();
                 window.removeEventListener('resize', updatePosition);
                 window.removeEventListener('scroll', updatePosition, true);
                 if (element.matches(':popover-open')) element.hidePopover();
             };
-        }, [open, align, sideOffset, triggerRef, triggerId]);
+        }, [open, align, sideOffset, focusOnOpen, matchTriggerWidth, maxHeight, triggerRef, anchorRef, triggerId]);
 
         return (
             <div

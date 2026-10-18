@@ -1,5 +1,9 @@
 {
     "Common": {
+        "select": {
+            "search": "Cerca per nome...",
+            "noResults": "Nessun risultato trovato"
+        },
         "actions": {
             "close": "Chiudi",
             "cancel": "Annulla",
