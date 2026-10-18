@@ -83,6 +83,7 @@ Use `notify` from `@/lib/notifications` with translated strings instead of impor
 ```ts
 notify.success(t('saved'));
 notify.error(t('refreshFailed'));
+notify.info(t('actions.deferred'));
 
 const id = notify.loading(t('saving'), 'feature:save');
 // In the request's success/error handlers, update the same notification:
@@ -90,10 +91,13 @@ notify.success(t('saved'), id);
 // On failure, use notify.error(t('saveFailed'), id) instead.
 ```
 
-Success notifications last four seconds and errors six seconds. Loading notifications remain until
+Success and informational notifications last four seconds and errors six seconds. Loading notifications remain until
 updated or dismissed with `notify.dismiss(id)`. Without an explicit ID, identical messages of the same
 type update one notification; supply an operation ID to share a notification across loading and outcome.
 Sonner owns the queue and timers; do not add parallel notification state.
+
+The live transactions page uses this shared system for creation, draft saving and deferred-action
+feedback, without a separate page notification banner.
 
 Keep validation, form submission errors and page load/retry states in their existing context. Do not
 show a second toast for an error already handled there, and do not notify on cancelled requests or
@@ -162,6 +166,8 @@ handle success, error and completion through available callbacks and do not use 
   Native `fieldset` disabling is respected. Use semantic disabled/read-only attributes instead of
   adding feature-specific colour or opacity overrides. Custom radio/checkbox tiles should use a
   direct `input.sr-only` child of their label followed by the visible `span`.
+  A disabled select option (including a placeholder) must not disable its `FieldControl` wrapper;
+  wrapper disabled selectors must target the actual input, button, select or textarea.
 - Define rules in a `FormSettings` object near the component, or export them only when genuinely shared.
 - Do not rely on TypeScript casts to convert runtime values: text inputs remain strings and must be
   converted explicitly before the request.

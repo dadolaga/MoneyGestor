@@ -119,7 +119,7 @@ body {
 :root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
 :root :is(input, textarea)[readonly],
 :root .MuiInputBase-root:is(.Mui-disabled, .Mui-readOnly),
-:root [data-slot='field-control']:is([data-disabled='true'], :has(:disabled), :has([readonly])),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:is(button, input, select, textarea):disabled), :has([readonly])),
 :root label:has(> input.sr-only:disabled) > span {
     background: var(--disabled-background);
     border-color: var(--border);
@@ -129,7 +129,7 @@ body {
 }
 
 :root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
-:root [data-slot='field-control']:is([data-disabled='true'], :has(:disabled)),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:is(button, input, select, textarea):disabled)),
 :root label:has(> input:disabled) {
     cursor: not-allowed;
     pointer-events: none;

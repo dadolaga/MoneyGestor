@@ -44,7 +44,6 @@ export function TransactionsDashboard() {
         start: dayjs(filters.from),
         end: dayjs(filters.to),
     }));
-    const [showDeferred, setShowDeferred] = useState(false);
     const [editorOpen, setEditorOpen] = useState(false);
     const [draft, setDraft] = useState<TransactionDraft>();
     const addLabel = draft === undefined ? t('actions.add') : t('editor.resumeDraft');
@@ -178,7 +177,7 @@ export function TransactionsDashboard() {
                 className="size-7"
                 aria-label={t('actions.more', { name: row.description ?? t('list.untitled') })}
                 title={t('actions.deferred')}
-                onClick={() => setShowDeferred(true)}
+                onClick={() => notify.info(t('actions.deferred'))}
             >
                 <Ellipsis aria-hidden="true" className="size-5" />
             </Button>
@@ -348,14 +347,6 @@ export function TransactionsDashboard() {
                 </Button>
             </Card>
 
-            {!!showDeferred && (
-                <p
-                    role="status"
-                    className="m-0 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground"
-                >
-                    {t('actions.deferred')}
-                </p>
-            )}
             {!!error && (
                 <div
                     role="alert"
