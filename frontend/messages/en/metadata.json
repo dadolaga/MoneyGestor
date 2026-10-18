@@ -20,7 +20,6 @@
         "title": "Feature state workshop",
         "description": "Visual components receive fixture data through props and do not need a running backend.",
         "features": {
-            "dashboard": "Dashboard",
             "wallets": "Wallets",
             "transactions": "Transactions"
         },
@@ -36,11 +35,6 @@
             "loading": "Loading data…",
             "empty": "There is no data to show yet.",
             "error": "Data could not be loaded."
-        },
-        "dashboard": {
-            "incoming": "Total income",
-            "expense": "Total expenses",
-            "categories": "Category snapshot"
         },
         "wallets": {
             "balance": "Current balance",

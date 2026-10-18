@@ -9,7 +9,21 @@
       "title": "Movements", "description": "Create and review income, expenses and transfers.", "create": "Add movement", "edit": "Edit", "descriptionField": "Description", "amount": "Amount", "date": "Date", "type": "Type", "wallet": "Wallet", "kind": "Movement type", "destination": "Destination wallet", "save": "Save", "cancel": "Cancel", "delete": "Delete", "deleteTitle": "Delete movement?", "deleteDescription": "Delete {name}? This action cannot be undone.", "search": "Search movements", "kindFilter": "Filter by movement type", "allKinds": "All types", "income": "Income", "expense": "Expense", "transfer": "Transfer", "untitled": "Untitled movement", "empty": "No movements match these filters.", "perPage": "Per page", "previous": "Previous", "next": "Next"
     },
     "dashboard": {
-      "title": "Dashboard", "description": "Your totals and categories for the selected period.", "from": "From", "to": "To", "incoming": "Income", "expense": "Expenses", "categories": "Categories", "loading": "Loading…", "empty": "No data for this period.", "requestFailed": "Unable to load dashboard data."
+      "title": "Dashboard",
+      "description": "A complete overview of your finances.",
+      "from": "From", "to": "To", "incoming": "Income", "expenses": "Expenses", "categories": "Categories",
+      "loading": "Loading…", "empty": "No data for this month.",
+      "requestFailed": "Unable to load dashboard data.",
+      "summary": "Financial summary",
+      "wealth": "Total wealth", "income": "Monthly income", "expense": "Monthly expenses", "savings": "Monthly savings",
+      "currentBalances": "Current wallet balances",
+      "comparison": "compared with last month", "noComparison": "Comparison unavailable", "unavailable": "Data unavailable",
+      "monthlyTrend": "Monthly trend", "month": "Movement month",
+      "monthlyDescription": "Daily income and expenses for the selected month. Transfers are excluded.",
+      "recent": "Recent movements", "viewAll": "View all", "emptyMovements": "No movements this month.",
+      "date": "Date", "descriptionField": "Description", "category": "Category", "wallet": "Wallet", "amount": "Amount",
+      "quickActions": "Quick actions", "newMovement": "New movement", "addWallet": "Add wallet",
+      "newIncome": "New income", "newExpense": "New expense", "transfer": "Transfer money", "retry": "Retry"
     }
   }
 }

@@ -72,7 +72,7 @@ reserve space for images. Asset specifications, tokens and UI choices: [Flowiy h
 | Route | Purpose |
 | --- | --- |
 | `/`, `/it` | Public Flowiy homepage in English and Italian |
-| `/dashboard` | Income, expense and category overview from `/api/v1` |
+| `/dashboard` | Wealth, monthly income/expenses/savings, daily trend, wallet distribution, recent movements and shared creation dialogs from `/api/v1`; see the [dashboard README](src/features/dashboard/README.md) |
 | `/dashboard/wallet` | Wallet overview and persistent v1 CRUD with a shared editor for five wallet types; other action dialogs deferred |
 | `/dashboard/transaction` | Movement dashboard with server summaries/charts/CSV, filters, pagination, complete categories, single-movement creation, editing and confirmed deletion |
 | `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |

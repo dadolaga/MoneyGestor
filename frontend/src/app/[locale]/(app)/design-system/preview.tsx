@@ -24,18 +24,16 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DashboardPreview } from '@/features/dashboard/dashboard-preview';
 import { TransactionsPreview } from '@/features/transactions/TransactionsPreview';
 import { WalletsPreview } from '@/features/wallets/WalletsPreview';
 import {
-    dashboardStateFixtures,
     fixtureForStatus,
     transactionStateFixtures,
     walletStateFixtures,
 } from '@/lib/fixtures/finance';
 import { featureStatuses, type FeatureStatus } from '@/types/feature-state';
 
-type PreviewFeature = 'dashboard' | 'wallets' | 'transactions';
+type PreviewFeature = 'wallets' | 'transactions';
 
 export function DesignSystemPreview() {
     const { resolvedTheme, setTheme } = useTheme();
@@ -44,32 +42,12 @@ export function DesignSystemPreview() {
     const tCommon = useTranslations('Common');
     const tFeatures = useTranslations('FeaturePreview');
 
-    const [feature, setFeature] = useState<PreviewFeature>('dashboard');
+    const [feature, setFeature] = useState<PreviewFeature>('wallets');
     const [status, setStatus] = useState<FeatureStatus>('ready');
 
     const isDark = resolvedTheme === 'dark';
 
     const renderFeaturePreview = () => {
-        if (feature === 'dashboard') {
-            return (
-                <DashboardPreview
-                    state={fixtureForStatus(dashboardStateFixtures, status)}
-                    labels={{
-                        incoming: tFeatures('dashboard.incoming'),
-                        expense: tFeatures('dashboard.expense'),
-                        categories: tFeatures('dashboard.categories'),
-                        states: {
-                            idle: tFeatures('states.idle'),
-                            loading: tFeatures('states.loading'),
-                            empty: tFeatures('states.empty'),
-                            error: tFeatures('states.error'),
-                        },
-                    }}
-                    formatMoney={(value) => format.number(value, { style: 'currency', currency: 'EUR' })}
-                />
-            );
-        }
-
         if (feature === 'wallets') {
             return (
                 <WalletsPreview
@@ -204,7 +182,7 @@ export function DesignSystemPreview() {
                         <p className="mt-2 text-muted-foreground">{tFeatures('description')}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {(['dashboard', 'wallets', 'transactions'] as PreviewFeature[]).map((item) => (
+                        {(['wallets', 'transactions'] as PreviewFeature[]).map((item) => (
                             <Button
                                 key={item}
                                 type="button"

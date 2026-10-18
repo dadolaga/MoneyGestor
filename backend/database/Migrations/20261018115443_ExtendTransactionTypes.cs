@@ -10,13 +10,13 @@ namespace database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Color",
-                table: "transaction_type",
-                type: "varchar(16)",
-                maxLength: 16,
-                nullable: false,
-                defaultValue: "grey");
+           migrationBuilder.AddColumn<string>(
+               name: "Color",
+               table: "transaction_type",
+               type: "varchar(16)",
+               maxLength: 16,
+               nullable: false,
+               defaultValue: "grey");
 
             migrationBuilder.AddColumn<string>(
                 name: "Description",

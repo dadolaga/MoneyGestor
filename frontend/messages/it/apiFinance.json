@@ -9,7 +9,21 @@
       "title": "Movimenti", "description": "Crea e consulta entrate, uscite e trasferimenti.", "create": "Aggiungi movimento", "edit": "Modifica", "descriptionField": "Descrizione", "amount": "Importo", "date": "Data", "type": "Tipo", "wallet": "Wallet", "kind": "Tipo di movimento", "destination": "Wallet di destinazione", "save": "Salva", "cancel": "Annulla", "delete": "Elimina", "deleteTitle": "Eliminare il movimento?", "deleteDescription": "Vuoi eliminare {name}? L'azione non si può annullare.", "search": "Cerca movimenti", "kindFilter": "Filtra per tipo di movimento", "allKinds": "Tutti i tipi", "income": "Entrata", "expense": "Uscita", "transfer": "Trasferimento", "untitled": "Movimento senza titolo", "empty": "Nessun movimento corrisponde ai filtri.", "perPage": "Per pagina", "previous": "Precedente", "next": "Successiva"
     },
     "dashboard": {
-      "title": "Dashboard", "description": "Totali e categorie per il periodo selezionato.", "from": "Dal", "to": "Al", "incoming": "Entrate", "expense": "Uscite", "categories": "Categorie", "loading": "Caricamento…", "empty": "Nessun dato per questo periodo.", "requestFailed": "Impossibile caricare i dati della dashboard."
+      "title": "Dashboard",
+      "description": "Panoramica completa delle tue finanze.",
+      "from": "Dal", "to": "Al", "incoming": "Entrate", "expenses": "Uscite", "categories": "Categorie",
+      "loading": "Caricamento…", "empty": "Nessun dato per questo mese.",
+      "requestFailed": "Impossibile caricare i dati della dashboard.",
+      "summary": "Riepilogo delle finanze",
+      "wealth": "Patrimonio totale", "income": "Entrate del mese", "expense": "Uscite del mese", "savings": "Risparmio del mese",
+      "currentBalances": "Saldi attuali dei portafogli",
+      "comparison": "rispetto al mese scorso", "noComparison": "Confronto non disponibile", "unavailable": "Dati non disponibili",
+      "monthlyTrend": "Andamento mensile", "month": "Mese dei movimenti",
+      "monthlyDescription": "Entrate e uscite giornaliere nel mese selezionato. I trasferimenti sono esclusi.",
+      "recent": "Ultimi movimenti", "viewAll": "Vedi tutti", "emptyMovements": "Nessun movimento in questo mese.",
+      "date": "Data", "descriptionField": "Descrizione", "category": "Categoria", "wallet": "Portafoglio", "amount": "Importo",
+      "quickActions": "Azioni rapide", "newMovement": "Nuovo movimento", "addWallet": "Aggiungi portafoglio",
+      "newIncome": "Nuova entrata", "newExpense": "Nuova uscita", "transfer": "Trasferisci denaro", "retry": "Riprova"
     }
   }
 }

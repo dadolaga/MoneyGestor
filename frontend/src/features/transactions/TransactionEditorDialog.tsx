@@ -23,7 +23,7 @@ import { parseLocalizedAmount } from '@/lib/money';
 import { notify } from '@/lib/notifications';
 
 import { createTransactionDefaults } from './transaction-editor-model';
-import type { TransactionFormValues } from './transaction-editor-model';
+import type { MovementKind, TransactionFormValues } from './transaction-editor-model';
 import { TransactionAdditionalFields } from './TransactionAdditionalFields';
 import { TransactionDetailsFields } from './TransactionDetailsFields';
 import { TransactionKindFields } from './TransactionKindFields';
@@ -34,6 +34,7 @@ interface TransactionEditorDialogProps {
     walletId?: number;
     typeId?: number;
     transaction?: ApiTransaction;
+    initialKind?: MovementKind;
     metadataLoading: boolean;
     metadataError: string;
     onRetry: () => void;
@@ -52,6 +53,7 @@ export function TransactionEditorDialog({
     walletId,
     typeId,
     transaction,
+    initialKind = 'expense',
     metadataLoading,
     metadataError,
     onRetry,
@@ -76,10 +78,13 @@ export function TransactionEditorDialog({
                 date: transaction.date, description: transaction.description ?? '', notes: transaction.longDescription ?? '',
                 walletId: String(transaction.wallet.id), typeId: String(transaction.type.id),
                 destinationWalletId: transaction.destination ? String(transaction.destination.id) : '',
-            } : createTransactionDefaults(
-                balanceWallets.find((wallet) => wallet.id === walletId)?.id ?? balanceWallets[0]?.id,
-                categories.find((type) => type.id === typeId)?.id,
-            ),
+            } : {
+                ...createTransactionDefaults(
+                    balanceWallets.find((wallet) => wallet.id === walletId)?.id ?? balanceWallets[0]?.id,
+                    categories.find((type) => type.id === typeId)?.id,
+                ),
+                kind: initialKind,
+            },
     );
     const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const form = useForm<TransactionFormValues>({ defaultValues: defaults, mode: 'onBlur' });

@@ -59,15 +59,3 @@ export interface Login {
     password: string;
     remember: boolean;
 }
-
-export interface DashboardOutput {
-    incoming: number;
-    expense: number;
-    incomingCategories: DashboardOutputChar[];
-    expenseCategories: DashboardOutputChar[];
-}
-
-export interface DashboardOutputChar {
-    type: Type;
-    value: number;
-}

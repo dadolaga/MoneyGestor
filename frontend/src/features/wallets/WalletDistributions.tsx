@@ -59,9 +59,10 @@ interface WealthDistributionProps {
     canShowDistribution: boolean;
     isLoading: boolean;
     isReady: boolean;
+    className?: string;
 }
 
-function WealthDistribution({ distribution, total, canShowDistribution, isLoading, isReady }: WealthDistributionProps) {
+export function WealthDistribution({ distribution, total, canShowDistribution, isLoading, isReady, className }: WealthDistributionProps) {
     const t = useTranslations('WalletsDashboard');
     const { money, percentage, walletBalance } = useWalletFormatting();
     const [isAnimationActive, setIsAnimationActive] = useState(false);
@@ -77,11 +78,16 @@ function WealthDistribution({ distribution, total, canShowDistribution, isLoadin
     }, []);
 
     return (
-        <Card aria-busy={isLoading} className="@container flex min-h-[260px] min-w-0 flex-col p-5 shadow-none">
+        <Card aria-busy={isLoading} className={cn('@container flex min-h-[260px] min-w-0 flex-col p-5 shadow-none', className)}>
             <h2 className="mt-0 mb-4 shrink-0 text-lg font-[650]">{t('distribution.title')}</h2>
+            {!!(isLoading || !isReady) && (
+                <p role="status" className="m-0 flex flex-1 items-center justify-center py-10 text-center text-sm text-muted-foreground">
+                    {t(isLoading ? 'states.loading' : 'states.error')}
+                </p>
+            )}
             {!!isReady &&
                 (canShowDistribution ? (
-                    <div className="wallet-content-enter grid grow shrink-0 grid-cols-1 items-center gap-5 @min-[300px]:grid-cols-[minmax(156px,1fr)_minmax(0,1fr)]">
+                    <div className="wallet-content-enter grid grow shrink-0 grid-cols-1 items-center gap-5 @min-[300px]:grid-cols-[minmax(156px,1fr)_minmax(0,1fr)] @min-[500px]:grid-cols-[minmax(156px,0.85fr)_minmax(0,1.15fr)]">
                         <div
                             className="relative h-[200px] w-full max-w-[240px] min-w-0 justify-self-center @min-[440px]:h-[220px]"
                             role="img"
@@ -108,7 +114,7 @@ function WealthDistribution({ distribution, total, canShowDistribution, isLoadin
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-[5px]">
-                                <strong className="text-sm tabular-nums">{money(total)}</strong>
+                                <strong className="text-sm tabular-nums @min-[500px]:text-lg">{money(total)}</strong>
                                 <span className="text-xs text-muted-foreground">{t('distribution.total')}</span>
                             </div>
                         </div>
@@ -116,16 +122,16 @@ function WealthDistribution({ distribution, total, canShowDistribution, isLoadin
                             {distribution.map((wallet) => (
                                 <li
                                     key={wallet.id}
-                                    className="grid grid-cols-[10px_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 text-xs"
+                                    className="grid grid-cols-[10px_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 text-xs @min-[500px]:grid-cols-[12px_minmax(0,1fr)_auto_auto]"
                                 >
                                     <span
                                         className="size-2.5 rounded-full"
                                         style={{ backgroundColor: walletColor(wallet) }}
                                     />
-                                    <span className="col-span-2 truncate" title={wallet.name}>
+                                    <span className="col-span-2 truncate @min-[500px]:col-span-1" title={wallet.name}>
                                         {wallet.name}
                                     </span>
-                                    <strong className="col-start-2 font-semibold tabular-nums [overflow-wrap:anywhere]">
+                                    <strong className="col-start-2 font-semibold tabular-nums [overflow-wrap:anywhere] @min-[500px]:col-start-auto">
                                         {walletBalance(wallet)}
                                     </strong>
                                     <span className="text-right text-muted-foreground">

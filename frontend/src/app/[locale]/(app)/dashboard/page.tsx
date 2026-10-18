@@ -1,5 +1,5 @@
-import { ApiDashboardPage } from '@/features/api/api-finance-pages';
+import { Dashboard } from '@/features/dashboard/Dashboard';
 
 export default function DashboardPage() {
-    return <ApiDashboardPage />;
+    return <Dashboard />;
 }

@@ -1,8 +1,7 @@
-import { toDashboardViewModel } from '@/features/dashboard/adapter';
 import { toTransactionViewModels } from '@/features/transactions/adapter';
 import { toWalletPreviewModels } from '@/features/wallets/wallet-adapter';
 import type { WalletPreviewModel } from '@/features/wallets/wallet-model';
-import type { DashboardOutput, Transaction, Wallet } from '@/models/backend';
+import type { Transaction, Wallet } from '@/models/backend';
 import type { FeatureState, FeatureStatus } from '@/types/feature-state';
 
 interface FeatureStateFixtures<T> {
@@ -22,19 +21,6 @@ function createStateFixtures<T>(data: T): FeatureStateFixtures<T> {
         error: { status: 'error', error: { code: 503 } },
     };
 }
-
-const dashboardDto: DashboardOutput = {
-    incoming: 3250,
-    expense: -1876.42,
-    incomingCategories: [
-        { type: { id: 3, name: 'Salary' }, value: 2950 },
-        { type: { id: 4, name: 'Freelance' }, value: 300 },
-    ],
-    expenseCategories: [
-        { type: { id: 5, name: 'Home' }, value: -980 },
-        { type: { id: 6, name: 'Everyday' }, value: -896.42 },
-    ],
-};
 
 const walletDtos: Wallet[] = [
     {
@@ -164,7 +150,6 @@ const transactionDtos: Transaction[] = [
     },
 ];
 
-export const dashboardStateFixtures = createStateFixtures(toDashboardViewModel(dashboardDto));
 export const demoWallets: WalletPreviewModel[] = toWalletPreviewModels(walletDtos);
 
 demoWallets.push(
