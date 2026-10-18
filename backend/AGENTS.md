@@ -25,14 +25,16 @@ Do not apply historical .NET 8 guidance to the current code.
 | `webserver/Api/V1` | DTOs and query services for versioned resources |
 | `webserver/Auth` | Accounts, Identity sessions and authenticated owner resolution |
 | `logic/Commands` and `logic/Security` | Financial rules, ownership and atomic changes |
-| `database` | EF entities, DbContext and migrations |
+| `database` | EF entities, DbContext and explicit schema version |
 | `TestProject` | NUnit tests and isolated infrastructure |
-| `ExportImportApplication` | Disabled historical CLI; do not incidentally re-enable it |
+| `ExportImportApplication` | Manual initialization, versioned export/import and explicitly confirmed database deletion |
+| `DatabaseTransferTests` | Focused archive tests and isolated MySQL round-trip tests |
 
 `ApplicationIdentityUser` is the single user entity and uses a numeric Identity key. Its `Id` is
 also the financial owner key. `MoneyGestorContext` includes Identity and financial entities; do not
 reintroduce a separate user table, account mapping or Identity context. Registration uses
-`UserManager.CreateAsync` once. The current initial migration targets a new empty database.
+`UserManager.CreateAsync` once. Database setup uses the manual versioned export/import workflow
+in [the migration guide](docs/database-migration-redesign.md); there is no incremental EF migration chain.
 
 Keep controllers small. Reads call query services; writes call `ExecutorManager.ExecuteAsync(ownerId,
 command, cancellationToken)` directly and receive the result. Extend commands and shared policies
@@ -64,12 +66,13 @@ for operational time instead of introducing clock reads that are difficult to co
 
 ## Databases, migrations and tools
 
-The build does not require starting MySQL. Do not launch the backend merely to check compilation:
-startup may apply migrations or perform initialization.
+The build does not require starting MySQL. Do not launch the backend merely to check compilation.
+Startup only validates schema version, reserved reference data and financial integrity in read-only mode.
 
 Do not read `settings.json` files. Do not apply migrations, seeds, repairs, restores or cleanup scripts
-to a database without verifying the target and the task's authorization. A model change may require
-a matching migration, but does not authorize applying it to a real environment.
+to a database without verifying the target and the task's authorization. A model change requires
+reviewing the schema version and archive contract/conversions; it does not authorize applying it
+to a real environment. Never reintroduce schema changes or seed writes during API startup.
 Operational resources and scripts in `ops/` require the same precautions.
 
 ## Style and dependencies
@@ -97,6 +100,11 @@ The current infrastructure uses Testcontainers MySQL 8.4 with a random `mg_test_
 a dynamic port: it creates and removes its own resources. Do not assume that a suite from another
 revision has the same target or replace the isolated environment with a shared database.
 Run only necessary tests after verifying isolation and environment availability.
+
+Focused export/import tests live in `DatabaseTransferTests`; their integration fixture links the same
+ownership guard and only creates resources inside its own labeled MySQL container. The historical
+`TestProject` still has unrelated consumers of APIs removed by earlier refactors; do not hide or
+disable those compile errors to obtain a successful solution build.
 
 For documentation-only changes, check links and `git diff --check`: no build or tests.
 In the handoff, distinguish compilation, any tests run, pre-existing errors and checks not performed.

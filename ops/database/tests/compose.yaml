@@ -28,7 +28,19 @@ services:
     working_dir: /workspace
 
   app-init:
-    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    image: mcr.microsoft.com/dotnet/aspnet:10.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    working_dir: /app
+    command: ["dotnet", "ExportImportApplication.dll", "initialize", "--database", "mg_drill_fixture"]
+    environment:
+      MONEYGESTOR_ADMIN_CONNECTION_STRING: Server=mysql;Port=3306;Database=mg_drill_fixture;User ID=moneygestor_ops;Password=mg-phase4-test-only
+    volumes:
+      - ../../../backend/ExportImportApplication/bin/Debug/net10.0:/app:ro
+
+  app-source:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0
     depends_on:
       mysql:
         condition: service_healthy
@@ -44,27 +56,14 @@ services:
       database__name: mg_drill_fixture
       database__user: moneygestor_ops
       database__password: mg-phase4-test-only
-      database__bootstrapMode: Migrate
     volumes: &app-volumes
-      - ../../../backend/webserver/bin/Debug/net8.0:/app:ro
+      - ../../../backend/webserver/bin/Debug/net10.0:/app:ro
       - ./moneygestor.recovery-test.json:/run/moneygestor.recovery-test.json:ro
-
-  app-source:
-    image: mcr.microsoft.com/dotnet/aspnet:8.0
-    depends_on:
-      mysql:
-        condition: service_healthy
-    working_dir: /app
-    command: ["dotnet", "webserver.dll"]
-    environment:
-      <<: *app-env
-      database__bootstrapMode: Disabled
-    volumes: *app-volumes
     ports:
       - "127.0.0.1::8080"
 
   app-stage:
-    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    image: mcr.microsoft.com/dotnet/aspnet:10.0
     depends_on:
       mysql:
         condition: service_healthy
@@ -73,7 +72,6 @@ services:
     environment:
       <<: *app-env
       database__name: mg_restore_bak43test
-      database__bootstrapMode: Disabled
     volumes: *app-volumes
     ports:
       - "127.0.0.1::8080"

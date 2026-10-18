@@ -27,9 +27,10 @@ The solution is [backend.sln](../backend.sln). Current projects target .NET 10; 
 | --- | --- | --- |
 | `webserver` | ASP.NET Core host, HTTP controllers, Identity, options, health and observability | [Program.cs](../webserver/Program.cs), [Settings.cs](../webserver/Settings.cs) |
 | `logic` | Financial commands, ownership, balance/transfer policies, validation and atomic execution | [ExecutorManager.cs](../logic/ExecutorManager.cs), [Security](../logic/Security) |
-| `database` | Unified financial/Identity context, entities and schema migrations | [MoneyGestorContext.cs](../database/MoneyGestorContext.cs), [ApplicationIdentityUser.cs](../database/Identity/ApplicationIdentityUser.cs) |
+| `database` | Unified financial/Identity context, entities and explicit schema version | [MoneyGestorContext.cs](../database/MoneyGestorContext.cs), [DatabaseSchema.cs](../database/DatabaseSchema.cs) |
 | `TestProject` | NUnit domain, security, infrastructure, HTTP and integration tests | [test infrastructure](../TestProject/Infrastructure) |
-| `ExportImportApplication` | Historical tool, disabled at its entry point | [Program.cs](../ExportImportApplication/Program.cs) |
+| `ExportImportApplication` | Manual initialization, versioned ZIP/CSV export/import and confirmed database deletion | [Program.cs](../ExportImportApplication/Program.cs), [DatabaseTransfer.cs](../ExportImportApplication/DatabaseTransfer.cs) |
+| `DatabaseTransferTests` | Focused archive tests and isolated MySQL round-trip tests | [tests](../DatabaseTransferTests) |
 
 ## 4.2 Request flow
 
@@ -58,9 +59,9 @@ Commands return `Task<T>` from `ExecuteAsync`. Within `logic`, a parent can call
 
 ## 4.4 Startup sequence
 
-Normal startup loads and validates options, creates logging, registers services, builds the middleware pipeline and then initializes the database before serving requests.
+Normal startup loads and validates options, creates logging, registers services, builds the middleware pipeline and then validates the database before serving requests.
 
-Initialization applies or checks the unified migrations according to bootstrap mode, seeds global reference data and runs a read-only financial integrity preflight. A failure stops startup; it does not automatically repair bad financial data. The initial schema targets a new empty database, with no historical account import.
+Validation reads `database_metadata` and requires the schema version compiled into this release, validates reserved global reference data and runs a read-only financial integrity preflight. A failure stops startup and requests manual intervention. Startup never creates tables, applies migrations, seeds or repairs data. The separate administrative tool initializes an existing empty database or imports a supported versioned archive into one; see the [manual update workflow](database-migration-redesign.md).
 
 In Production, `DATA_PROTECTION_KEYS_PATH` is required, and an SMTP host/sender is required when email confirmation is enabled. SMTP remains necessary for password recovery in either mode. `Testing` supplies in-memory host configuration for tests and OpenAPI export; it is not a production mode or a normal setup shortcut.
 
@@ -108,7 +109,7 @@ Current browser pages use versioned DTO-based `/api/v1` APIs. Success responses 
 
 Only `/api/v1` resource and account endpoints are available. Non-versioned controllers, the `{ code, message, data }` envelope and compatibility mappers have been removed. The URL version is retained as a stable public contract. Detailed endpoints and examples are in [chapter 07](07-api-reference.md).
 
-The ZIP/CSV CLI exits with `feature_disabled` and exit code 2 before reading settings or touching the database. Its source files are historical artifacts, not an enabled import/export service. Use the administrative scripts described in [chapter 09](09-operations-and-recovery.md).
+The ZIP/CSV CLI provides `initialize`, `export`, `import` and `delete`, using an explicit database name and `MONEYGESTOR_ADMIN_CONNECTION_STRING`; it never reads application settings. Deletion requires typing the exact database name and removes the entire database. The old importer and EF migration chain have been removed. SQL backup/recovery scripts remain separate tools for recovery on a compatible schema; see [chapter 09](09-operations-and-recovery.md).
 
 
 ---

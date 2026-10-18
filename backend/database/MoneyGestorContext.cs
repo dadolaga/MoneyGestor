@@ -11,6 +11,7 @@ namespace database {
         public DbSet<WalletDb> Wallets { get; set; }
         public DbSet<TransactionTypeDb> TransactionTypes { get; set; }
         public DbSet<TransactionDb> Transactions { get; set; }
+        public DbSet<DatabaseMetadata> Metadata { get; set; }
 
         public MoneyGestorContext(DbContextOptions<MoneyGestorContext> options)
             : base(options) {
@@ -18,6 +19,7 @@ namespace database {
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<DatabaseMetadata>().Property(metadata => metadata.Id).ValueGeneratedNever();
 
             var types = modelBuilder.Entity<TransactionTypeDb>();
             types.Property(type => type.Icon).HasMaxLength(32).HasDefaultValue("tag");

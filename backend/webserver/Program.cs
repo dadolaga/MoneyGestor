@@ -77,7 +77,6 @@ public class Program {
                 ["database:name"] = "unused_openapi_export",
                 ["database:user"] = "unused",
                 ["database:password"] = "unused",
-                ["database:bootstrapMode"] = "Disabled",
                 ["log:level"] = "Information",
                 ["log:output:console"] = "true",
                 ["security:allowedOrigins:0"] = "http://localhost:3000",
@@ -194,7 +193,6 @@ public class Program {
         builder.Services.AddScoped<AccountService>();
         builder.Services.AddScoped<IApiCurrentUser, ApiCurrentUser>();
         builder.Services.AddScoped<IResourceQueryService, ResourceQueryService>();
-        builder.Services.AddScoped<DatabaseBootstrapper>();
         builder.Services.AddScoped<DatabaseInitializer>();
         builder.Services.AddScoped<ExecutorManager>();
         builder.Services.AddSingleton(TimeProvider.System);
@@ -361,7 +359,6 @@ public class Program {
         CancellationToken cancellationToken = default) {
         await using var scope = app.Services.CreateAsyncScope();
         var services = scope.ServiceProvider;
-        var databaseOptions = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
         var emailOptions = services.GetRequiredService<IOptions<EmailOptions>>().Value;
 
         var securityOptions = services.GetRequiredService<IOptions<SecurityOptions>>().Value;
@@ -370,14 +367,11 @@ public class Program {
         }
 
         var logger = services.GetRequiredService<ILogger<Program>>();
-        var bootstrapStarted = Stopwatch.GetTimestamp();
-        logger.LogInformation(new EventId(1100, "DatabaseBootstrapStarted"),
-            "Database bootstrap started ({BootstrapMode})", databaseOptions.BootstrapMode);
+        var validationStarted = Stopwatch.GetTimestamp();
+        logger.LogInformation(new EventId(1100, "DatabaseValidationStarted"), "Read-only database validation started");
         var moneyGestorDatabase = services.GetRequiredService<MoneyGestorContext>();
-        var bootstrapOutcome = await services.GetRequiredService<DatabaseBootstrapper>()
-            .BootstrapAsync(databaseOptions.BootstrapMode, cancellationToken);
-
-        await services.GetRequiredService<DatabaseInitializer>().InitAsync(cancellationToken);
+        await DatabaseSchema.RequireCurrentAsync(moneyGestorDatabase, cancellationToken);
+        await services.GetRequiredService<DatabaseInitializer>().ValidateAsync(cancellationToken);
         try {
             await DataIntegrityPreflight.EnsureValidAsync(moneyGestorDatabase, cancellationToken);
         } catch (logic.Exceptions.DataIntegrityException exception) {
@@ -386,9 +380,9 @@ public class Program {
             throw;
         }
 
-        logger.LogInformation(new EventId(1101, "DatabaseBootstrapCompleted"),
-            "Database bootstrap completed ({BootstrapOutcome}) in {ElapsedMilliseconds} ms",
-            bootstrapOutcome, Stopwatch.GetElapsedTime(bootstrapStarted).TotalMilliseconds);
+        logger.LogInformation(new EventId(1101, "DatabaseValidationCompleted"),
+            "Read-only database validation completed for schema {SchemaVersion} in {ElapsedMilliseconds} ms",
+            DatabaseSchema.CurrentVersion, Stopwatch.GetElapsedTime(validationStarted).TotalMilliseconds);
     }
 
     internal static Boolean ShouldEnableDatabaseLogging(
@@ -418,7 +412,7 @@ public class Program {
         services.AddOptions<DatabaseOptions>()
             .Bind(configuration.GetSection(DatabaseOptions.SectionName))
             .Validate(DatabaseOptions.IsValid,
-                "Database host, port, name, user and password are required; bootstrapMode must be valid.")
+                "Database host, port, name, user and password are required.")
             .ValidateOnStart();
         services.AddOptions<LogOptions>()
             .Bind(configuration.GetSection(LogOptions.SectionName))

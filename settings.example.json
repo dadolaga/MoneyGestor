@@ -23,8 +23,7 @@
     "port": 3306,
     "name": "moneygestor_db",
     "user": "moneygestor_user",
-    "password": "CHANGE_ME_IN_PRODUCTION",
-    "bootstrapMode": "Disabled"
+    "password": "CHANGE_ME_IN_PRODUCTION"
   },
   "security": {
     "requireConfirmedEmail": true,

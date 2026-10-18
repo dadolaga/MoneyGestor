@@ -28,7 +28,7 @@ For a public deployment, provide HTTPS, a browser-reachable API URL, exact allow
 
 Inspect proxy behavior before deploying: the current pipeline uses HTTPS redirection but does not explicitly register forwarded-header middleware. A TLS-terminating proxy needs a reviewed scheme/host arrangement; do not assume arbitrary proxy headers are automatically trusted.
 
-Before applying migrations, verify the database target, take a verified backup and stop competing application instances. Apply changes through one controlled instance, confirm readiness, then return bootstrap mode to `Disabled`. Detailed historical release material is in the [release runbook](../../docs/all_modernization/backend-modernization/RELEASE_RUNBOOK.md); consult [chapter 08](08-database-and-business-rules.md) for the current baseline.
+For an update, stop all application writers, preserve the original database and a verified backup, export using the source release's administrative tool, then import using the destination release's tool into a different empty database. Only after a successful import, manually change the application configuration and start the compatible release. Startup never updates the database. See the [manual update workflow](database-migration-redesign.md).
 
 ## 9.2 Health checks
 
@@ -37,7 +37,7 @@ Before applying migrations, verify the database target, take a verified backup a
 | GET `/health/live` | Process pipeline only; no database query | 200 `{ "status": "Healthy" }` | Determine whether the host responds |
 | GET `/health/ready` | MySQL connection and `SELECT 1` within configured timeout | 200 Healthy, or 503 Unhealthy | Decide whether the instance should receive traffic |
 
-Responses use `Cache-Control: no-store` and do not include connection details. A healthy readiness check does not prove SMTP delivery, complete browser login or correct financial data after an external manual change. Initialization checks run before normal startup completes.
+Responses use `Cache-Control: no-store` and do not include connection details. A healthy readiness check does not prove SMTP delivery, complete browser login or correct financial data after an external manual change. Read-only validation runs before normal startup completes.
 
 ```powershell
 Invoke-RestMethod http://localhost:5256/health/live
@@ -67,9 +67,9 @@ Counters live in the process and reset on restart. They do not have user/resourc
 
 ## 9.4 What a backup contains
 
-Administrative backups use native MySQL clients and the scripts in [ops/database](../../ops/database). The old ZIP/CSV CLI is disabled.
+Native SQL backups use MySQL clients and the scripts in [ops/database](../../ops/database). These backups preserve a schema for recovery. The separate [versioned ZIP/CSV tool](database-migration-redesign.md) is used to rebuild data into the current schema for an update.
 
-A backup is a `.mgbak` **directory**, containing `database.sql` and `manifest.json`. It includes the full selected schema, financial/user data, Identity password hashes, migration history and database objects captured by mysqldump. The manifest records inventory, size and SHA-256.
+A backup is a `.mgbak` **directory**, containing `database.sql` and `manifest.json`. It includes the full selected schema, financial/user data, Identity password hashes, schema version metadata and database objects captured by mysqldump. The manifest records inventory, size and SHA-256.
 
 It does **not** include MySQL server accounts/grants, server configuration, the ASP.NET Data Protection key ring, local settings or SMTP secrets. Preserve those separately through protected operational procedures. SHA-256 detects accidental corruption; it does not encrypt a dump or establish its authenticity.
 
@@ -111,13 +111,13 @@ pwsh -File .\ops\database\Restore-MoneyGestorToStaging.ps1 `
   -Port 3306
 ```
 
-The backup path is illustrative; select an actual completed backup. The script verifies format, filename, length, checksum, schema metadata, table inventory, migration history and table checks. If it fails after staging creation, staging remains available for inspection. Do not promote a failed restore.
+The backup path is illustrative; select an actual completed backup. The script verifies format, filename, length, checksum, schema metadata, table inventory, schema version marker and table checks. If it fails after staging creation, staging remains available for inspection. Do not promote a failed restore.
 
 ## 9.7 Cutover and rollback
 
 1. Schedule maintenance and stop all backend writers.
 2. Complete and verify staging restore; keep the original schema and a verified backup.
-3. Privately change the application database name to the verified staging schema, keeping `bootstrapMode=Disabled`.
+3. Privately change the application database name to the verified staging schema and use a release compatible with its schema version.
 4. Start one instance and check startup/readiness, a controlled login, wallet/transaction reads and read-only balance reconciliation.
 5. If checks fail, stop the instance, restore the previous configuration and compatible application version, and verify the original schema again.
 6. If checks pass, reopen traffic and retain the old schema according to the agreed retention procedure.

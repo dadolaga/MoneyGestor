@@ -97,7 +97,7 @@ function Get-MgDatabaseSnapshot {
     if ($tables.Count -eq 0) { throw "Database '$Database' has no base tables." }
     $viewCount = Invoke-MgSql @queryOptions -Sql "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = '$Database' AND TABLE_TYPE = 'VIEW';"
     if ($viewCount -ne '0') { throw 'Database views require an explicit inventory extension before backup.' }
-    $required = @('AspNetRoleClaims', 'AspNetRoles', 'AspNetUserClaims', 'AspNetUserLogins', 'AspNetUserRoles', 'AspNetUserTokens', 'AspNetUsers', '__EFMigrationsHistory', 'color', 'login', 'transaction', 'transaction_type', 'user', 'wallet')
+    $required = @('AspNetRoleClaims', 'AspNetRoles', 'AspNetUserClaims', 'AspNetUserLogins', 'AspNetUserRoles', 'AspNetUserTokens', 'AspNetUsers', 'database_metadata', 'color', 'transaction', 'transaction_type', 'wallet')
     $missing = @($required | Where-Object { $_ -notin $tables })
     if ($missing.Count -gt 0) { throw ('Database is missing required MoneyGestor tables: ' + ($missing -join ', ')) }
     $schemaInfo = Invoke-MgSql @queryOptions -Sql "SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$Database';"

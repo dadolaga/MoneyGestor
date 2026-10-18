@@ -383,31 +383,16 @@ questo documento resta un piano e le guide del contratto corrente non devono pre
 
 ### Strategia di migrazione
 
-La baseline attuale è `20261017084510_InitialUnifiedSchema`, con Identity e dati finanziari nello
-stesso contesto. Aggiungere migrazioni **successive**; non riscrivere la baseline per una
-funzionalità incrementale e non ricreare il database per aggiungere queste funzioni.
+Lo schema corrente comprende i metadati delle categorie ed è identificato dalla
+versione `1` in `database_metadata`. Il precedente bootstrap e la catena di migrazioni
+EF sono stati eliminati. Seguire la [guida al processo manuale](../database-migration-redesign.md):
+applicazione ferma, export versionato, import nello schema corrente di un nuovo
+database, verifiche e cambio manuale di configurazione.
 
-Migrazione generata: `20261018115443_ExtendTransactionTypes`, limitata ai metadati delle categorie e non applicata.
-
-- Aggiungere default/backfill compatibili per categorie esistenti e globali; padre null,
-  icona `tag`, colore `grey`, descrizione/parole chiave null, `useInReports=true`.
-- Aggiungere campi facoltativi alle richieste esistenti; conservare payload, segni e status attuali.
-- In un DB già aggiornato alla baseline il bootstrap può applicare le migrazioni successive in
-  modalità Migrate. Un vecchio schema senza la baseline resta rifiutato: serve un piano separato di conversione.
-
-Per generare la prima migrazione, **solo dopo aver implementato il modello**, dalla root:
-
-```powershell
-dotnet tool restore
-dotnet tool run dotnet-ef migrations add ExtendTransactionTypes --project backend/database/database.csproj --context MoneyGestorContext --output-dir Migrations
-dotnet tool run dotnet-ef migrations script 20261017084510_InitialUnifiedSchema --project backend/database/database.csproj --context MoneyGestorContext
-```
-
-La factory richiede `MONEYGESTOR_DESIGN_CONNECTION_STRING`, impostata privatamente con valori
-dell'ambiente di sviluppo verificato. La generazione non applica migrazioni. Prima dell'applicazione
-verificare ambiente e target, backup DB e SQL prodotto; provare l'aggiornamento su copia
-isolata. Non avviare normalmente il backend per «vedere se compila»: lo startup può inizializzare il DB.
-Non usare un downgrade distruttivo come strategia ordinaria di ripristino.
+Per ulteriori modifiche al modello, aggiornare la versione dello schema e valutare
+il contratto CSV e gli eventuali convertitori. Conservare payload, segni e status
+attuali e definire default espliciti nelle conversioni quando diventano necessari.
+Lo startup valida soltanto e richiede l'aggiornamento manuale se la versione non coincide.
 
 ### Ordine operativo
 

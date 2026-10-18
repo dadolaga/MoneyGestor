@@ -76,6 +76,10 @@ MUI remains in legacy frontend areas during migration. MySQL is managed separate
 
 ## Implementation plans
 
+La [guida alle migrazioni manuali](database-migration-redesign.md) descrive
+inizializzazione, export/import versionato e blocco all'avvio con schema incompatibile.
+Il flusso è implementato; gli aggiornamenti richiedono un intervento manuale.
+
 Il [README di integrazione della dashboard transazioni](transactions-dashboard/README.md) descrive
 le API già disponibili e gli interventi proposti su database, categorie,
 aggregazioni ed export. È un piano di implementazione, non un elenco di funzionalità già attive.

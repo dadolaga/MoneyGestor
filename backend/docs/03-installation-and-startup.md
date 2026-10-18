@@ -47,13 +47,17 @@ Only copy the example if a local settings file does not already exist. Edit the 
 
 ## 3.3 Initialize a fresh database
 
-1. Choose a new empty database name and set `database.name` to it.
-2. Ensure the configured user can connect and apply schema changes. If the database does not exist, creation also requires appropriate MySQL privileges.
-3. Set `database.bootstrapMode` to `Migrate` for the first startup.
-4. Start one backend instance. It applies the unified financial/Identity migration, seeds global colors/types and checks integrity before serving requests.
-5. Check readiness and the account flow, then set bootstrap mode back to `Disabled` and restart.
+1. Provision a new, existing empty MySQL database and a separate administrative account with schema permissions.
+2. Privately supply its connection string in `MONEYGESTOR_ADMIN_CONNECTION_STRING` to the administrative tool.
+3. Run the command below, replacing the explicit name with that same database name.
+4. Configure `database.name` and the application's own credentials, which do not require DDL permissions.
+5. Start the backend. It only checks schema version, reference data and financial integrity before serving requests.
 
-`Disabled` is the default: missing databases or pending migrations stop startup without applying DDL. A populated historical database lacking the current initial migration is rejected even in `Migrate` mode. Startup never deletes that database or automatically imports its old schema. See [database details](08-database-and-business-rules.md).
+```powershell
+dotnet run --project backend/ExportImportApplication -- initialize --database moneygestor_db
+```
+
+Missing, incomplete or incompatible databases stop startup with a request for manual intervention. Updates use versioned export/import into a new database while the application is stopped. No startup migration or seed runs. See the [manual update workflow](database-migration-redesign.md).
 
 Development can start without SMTP. Email confirmation is required by default: configure a development SMTP service for this workflow, or set `security.requireConfirmedEmail=false` to allow immediate login after registration. Production requires SMTP configuration when confirmation is enabled and always requires persistent Data Protection keys. Password recovery requires SMTP in both modes.
 

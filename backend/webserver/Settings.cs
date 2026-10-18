@@ -12,7 +12,6 @@ public sealed class DatabaseOptions {
     public String Name { get; set; } = String.Empty;
     public String User { get; set; } = String.Empty;
     public String Password { get; set; } = String.Empty;
-    public DatabaseBootstrapMode BootstrapMode { get; set; } = DatabaseBootstrapMode.Disabled;
 
     public String CreateConnectionString() => new MySqlConnectionStringBuilder {
         Server = Host,
@@ -27,8 +26,7 @@ public sealed class DatabaseOptions {
         options.Port > 0 &&
         !String.IsNullOrWhiteSpace(options.Name) &&
         !String.IsNullOrWhiteSpace(options.User) &&
-        !String.IsNullOrWhiteSpace(options.Password) &&
-        Enum.IsDefined(options.BootstrapMode);
+        !String.IsNullOrWhiteSpace(options.Password);
 }
 
 public sealed class LogOptions {

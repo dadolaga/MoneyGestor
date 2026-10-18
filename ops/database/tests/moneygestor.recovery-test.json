@@ -11,8 +11,7 @@
     "port": 3306,
     "name": "mg_drill_fixture",
     "user": "moneygestor_ops",
-    "password": "fixture-only",
-    "bootstrapMode": "Disabled"
+    "password": "fixture-only"
   },
   "security": {
     "allowedOrigins": ["http://localhost:3000"]

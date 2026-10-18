@@ -49,16 +49,10 @@ Use double underscores for nested environment keys, such as `database__host` or 
 | `database.name` | String | `moneygestor_db` | Empty | Database/schema for both financial and Identity tables; nonblank required. |
 | `database.user` | String | `moneygestor_user` | Empty | MySQL account; nonblank required. No automatic root fallback. |
 | `database.password` | String, secret | `CHANGE_ME_IN_PRODUCTION` | Empty | MySQL password; nonblank required. Replace the placeholder privately. |
-| `database.bootstrapMode` | Enum string | `Disabled` | `Disabled` | `Disabled` checks an existing up-to-date schema; `Migrate` can create/apply pending migrations. Other enum values are invalid. |
 
 The connection string is assembled with `MySqlConnectionStringBuilder`. The public options currently expose these connection fields only; there is no documented `database.sslMode`, pool-size or connection-string property in this schema. Configure database transport according to your installation rather than inventing unsupported settings.
 
-| Bootstrap mode | Missing/empty schema | Pending migrations | Existing old schema without current baseline |
-| --- | --- | --- | --- |
-| `Disabled` | Startup fails | Startup fails without applying DDL | Startup fails |
-| `Migrate` | Attempts creation/migration with configured privileges | Applies pending migrations | Startup fails; no automatic adoption/deletion |
-
-After a controlled first installation, return to `Disabled`. This mode prevents migration DDL, but normal startup still seeds reference data; it is not a read-only application mode. Identity and financial tables share the single `MoneyGestorContext` migration history.
+Startup only validates schema version, reserved reference data and financial integrity. Missing or incompatible versions require manual initialization or export/import through the [administrative tool](database-migration-redesign.md). The API does not need DDL permissions and never updates the schema or seeds on startup. The former migration mode option is no longer supported.
 
 ## 6.3 Logging settings
 
@@ -165,9 +159,8 @@ Path validation applies even if metrics are disabled. Choose a route that does n
 | `ASPNETCORE_URLS` | Backend | Supplied by host/profile | Bind addresses when running locally, such as `http://localhost:5256`. |
 | `ASPNETCORE_HTTP_PORTS` | Backend container | `8080` in Dockerfile | Container HTTP listening port. |
 | `DATA_PROTECTION_KEYS_PATH` | Backend | Required in Production | Persistent writable protected key storage. Outside Production, fallback is `data-protection-keys` beside the binaries. |
-| `MONEYGESTOR_DESIGN_CONNECTION_STRING` | EF tooling | Required by design-time factories | Complete protected connection string for migration tooling; separate from normal backend settings loading. |
+| `MONEYGESTOR_ADMIN_CONNECTION_STRING` | Administrative CLI | Required for initialize/export/import/delete | Protected MySQL connection string. Its database must match `--database`; the CLI reads no settings file. Delete additionally requires confirmation and DROP permission. |
 | `NEXT_PUBLIC_API_URL` | Frontend | Active clients fall back to `http://localhost:5256` | Browser-visible API URL; embedded at frontend build time. |
-| `IMPORT_EXPORT_APP_SETTINGS` | Historical CLI | Historical only | Older settings reader used it. The current disabled entry point does not read it. |
 
 For example, these non-secret overrides take precedence over JSON during ordinary startup:
 
@@ -195,7 +188,7 @@ The current Compose build argument constructs `NEXT_PUBLIC_API_URL` as `http://l
 
 ## 6.9 Configuration checklist
 
-Before startup, check the selected file path, MySQL host/database/user, intended bootstrap mode, at least one log sink, writable file-log storage, exact frontend origins, confirmation policy and email-link base URL. Production needs HTTPS topology and durable Data Protection storage; SMTP is required when confirmation is enabled and for email password recovery. Health/readiness validates MySQL availability; it does not validate email delivery or browser authentication.
+Before startup, check the selected file path, MySQL host/database/user, matching database schema version, at least one log sink, writable file-log storage, exact frontend origins, confirmation policy and email-link base URL. Production needs HTTPS topology and durable Data Protection storage; SMTP is required when confirmation is enabled and for email password recovery. Health/readiness validates MySQL availability; it does not validate email delivery or browser authentication.
 
 
 ---

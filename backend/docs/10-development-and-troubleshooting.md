@@ -57,12 +57,22 @@ When switching branches or versions, verify the test infrastructure before runni
 
 The API/executor simplification removes legacy endpoints, authentication commands, list filters
 and the old executor API. User unification also removes `UserDb`, `LoginDb` and the separate Identity
-context, replacing their migration chains with a new empty-database baseline. Test sources have
-deliberately not been updated in these slices. The
+context. Database setup now uses manual versioned export/import. Most historical test sources have
+not been updated for those earlier API changes. The
 solution build therefore currently fails in `TestProject` until those consumers are migrated;
 this is a known consequence of the refactor, not a pre-existing test failure. Do not restore
 production compatibility APIs just to compile the old tests. Application projects can be checked
 with `dotnet build backend/webserver/webserver.csproj` without running the test suite.
+
+The independent [DatabaseTransferTests](../DatabaseTransferTests) project verifies archives and
+the new manual workflow, including a round-trip through its own disposable MySQL container:
+
+```powershell
+dotnet test backend/DatabaseTransferTests/DatabaseTransferTests.csproj
+```
+
+Its fixture links the same ownership guard; check its generated targets and Docker availability
+before execution. It does not use the historical suite's broken API consumers.
 
 ## 10.4 Frontend checks
 
@@ -98,10 +108,10 @@ The export branch starts a temporary local host and writes only `v1.json` withou
 | Symptom | Likely cause | What to check |
 | --- | --- | --- |
 | Settings file not found | Wrong working directory or profile override | Absolute `BACKEND_APP_SETTINGS`; selected launch profile; file existence |
-| Database options invalid | Blank fields, zero/out-of-range port or bad enum | Public settings table and environment overrides |
-| Startup refuses pending migrations | Default bootstrap is Disabled | Verify target; use a controlled migration window or fresh setup |
-| Existing schema rejected | Database lacks current initial migration | Preserve old database; use a new empty schema or explicit conversion plan |
-| Integrity preflight fails | Ownership, balance, pair or account-mapping inconsistency | Technical report, compatible backup and deliberate investigation; bootstrap mode is not a repair switch |
+| Database options invalid | Blank fields or zero/out-of-range port | Public settings table and environment overrides |
+| Startup refuses schema version | Database version differs from this release | Stop writers and perform manual versioned export/import into a new database |
+| Missing database version | Database is uninitialized or import did not complete | Verify target; initialize an empty destination or inspect the failed import |
+| Integrity/reference validation fails | Ownership, balance, pair or reserved-record inconsistency | Technical report, compatible backup and deliberate investigation; startup never repairs data |
 | Production rejects key path | Missing `DATA_PROTECTION_KEYS_PATH` | Persistent writable protected key storage |
 | Production rejects email configuration | Confirmation enabled but SMTP host/sender missing | Configure SMTP plus a valid frontend URL, or explicitly disable confirmation with `security.requireConfirmedEmail=false` |
 | File logger cannot write | Bad path or filesystem permissions | Container path under `/app/log`; valid filename; non-root permissions |

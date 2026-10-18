@@ -39,7 +39,7 @@ namespace TestProject {
         }
 
         [Test]
-        public async Task InitializeDatabaseRepairsGlobalSeedValues() {
+        public async Task InitializeDatabaseRejectsConflictingGlobalSeedValues() {
             await InitializeDatabase();
             await using (var database = TestDatabaseRuntime.CreateContext()) {
                 var red = await database.Colors.SingleAsync(color => color.Id == DatabaseInitializer.RED.Id);
@@ -51,18 +51,22 @@ namespace TestProject {
                 await database.SaveChangesAsync();
             }
 
-            await InitializeDatabase();
+            Assert.ThrowsAsync<InvalidOperationException>(InitializeDatabase);
 
             await using var verification = TestDatabaseRuntime.CreateContext();
-            var repairedRed = await verification.Colors.SingleAsync(
+            var unchangedRed = await verification.Colors.SingleAsync(
                 color => color.Id == DatabaseInitializer.RED.Id);
-            var repairedTransfer = await verification.TransactionTypes.SingleAsync(
+            var unchangedTransfer = await verification.TransactionTypes.SingleAsync(
                 type => type.Id == DatabaseInitializer.TRANSFER.Id);
             Assert.Multiple(() => {
-                Assert.That(repairedRed.Name, Is.EqualTo(DatabaseInitializer.RED.Name));
-                Assert.That(repairedRed.Value, Is.EqualTo(DatabaseInitializer.RED.Value));
-                Assert.That(repairedTransfer.Name, Is.EqualTo(DatabaseInitializer.TRANSFER.Name));
+                Assert.That(unchangedRed.Name, Is.EqualTo("Wrong"));
+                Assert.That(unchangedRed.Value, Is.Zero);
+                Assert.That(unchangedTransfer.Name, Is.EqualTo("Wrong"));
             });
+            unchangedRed.Name = DatabaseInitializer.RED.Name;
+            unchangedRed.Value = DatabaseInitializer.RED.Value;
+            unchangedTransfer.Name = DatabaseInitializer.TRANSFER.Name;
+            await verification.SaveChangesAsync();
         }
 
         private static async Task InitializeDatabase() {

@@ -8,7 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="**\*.cs" />
-    <Compile Include="Program.cs" />
+    <ProjectReference Include="..\logic\logic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TestProject" />
+    <InternalsVisibleTo Include="DatabaseTransferTests" />
   </ItemGroup>
 </Project>

@@ -21,7 +21,7 @@
 
 ## 8.1 Persistence structure
 
-One external MySQL database stores financial and Identity tables. `MoneyGestorContext` extends `IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64>` and manages the complete model and its single `__EFMigrationsHistory`.
+One external MySQL database stores financial and Identity tables. `MoneyGestorContext` extends `IdentityDbContext<ApplicationIdentityUser, IdentityRole<UInt64>, UInt64>` and manages the complete model. A singleton `database_metadata` row identifies the ready schema version; there is no EF migration history.
 
 | Entity / area | Purpose | Important fields or relationships |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Wallets and transactions belong to exactly one user. The authenticated account s
 
 Global colors/types are available to everyone. Private colors/types are available only to their owner and can be attached only to that user's resources. Wallet names are unique per owner; transaction-type names are unique per owner. Financial lookups do not reveal the existence of another user's resource.
 
-The idempotent startup seed creates global colors and the reserved types **Transfer (ID 1)** and **Adjustment (ID 2)**. Other IDs depend on the installation. There is no separate category entity in the current financial model.
+Manual initialization creates global colors and the reserved types **Transfer (ID 1)** and **Adjustment (ID 2)**. Startup only validates them and refuses conflicts without overwriting records. Import preserves these records from the archive. Other IDs depend on the installation. There is no separate category entity in the current financial model.
 
 ## 8.3 Money and dates
 
@@ -82,38 +82,33 @@ Creation and mutation of the pair are atomic. List queries hide the positive des
 
 ## 8.6 Database creation and migrations
 
-| Context | Current initial migration |
-| --- | --- |
-| MoneyGestor, including Identity and wallet details | `20261017084510_InitialUnifiedSchema` |
-| Incremental category metadata | `20261018115443_ExtendTransactionTypes` |
+The current database schema version is `1`, stored in the singleton `database_metadata`
+row only after a successful initialization or import. The API checks this version
+and reference/financial integrity without writing data. Missing, older or newer
+versions stop startup and require manual intervention.
 
-The migration baseline was recreated during the refactor for an empty database, as there are no application data to migrate. It creates financial and Identity tables together. Previous migration chains have been replaced; this baseline is not an in-place upgrade of the old two-user schema. A database with any prior schema or migration history is refused. No database was recreated or migrated as part of generating these source files.
+The administrative CLI creates the complete current schema through EF on an existing
+empty destination. There are no incremental EF migrations, model snapshot or migration
+history. Future releases must review the schema version and explicit archive contract.
+Updates export data while the source application is stopped, then import into a new
+database, preserving IDs, Identity data, ownership and relationships. Format version `1`
+is the first supported archive version; unsupported versions are refused before writes.
 
-Use `database.bootstrapMode=Migrate` only for a verified deployment target with adequate privileges, then return to `Disabled`. The single context must be current for startup to succeed. Seed and integrity checks run after schema preparation.
-
-For reviewing SQL, restore the repository-local EF tool and set `MONEYGESTOR_DESIGN_CONNECTION_STRING` privately in the administrative environment:
-
-```powershell
-dotnet tool restore
-dotnet tool run dotnet-ef migrations script --project backend/database/database.csproj --context MoneyGestorContext
-```
-
-Generating scripts does not apply them. Database-update commands and startup with `Migrate` do modify the configured target. The initial migrations' Down methods remove tables; recovery should use a verified backup in a separate schema and a compatible application version, rather than an unreviewed downgrade.
+See the [manual initialization/export/import guide](database-migration-redesign.md)
+for exact commands, credential handling, verification and recovery. No application
+database was recreated as part of changing these source files.
 
 ## 8.7 Integrity and recovery
 
-The incremental dashboard migration adds category metadata with compatible defaults (parent null,
+Category metadata has compatible defaults (parent null,
 tag, grey, report preference true), without changing existing movements. Parent FKs are restrictive.
 Private parents must be global ordinary categories or belong to the same owner; reserved types
 and cyclic chains are rejected. User APIs do not modify global categories.
 
-The category migration/snapshot were generated only: application requires a verified target and
-backup. The initial baseline remains unchanged.
-
-The initial unified migration includes wallet type, EUR currency, institution, optional IBAN,
+The current model includes wallet type, EUR currency, institution, optional IBAN,
 card metadata, credit limit/spending, statement/payment days, notes and shareable preference.
 The optional self-reference `LinkedAccountId` uses a restrictive foreign key and is indexed.
-Balance containers default to bank/EUR. Generating this migration does not apply it.
+Balance containers default to bank/EUR.
 
 Only bank/prepaid/cash own balances. Debit/credit keep zero opening/current values and are excluded
 from wealth. Account linking requires the same owner and a bank type. Commands lock affected
@@ -125,7 +120,7 @@ ledger adjustment is implied. Shareable does not implement shared ownership or p
 
 Startup checks financial ownership, references, balances and transfer pairs and refuses known inconsistencies. Identity account creation enforces unique normalized usernames/emails. Startup no longer imports historical accounts. Failures expose technical identifiers/counts instead of automatically changing records.
 
-For an old schema, preserve the original and plan an explicit conversion or separate installation. For corrupted/current data, collect technical evidence and use the [backup and staging restore workflow](09-operations-and-recovery.md). Changing bootstrap mode does not repair financial inconsistencies.
+For an old schema, preserve the original and plan an explicit conversion or separate installation. For corrupted/current data, collect technical evidence and use the [backup and staging restore workflow](09-operations-and-recovery.md). Initialization and import do not silently repair financial inconsistencies.
 
 
 ---

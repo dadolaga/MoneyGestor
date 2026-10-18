@@ -1,6 +1,7 @@
 using database;
 using database.Identity;
 using logic;
+using ExportImportApplication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +23,6 @@ internal static class TestDatabaseRuntime {
     private static UInt16 CurrentPort;
     private static String? CurrentContainerId;
     private static DbContextOptions<MoneyGestorContext>? DatabaseOptions;
-    private static DbContextOptions<IdentityAccountContext>? IdentityOptions;
     private static String? ConnectionString;
 
     internal static String? RunId => CurrentRunId;
@@ -87,19 +87,7 @@ internal static class TestDatabaseRuntime {
         return Convert.ToInt32(await command.ExecuteScalarAsync()) == 1;
     }
 
-    internal static IdentityAccountContext CreateIdentityContext() => new(
-        IdentityOptions ?? throw new InvalidOperationException("The test database is not running."));
-
-    internal static IdentityAccountContext CreateIsolatedIdentityContext(String databaseName) {
-        EnsureIsolatedDatabaseName(databaseName);
-        var connection = new MySqlConnectionStringBuilder(
-            ConnectionString ?? throw new InvalidOperationException("The test database is not running.")) {
-            Database = databaseName
-        };
-        return new IdentityAccountContext(new DbContextOptionsBuilder<IdentityAccountContext>()
-            .UseMySQL(connection.ConnectionString)
-            .Options);
-    }
+    internal static MoneyGestorContext CreateIdentityContext() => CreateContext();
 
     internal static IReadOnlyDictionary<String, String?> CreateConfiguration() {
         if (Lease == null || DatabaseOptions == null) {
@@ -113,7 +101,6 @@ internal static class TestDatabaseRuntime {
             ["database:name"] = connection.Database,
             ["database:user"] = connection.UserID,
             ["database:password"] = connection.Password,
-            ["database:bootstrapMode"] = "Migrate",
             ["log:level"] = "Warning",
             ["log:output:console"] = "true",
             ["security:allowedOrigins:0"] = "http://localhost:3000",
@@ -169,22 +156,10 @@ internal static class TestDatabaseRuntime {
             DatabaseOptions = new DbContextOptionsBuilder<MoneyGestorContext>()
                 .UseMySQL(connection.ConnectionString)
                 .Options;
-            IdentityOptions = new DbContextOptionsBuilder<IdentityAccountContext>()
-                .UseMySQL(connection.ConnectionString)
-                .Options;
             ConnectionString = connection.ConnectionString;
 
             await using (var database = CreateContext()) {
-                await new DatabaseBootstrapper(database)
-                    .BootstrapAsync(DatabaseBootstrapMode.Migrate);
-            }
-
-            await using (var identityDatabase = CreateIdentityContext()) {
-                await identityDatabase.Database.MigrateAsync();
-            }
-
-            await using (var database = CreateContext()) {
-                await new DatabaseInitializer(database).InitAsync();
+                await DatabaseTransfer.InitializeAsync(database);
             }
 
             Container = candidate;
@@ -232,7 +207,6 @@ internal static class TestDatabaseRuntime {
         CurrentPort = 0;
         CurrentContainerId = null;
         DatabaseOptions = null;
-        IdentityOptions = null;
         ConnectionString = null;
     }
 

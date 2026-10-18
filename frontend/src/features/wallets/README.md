@@ -112,9 +112,9 @@ these rules under wallet locks; the UI does not hide failures or remove rows opt
 
 ## Deployment prerequisite
 
-Apply migration 20261016164401_WalletDetails on a verified target before running the updated API. The migration and
-model snapshot are included; no migration was applied to a database during this task. Normal startup may refuse a
-pending migration under bootstrapMode Disabled. Do not bypass that check.
+Prepare a database with the schema version required by the API through the
+[manual initialization/export/import workflow](../../../../backend/docs/database-migration-redesign.md).
+Startup validates the database in read-only mode and refuses missing or incompatible versions.
 
 ## Still deferred
 

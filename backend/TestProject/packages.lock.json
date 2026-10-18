@@ -753,7 +753,10 @@
         }
       },
       "exportimportapplication": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "logic": "[1.0.0, )"
+        }
       },
       "logic": {
         "type": "Project",

@@ -266,36 +266,6 @@ internal sealed class AccountSecurityApiTest {
     }
 
     [Test]
-    public async Task LegacyPasswordIsRehashedByIdentityOnFirstSuccessfulLogin() {
-        using var legacy = TestDatabaseRuntime.CreateContext();
-        var legacyUser = new database.Models.UserDb {
-            Firstname = "Legacy",
-            Lastname = "User",
-            Username = "legacy_identity",
-            Email = "legacy.identity@test.me",
-            Password = global::PasswordHasher.Hash("LegacyStrong123!")
-        };
-        legacy.Users.Add(legacyUser);
-        await legacy.SaveChangesAsync();
-
-        using (var scope = factory.Services.CreateScope()) {
-            await scope.ServiceProvider.GetRequiredService<LegacyIdentityBootstrapper>().RunAsync();
-        }
-
-        var csrf = await GetCsrfAsync();
-        var login = await PostAsync("/api/v1/auth/login", new {
-            user = legacyUser.Username,
-            password = "LegacyStrong123!"
-        }, csrf);
-        Assert.That(login.StatusCode, Is.EqualTo(HttpStatusCode.NoContent), await login.Content.ReadAsStringAsync());
-
-        using var verificationScope = factory.Services.CreateScope();
-        var manager = verificationScope.ServiceProvider.GetRequiredService<UserManager<ApplicationIdentityUser>>();
-        var identity = await manager.FindByNameAsync(legacyUser.Username);
-        Assert.That(identity!.PasswordHash, Does.Not.Contain(":"));
-    }
-
-    [Test]
     public async Task FailedIdentityCreationRollsBackLegacyRegistration() {
         var csrf = await GetCsrfAsync();
         var invalid = await PostAsync("/api/v1/auth/register", new {

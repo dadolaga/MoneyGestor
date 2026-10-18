@@ -59,8 +59,8 @@ try {
     if (Compare-Object -ReferenceObject $expectedTables -DifferenceObject $actualTables -CaseSensitive) {
         throw 'Restored table inventory differs from the backup manifest.'
     }
-    $historyCount = Invoke-MgSql -LoginPath $LoginPath -Server $Server -Port $Port -Sql "SELECT COUNT(*) FROM ``$StagingDatabase``.__EFMigrationsHistory;"
-    if ([Int64]$historyCount -lt 1) { throw 'Restored database has no EF migration history.' }
+    $versionCount = Invoke-MgSql -LoginPath $LoginPath -Server $Server -Port $Port -Sql "SELECT COUNT(*) FROM ``$StagingDatabase``.database_metadata WHERE Id = 1 AND SchemaVersion > 0;"
+    if ([Int64]$versionCount -ne 1) { throw 'Restored database has no valid schema version.' }
 
     foreach ($table in $snapshot.Tables) {
         $checkRows = Invoke-MgSql -LoginPath $LoginPath -Server $Server -Port $Port `

@@ -53,33 +53,10 @@ $started = [Diagnostics.Stopwatch]::StartNew()
 try {
     Invoke-Compose @('build', 'tools') | Out-Null
     Invoke-Compose @('up', '--detach', 'mysql') | Out-Null
-    Invoke-Compose @('up', '--detach', 'app-init') | Out-Null
-
     $initTimer = [Diagnostics.Stopwatch]::StartNew()
-    $initContainer = $project + '-app-init-1'
-    $mysqlContainer = $project + '-mysql-1'
-    $initDone = $false
-    $requiredTablesSql = "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='mg_drill_fixture' AND TABLE_NAME IN ('AspNetRoleClaims','AspNetRoles','AspNetUserClaims','AspNetUserLogins','AspNetUserRoles','AspNetUserTokens','AspNetUsers','__EFMigrationsHistory','color','login','transaction','transaction_type','user','wallet');"
-    while ($initTimer.Elapsed.TotalSeconds -lt 120) {
-        $stateOutput = @(& docker inspect --format '{{.State.Status}} {{.State.ExitCode}}' $initContainer 2>$null)
-        if ($LASTEXITCODE -ne 0) { throw 'Could not read app-init container state.' }
-        $state = [string]($stateOutput -join ' ')
-        if ($state -match '^exited (\d+)$') {
-            & docker compose --project-name $project --file $composeFile logs app-init
-            throw "Disposable database migration/seed process exited with code $($Matches[1])."
-        }
-        $tableCount = @(& docker exec -e MYSQL_PWD=mg-phase4-test-only $mysqlContainer mysql --user=moneygestor_ops --batch --skip-column-names --execute=$requiredTablesSql 2>$null)
-        if ($LASTEXITCODE -eq 0 -and ([string]($tableCount -join '')).Trim() -eq '14') {
-            $seedSql = "SELECT IF((SELECT COUNT(*) FROM mg_drill_fixture.color)>0 AND (SELECT COUNT(*) FROM mg_drill_fixture.transaction_type)>0,1,0);"
-            $seeded = @(& docker exec -e MYSQL_PWD=mg-phase4-test-only $mysqlContainer mysql --user=moneygestor_ops --batch --skip-column-names --execute=$seedSql 2>$null)
-            if ($LASTEXITCODE -eq 0 -and ([string]($seeded -join '')).Trim() -eq '1') { $initDone = $true; break }
-        }
-        Start-Sleep -Seconds 2
-    }
-    if (-not $initDone) { throw 'Database bootstrap did not finish within 120 seconds.' }
+    Invoke-Compose @('run', '--rm', 'app-init') | Out-Null
     $initTimer.Stop()
-    $results.databaseBootstrapSeconds = [Math]::Round($initTimer.Elapsed.TotalSeconds, 3)
-    Invoke-Compose @('stop', 'app-init') | Out-Null
+    $results.databaseInitializationSeconds = [Math]::Round($initTimer.Elapsed.TotalSeconds, 3)
 
     $previousPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'

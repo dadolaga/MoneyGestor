@@ -1,4 +1,4 @@
-﻿using database;
+using database;
 using database.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,41 +19,41 @@ namespace logic {
 
         public async Task InitAsync(CancellationToken cancellationToken = default) {
             await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
-            try {
-                var desiredColors = CreateColors();
-                var colorIds = desiredColors.Select(color => color.Id).ToArray();
-                var existingColors = await database.Colors
-                    .Where(color => colorIds.Contains(color.Id))
-                    .ToDictionaryAsync(color => color.Id, cancellationToken);
-                foreach (var desired in desiredColors) {
-                    if (existingColors.TryGetValue(desired.Id, out var existing)) {
-                        existing.Name = desired.Name;
-                        existing.Value = desired.Value;
-                        existing.UserId = null;
-                    } else {
-                        database.Colors.Add(desired);
-                    }
-                }
+            await ValidateExistingAsync(requireComplete: false, cancellationToken);
+            var colors = await database.Colors.Select(color => color.Id).ToArrayAsync(cancellationToken);
+            var types = await database.TransactionTypes.Select(type => type.Id).ToArrayAsync(cancellationToken);
+            database.Colors.AddRange(CreateColors().Where(color => !colors.Contains(color.Id)));
+            database.TransactionTypes.AddRange(CreateTransactionTypes().Where(type => !types.Contains(type.Id)));
+            await database.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
 
-                var desiredTypes = CreateTransactionTypes();
-                var typeIds = desiredTypes.Select(type => type.Id).ToArray();
-                var existingTypes = await database.TransactionTypes
-                    .Where(type => typeIds.Contains(type.Id))
-                    .ToDictionaryAsync(type => type.Id, cancellationToken);
-                foreach (var desired in desiredTypes) {
-                    if (existingTypes.TryGetValue(desired.Id, out var existing)) {
-                        existing.Name = desired.Name;
-                        existing.UserId = null;
-                    } else {
-                        database.TransactionTypes.Add(desired);
-                    }
-                }
+        public Task ValidateAsync(CancellationToken cancellationToken = default) =>
+            ValidateExistingAsync(requireComplete: true, cancellationToken);
 
-                await database.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-            } catch {
-                await transaction.RollbackAsync(CancellationToken.None);
-                throw;
+        private async Task ValidateExistingAsync(Boolean requireComplete, CancellationToken cancellationToken) {
+            var colors = await database.Colors.AsNoTracking().Where(color => color.Id >= 1 && color.Id <= 9)
+                .ToDictionaryAsync(color => color.Id, cancellationToken);
+            foreach (var desired in CreateColors()) {
+                if (!colors.TryGetValue(desired.Id, out var actual)) {
+                    if (requireComplete) {
+                        throw new InvalidOperationException("Required global colors are missing. Manual initialization or a verified import is required.");
+                    }
+                } else if (actual.UserId != null || actual.Name != desired.Name || actual.Value != desired.Value) {
+                    throw new InvalidOperationException("A reserved color is inconsistent. Existing data was not overwritten.");
+                }
+            }
+
+            var types = await database.TransactionTypes.AsNoTracking().Where(type => type.Id == 1 || type.Id == 2)
+                .ToDictionaryAsync(type => type.Id, cancellationToken);
+            foreach (var desired in CreateTransactionTypes()) {
+                if (!types.TryGetValue(desired.Id, out var actual)) {
+                    if (requireComplete) {
+                        throw new InvalidOperationException("Required global transaction types are missing. Manual initialization or a verified import is required.");
+                    }
+                } else if (actual.UserId != null || actual.Name != desired.Name || actual.ParentId != null) {
+                    throw new InvalidOperationException("A reserved transaction type is inconsistent. Existing data was not overwritten.");
+                }
             }
         }
 
