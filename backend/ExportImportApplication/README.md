@@ -1,84 +1,115 @@
 # MoneyGestor database tools
 
-CLI per inizializzare un database, esportare/importare archivi ZIP e cancellare
-esplicitamente un database. Richiede .NET 10 e funziona da terminale su Windows e Linux.
-I messaggi operativi sono in inglese, come nel resto del backend.
+**Initialize, archive and restore your installation from the terminal.**
 
-## Da dove iniziare
+[Overview](../../README.md) · [Development](../../docs/development/README.md) · [Production](../../docs/production/README.md)
 
-Dalla radice del repository, aprire la guida generale oppure quella di un comando:
+---
 
-```text
+This .NET 10 CLI provides explicit database administration on Windows and Linux. It is separate from the website's filtered CSV export and does not run automatically when the API starts.
+
+## Get started
+
+Run commands from the repository root. Show help without accessing MySQL:
+
+```powershell
 dotnet run --project backend/ExportImportApplication -- --help
 dotnet run --project backend/ExportImportApplication -- export --help
 ```
 
-Anche l'avvio senza argomenti mostra la guida, senza accedere a MySQL.
-Sono disponibili gli alias `-h` e `help`, incluso `help export`.
-La guida viene scritta su stdout; gli errori su stderr, con il motivo e il comando
-per consultare la sintassi corretta.
+Running without arguments also shows help. `-h`, `help` and `help export` are supported. The CLI writes help to stdout and errors to stderr.
 
-## Quale comando usare
+## Configure the connection
 
-| Obiettivo | Comando e argomenti |
+The CLI can share the backend's private application JSON file:
+
+```powershell
+$env:BACKEND_APP_SETTINGS = Join-Path (Get-Location).Path 'settings.json'
+```
+
+Its `database` section supplies the server, port, database name, user and password. Create your own configuration from [settings.example.json](../../settings.example.json); never commit credentials. Relative settings paths resolve from the process working directory. Without an explicit path, the default is `./settings.json`.
+
+For standalone administration, `MONEYGESTOR_ADMIN_CONNECTION_STRING` is also supported. Supply it privately in the process environment; do not pass credentials as arguments. An explicit `BACKEND_APP_SETTINGS` path takes precedence over this variable. `--configured-database` always uses the JSON configuration and selects `database.name` from it.
+
+For an administrative connection without a JSON path, supply `--database NAME`. Whenever you use this option, its value must exactly match the selected connection's database name, including when that connection comes from JSON. The tool displays the target server, port, database and archive path without printing credentials. Inspect that target before proceeding: initialize, export and import do not ask for interactive approval.
+
+## Choose a command
+
+Prepend `dotnet run --project backend/ExportImportApplication --` to each command:
+
+| Goal | Command |
 | --- | --- |
-| Prima installazione, con creazione del database se manca | `initialize --database moneygestor_new` |
-| Salvare tutti i dati della sorgente in un nuovo archivio con nome automatico | `export --database moneygestor_source --maintenance` |
-| Ripristinare l'archivio, con creazione del database se manca | `import --database moneygestor_new --file family.zip` |
-| Eliminare definitivamente un database | `delete --database moneygestor_old` |
+| Initialize a new installation | `initialize --configured-database` |
+| Export a consistent full archive | `export --configured-database --maintenance` |
+| Restore into a fresh destination | `import --configured-database --file artifacts/archives/family.zip` |
+| Select an explicit database | Use `--database moneygestor_dev` instead of `--configured-database`. |
+| Permanently delete a database | `delete --database moneygestor_old` |
 
-Anteporre `dotnet run --project backend/ExportImportApplication --` a ciascun comando.
-I nomi sono esempi: verificare sempre il database reale.
+### Initialize
 
-`initialize` e `import` creano automaticamente il database selezionato se manca.
-Se esiste già deve essere vuoto: le tabelle esistenti non vengono sovrascritte o
-cancellate. L'utente amministrativo deve avere i permessi per creare il database
-e lo schema. MySQL deve essere già installato e raggiungibile. L'import valida
-l'archivio prima di creare la destinazione. L'export e l'avvio del server non
-creano né inizializzano database.
+```powershell
+dotnet run --project backend/ExportImportApplication -- initialize --configured-database
+```
 
-- `--database NAME` è obbligatorio: è il nome MySQL, non il server o un percorso.
-  Deve corrispondere esattamente al campo `Database` della connessione amministrativa.
-- `--file PATH` è facoltativo per export e obbligatorio per import. Se omesso in
-  export, il file viene creato nella directory corrente (`.`), con nome
-  `export-yyyy-MM-dd-HHmmss.zip` e data/ora UTC, per esempio
-  `export-2026-10-18-143025.zip`. Il percorso scelto compare nel riepilogo.
-  L'export crea un nuovo ZIP senza sovrascrivere file esistenti, anche in caso
-  di nomi automatici coincidenti; l'import legge un archivio già presente.
-  Racchiudere tra virgolette i percorsi con spazi: `--file "backups/family data.zip"`.
-  I percorsi relativi partono dalla directory di lavoro del processo.
-- `--maintenance` è obbligatorio solo per export: dichiara che l'applicazione e
-  tutti gli altri processi di scrittura sono già fermi. Non li arresta automaticamente.
+MySQL must already be running and reachable. The selected database may be missing or empty; the administrative user needs permission to create the database and schema. Initialization creates the schema, required reference data and ready marker. It refuses existing tables and does not overwrite them.
 
-Fornire privatamente `MONEYGESTOR_ADMIN_CONNECTION_STRING` nell'ambiente del processo.
-Non passare credenziali negli argomenti. Non viene letto alcun file di impostazioni.
-La guida include la sintassi PowerShell e Bash per assegnare una connessione
-già fornita privatamente in una variabile, senza incorporare password negli esempi.
+Skip this command for an existing compatible installation. To restore a backup, import directly into a missing/empty destination instead of initializing it first.
 
-Prima dell'esecuzione vengono mostrati operazione, server, porta, database e percorso
-dell'archivio, senza stampare utente o password. `delete` richiede ancora di digitare
-il nome esatto del database; Invio vuoto, fine input o un nome diverso annullano.
+### Export
 
-## Colori e compatibilità
+Stop the application and **all other writers**, then run:
 
-La CLI usa `ConsoleColor` di .NET, senza dipendenze aggiuntive, comandi di shell o
-caratteri grafici speciali. Titoli ciano, avvisi gialli, errori rossi e successi verdi
-sono accompagnati da testo e indicatori leggibili anche senza colori.
+```powershell
+dotnet run --project backend/ExportImportApplication -- export --configured-database --maintenance
+```
 
-I colori vengono disabilitati per ogni flusso reindirizzato verso file o pipe,
-quando `NO_COLOR` ha un valore non vuoto, quando `TERM=dumb`, oppure con `--no-color`:
+`--maintenance` acknowledges that writers are already stopped; it does not stop them. Export creates `export-yyyy-MM-dd-HHmmss.zip` in the current directory using UTC. To choose a path, add `--file "artifacts/archives/family backup.zip"`; prepare the parent directory first. Existing archive files are never overwritten, even when automatic names collide.
 
-```text
+The ZIP contains account and financial tables plus a versioned manifest, row counts and checksums. It includes Identity password hashes and is not encrypted. Restrict access and protect stored/off-host copies. Data Protection keys and private configuration are outside this archive and require separate backups.
+
+### Import
+
+Stop all writers, select a new destination in the private configuration, then run:
+
+```powershell
+dotnet run --project backend/ExportImportApplication -- import --configured-database --file "artifacts/archives/family backup.zip"
+```
+
+Import validates the archive before creating destination objects. It creates a missing database, refuses a nonempty database, restores records and validates the result before marking it ready. The current archive format is version 1; unsupported versions are rejected rather than guessed or silently converted.
+
+The CLI does not change the application's configuration. Keep the source database for recovery and point the API at the validated destination deliberately. If an operation fails, inspect the target and any partial output before retrying; do not delete them automatically.
+
+### Delete
+
+Deletion is permanent. Stop all writers, verify the target and obtain a usable backup first. The command requires an explicit `--database NAME`; `--configured-database` is deliberately unavailable for deletion.
+
+It asks you to type the exact database name. An empty response, end of input or a different name cancels the operation. No routine development, deployment or upgrade step requires deleting the source database.
+
+## Use the tools with Docker
+
+The root Compose file exposes `initialize`, `export` and `import` under its `tools` profile. These services share the application settings mount:
+
+```bash
+docker compose --profile tools build initialize
+docker compose --profile tools run --rm initialize
+```
+
+For export/import, the container entrypoint additionally requires `MONEYGESTOR_MAINTENANCE_CONFIRMED=true` after all writers have stopped. Exports use `ARCHIVE_DIRECTORY` on the host; imports use `IMPORT_ARCHIVE_PATH`.
+
+Follow the [production backup and restore procedure](../../docs/production/README.md#backup-restore-and-upgrade) for the complete sequence, archive ownership and persistent resources.
+
+## Terminal behavior and exit codes
+
+The CLI uses standard .NET console colours without additional dependencies, spinners or cursor repositioning. Colours are disabled for redirected streams, a nonempty `NO_COLOR`, `TERM=dumb` or `--no-color`. Status labels remain readable without colour.
+
+```powershell
 dotnet run --project backend/ExportImportApplication -- export --help --no-color
 ```
 
-`--no-color` può precedere o seguire il comando. Non serve una console interattiva
-per leggere l'help o eseguire initialize/export/import; la cancellazione conserva
-la conferma tramite input standard. Non vengono usati spinner o riposizionamenti
-del cursore, così l'output resta leggibile anche nei log.
+`--no-color` may appear before or after the command. Initialize/export/import do not require an interactive terminal; deletion retains its standard-input confirmation.
 
-Codici di uscita: `0` successo o guida, `1` errore operativo/cancellazione,
-`2` argomenti o configurazione iniziale non validi.
-
-Per prerequisiti, protezione degli archivi e recupero consultare la
-[guida alle migrazioni manuali](../docs/database-migration-redesign.md).
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Success or help displayed. |
+| `1` | Operational failure or cancellation. |
+| `2` | Invalid arguments or initial configuration. |
