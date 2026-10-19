@@ -167,6 +167,29 @@
         "recent": {
             "title": "Recent quick transactions"
         },
+        "mobile": {
+            "quickTitle": "New quick movement",
+            "quickDescription": "Enter the essentials and continue",
+            "detailsTitle": "Movement details",
+            "detailsDescription": "Review and complete the information",
+            "continue": "Continue",
+            "back": "Back",
+            "saveNow": "Save now",
+            "moreDetails": "Add more details",
+            "step": "Step {step} of 2",
+            "chooseWallet": "Choose wallet",
+            "allCategories": "All categories",
+            "viewAll": "View all",
+            "more": "More",
+            "searchCategory": "Search categories...",
+            "searchWallet": "Search wallets...",
+            "noResults": "No results.",
+            "selectDate": "Select date",
+            "yesterday": "Yesterday",
+            "confirmDate": "Confirm date",
+            "clearAmount": "Clear amount",
+            "clearDescription": "Clear description"
+        },
         "editor": {
             "subtitle": "Record a new income, expense or transfer in Flowiy.",
             "kindHints": {

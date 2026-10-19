@@ -9,7 +9,8 @@ is excluded; MUI remains only in legacy slices that have not been migrated. Ligh
 configurable brand red and shared components follow the
 [frontend instructions](AGENTS.md#implementing-ui-and-state). The dashboard mockup and historical
 migration records are absent from this checkout; use existing tokens and components as the reference.
-Three-touch mobile Quick Add remains a goal to implement when requested.
+The shared movement dialog provides a two-step mobile layout with wallet, category and date top
+sheets; desktop keeps its complete single-step form. See the [transactions guide](src/features/transactions/README.md).
 
 Use “movimento” in Italian UI text; `Transaction` remains the internal technical name. Future features
 shown in the mockup are outside the current scope.
@@ -84,7 +85,7 @@ reserve space for images. Asset specifications, tokens and UI choices: [Flowiy h
 | `/dashboard` | Wealth, monthly income/expenses/savings, daily trend, wallet distribution, recent movements and shared creation dialogs from `/api/v1`; see the [dashboard README](src/features/dashboard/README.md) |
 | `/dashboard/wallet` | Wallet overview and persistent v1 CRUD with a shared editor for five wallet types; other action dialogs deferred |
 | `/dashboard/transaction` | Movement dashboard with server summaries/charts/CSV, filters, pagination, complete categories, single-movement creation, editing and confirmed deletion |
-| `/dashboard/transaction/add_mobile` | Mobile prototype to incorporate into the future shared Quick Add |
+| `/dashboard/transaction/add_mobile` | Compatibility redirect to the transactions page; mobile creation uses the shared editor |
 | `/login`, `/register` | Flowiy authentication pages with shared marketing layout and existing account API |
 | `/login-flowiy`, `/register-flowiy` | Compatibility redirects to `/login` and `/register` |
 | `/forgot-password`, `/resend-confirmation` | Compatibility redirects opening the corresponding popup on `/login` |

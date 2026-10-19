@@ -32,7 +32,13 @@ const movementKinds = [
     },
 ] satisfies { value: MovementKind; icon: typeof ArrowUp; color: string; background: string; selected: string }[];
 
-export function TransactionKindFields({ form }: { form: UseFormReturn<TransactionFormValues> }) {
+export function TransactionKindFields({
+    form,
+    compact = false,
+}: {
+    form: UseFormReturn<TransactionFormValues>;
+    compact?: boolean;
+}) {
     const t = useTranslations('Movements.editor');
     const tDialog = useTranslations('Movements.dialog');
     const tKinds = useTranslations('Movements.filters');
@@ -40,8 +46,8 @@ export function TransactionKindFields({ form }: { form: UseFormReturn<Transactio
 
     return (
         <fieldset className="m-0 min-w-0 border-0 p-0">
-            <legend className="sr-only">{tDialog('kind')}</legend>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            <legend className={compact ? 'mb-2 text-sm font-medium' : 'sr-only'}>{tDialog('kind')}</legend>
+            <div className={compact ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-1 gap-2.5 sm:grid-cols-3'}>
                 {movementKinds.map(({ value, icon: Icon, color, background, selected }) => (
                     <label key={value} className="relative cursor-pointer">
                         <input
@@ -54,6 +60,7 @@ export function TransactionKindFields({ form }: { form: UseFormReturn<Transactio
                             className={cn(
                                 'flex min-h-20 items-center gap-3 rounded-lg border border-solid border-input bg-background px-3 py-3 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring',
                                 selected,
+                                compact && 'flex-col min-h-13 justify-center gap-1.5 px-1 py-2',
                             )}
                         >
                             <span
@@ -61,13 +68,18 @@ export function TransactionKindFields({ form }: { form: UseFormReturn<Transactio
                                     'flex size-12 shrink-0 items-center justify-center rounded-full',
                                     color,
                                     background,
+                                    compact && 'size-7',
                                 )}
                             >
-                                <Icon aria-hidden="true" className="size-7" />
+                                <Icon aria-hidden="true" className={compact ? 'size-5' : 'size-7'} />
                             </span>
                             <span className="grid gap-1">
-                                <span className="text-sm font-semibold">{tKinds(value)}</span>
-                                <span className="text-[11px] text-muted-foreground">{t(`kindHints.${value}`)}</span>
+                                <span className={compact ? 'text-[11px] font-medium' : 'text-sm font-semibold'}>
+                                    {tKinds(value)}
+                                </span>
+                                {!compact && (
+                                    <span className="text-[11px] text-muted-foreground">{t(`kindHints.${value}`)}</span>
+                                )}
                             </span>
                         </span>
                     </label>

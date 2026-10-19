@@ -167,6 +167,29 @@
         "recent": {
             "title": "Ultimi movimenti rapidi"
         },
+        "mobile": {
+            "quickTitle": "Nuovo movimento rapido",
+            "quickDescription": "Inserisci i dati essenziali e continua",
+            "detailsTitle": "Dettagli movimento",
+            "detailsDescription": "Controlla e completa le informazioni",
+            "continue": "Continua",
+            "back": "Indietro",
+            "saveNow": "Salva subito",
+            "moreDetails": "Aggiungi più dettagli",
+            "step": "Passaggio {step} di 2",
+            "chooseWallet": "Scegli portafoglio",
+            "allCategories": "Tutte le categorie",
+            "viewAll": "Vedi tutte",
+            "more": "Altro",
+            "searchCategory": "Cerca categoria...",
+            "searchWallet": "Cerca portafoglio...",
+            "noResults": "Nessun risultato.",
+            "selectDate": "Seleziona data",
+            "yesterday": "Ieri",
+            "confirmDate": "Conferma data",
+            "clearAmount": "Cancella importo",
+            "clearDescription": "Cancella descrizione"
+        },
         "editor": {
             "subtitle": "Registra una nuova entrata, uscita o trasferimento in Flowiy.",
             "kindHints": {

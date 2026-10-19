@@ -2,6 +2,14 @@
 
 The live /dashboard/transaction route imports TransactionsDashboard.tsx. It reuses the shared editor,
 API client, row actions, confirmation dialog and display components for desktop and mobile.
+Below 640px, the same editor opens full screen with two steps: essential fields, then a summary
+and optional note. Wallets (including balances), all categories with search, and the date calendar
+open in native top sheets with a slide-in animation (disabled for reduced motion). Initial focus goes
+to the sheet title, leaving search fields unfocused until selected. Today/yesterday shortcuts select calendar dates; only the final Save
+action writes to the API. Back preserves values, and financial field errors return to the first step.
+Creation and editing share React Hook Form state, validation and the existing create/update requests;
+desktop keeps its complete single-step dialog. Category shortcuts reuse the first four API categories
+and keep a selected category visible. No separate merchant field is stored by the current API.
 On wide desktop layouts, the list fills the remaining page height and only its rows scroll;
 the title, column headings and pagination stay visible. Narrow layouts bound the list to 60dvh
 while keeping normal page scrolling for the stacked summaries and charts.
@@ -20,6 +28,7 @@ and [API contracts](../../../../backend/docs/07-api-reference.md).
 | TransactionActions.tsx, TransactionDisplay.tsx | Existing menu primitives, canonical category icons/colors and amounts |
 | TransactionEditorDialog.tsx | Shared React Hook Form for creation/editing, API field errors |
 | TransactionKindFields.tsx, TransactionDetailsFields.tsx, TransactionAdditionalFields.tsx | Kind, financial fields and notes (up to the existing API limit of 2000) |
+| TransactionMobileFields.tsx | Mobile wallet/category pickers and date sheet using shared native sheets and calendar |
 | transaction-editor-model.ts | Shared form defaults and date validation |
 | useTransactionsDashboard.ts | Metadata, paginated rows, overview, recent rows, cancellation and refresh |
 | TransactionsPreview.tsx, model.ts, adapter.ts | Fixture development catalog, separate from the live flow |

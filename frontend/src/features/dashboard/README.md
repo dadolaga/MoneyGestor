@@ -14,8 +14,10 @@ the existing navigation sheet, and content reserves space for the bar and the de
 
 `DashboardQuickActions.tsx` reuses the shared movement editor. On phones it offers shortcuts for
 the first four available non-system categories in API order, using their existing names, icons and
-colors, and preselects the category for a new expense. The main action opens the full editor with
-all categories and movement kinds. With no categories, income/expense/transfer shortcuts remain
+colors, and preselects the category for a new expense. The main action opens the shared editor with
+all categories and movement kinds: below 640px it uses the two-step full-screen mobile layout
+and top sheets documented in the [transactions guide](../transactions/README.md).
+With no categories, income/expense/transfer shortcuts remain
 available; loading and metadata errors still use the shared editor's states. Add wallet remains
 available through the existing wallet editor. There is no separate mobile route or financial logic.
 

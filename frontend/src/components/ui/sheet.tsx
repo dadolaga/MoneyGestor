@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogDescription, DialogHeader, DialogSurface, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { X } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
@@ -30,8 +31,15 @@ const SheetContent = React.forwardRef<
         {...props}
     >
         {children}
-        <DialogClose aria-label={closeLabel} className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <X aria-hidden="true" className="size-4" />
+        <DialogClose asChild>
+            <Button
+                variant="transparent"
+                size="icon"
+                aria-label={closeLabel}
+                className="absolute right-4 top-4 size-8 text-muted-foreground hover:text-foreground"
+            >
+                <X aria-hidden="true" className="size-4" />
+            </Button>
         </DialogClose>
     </DialogSurface>
 ));

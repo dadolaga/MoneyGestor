@@ -8,8 +8,9 @@ The migration to Tailwind CSS and local React/HTML primitives follows the
 [frontend instructions](AGENTS.md) and the [implementation guide](../backend/docs/05-frontend.md).
 TanStack is outside the target stack. MUI conventions apply only to legacy areas.
 Historical planning, design and baseline documents are absent from this checkout: check the current
-state through route imports and shared components. Mobile Quick Add remains deferred until
-explicitly requested.
+state through route imports and shared components. The shared movement editor now adapts to a
+two-step full-screen form below 640px; its state, validation and API submission remain shared with
+desktop (see the [transactions guide](src/features/transactions/README.md)).
 
 Phases 1–6 are implemented: Tailwind v4 without Preflight, local React/HTML primitives, `next-intl`,
 `next-themes`, Sonner and the `/design-system` development catalog. Legacy MUI routes live under
