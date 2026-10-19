@@ -35,10 +35,35 @@ x-transfer: &transfer
   pids_limit: 128
   logging: *logging
   networks: [database]
+  depends_on:
+    mysql:
+      condition: service_healthy
   extra_hosts:
     - "host.docker.internal:host-gateway"
 
 services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_BIND_ADDRESS:-127.0.0.1}:${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-moneygestor_db}
+      MYSQL_USER: ${MYSQL_USER:-moneygestor_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database="$${MYSQL_DATABASE}" --execute="SELECT 1" >/dev/null']
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    stop_grace_period: 60s
+    logging: *logging
+    networks: [database]
+
   backend:
     image: ${BACKEND_IMAGE:-moneygestor/backend:local}
     build:
@@ -67,6 +92,9 @@ services:
     stop_grace_period: 30s
     logging: *logging
     networks: [application, database]
+    depends_on:
+      mysql:
+        condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -142,6 +170,7 @@ services:
           create_host_path: false
 
 volumes:
+  mysql-data:
   backend-logs:
   backend-data-protection:
 

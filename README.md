@@ -42,7 +42,7 @@ Choose the setup that fits your goal:
 | | Development | Production |
 | --- | --- | --- |
 | **Use it for** | Working on the application locally with hot reload. | Hosting the compiled application for real use. |
-| **Run with** | Node.js 22, .NET SDK and a reachable MySQL server. | Docker Compose, an external MySQL server and an HTTPS reverse proxy. |
+| **Run with** | Node.js 22, .NET SDK and MySQL (included in Compose). | Docker Compose with the bundled MySQL service and an HTTPS reverse proxy. |
 | **Entry point** | `http://localhost:3000` | Your HTTPS domain. |
 | **Follow** | [Development README](docs/development/README.md) | [Production README](docs/production/README.md) |
 
@@ -115,12 +115,12 @@ backend/logic/               Financial commands and ownership rules
 backend/database/            EF Core model and schema validation
 backend/ExportImportApplication/  Manual database administration CLI
 docs/                        Setup guides and OpenAPI snapshot
-docker-compose.yml           Production application and database tools
+docker-compose.yml           MySQL, production application and database tools
 settings.example.json        Backend configuration template
 .env.example                 Docker Compose configuration template
 ```
 
-The browser uses HttpOnly Identity cookies and antiforgery protection. The backend owns financial validation, balances and persistence; MySQL stores account and financial data. Application endpoints live under `/api/v1` and return Problem Details errors.
+The browser uses HttpOnly Identity cookies and antiforgery protection. The backend owns financial validation, balances and persistence; the bundled MySQL container stores account and financial data in the `mysql-data` volume. Application endpoints live under `/api/v1` and return Problem Details errors.
 
 ## Documentation
 

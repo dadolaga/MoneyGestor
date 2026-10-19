@@ -19,7 +19,7 @@
     "diagnosticEfLogging": false
   },
   "database": {
-    "host": "localhost",
+    "host": "mysql",
     "port": 3306,
     "name": "moneygestor_db",
     "user": "moneygestor_user",

@@ -51,7 +51,7 @@ Prepend `dotnet run --project backend/ExportImportApplication --` to each comman
 dotnet run --project backend/ExportImportApplication -- initialize --configured-database
 ```
 
-MySQL must already be running and reachable. The selected database may be missing or empty; the administrative user needs permission to create the database and schema. Initialization creates the schema, required reference data and ready marker. It refuses existing tables and does not overwrite them.
+MySQL must already be running and reachable. You can start the bundled server with `docker compose up -d --wait mysql` after configuring `.env`. The selected database may be missing or empty; the connection needs permission to create the database/schema as applicable. Initialization creates the schema, required reference data and ready marker. It refuses existing tables and does not overwrite them.
 
 Skip this command for an existing compatible installation. To restore a backup, import directly into a missing/empty destination instead of initializing it first.
 
@@ -87,14 +87,17 @@ It asks you to type the exact database name. An empty response, end of input or 
 
 ## Use the tools with Docker
 
-The root Compose file exposes `initialize`, `export` and `import` under its `tools` profile. These services share the application settings mount:
+The root Compose file includes MySQL 8.4 and exposes `initialize`, `export` and `import` under its `tools` profile. Tools share the application settings mount and wait for healthy MySQL. Configure `database.host` as `mysql`, `database.port` as `3306`, and match the database/user/password to `.env`:
 
 ```bash
+docker compose up -d --wait mysql
 docker compose --profile tools build initialize
 docker compose --profile tools run --rm initialize
 ```
 
-For export/import, the container entrypoint additionally requires `MONEYGESTOR_MAINTENANCE_CONFIRMED=true` after all writers have stopped. Exports use `ARCHIVE_DIRECTORY` on the host; imports use `IMPORT_ARCHIVE_PATH`.
+For export/import, the container entrypoint additionally requires `MONEYGESTOR_MAINTENANCE_CONFIRMED=true` after all writers have stopped. Keep MySQL running during these operations. Exports use `ARCHIVE_DIRECTORY` on the host; imports use `IMPORT_ARCHIVE_PATH`.
+
+The initial application user is scoped to `MYSQL_DATABASE`. To import into a different database, create it and grant that user access through an administrator first. Changing `MYSQL_DATABASE` or password variables in `.env` does not update an existing `mysql-data` volume. When running the CLI natively instead, use `127.0.0.1` and the published `MYSQL_PORT` in its JSON connection.
 
 Follow the [production backup and restore procedure](../../docs/production/README.md#backup-restore-and-upgrade) for the complete sequence, archive ownership and persistent resources.
 

@@ -14,11 +14,11 @@ Run the Next.js frontend and ASP.NET Core API as separate processes, backed by y
 | --- | --- |
 | Node.js and npm | Node.js 22 is used by the frontend Dockerfile and CI. Install dependencies with `npm ci`. |
 | .NET SDK | SDK `10.0.400` is selected by [global.json](../../global.json), with `latestFeature` roll-forward. Projects target `net10.0`. |
-| MySQL | A running, reachable MySQL server. The isolated backend test infrastructure uses MySQL 8.4. |
+| MySQL | Use the bundled MySQL 8.4 service with Docker Compose v2, or your own reachable server. |
 | Database permissions | Initialization requires permission to create the selected database and its schema. Runtime access needs permissions for application reads and writes. |
 | SMTP, if enabled | Required for confirmation and recovery emails. You can disable confirmation for a local development account. |
 
-Docker is optional for this workflow. The root Compose file runs production containers and does not provision MySQL.
+Docker is optional if you already have MySQL. Otherwise, start only the `mysql` service from the root Compose file and run the frontend/API natively for hot reload.
 
 ## First-time setup
 
@@ -30,7 +30,25 @@ Create a private settings file from the committed template, only if you do not a
 Copy-Item settings.example.json settings.json
 ```
 
-Edit it privately and set `database.host`, `port`, `name`, `user` and `password` to your **development** database. For example, use a dedicated database named `moneygestor_dev`. The template values are placeholders, not provisioned credentials.
+Edit it privately and set `database.host`, `port`, `name`, `user` and `password` to your **development** database. The template defaults to the Compose hostname `mysql`; for an API running on your computer, change the host to `127.0.0.1` and use the published MySQL port (default `3306`). The template values are placeholders, not production credentials.
+
+If using the bundled database, also create the private root `.env` file from its template, only if it does not already exist:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Choose separate private values for `MYSQL_ROOT_PASSWORD` and `MYSQL_PASSWORD`. Match `MYSQL_DATABASE`, `MYSQL_USER` and `MYSQL_PASSWORD` to `database.name`, `database.user` and `database.password` in the application JSON. The API does not connect as root. Single-quote `.env` values containing `$` to prevent interpolation; use the actual unquoted password in JSON, escaped according to JSON syntax.
+
+Start only MySQL and wait for its healthcheck:
+
+```powershell
+docker compose up -d --wait mysql
+```
+
+This prepares the MySQL server, an empty application database and its database-scoped user. It does not create the MoneyGestor tables. Data persists in `mysql-data` across container recreation. Environment bootstrap values apply only to a fresh volume; changing `.env` later does not rename an existing database or rotate its passwords.
+
+If port `3306` is already occupied, change `MYSQL_PORT` in `.env` (for example to `3307`) and match that port in the native API's JSON settings. Connections between Compose services always use `mysql:3306`, independently of the published host port.
 
 Keep `security.allowedOrigins` aligned with your browser's frontend origin:
 
@@ -161,6 +179,8 @@ A successful build verifies compilation. If it fails, report whether the error w
 | --- | --- |
 | Settings file not found | Use an absolute `BACKEND_APP_SETTINGS` path in the API terminal. Relative paths resolve from the process working directory. |
 | Database missing, incomplete or incompatible | Confirm the target, connectivity and schema. Initialize only a new/empty database; use manual export/import for an upgrade. |
+| Native API cannot reach the bundled MySQL | Start `mysql`, wait for health, use `127.0.0.1` and `MYSQL_PORT` in JSON, and match the database/user/password from `.env`. |
+| MySQL remains unhealthy after editing `.env` | Bootstrap variables do not change existing users/passwords in `mysql-data`. Restore matching credentials or rotate them deliberately in MySQL; do not remove the volume to reset a password. |
 | API requests target another machine | Explicitly set `NEXT_PUBLIC_API_URL` and restart Next.js. |
 | CORS or cookie errors | Check the exact frontend origin in the JSON file and use the same hostname for the frontend and API. |
 | Registration works but login fails | Confirm your email if required, or disable confirmation for local development. Check SMTP configuration when testing email flows. |
