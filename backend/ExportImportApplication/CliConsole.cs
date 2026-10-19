@@ -1,7 +1,13 @@
+using MySql.Data.MySqlClient;
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Security.Authentication;
+
 namespace ExportImportApplication;
 
 internal sealed class CliConsole(Boolean noColor) {
     private const String RunCommand = "dotnet run --project backend/ExportImportApplication --";
+    private String currentStage = "Reading configuration";
     private readonly Boolean useColor = !noColor &&
         String.IsNullOrEmpty(Environment.GetEnvironmentVariable("NO_COLOR")) &&
         !String.Equals(Environment.GetEnvironmentVariable("TERM"), "dumb", StringComparison.OrdinalIgnoreCase);
@@ -19,6 +25,52 @@ internal sealed class CliConsole(Boolean noColor) {
     public void Success(String text) => WriteColored(Console.Out, $"[OK] {text}", ConsoleColor.Green);
 
     public void Detail(String label, String value) => Console.WriteLine($"  {label,-12} {value}");
+
+    public void Progress(String stage) {
+        currentStage = stage;
+        Console.WriteLine($"[RUNNING] {stage}...");
+    }
+
+    public void PrintFailure(Exception exception) {
+        // Only standalone validation errors are safe to display verbatim. Provider messages can
+        // contain connection strings, SQL, credentials or record values, including in inner exceptions.
+        if (exception is InvalidDataException or InvalidOperationException && exception.InnerException == null) {
+            Error(exception.Message);
+        } else {
+            Error("Operation failed. See the diagnostic codes and call stacks below.");
+        }
+
+        Console.Error.WriteLine($"  Stage: {currentStage}");
+        for (Exception? current = exception; current != null; current = current.InnerException) {
+            Console.Error.WriteLine($"  Exception: {current.GetType().FullName} (HResult: 0x{current.HResult:X8})");
+            if (current is MySqlException mysql) {
+                Console.Error.WriteLine($"  MySQL: {mysql.Number} ({Enum.GetName(typeof(MySqlErrorCode), mysql.Number) ?? "Unknown"}); SQLSTATE: {mysql.SqlState ?? "unavailable"}");
+                var hint = mysql.Number switch {
+                    0 or 1042 or 2002 or 2003 or 2005 => "Check DNS, the MySQL listener and the target port. With bundled Docker Compose, containers connect to mysql:3306; MYSQL_PORT is only the published host port.",
+                    1044 or 1045 or 1142 or 1143 or 1227 => "Check credentials and grants for the target database. Changing .env does not update accounts in an existing MySQL volume.",
+                    1049 => "The target database does not exist. Check the name and the account's CREATE privileges.",
+                    1064 => "MySQL rejected the SQL syntax. Check server/provider compatibility and the failing call stack.",
+                    1062 or 1451 or 1452 => "A database integrity constraint rejected the operation. Inspect the destination and archive before retrying.",
+                    1205 or 1213 => "A lock timeout or deadlock occurred. Check for other database writers.",
+                    1040 => "MySQL has reached its connection limit. Check server load and active connections.",
+                    _ => "Use the MySQL error number and SQLSTATE to identify the server/provider failure."
+                };
+                Console.Error.WriteLine($"  Check: {hint}");
+            } else if (current is SocketException socket) {
+                Console.Error.WriteLine($"  Socket: {socket.SocketErrorCode}; native code: {socket.NativeErrorCode}");
+            } else if (current is AuthenticationException) {
+                Console.Error.WriteLine("  Check: TLS negotiation failed. Check server certificates, trust and TLS settings.");
+            } else if (current is TimeoutException) {
+                Console.Error.WriteLine("  Check: The operation timed out. Check connectivity, server load and locks.");
+            }
+
+            // StackTrace excludes exception messages; false also omits source file paths.
+            Console.Error.WriteLine(new StackTrace(current, false).ToString());
+        }
+
+        Console.Error.WriteLine("  Raw provider messages and SQL values are omitted to protect credentials and financial data.");
+        Console.Error.WriteLine("  Inspect the target and retain any partial output before retrying.");
+    }
 
     public void PrintUsageHint(String? operation) {
         Console.Error.WriteLine($"Usage: {RunCommand} {CliArguments.UsageFor(operation ?? String.Empty)}");
@@ -117,12 +169,15 @@ internal sealed class CliConsole(Boolean noColor) {
         }
     }
 
-    public void PrintStarted(String operation) => Console.WriteLine(operation switch {
-        "initialize" => "[RUNNING] Preparing the database, creating the schema and reference data, then validating...",
-        "export" => "[RUNNING] Validating the source and writing the ZIP archive...",
-        "import" => "[RUNNING] Validating the archive, preparing the database and schema, then importing data...",
-        _ => "[RUNNING] Deleting the confirmed database..."
-    });
+    public void PrintStarted(String operation) {
+        currentStage = $"Starting {operation}";
+        Console.WriteLine(operation switch {
+            "initialize" => "[RUNNING] Preparing the database, creating the schema and reference data, then validating...",
+            "export" => "[RUNNING] Validating the source and writing the ZIP archive...",
+            "import" => "[RUNNING] Validating the archive, preparing the database and schema, then importing data...",
+            _ => "[RUNNING] Deleting the confirmed database..."
+        });
+    }
 
     private void PrintCommand(String operation) {
         WriteColored(Console.Out, $"  {operation} - {operation switch {

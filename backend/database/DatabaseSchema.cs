@@ -30,18 +30,23 @@ public static class DatabaseSchema {
         }
     }
 
-    public static async Task CreateEmptyAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
+    public static async Task CreateEmptyAsync(
+        MoneyGestorContext database, CancellationToken cancellationToken = default, Action<String>? reportProgress = null) {
         // Only the explicit administrative initialize/import workflow calls this method.
+        reportProgress?.Invoke("Checking database existence and server connectivity");
         var creator = database.GetService<IRelationalDatabaseCreator>();
         if (!await creator.ExistsAsync(cancellationToken)) {
+            reportProgress?.Invoke("Creating the database");
             await creator.CreateAsync(cancellationToken);
         }
 
+        reportProgress?.Invoke("Opening the target database and checking that it is empty");
         await database.Database.OpenConnectionAsync(cancellationToken);
         if (await CountObjectsAsync(database, String.Empty, cancellationToken) != 0) {
             throw new InvalidOperationException("The destination must be missing or empty. No tables were replaced or deleted.");
         }
 
+        reportProgress?.Invoke("Creating schema tables");
         if (!await database.Database.EnsureCreatedAsync(cancellationToken)) {
             throw new InvalidOperationException("The destination schema could not be initialized as an empty database.");
         }

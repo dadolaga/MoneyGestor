@@ -25,10 +25,14 @@ public static class DatabaseTransfer {
         }
     }
 
-    public static async Task InitializeAsync(MoneyGestorContext database, CancellationToken cancellationToken = default) {
-        await DatabaseSchema.CreateEmptyAsync(database, cancellationToken);
+    public static async Task InitializeAsync(
+        MoneyGestorContext database, CancellationToken cancellationToken = default, Action<String>? reportProgress = null) {
+        await DatabaseSchema.CreateEmptyAsync(database, cancellationToken, reportProgress);
+        reportProgress?.Invoke("Creating reference data");
         await new DatabaseInitializer(database).InitAsync(cancellationToken);
+        reportProgress?.Invoke("Validating reference data and financial integrity");
         await ValidateAsync(database, cancellationToken);
+        reportProgress?.Invoke("Marking the database ready");
         await DatabaseSchema.MarkReadyAsync(database, cancellationToken);
     }
 

@@ -103,6 +103,12 @@ Follow the [production backup and restore procedure](../../docs/production/READM
 
 ## Terminal behavior and exit codes
 
+Initialization reports each phase before it starts: connectivity/existence, database creation when needed, empty-destination checks, schema creation, reference data, validation and the ready marker. The last phase identifies where a failure occurred.
+
+Operational failures include exception types, HResult codes and call stacks without source file paths. MySQL failures also report the numeric error, symbolic name and SQLSTATE; nested socket failures include the socket/native error codes. Common connection, authentication, grant, lock and constraint errors include suggested checks. Raw provider/inner-exception messages, SQL and record values are omitted because they can contain credentials or financial data. Standalone application validation messages remain readable. Diagnostics go to stderr and require no extra flag.
+
+For a Compose connection failure, verify the target summary first: the bundled services use `mysql:3306`. A published host port such as `MYSQL_PORT=3316` is used by native clients, not by the other containers. After changing the tool code, rebuild its image with `docker compose --profile tools build initialize` before running it again. Inspect any partial destination before retrying; initialization never cleans it up automatically.
+
 The CLI uses standard .NET console colours without additional dependencies, spinners or cursor repositioning. Colours are disabled for redirected streams, a nonempty `NO_COLOR`, `TERM=dumb` or `--no-color`. Status labels remain readable without colour.
 
 ```powershell

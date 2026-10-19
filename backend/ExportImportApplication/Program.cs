@@ -43,7 +43,7 @@ internal static class Program {
             }
 
             var archivePath = options.ArchivePath;
-            // Never enable provider logging or emit exception messages containing data/connection details.
+            // Provider logging stays disabled; failures use structured diagnostics without data/connection details.
             terminal.PrintTarget(options, connection.Server, connection.Port);
             String? deletionConfirmation = null;
             if (operation == "delete") {
@@ -61,7 +61,7 @@ internal static class Program {
             await using var database = new MoneyGestorContext(new DbContextOptionsBuilder<MoneyGestorContext>()
                 .UseMySQL(connection.ConnectionString).Options);
             if (operation == "initialize") {
-                await DatabaseTransfer.InitializeAsync(database, cancellation.Token);
+                await DatabaseTransfer.InitializeAsync(database, cancellation.Token, terminal.Progress);
             } else if (operation == "export") {
                 await DatabaseTransfer.ExportAsync(database, archivePath!, TimeProvider.System, cancellation.Token);
             } else if (operation == "import") {
@@ -81,11 +81,8 @@ internal static class Program {
         } catch (OperationCanceledException) {
             terminal.Error("Operation cancelled. Inspect the target and any partial output before retrying.");
             return 1;
-        } catch (Exception exception) when (exception is InvalidDataException or InvalidOperationException) {
-            terminal.Error(exception.Message);
-            return 1;
         } catch (Exception exception) {
-            terminal.Error($"Operation failed ({exception.GetType().Name}). Verify archive, target, permissions and connectivity; inspect the target and retain any partial output before retrying.");
+            terminal.PrintFailure(exception);
             return 1;
         }
     }
