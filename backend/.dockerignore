@@ -24,6 +24,8 @@ out
 # .NET
 bin
 obj
+**/bin
+**/obj
 packages
 .vs
 .vscode
@@ -41,6 +43,15 @@ Thumbs.db
 # CI/CD
 .github
 .gitlab-ci.yml
+
+# Local configuration and transfer archives must never enter a build context.
+**/settings.json
+**/.env
+**/.env.*
+**/*.zip
+**/log
+**/logs
+artifacts
 
 # Documentation
 docs

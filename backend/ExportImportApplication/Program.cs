@@ -1,7 +1,6 @@
 using database;
 using ExportImportApplication;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
 
 internal static class Program {
     private static async Task<Int32> Main(String[] args) {
@@ -22,19 +21,15 @@ internal static class Program {
         using var cancellation = new CancellationTokenSource();
         Console.CancelKeyPress += (_, signal) => { signal.Cancel = true; cancellation.Cancel(); };
         try {
-            var configured = Environment.GetEnvironmentVariable("MONEYGESTOR_ADMIN_CONNECTION_STRING");
-            if (String.IsNullOrWhiteSpace(configured)) {
-                terminal.Error("Missing MONEYGESTOR_ADMIN_CONNECTION_STRING. Supply the administrative connection privately in the process environment. No settings file is read.");
+            if (!DatabaseConnection.TryRead(out var connection, out var connectionError, options.UseConfiguredDatabase)) {
+                terminal.Error(connectionError!);
                 terminal.PrintUsageHint(operation);
                 return 2;
             }
 
-            MySqlConnectionStringBuilder connection;
-            try {
-                connection = new MySqlConnectionStringBuilder(configured);
-            } catch (Exception exception) when (exception is ArgumentException or FormatException or OverflowException) {
-                terminal.Error("MONEYGESTOR_ADMIN_CONNECTION_STRING is not a valid MySQL connection string. Check its keys and syntax privately.");
-                return 2;
+            if (options.UseConfiguredDatabase) {
+                databaseName = connection.Database;
+                options = options with { DatabaseName = databaseName };
             }
 
             if (String.IsNullOrWhiteSpace(connection.Server) || String.IsNullOrWhiteSpace(connection.UserID) ||

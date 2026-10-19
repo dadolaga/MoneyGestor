@@ -85,9 +85,10 @@ public class Program {
             });
         }
 
+        IConfiguration applicationConfiguration = builder.Configuration;
         if (!isTesting) {
-            AddApplicationSettings(builder);
-            var logOptions = builder.Configuration
+            applicationConfiguration = AddApplicationSettings(builder);
+            var logOptions = applicationConfiguration
                 .GetRequiredSection(LogOptions.SectionName)
                 .Get<LogOptions>() ?? throw new InvalidOperationException("Log configuration is missing.");
             if (!LogOptions.IsValid(logOptions)) {
@@ -101,7 +102,7 @@ public class Program {
                 .Information("MoneyGestor API configured ({Version})", "0.0.1-alpha");
         }
 
-        AddValidatedOptions(builder.Services, builder.Configuration);
+        AddValidatedOptions(builder.Services, applicationConfiguration);
         builder.Services.AddSingleton<ObservabilityMetrics>();
         builder.Services.AddSingleton<AuthFailureAggregator>();
         builder.Services.AddHostedService(provider => provider.GetRequiredService<AuthFailureAggregator>());
@@ -147,7 +148,7 @@ public class Program {
             options.SchemaFilter<ApiDtoSchemaFilter>();
         });
         builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", policy => {
-            var security = builder.Configuration
+            var security = applicationConfiguration
                 .GetRequiredSection(SecurityOptions.SectionName)
                 .Get<SecurityOptions>() ?? throw new InvalidOperationException("Security configuration is missing.");
             policy
@@ -246,6 +247,10 @@ public class Program {
         builder.Services.AddProblemDetails();
 
         var app = builder.Build();
+        if (!isTesting) {
+            // Materialize the JSON provider so the container disposes its reload watcher.
+            _ = app.Services.GetRequiredService<ConfigurationManager>();
+        }
 
         app.UseMiddleware<RequestCorrelationMiddleware>();
         if (!isTesting) {
@@ -394,16 +399,18 @@ public class Program {
         return context.Response.WriteAsync(JsonSerializer.Serialize(new { status = report.Status.ToString() }));
     }
 
-    private static void AddApplicationSettings(WebApplicationBuilder builder) {
+    private static IConfiguration AddApplicationSettings(WebApplicationBuilder builder) {
         var path = Environment.GetEnvironmentVariable("BACKEND_APP_SETTINGS") ?? "./settings.json";
         var fullPath = Path.GetFullPath(path);
         if (!File.Exists(fullPath)) {
             throw new FileNotFoundException("The backend settings file does not exist.", fullPath);
         }
 
-        builder.Configuration
-            .AddJsonFile(fullPath, optional: false, reloadOnChange: true)
-            .AddEnvironmentVariables();
+        // Keep application options independent of ASP.NET's hosting environment providers.
+        var configuration = new ConfigurationManager();
+        configuration.AddJsonFile(fullPath, optional: false, reloadOnChange: true);
+        builder.Services.AddSingleton(_ => configuration);
+        return configuration;
     }
 
     private static void AddValidatedOptions(IServiceCollection services, IConfiguration configuration) {

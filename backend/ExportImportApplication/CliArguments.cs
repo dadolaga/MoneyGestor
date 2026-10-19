@@ -1,12 +1,12 @@
 namespace ExportImportApplication;
 
-internal sealed record CliArguments(String? Operation, String DatabaseName = "", String? ArchivePath = null, Boolean ShowHelp = false) {
+internal sealed record CliArguments(String? Operation, String DatabaseName = "", String? ArchivePath = null, Boolean ShowHelp = false, Boolean UseConfiguredDatabase = false) {
     public static Boolean IsOperation(String value) => value is "initialize" or "export" or "import" or "delete";
 
     public static String UsageFor(String operation) => operation switch {
-        "initialize" => "initialize --database NAME",
-        "export" => "export --database NAME [--file ARCHIVE.zip] --maintenance",
-        "import" => "import --database NAME --file ARCHIVE.zip",
+        "initialize" => "initialize (--database NAME | --configured-database)",
+        "export" => "export (--database NAME | --configured-database) [--file ARCHIVE.zip] --maintenance",
+        "import" => "import (--database NAME | --configured-database) --file ARCHIVE.zip",
         "delete" => "delete --database NAME",
         _ => "<command> [options]"
     };
@@ -40,9 +40,9 @@ internal sealed record CliArguments(String? Operation, String DatabaseName = "",
         var maintenance = false;
         for (var index = 1; index < args.Length; index++) {
             var argument = args[index];
-            if (argument is not ("--database" or "--file" or "--maintenance")) {
+            if (argument is not ("--database" or "--configured-database" or "--file" or "--maintenance")) {
                 // Do not echo arbitrary input: it could contain a misplaced credential.
-                error = "Unrecognized argument. Use named options from the usage below; credentials belong in the environment variable.";
+                error = "Unrecognized argument. Use named options from the usage below; do not pass credentials as arguments.";
                 return false;
             }
 
@@ -56,6 +56,11 @@ internal sealed record CliArguments(String? Operation, String DatabaseName = "",
                 continue;
             }
 
+            if (argument == "--configured-database") {
+                options = options with { UseConfiguredDatabase = true };
+                continue;
+            }
+
             if (index + 1 >= args.Length || String.IsNullOrWhiteSpace(args[index + 1]) || args[index + 1].StartsWith("--", StringComparison.Ordinal)) {
                 error = $"Option {argument} needs a value. Use {argument} {(argument == "--database" ? "NAME" : "ARCHIVE.zip")}; quote paths containing spaces.";
                 return false;
@@ -65,8 +70,10 @@ internal sealed record CliArguments(String? Operation, String DatabaseName = "",
             options = argument == "--database" ? options with { DatabaseName = value } : options with { ArchivePath = value };
         }
 
-        if (String.IsNullOrWhiteSpace(options.DatabaseName)) {
-            error = "Missing --database NAME. Specify the exact database name from the administrative connection.";
+        if (options.UseConfiguredDatabase && (seen.Contains("--database") || options.Operation == "delete")) {
+            error = "Use --configured-database only for initialize/export/import and without --database. Deletion requires an explicit --database NAME.";
+        } else if (!options.UseConfiguredDatabase && String.IsNullOrWhiteSpace(options.DatabaseName)) {
+            error = "Missing --database NAME. Specify the configured database name, or use --configured-database to select it from the JSON file.";
         } else if (options.Operation is "initialize" or "delete" && options.ArchivePath != null) {
             error = $"Command {options.Operation} does not accept --file. Only export and import use an archive.";
         } else if (options.Operation == "import" && options.ArchivePath == null) {

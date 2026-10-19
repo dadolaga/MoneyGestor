@@ -7,3 +7,7 @@ out
 .git
 .env.local
 .env.*.local
+.env
+.env.*
+**/settings.json
+**/*.zip

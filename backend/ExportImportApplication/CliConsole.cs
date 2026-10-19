@@ -42,8 +42,10 @@ internal sealed class CliConsole(Boolean noColor) {
         }
 
         Heading("2. Understand the options");
-        Console.WriteLine("  --database NAME   Required. Exact MySQL database name, not a server or file path.");
-        Console.WriteLine("                    Must match Database in the administrative connection string.");
+        Console.WriteLine("  --database NAME   Exact MySQL database name, not a server or file path.");
+        Console.WriteLine("                    Must match the configured connection. Required unless --configured-database is used.");
+        Console.WriteLine("  --configured-database  Use database.name from the application JSON instead of --database.");
+        Console.WriteLine("                         Available for initialize/export/import; never for delete.");
         if (operation == null || operation is "export" or "import") {
             Console.WriteLine("  --file PATH       Optional for export; required for import. ZIP archive path.");
             Console.WriteLine("                    Export default: ./export-yyyy-MM-dd-HHmmss.zip (UTC).");
@@ -62,13 +64,17 @@ internal sealed class CliConsole(Boolean noColor) {
         Console.WriteLine("  --no-color        Disable colors. Can be placed before or after the command.");
 
         Heading("3. Configure the connection privately");
+        Console.WriteLine("  The application JSON is shared with the backend. Select it with BACKEND_APP_SETTINGS.");
+        Console.WriteLine("  The default path is ./settings.json. The database section supplies the connection.");
+        Console.WriteLine("  An explicit BACKEND_APP_SETTINGS path takes precedence over administrative environment settings.");
+        Console.WriteLine("  For standalone administrative commands without a JSON path, the existing connection variable is supported:");
         Console.WriteLine("  Supply MONEYGESTOR_ADMIN_CONNECTION_STRING in the process environment.");
         Console.WriteLine("  It contains the MySQL server, port, user, password and Database=NAME.");
         Console.WriteLine("  PowerShell (Windows/Linux), using an already supplied private value:");
         Console.WriteLine("    $env:MONEYGESTOR_ADMIN_CONNECTION_STRING = $adminConnectionString");
         Console.WriteLine("  Bash (Linux), using an already supplied private value:");
         Console.WriteLine("    export MONEYGESTOR_ADMIN_CONNECTION_STRING=\"$adminConnectionString\"");
-        Console.WriteLine("  No settings file is read. Do not pass credentials as command-line arguments.");
+        Console.WriteLine("  Do not pass credentials as command-line arguments.");
 
         Heading("Before running");
         if (operation == null || operation is "initialize" or "import") {

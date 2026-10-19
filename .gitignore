@@ -1,2 +1,5 @@
 settings.json
 /artifacts/
+.env
+.env.*
+!.env.example
