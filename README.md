@@ -57,7 +57,7 @@ dotnet run --project backend/webserver --no-launch-profile --urls http://localho
 
 ```powershell
 # Terminal 2 — repository root
-$env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
+$env:NEXT_PUBLIC_API_URL = ''
 npm --prefix frontend ci
 npm --prefix frontend run dev
 ```

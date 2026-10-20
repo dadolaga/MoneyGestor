@@ -109,7 +109,7 @@ Using `--no-launch-profile` makes the URL and settings path explicit, independen
 ### Terminal 2: website
 
 ```powershell
-$env:NEXT_PUBLIC_API_URL = 'http://localhost:5256'
+$env:NEXT_PUBLIC_API_URL = ''
 npm --prefix frontend run dev
 ```
 
@@ -125,19 +125,20 @@ Open `http://localhost:3000` and follow the [application walkthrough](../../READ
 | `http://localhost:5256/health/ready` | Database readiness. |
 | `http://localhost:3000/design-system` | UI development catalog with fixture previews. |
 
-Use `localhost` consistently for both processes; switching one URL to an IP address changes origin and cookie behavior. If you change the frontend port or hostname, update `security.allowedOrigins` and email links to match.
+The browser sends `/api/v1/*` requests to the website's own origin. Next.js proxies them to `http://127.0.0.1:5256`, preserving the API path, cookies and antiforgery headers. You can also open the website from another device using the frontend computer's LAN address: only the frontend needs to reach the API. Keep email links aligned with the website address.
 
-### Persist the frontend API URL
+### Configure the API proxy
 
-As an alternative to the terminal variable, create `frontend/.env.local` with:
+For an API running on another machine or port, create `frontend/.env.local` with its origin, without `/api/v1`:
 
 ```dotenv
-NEXT_PUBLIC_API_URL=http://localhost:5256
+API_PROXY_TARGET=http://192.0.2.10:5256
+NEXT_PUBLIC_API_URL=
 ```
 
-Restart `next dev` after changing it. A variable already set in the process environment takes precedence over the file. Always configure this value explicitly: the current client has a machine-specific fallback URL.
+`API_PROXY_TARGET` defaults to `http://127.0.0.1:5256` and is used only by the Next.js server. Restart `next dev` after changing it; for `next start` or standalone output, set it before building and rebuild when it changes. A variable already set in the process environment takes precedence over the file.
 
-`NEXT_PUBLIC_API_URL` is the API **origin**, without `/api/v1`; the shared client appends endpoint paths. It is public configuration and must never contain credentials. In production it is embedded during the frontend build.
+Leave `NEXT_PUBLIC_API_URL` empty or unset to use the proxy. An explicit nonempty value makes the browser call that API origin directly, bypassing the proxy; this requires matching CORS configuration in `security.allowedOrigins` and compatible cookie hostnames. It is public build-time configuration and must never contain credentials.
 
 ## Where to make changes
 
@@ -181,8 +182,9 @@ A successful build verifies compilation. If it fails, report whether the error w
 | Database missing, incomplete or incompatible | Confirm the target, connectivity and schema. Initialize only a new/empty database; use manual export/import for an upgrade. |
 | Native API cannot reach the bundled MySQL | Start `mysql`, wait for health, use `127.0.0.1` and `MYSQL_PORT` in JSON, and match the database/user/password from `.env`. |
 | MySQL remains unhealthy after editing `.env` | Bootstrap variables do not change existing users/passwords in `mysql-data`. Restore matching credentials or rotate them deliberately in MySQL; do not remove the volume to reset a password. |
-| API requests target another machine | Explicitly set `NEXT_PUBLIC_API_URL` and restart Next.js. |
-| CORS or cookie errors | Check the exact frontend origin in the JSON file and use the same hostname for the frontend and API. |
+| API proxy cannot reach the backend | Check that the API is running and `API_PROXY_TARGET` is reachable from the Next.js server; restart Next.js after changes. |
+| Browser requests bypass the proxy | Remove a nonempty `NEXT_PUBLIC_API_URL` from the terminal environment or frontend environment files, then restart Next.js. |
+| CORS or cookie errors with direct API calls | Leave `NEXT_PUBLIC_API_URL` empty to use the proxy, or check the exact frontend origin in `security.allowedOrigins` and use compatible frontend/API hostnames. |
 | Registration works but login fails | Confirm your email if required, or disable confirmation for local development. Check SMTP configuration when testing email flows. |
 | Confirmation/reset email never arrives | Replace example SMTP values; disabling confirmation does not enable password recovery. |
 | Login is temporarily locked | Repeated failed attempts trigger account lockout; the configured lockout duration is 15 minutes. |

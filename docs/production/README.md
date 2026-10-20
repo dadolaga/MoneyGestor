@@ -19,7 +19,9 @@ Reverse proxy
    └── /*     ──► Frontend  127.0.0.1:3000
 ```
 
-The frontend is built with an empty `NEXT_PUBLIC_API_URL`, so browser API requests use the website's own origin. Your reverse proxy must route `/api/*` to the API while preserving the path.
+The frontend is built with an empty `NEXT_PUBLIC_API_URL`, so browser API requests use the website's own origin. Compose sets the build argument `API_PROXY_TARGET=http://backend:8080`, so the Next.js proxy can forward `/api/v1/*` to the backend over the internal application network.
+
+The Nginx example below routes API traffic directly to the backend. Alternatively, forward all website traffic to the frontend and let Next.js proxy the API requests. Native development defaults to `http://127.0.0.1:5256`; inside the frontend container that address would refer to the frontend itself.
 
 > [!IMPORTANT]
 > Production authentication uses Secure cookies. Access the website through HTTPS. Opening the container's plain HTTP port directly is not the production login workflow.
@@ -124,6 +126,8 @@ The API and database tools wait for healthy MySQL; the frontend waits for a heal
 Next.js emits a standalone application, started by `node server.js` in the image. Do not use `next dev` for production. The API image contains the published .NET application and runtime, without the SDK.
 
 `NEXT_PUBLIC_API_URL` is a **build-time** setting. The supplied Compose file passes an empty value for same-origin routing. Setting it only in a running frontend container does not change the browser bundle. A different API origin requires changing the image build argument, rebuilding and reviewing CORS/cookie requirements.
+
+`API_PROXY_TARGET` is also captured during the frontend build. Compose passes `http://backend:8080`, using the backend service name and container port rather than its host-published port. After changing the proxy configuration, rebuild and recreate the frontend with `docker compose up -d --build --no-deps frontend`; this requires an already running, healthy backend.
 
 ## 4. Route HTTPS traffic
 

@@ -105,6 +105,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ""
+        API_PROXY_TARGET: "http://backend:8080"
     init: true
     restart: unless-stopped
     read_only: true
