@@ -70,6 +70,8 @@ npm --prefix frontend run dev
 
 Open `/register`, enter your name, username, email and password, then sign in at `/login`. Passwords require at least 12 characters, with uppercase and lowercase letters, a number and a symbol.
 
+Opening the homepage with a valid session automatically redirects you to the dashboard in the current language. Visitors without a valid session stay on the homepage.
+
 If the installation requires email confirmation, follow the link sent to your inbox before signing in. The login screen also provides account recovery and confirmation-email actions. Recovery requires working SMTP delivery.
 
 ### 2. Add your wallets

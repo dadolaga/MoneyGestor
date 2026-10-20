@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import Image from 'next/image';
@@ -22,7 +22,8 @@ import {
     Wallet,
 } from '@/components/ui/icons';
 import type { IconComponent } from '@/components/ui/icons';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
 
 type Feature = 'movements' | 'budgets' | 'reports' | 'wallets';
 const featureIcons: Record<Feature, IconComponent> = {
@@ -149,10 +150,27 @@ function FeatureExample({ feature }: { feature: Feature }) {
 export function HomePage() {
     const t = useTranslations('Home');
     const locale = useLocale();
+    const router = useRouter();
     // The public landing starts with the reference's dark art direction; this switch is local to it.
     const [isLightTheme, setIsLightTheme] = useState(false);
     const englishCurrent = locale === 'en' ? 'page' : undefined;
     const italianCurrent = locale === 'it' ? 'page' : undefined;
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        void apiClient.session(controller.signal)
+            .then(() => {
+                if (!controller.signal.aborted) router.replace('/dashboard');
+            })
+            .catch((error: unknown) => {
+                if (controller.signal.aborted) return;
+                if (error instanceof ApiProblemError && error.status === 401) return;
+                console.error('Unable to verify the homepage session.');
+            });
+
+        return () => controller.abort();
+    }, [router]);
 
     const navigation = [
         { href: '#features', label: t('navigation.features') },
