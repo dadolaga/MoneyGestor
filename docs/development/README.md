@@ -86,6 +86,8 @@ If you already have a compatible initialized database, skip this command. To res
 
 The API validates schema version, reserved data and financial integrity during startup. It never creates, migrates, seeds or repairs the database. Do not use `dotnet ef database update` as a setup step; this checkout uses the explicit initialization/export/import workflow.
 
+The shared data integrity preflight currently skips wallet balance reconciliation (`wallet_balance_mismatch`): that check is commented out, while ownership and transfer checks remain active. This allows inconsistent stored balances to pass the preflight without repairing them.
+
 ### 3. Install frontend dependencies
 
 ```powershell
