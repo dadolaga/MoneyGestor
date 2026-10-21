@@ -108,6 +108,8 @@ Use the movements page to filter and explore your data. Choose **Export** to dow
 
 Use the application header to change language or appearance. English URLs have no locale prefix; Italian URLs start with `/it`, for example `/it/dashboard`. On mobile, the bottom navigation provides Home, Movements and More; open More to reach wallets and the rest of the navigation.
 
+The selected language is saved in a cookie for one year and reused on reload and when returning to an unprefixed URL. An explicit language prefix takes precedence. Without a saved preference, the site starts in English regardless of the browser language.
+
 ## Inside the repository
 
 ```text
