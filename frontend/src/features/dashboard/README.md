@@ -13,13 +13,14 @@ The shared shell adds Home / Movements / More navigation below the desktop break
 the existing navigation sheet, and content reserves space for the bar and the device safe area.
 
 `DashboardQuickActions.tsx` reuses the shared movement editor. On phones it offers shortcuts for
-the first four available non-system categories in API order, using their existing names, icons and
+the first four available non-system categories in the API's alphabetical order, using their existing names, icons and
 colors, and preselects the category for a new expense. The main action opens the shared editor with
 all categories and movement kinds: below 640px it uses the two-step full-screen mobile layout
 and top sheets documented in the [transactions guide](../transactions/README.md).
 With no categories, income/expense/transfer shortcuts remain
 available; loading and metadata errors still use the shared editor's states. Add wallet remains
 available through the existing wallet editor. There is no separate mobile route or financial logic.
+Creating a category reloads metadata from the API so shortcuts keep the server's alphabetical order.
 
 - `useDashboard.ts` loads the selected calendar month's overview and six most recent movements,
   with cancellation, loading/error states and retry. Wallets and categories load separately.

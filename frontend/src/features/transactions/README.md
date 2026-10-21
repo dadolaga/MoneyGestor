@@ -14,7 +14,9 @@ description and notes while preserving the selected kind, date, wallets and cate
 Mobile creation and editing still close the dialog after a successful save.
 Shared notifications use a native top-layer popover above dialogs and sheets, including nested dialogs;
 their container follows the active modal so notification controls remain interactive.
-Category shortcuts reuse the first four API categories
+Category lists in the editor, filters and parent picker preserve the alphabetical order returned by
+`GET /api/v1/transaction-types`. The backend orders by name using the database collation, then ID for ties.
+Creating a category reloads metadata from the API to preserve this order. Category shortcuts reuse the first four categories
 and keep a selected category visible. No separate merchant field is stored by the current API.
 Calendar labels and selected-date text in the editor and date filters use the shared
 `useCalendarDateFormatting` hook. It formats local calendar dates without inheriting the server's

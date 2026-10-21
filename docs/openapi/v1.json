@@ -6118,6 +6118,7 @@
     },
     "/api/v1/transaction-types": {
       "get": {
+        "description": "Returns available transaction types ordered alphabetically by name using the database collation, then by ID for ties.",
         "responses": {
           "200": {
             "content": {

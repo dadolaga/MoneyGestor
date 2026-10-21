@@ -69,7 +69,7 @@ public sealed partial class ResourceQueryService(MoneyGestorContext database) : 
 
     public async Task<IReadOnlyList<TransactionTypeResponse>> GetTransactionTypesAsync(UInt64 userId, CancellationToken cancellationToken) =>
         await OwnershipQueryPolicy.AvailableTransactionTypes(database, userId).AsNoTracking()
-            .OrderBy(type => type.Id)
+            .OrderBy(type => type.Name).ThenBy(type => type.Id)
             .Select(type => new TransactionTypeResponse(type.Id, type.Name, type.UserId == null) {
                 ParentId = type.ParentId, Icon = type.Icon, Color = type.Color, Description = type.Description,
                 Keywords = type.Keywords, UseInReports = type.UseInReports,

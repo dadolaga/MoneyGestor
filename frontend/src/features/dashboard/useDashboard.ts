@@ -63,10 +63,9 @@ export function useDashboard() {
         return () => controller.abort();
     }, [revision, t]);
 
-    function categoryCreatedHandler(category: ApiTransactionType) {
-        setMetadata((current) => current.data ? {
-            ...current, data: { ...current.data, types: [...current.data.types, category] },
-        } : current);
+    function categoryCreatedHandler() {
+        setMetadata((current) => ({ ...current, loading: true, error: '' }));
+        setRevision((current) => current + 1);
     }
 
     function monthChangeHandler(value: string) {
