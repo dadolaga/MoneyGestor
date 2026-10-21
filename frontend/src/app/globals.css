@@ -8,6 +8,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Native modal dialogs require notifications in the browser top layer, beyond CSS z-index. */
+.notification-layer {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+    pointer-events: none;
+}
+
+.notification-layer [data-sonner-toaster] {
+    pointer-events: auto;
+}
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);

@@ -12,6 +12,8 @@ desktop keeps its complete single-step dialog. After creating a movement on desk
 open until dismissed manually, both here and on the dashboard. A successful creation clears amount,
 description and notes while preserving the selected kind, date, wallets and category for the next entry.
 Mobile creation and editing still close the dialog after a successful save.
+Shared notifications use a native top-layer popover above dialogs and sheets, including nested dialogs;
+their container follows the active modal so notification controls remain interactive.
 Category shortcuts reuse the first four API categories
 and keep a selected category visible. No separate merchant field is stored by the current API.
 Calendar labels and selected-date text in the editor and date filters use the shared
