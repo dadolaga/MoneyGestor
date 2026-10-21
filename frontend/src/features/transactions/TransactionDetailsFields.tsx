@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeftRight, FileText, Plus, Tag, Wallet, X } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { CategoryIcon } from '@/features/categories/category-display';
+import { useCalendarDateFormatting } from '@/hooks/useCalendarDateFormatting';
 import type { ApiTransactionType, ApiWallet } from '@/lib/api/client';
 import { parseLocalizedAmount } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ export function TransactionDetailsFields({
     const tMobile = useTranslations('Movements.mobile');
     const locale = useLocale();
     const format = useFormatter();
+    const { formatDate, formatMonth, formatWeekday } = useCalendarDateFormatting();
     const { control, getValues } = form;
     const [kind, sourceId, typeId, amount, destinationId] = useWatch({
         control,
@@ -177,9 +179,9 @@ export function TransactionDetailsFields({
             todayLabel={tDialog('today')}
             previousMonthLabel={tDialog('previousMonth')}
             nextMonthLabel={tDialog('nextMonth')}
-            formatDate={(date) => format.dateTime(date, { day: '2-digit', month: 'short', year: 'numeric' })}
-            formatMonth={(date) => format.dateTime(date, { month: 'long', year: 'numeric' })}
-            formatWeekday={(date) => format.dateTime(date, { weekday: 'short' })}
+            formatDate={formatDate}
+            formatMonth={formatMonth}
+            formatWeekday={formatWeekday}
             rules={rules.date}
         />
     );

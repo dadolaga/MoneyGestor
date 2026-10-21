@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import dayjs from 'dayjs';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Controller } from 'react-hook-form';
 import type { UseControllerProps } from 'react-hook-form';
 
@@ -14,6 +14,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Check, ChevronDown, ChevronRight, Ellipsis, Plus, Search } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useCalendarDateFormatting } from '@/hooks/useCalendarDateFormatting';
 import { cn } from '@/lib/utils';
 
 import type { TransactionFormValues } from './transaction-editor-model';
@@ -273,11 +274,10 @@ export function TransactionMobileDateField({
 }: UseControllerProps<TransactionFormValues, 'date'> & { id: string; label: string }) {
     const t = useTranslations('Movements.mobile');
     const tDialog = useTranslations('Movements.dialog');
-    const format = useFormatter();
+    const { formatDate, formatMonth, formatWeekday } = useCalendarDateFormatting();
     const [open, setOpen] = useState(false);
     const [draft, setDraft] = useState<Date>();
     const [month, setMonth] = useState<Date>();
-    const formatDate = (date: Date) => format.dateTime(date, { day: '2-digit', month: 'short', year: 'numeric' });
 
     return (
         <Controller
@@ -362,8 +362,8 @@ export function TransactionMobileDateField({
                                         'size-9 max-w-full rounded-full border-0 bg-transparent text-sm text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
                                 }}
                                 formatters={{
-                                    formatCaption: (date) => format.dateTime(date, { month: 'long', year: 'numeric' }),
-                                    formatWeekdayName: (date) => format.dateTime(date, { weekday: 'short' }),
+                                    formatCaption: formatMonth,
+                                    formatWeekdayName: formatWeekday,
                                 }}
                                 labels={{
                                     labelDayButton: formatDate,

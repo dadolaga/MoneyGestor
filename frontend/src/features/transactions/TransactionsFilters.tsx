@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import dayjs from 'dayjs';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { DateRangeField } from '@/components/shared/date-range-field';
 import type { DayjsDateRange } from '@/components/shared/date-range-field';
@@ -13,6 +13,7 @@ import { ArrowUpDown, RotateCcw, Search, Tag, Wallet } from '@/components/ui/ico
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { CategoryIcon } from '@/features/categories/category-display';
+import { useCalendarDateFormatting } from '@/hooks/useCalendarDateFormatting';
 import type { ApiTransactionType, ApiWallet, TransactionQuery } from '@/lib/api/client';
 
 interface TransactionsFiltersProps {
@@ -35,7 +36,7 @@ export function TransactionsFilters({
     onReset,
 }: TransactionsFiltersProps) {
     const t = useTranslations('Movements');
-    const format = useFormatter();
+    const { formatDate, formatMonth, formatWeekday } = useCalendarDateFormatting();
     const [dateRange, setDateRange] = useState<DayjsDateRange>(() => ({
         start: dayjs(filters.from),
         end: dayjs(filters.to),
@@ -81,9 +82,9 @@ export function TransactionsFilters({
                             });
                     }}
                     placeholder={t('filters.datePlaceholder')}
-                    formatDate={(value) => format.dateTime(value, { day: '2-digit', month: 'short', year: 'numeric' })}
-                    formatMonth={(value) => format.dateTime(value, { month: 'long', year: 'numeric' })}
-                    formatWeekday={(value) => format.dateTime(value, { weekday: 'short' })}
+                    formatDate={formatDate}
+                    formatMonth={formatMonth}
+                    formatWeekday={formatWeekday}
                     previousMonthLabel={t('filters.previousMonth')}
                     nextMonthLabel={t('filters.nextMonth')}
                 />

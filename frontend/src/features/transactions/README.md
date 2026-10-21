@@ -10,6 +10,9 @@ action writes to the API. Back preserves values, and financial field errors retu
 Creation and editing share React Hook Form state, validation and the existing create/update requests;
 desktop keeps its complete single-step dialog. Category shortcuts reuse the first four API categories
 and keep a selected category visible. No separate merchant field is stored by the current API.
+Calendar labels and selected-date text in the editor and date filters use the shared
+`useCalendarDateFormatting` hook. It formats local calendar dates without inheriting the server's
+time zone: converting local midnight to UTC could otherwise show the previous day or month in production.
 On wide desktop layouts, the list fills the remaining page height and only its rows scroll;
 the title, column headings and pagination stay visible. Narrow layouts bound the list to 60dvh
 while keeping normal page scrolling for the stacked summaries and charts.
