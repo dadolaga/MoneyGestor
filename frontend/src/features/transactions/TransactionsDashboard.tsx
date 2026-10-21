@@ -38,8 +38,6 @@ export function TransactionsDashboard() {
     };
 
     function savedHandler() {
-        setEditorOpen(false);
-        setEditing(undefined);
         dashboard.retryHandler();
         notify.success(t(editing ? 'editor.updated' : 'editor.created'));
     }

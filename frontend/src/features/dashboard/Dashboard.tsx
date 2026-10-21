@@ -107,7 +107,7 @@ export function Dashboard() {
                 <TransactionEditorDialog wallets={wallets} types={types} initialKind={movement.kind} typeId={movement.typeId}
                     metadataLoading={metadata.loading} metadataError={metadata.error} onRetry={dashboard.retryHandler}
                     onClose={() => setMovement(undefined)} onCategoryCreated={dashboard.categoryCreatedHandler}
-                    onSaved={() => { setMovement(undefined); notify.success(movements('created')); dashboard.retryHandler(); }} />
+                    onSaved={() => { notify.success(movements('created')); dashboard.retryHandler(); }} />
             )}
             {!!walletEditorOpen && <WalletEditorDialog accounts={accounts} pending={walletPending}
                 onClose={() => setWalletEditorOpen(false)} onSave={saveWalletHandler} />}

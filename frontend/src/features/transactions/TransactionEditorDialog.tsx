@@ -192,6 +192,11 @@ export function TransactionEditorDialog({
                 await apiClient.createTransaction(body);
             }
             onSaved();
+            if (isMobile || transaction) {
+                onClose();
+            } else {
+                form.reset({ ...values, amount: '', description: '', notes: '' });
+            }
         } catch (error: unknown) {
             if (error instanceof ApiProblemError) {
                 for (const field of Object.keys(error.fieldErrors)) {

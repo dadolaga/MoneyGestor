@@ -8,7 +8,11 @@ open in native top sheets with a slide-in animation (disabled for reduced motion
 to the sheet title, leaving search fields unfocused until selected. Today/yesterday shortcuts select calendar dates; only the final Save
 action writes to the API. Back preserves values, and financial field errors return to the first step.
 Creation and editing share React Hook Form state, validation and the existing create/update requests;
-desktop keeps its complete single-step dialog. Category shortcuts reuse the first four API categories
+desktop keeps its complete single-step dialog. After creating a movement on desktop, the dialog stays
+open until dismissed manually, both here and on the dashboard. A successful creation clears amount,
+description and notes while preserving the selected kind, date, wallets and category for the next entry.
+Mobile creation and editing still close the dialog after a successful save.
+Category shortcuts reuse the first four API categories
 and keep a selected category visible. No separate merchant field is stored by the current API.
 Calendar labels and selected-date text in the editor and date filters use the shared
 `useCalendarDateFormatting` hook. It formats local calendar dates without inheriting the server's
