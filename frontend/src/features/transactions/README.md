@@ -21,6 +21,11 @@ and keep a selected category visible. No separate merchant field is stored by th
 Calendar labels and selected-date text in the editor and date filters use the shared
 `useCalendarDateFormatting` hook. It formats local calendar dates without inheriting the server's
 time zone: converting local midnight to UTC could otherwise show the previous day or month in production.
+Movement dates in desktop/mobile lists, recent movements and weekly chart ranges use the same
+formatter through `useTransactionFormatting`. API dates (`YYYY-MM-DD`) remain calendar dates throughout
+display; no time-zone conversion is applied and create/update payloads are unchanged.
+The shared `Calendar` follows the active interface language for the first day of the week:
+Monday in Italian and Sunday in English, for desktop, mobile and date-range filters.
 On wide desktop layouts, the list fills the remaining page height and only its rows scroll;
 the title, column headings and pagination stay visible. Narrow layouts bound the list to 60dvh
 while keeping normal page scrolling for the stacked summaries and charts.

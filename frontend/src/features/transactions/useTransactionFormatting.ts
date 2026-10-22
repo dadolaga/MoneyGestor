@@ -3,11 +3,14 @@
 import dayjs from 'dayjs';
 import { useFormatter } from 'next-intl';
 
+import { useCalendarDateFormatting } from '@/hooks/useCalendarDateFormatting';
+
 export function useTransactionFormatting() {
     const format = useFormatter();
+    const { formatDate, formatShortDate } = useCalendarDateFormatting();
     const money = (value: number) => format.number(value, { style: 'currency', currency: 'EUR' });
-    const date = (value: string) =>
-        format.dateTime(dayjs(value).toDate(), { day: '2-digit', month: 'short', year: 'numeric' });
+    const date = (value: string) => formatDate(dayjs(value).toDate());
+    const shortDate = (value: string) => formatShortDate(dayjs(value).toDate());
 
-    return { money, date };
+    return { money, date, shortDate };
 }

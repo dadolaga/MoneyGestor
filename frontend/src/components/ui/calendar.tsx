@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import { useLocale } from 'next-intl';
 import { DayPicker } from 'react-day-picker';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -13,11 +14,13 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
 };
 
 function Calendar({ className, classNames, showOutsideDays = true, appearance = 'compact', ...props }: CalendarProps) {
+    const locale = useLocale();
     const spacious = appearance === 'spacious';
 
     return (
         <DayPicker
             showOutsideDays={showOutsideDays}
+            weekStartsOn={locale === 'it' ? 1 : 0}
             className={cn('relative', spacious ? 'p-3 sm:p-4' : 'p-3', className)}
             classNames={{
                 months: cn('flex flex-col', spacious ? 'gap-6 sm:flex-row sm:gap-8' : 'gap-4 sm:flex-row'),

@@ -2,7 +2,6 @@
 
 import { useId } from 'react';
 
-import dayjs from 'dayjs';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -23,7 +22,7 @@ interface DashboardMonthlyChartProps {
 export function DashboardMonthlyChart({ month, onMonthChange, overview, loading, failed }: DashboardMonthlyChartProps) {
     const t = useTranslations('ApiFinance.dashboard');
     const format = useFormatter();
-    const { money, date } = useTransactionFormatting();
+    const { money, date, shortDate } = useTransactionFormatting();
     const id = useId();
     const hasData = !!overview?.daily.some((day) => day.income > 0 || day.expense > 0);
 
@@ -56,7 +55,7 @@ export function DashboardMonthlyChart({ month, onMonthChange, overview, loading,
                                 ))}
                             </defs>
                             <CartesianGrid stroke="var(--border)" strokeOpacity={0.5} />
-                            <XAxis dataKey="date" tickFormatter={(value: string) => format.dateTime(dayjs(value).toDate(), { day: 'numeric', month: 'short' })}
+                            <XAxis dataKey="date" tickFormatter={shortDate}
                                 tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} minTickGap={35}
                                 axisLine={{ stroke: 'var(--border)' }} tickLine={false} />
                             <YAxis tickFormatter={(value: number) => format.number(value, { notation: 'compact' })}

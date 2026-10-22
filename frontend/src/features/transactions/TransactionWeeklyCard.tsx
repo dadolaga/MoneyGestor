@@ -1,6 +1,5 @@
 'use client';
 
-import dayjs from 'dayjs';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -13,8 +12,7 @@ import { useTransactionFormatting } from './useTransactionFormatting';
 export function TransactionWeeklyCard({ overview, loading, failed }: TransactionAnalyticsProps) {
     const t = useTranslations('Movements');
     const format = useFormatter();
-    const { money } = useTransactionFormatting();
-    const dateLabel = (date: string) => format.dateTime(dayjs(date).toDate(), { day: 'numeric', month: 'short' });
+    const { money, shortDate: dateLabel } = useTransactionFormatting();
     const weeks = (overview?.weekly ?? []).map((week) => ({
         name: `${dateLabel(week.from)} – ${dateLabel(week.to)}`, income: week.income, expense: week.expense,
     }));

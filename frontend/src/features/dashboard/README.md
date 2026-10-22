@@ -9,6 +9,8 @@ totals, a prominent New movement action and recent movements before charts and d
 The selected month is labelled above the summary and can still be changed in the monthly chart.
 Recent movements reuse the existing table and display helpers, hiding secondary columns and showing
 the date and wallet under the description on phones. Desktop retains its existing layout.
+Recent movement dates, monthly chart labels/tooltips and the selected-month label use the shared
+calendar-date formatters, preserving API calendar dates without conversion to the server's time zone.
 The shared shell adds Home / Movements / More navigation below the desktop breakpoint; More opens
 the existing navigation sheet, and content reserves space for the bar and the device safe area.
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import dayjs from 'dayjs';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Plus, Wallet } from '@/components/ui/icons';
@@ -13,6 +13,7 @@ import { walletRequestFromDraft } from '@/features/wallets/wallet-adapter';
 import type { WalletDraft } from '@/features/wallets/wallet-model';
 import { WealthDistribution } from '@/features/wallets/WalletDistributions';
 import { WalletEditorDialog } from '@/features/wallets/WalletEditorDialog';
+import { useCalendarDateFormatting } from '@/hooks/useCalendarDateFormatting';
 import { apiClient } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 
@@ -24,7 +25,7 @@ import { useDashboard } from './useDashboard';
 
 export function Dashboard() {
     const t = useTranslations('ApiFinance.dashboard');
-    const format = useFormatter();
+    const { formatMonth } = useCalendarDateFormatting();
     const movements = useTranslations('Movements.editor');
     const createWallet = useTranslations('CreateWallet');
     const dashboard = useDashboard();
@@ -85,7 +86,7 @@ export function Dashboard() {
 
             <div className="shrink-0">
                 <p className="m-0 mb-2 text-xs text-muted-foreground sm:hidden">
-                    {t('selectedMonth', { month: format.dateTime(dayjs(`${dashboard.month}-01`).toDate(), { month: 'long', year: 'numeric' }) })}
+                    {t('selectedMonth', { month: formatMonth(dayjs(`${dashboard.month}-01`).toDate()) })}
                 </p>
                 <DashboardSummary overview={period.data?.overview} total={total} periodLoading={period.loading} walletsLoading={metadata.loading} />
             </div>
