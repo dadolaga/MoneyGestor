@@ -90,29 +90,46 @@ const DialogClose = React.forwardRef<HTMLButtonElement, DialogButtonProps>(
 );
 DialogClose.displayName = 'DialogClose';
 
-type DialogSurfaceProps = React.ComponentPropsWithoutRef<'dialog'>;
+type DialogSurfaceProps = React.ComponentPropsWithoutRef<'dialog'> & { onExitComplete?: () => void };
 
 /** Native modal dialogs provide focus containment, background inertness and focus restoration. */
 const DialogSurface = React.forwardRef<HTMLDialogElement, DialogSurfaceProps>(
-    ({ children, onCancel, onClose, onPointerDown, onClick, ...props }, forwardedRef) => {
+    ({ children, onCancel, onClose, onPointerDown, onClick, onExitComplete, ...props }, forwardedRef) => {
         const { open, setOpen, titleId, descriptionId, contentId, role, dismissOnOutside } = useDialog();
         const ref = React.useRef<HTMLDialogElement>(null);
         const pointerStartedOutside = React.useRef(false);
+        const [present, setPresent] = React.useState(open);
+        const exitCompleteRef = React.useRef(onExitComplete);
         React.useImperativeHandle(forwardedRef, () => ref.current!);
+
+        React.useLayoutEffect(() => { exitCompleteRef.current = onExitComplete; });
 
         React.useLayoutEffect(() => {
             const element = ref.current;
             if (!element) return;
+            let cancelled = false;
             if (open && !element.open) {
+                setPresent(true);
                 element.showModal();
                 element.querySelector<HTMLButtonElement>('[data-dialog-cancel]')?.focus();
             } else if (!open && element.open) {
-                element.close();
+                // Keep the native modal and its contents alive until the exit animation finishes.
+                const animations = element.getAnimations({ subtree: true }).filter((animation) =>
+                    animation.effect instanceof KeyframeEffect && animation.effect.target === element);
+                void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+                    if (cancelled) return;
+                    element.close();
+                    setPresent(false);
+                    exitCompleteRef.current?.();
+                });
             }
-            return () => {
-                if (element.open) element.close();
-            };
+            return () => { cancelled = true; };
         }, [open]);
+
+        React.useLayoutEffect(() => {
+            const element = ref.current;
+            return () => { if (element?.open) element.close(); };
+        }, []);
 
         const isOutside = (event: React.MouseEvent<HTMLDialogElement>) => {
             const rect = event.currentTarget.getBoundingClientRect();
@@ -140,7 +157,7 @@ const DialogSurface = React.forwardRef<HTMLDialogElement, DialogSurfaceProps>(
                 }}
                 onClose={(event) => {
                     onClose?.(event);
-                    if (!event.currentTarget.open) setOpen(false);
+                    if (!event.currentTarget.open && open) setOpen(false);
                 }}
                 onPointerDown={(event) => {
                     onPointerDown?.(event);
@@ -151,7 +168,7 @@ const DialogSurface = React.forwardRef<HTMLDialogElement, DialogSurfaceProps>(
                     if (!event.defaultPrevented && dismissOnOutside && pointerStartedOutside.current && isOutside(event)) setOpen(false);
                 }}
             >
-                {!!open && children}
+                {!!(open || present) && children}
             </dialog>
         );
     },

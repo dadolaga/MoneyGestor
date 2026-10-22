@@ -168,3 +168,138 @@ body {
 /* Native dialogs stay hidden even when their layout uses flex or grid utilities. */
 dialog[data-slot='modal']:not([open]) { display: none; }
 html:has(dialog[data-slot='modal'][open]) { overflow: hidden; }
+
+@keyframes mobile-dialog-enter {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes mobile-dialog-exit {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+
+@keyframes mobile-field-sheet-enter {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes mobile-field-sheet-exit {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+@media (max-width: 639px) {
+    dialog:is([data-mobile-fullscreen='true'], [data-mobile-field-sheet='true'])[data-state='closed'] {
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+    [data-mobile-bottom='true'] {
+        opacity: 0;
+        transform: translateY(100%);
+        transition:
+            opacity 300ms ease,
+            transform 300ms ease,
+            display 300ms allow-discrete,
+            overlay 300ms allow-discrete;
+    }
+
+    [data-mobile-bottom='true']:popover-open {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    [data-mobile-bottom='true'][data-state='closed'] {
+        pointer-events: none;
+    }
+
+    @starting-style {
+        [data-mobile-bottom='true']:popover-open {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+    }
+
+    dialog[data-mobile-fullscreen='true'][data-state='open'] {
+        animation: mobile-dialog-enter 300ms ease-out both;
+    }
+
+    dialog[data-mobile-fullscreen='true'][data-state='closed'] {
+        animation: mobile-dialog-exit 300ms ease-in both;
+    }
+
+    dialog[data-mobile-field-sheet='true'] {
+        transition: translate 200ms ease-out;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-dragging='true'] {
+        transition: none;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-state='open'] {
+        animation: mobile-field-sheet-enter 300ms ease-out both;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-state='closed'] {
+        animation: mobile-field-sheet-exit 300ms ease-in both;
+    }
+}
+
+dialog[data-slot='modal']::backdrop {
+    background-color: rgb(255 255 255 / 20%);
+    opacity: 0;
+    backdrop-filter: blur(0);
+}
+
+dialog[data-slot='modal'][data-state='open']::backdrop {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    dialog[data-slot='modal']::backdrop {
+        transition: opacity 300ms ease, backdrop-filter 300ms ease;
+    }
+
+    @starting-style {
+        dialog[data-slot='modal'][data-state='open']::backdrop {
+            opacity: 0;
+            backdrop-filter: blur(0);
+        }
+    }
+}
+
+@media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    [data-input-reveal='true'] {
+        opacity: 0;
+        clip-path: inset(0 0 100% 0);
+        transform: translateY(calc(-1 * var(--popover-side-offset, 4px)));
+        transform-origin: top;
+        transition:
+            opacity 300ms ease,
+            clip-path 300ms ease,
+            transform 300ms ease,
+            display 300ms allow-discrete,
+            overlay 300ms allow-discrete;
+    }
+
+    [data-input-reveal='true']:popover-open {
+        opacity: 1;
+        clip-path: inset(0);
+        transform: translateY(0);
+    }
+
+    [data-input-reveal='true'][data-state='closed'] {
+        pointer-events: none;
+    }
+
+    @starting-style {
+        [data-input-reveal='true']:popover-open {
+            opacity: 0;
+            clip-path: inset(0 0 100% 0);
+            transform: translateY(calc(-1 * var(--popover-side-offset, 4px)));
+        }
+    }
+}

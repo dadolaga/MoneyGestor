@@ -74,36 +74,63 @@ interface PopoverContentProps extends React.ComponentPropsWithoutRef<'div'> {
     focusOnOpen?: boolean;
     matchTriggerWidth?: boolean;
     maxHeight?: number;
+    revealFromInput?: boolean;
+    mobileBottom?: boolean;
 }
 
 /** The browser top layer keeps calendar popups visible inside modal dialogs. */
 const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
-    ({ className, children, align = 'center', sideOffset = 4, focusOnOpen = true, matchTriggerWidth = false, maxHeight, style, onToggle, onKeyDown, ...props }, forwardedRef) => {
+    ({ className, children, align = 'center', sideOffset = 4, focusOnOpen = true, matchTriggerWidth = false, maxHeight, revealFromInput = false, mobileBottom = false, style, onToggle, onKeyDown, ...props }, forwardedRef) => {
         const { open, setOpen, triggerRef, anchorRef, triggerId, contentId } = usePopover();
         const ref = React.useRef<HTMLDivElement>(null);
         const [position, setPosition] = React.useState<React.CSSProperties>({});
         const [labelledBy, setLabelledBy] = React.useState(triggerId);
+        const [present, setPresent] = React.useState(open);
+        if (open && !present) setPresent(true);
         React.useImperativeHandle(forwardedRef, () => ref.current!);
 
         React.useLayoutEffect(() => {
             const element = ref.current;
             if (!element) return;
+            let cancelled = false;
             if (!open) {
                 if (element.matches(':popover-open')) element.hidePopover();
-                return;
+                // Native dismissal also starts the CSS exit transition; retain the calendar/list until it ends.
+                const animations = element.getAnimations();
+                void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+                    if (!cancelled) setPresent(false);
+                });
+                return () => { cancelled = true; };
             }
             setLabelledBy(triggerRef.current?.id ?? triggerId);
-            element.showPopover();
+            if (!element.matches(':popover-open')) element.showPopover();
             const updatePosition = () => {
                 const trigger = anchorRef?.current ?? triggerRef.current;
                 if (!trigger) return;
+                if (mobileBottom && window.matchMedia('(max-width: 639px)').matches) {
+                    const viewport = window.visualViewport;
+                    const height = viewport?.height ?? window.innerHeight;
+                    element.style.width = `${Math.max(0, (viewport?.width ?? window.innerWidth) - 16)}px`;
+                    setPosition({
+                        position: 'fixed',
+                        margin: 0,
+                        inset: 'auto',
+                        left: (viewport?.offsetLeft ?? 0) + 8,
+                        bottom: Math.max(8, window.innerHeight - (viewport?.offsetTop ?? 0) - height + 8),
+                        maxHeight: Math.min(maxHeight ?? Infinity, Math.max(0, height - 16)),
+                        maxWidth: 'calc(100vw - 1rem)',
+                    });
+                    return;
+                }
                 const anchor = trigger.getBoundingClientRect();
                 if (matchTriggerWidth) element.style.width = `${anchor.width}px`;
                 const width = element.offsetWidth;
                 const height = element.offsetHeight;
                 const availableBelow = window.innerHeight - anchor.bottom - sideOffset - 8;
                 const availableAbove = anchor.top - sideOffset - 8;
-                const placeAbove = height > availableBelow && availableAbove > availableBelow;
+                const revealBelow = revealFromInput && window.matchMedia('(min-width: 640px)').matches;
+                const placeAbove = !revealBelow && height > availableBelow && availableAbove > availableBelow;
+                element.style.setProperty('--popover-side-offset', `${sideOffset}px`);
                 const left = align === 'start' ? anchor.left : align === 'end' ? anchor.right - width : anchor.left + (anchor.width - width) / 2;
                 setPosition({
                     position: 'fixed',
@@ -120,14 +147,24 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
             observer.observe(element);
             window.addEventListener('resize', updatePosition);
             window.addEventListener('scroll', updatePosition, true);
+            window.visualViewport?.addEventListener('resize', updatePosition);
+            window.visualViewport?.addEventListener('scroll', updatePosition);
             if (focusOnOpen) element.querySelector<HTMLElement>('[autofocus], [role="menuitem"]:not(:disabled), [tabindex="0"], button:not(:disabled), input:not(:disabled)')?.focus();
             return () => {
                 observer.disconnect();
                 window.removeEventListener('resize', updatePosition);
                 window.removeEventListener('scroll', updatePosition, true);
-                if (element.matches(':popover-open')) element.hidePopover();
+                window.visualViewport?.removeEventListener('resize', updatePosition);
+                window.visualViewport?.removeEventListener('scroll', updatePosition);
             };
-        }, [open, align, sideOffset, focusOnOpen, matchTriggerWidth, maxHeight, triggerRef, anchorRef, triggerId]);
+        }, [open, align, sideOffset, focusOnOpen, matchTriggerWidth, maxHeight, revealFromInput, mobileBottom, triggerRef, anchorRef, triggerId]);
+
+        React.useLayoutEffect(() => {
+            const element = ref.current;
+            return () => {
+                if (element?.matches(':popover-open')) element.hidePopover();
+            };
+        }, []);
 
         return (
             <div
@@ -138,6 +175,8 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
                 aria-labelledby={labelledBy}
                 tabIndex={-1}
                 data-state={open ? 'open' : 'closed'}
+                data-input-reveal={revealFromInput || undefined}
+                data-mobile-bottom={mobileBottom || undefined}
                 className={cn('z-50 box-border w-72 overflow-y-auto rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-lg outline-none', className)}
                 style={{ ...position, ...style }}
                 onToggle={(event) => {
@@ -156,7 +195,7 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
                 }}
                 {...props}
             >
-                {!!open && children}
+                {!!(open || present) && children}
             </div>
         );
     },

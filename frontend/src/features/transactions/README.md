@@ -3,8 +3,25 @@
 The live /dashboard/transaction route imports TransactionsDashboard.tsx. It reuses the shared editor,
 API client, row actions, confirmation dialog and display components for desktop and mobile.
 Below 640px, the same editor opens full screen with two steps: essential fields, then a summary
-and optional note. Wallets (including balances), all categories with search, and the date calendar
-open in native top sheets with a slide-in animation (disabled for reduced motion). Initial focus goes
+and optional note. It slides in from the left and slides back to the left when dismissed.
+Continue and More details slide the next step in from the left over 300ms; Back slides the first
+step in from the right. Header and form animate together without remounting fields or losing values;
+reduced motion disables these transitions.
+Responsive CSS sets its full-screen position before the native modal opens, so the animation stays
+horizontal rather than starting from the centered desktop position while the mobile hook initializes.
+Wallets (including balances), all categories with search, and the date calendar open in native
+bottom sheets and slide down on dismissal. Dragging their handle or header downward moves the sheet
+with the pointer: releasing past a quarter of its height (capped at 96px) dismisses it; shorter or
+cancelled gestures return it to its original position. The list/calendar keeps its normal scrolling.
+The wallet/category sheet search field stays in a fixed footer below the options, so it remains
+visible while the options scroll above it.
+Shared searchable selects, including wallet/category filters, also show their search input and
+choices in a bottom popup on mobile. Its position follows the visible viewport when the keyboard
+opens, with search kept at the top of the scrollable list. Desktop retains its inline searchable dropdown.
+Native modal contents remain mounted until the 300ms exit ends; reduced motion disables the animations.
+On both mobile and desktop, dialog backdrops gradually fade their translucent white overlay and blur
+in and out over 300ms, including the field sheets.
+Initial focus goes
 to the sheet title, leaving search fields unfocused until selected. Today/yesterday shortcuts select calendar dates; only the final Save
 action writes to the API. Back preserves values, and financial field errors return to the first step.
 Creation and editing share React Hook Form state, validation and the existing create/update requests;
@@ -12,6 +29,12 @@ desktop keeps its complete single-step dialog. After creating a movement on desk
 open until dismissed manually, both here and on the dashboard. A successful creation clears amount,
 description and notes while preserving the selected kind, date, wallets and category for the next entry.
 Mobile creation and editing still close the dialog after a successful save.
+On desktop, shared dialogs retain their content and native modal focus handling until the closing
+fade/zoom finishes, reversing the opening animation with the same 300ms duration. Select and date popups open below their input,
+reveal downward from its lower edge and retract gradually toward the input on dismissal, including
+outside clicks and Escape. Native top-layer/display transitions retain the popup and its content
+throughout the 300ms exit; constrained calendars scroll within the available space.
+These animations respect reduced-motion preferences.
 Shared notifications use a native top-layer popover above dialogs and sheets, including nested dialogs;
 their container follows the active modal so notification controls remain interactive.
 Category lists in the editor, filters and parent picker preserve the alphabetical order returned by

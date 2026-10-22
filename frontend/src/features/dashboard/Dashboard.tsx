@@ -47,7 +47,6 @@ export function Dashboard() {
         setWalletPending(true);
         try {
             await apiClient.createWallet(walletRequestFromDraft(draft));
-            setWalletEditorOpen(false);
             notify.success(createWallet('created'));
             dashboard.retryHandler();
         } finally {

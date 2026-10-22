@@ -1,6 +1,6 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
@@ -112,6 +112,7 @@ export function WalletEditorDialog({
     onClose,
     onSave,
 }: WalletEditorDialogProps) {
+    const [open, setOpen] = useState(true);
     const t = useTranslations('CreateWallet');
     const locale = useLocale();
     const format = useFormatter();
@@ -243,6 +244,7 @@ export function WalletEditorDialog({
         }
         try {
             await onSave(wallet);
+            setOpen(false);
         } catch (error: unknown) {
             if (error instanceof ApiProblemError) {
                 for (const [field, reasons] of Object.entries(error.fieldErrors)) {
@@ -267,12 +269,12 @@ export function WalletEditorDialog({
 
     return (
         <Dialog
-            open
+            open={open}
             onOpenChange={(open) => {
-                if (!open && !pending) onClose();
+                if (!open && !pending) setOpen(false);
             }}
         >
-            <DialogContent closeLabel={t('cancel')} className="box-border max-w-3xl gap-0 p-0 [&_*]:box-border">
+            <DialogContent onExitComplete={onClose} closeLabel={t('cancel')} className="box-border max-w-3xl gap-0 p-0 [&_*]:box-border">
                 <DialogHeader className="flex-row items-center gap-3 space-y-0 px-5 pt-5 pr-12 text-left sm:px-6 sm:pt-6">
                     <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                         <Wallet aria-hidden="true" className="size-6" />
@@ -588,7 +590,7 @@ export function WalletEditorDialog({
                         </fieldset>
                     </DialogBody>
                     <DialogFooter className="border-t border-border px-5 py-4 sm:px-6">
-                        <Button type="button" variant="ghost" className="sm:mr-auto" disabled={pending} onClick={onClose}>
+                        <Button type="button" variant="ghost" className="sm:mr-auto" disabled={pending} onClick={() => setOpen(false)}>
                             {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={pending || (!!needsAccount && accounts.length === 0)}>

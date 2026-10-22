@@ -102,7 +102,8 @@ export function DateField<T extends FieldValues>({
                             </FieldControl>
 
                             <PopoverContent
-                                className="w-auto overflow-hidden rounded-2xl border-border/80 bg-popover p-0 shadow-2xl"
+                                revealFromInput
+                                className="w-auto overflow-x-hidden overflow-y-auto rounded-2xl border-border/80 bg-popover p-0 shadow-2xl"
                                 align="start"
                                 sideOffset={8}
                             >

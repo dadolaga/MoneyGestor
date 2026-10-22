@@ -158,7 +158,6 @@ export function WalletsDashboard() {
                     colorValue: body.colorValue,
                     details: body.details,
                 });
-            setDialog(undefined);
             notify.success(tCreate(editingWallet === undefined ? 'created' : 'updated'));
             await refreshWallets();
         } finally {

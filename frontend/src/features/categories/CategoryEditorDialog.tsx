@@ -44,6 +44,7 @@ interface CategoryEditorDialogProps {
 export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, onCreated }: CategoryEditorDialogProps) {
     const t = useTranslations('Movements.categoryEditor');
     const id = useId();
+    const [open, setOpen] = useState(true);
     const [createdId, setCreatedId] = useState<number>();
     const {
         control,
@@ -103,17 +104,19 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
             return;
         }
         onCreated(category);
+        setOpen(false);
     }
 
     return (
         <Dialog
-            open
+            open={open}
             dismissOnOutside={false}
             onOpenChange={(open) => {
-                if (!open && !isSubmitting) onClose();
+                if (!open && !isSubmitting) setOpen(false);
             }}
         >
             <DialogContent
+                onExitComplete={onClose}
                 closeLabel={t('cancel')}
                 className="box-border max-w-[780px] gap-0 border border-solid border-border p-0 shadow-none [&_*]:box-border"
             >
@@ -254,7 +257,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                             variant="transparent"
                             className="sm:mr-auto"
                             disabled={isSubmitting}
-                            onClick={onClose}
+                            onClick={() => setOpen(false)}
                         >
                             {t('cancel')}
                         </Button>

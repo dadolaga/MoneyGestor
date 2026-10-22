@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,12 +35,15 @@ export function ConfirmDeleteDialog<T>({
     pending,
     error,
 }: ConfirmDeleteDialogProps<T>) {
-    if (item === undefined) return null;
-    const resolvedDescription = typeof description === 'function' ? description(item) : description;
+    const [retainedItem, setRetainedItem] = useState(() => item);
+    if (item !== undefined && item !== retainedItem) setRetainedItem(() => item);
+    const displayedItem = item ?? retainedItem;
+    if (displayedItem === undefined) return null;
+    const resolvedDescription = typeof description === 'function' ? description(displayedItem) : description;
 
     return (
-        <AlertDialog open onOpenChange={onOpenChange}>
-            <AlertDialogContent>
+        <AlertDialog open={item !== undefined} onOpenChange={onOpenChange}>
+            <AlertDialogContent onExitComplete={() => setRetainedItem(undefined)}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{title}</AlertDialogTitle>
                     <AlertDialogDescription>{resolvedDescription}</AlertDialogDescription>
@@ -54,7 +59,7 @@ export function ConfirmDeleteDialog<T>({
                         disabled={pending}
                         onClick={(event) => {
                             event.preventDefault();
-                            void onConfirm(item);
+                            if (item !== undefined) void onConfirm(item);
                         }}
                     >
                         {confirmLabel}

@@ -5,7 +5,9 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Check, ChevronDown } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 
 export interface SelectOption {
@@ -57,9 +59,17 @@ const Select = React.forwardRef<HTMLInputElement | HTMLButtonElement, SelectProp
     ({ className, children, options: providedOptions, value, defaultValue, onValueChange, onBlur, onKeyDown,
         placeholder, searchable = false, disabled, required, autoFocus, name, style, id: providedId, ...props }, ref) => {
         const t = useTranslations('Common.select');
+        const isMobile = useIsMobile();
+        const mobileSearch = !!(searchable && isMobile);
         const generatedId = React.useId();
         const id = providedId ?? generatedId;
         const listId = `${id}-options`;
+        const popupId = mobileSearch ? `${listId}-popup` : listId;
+        const mobileListProps = mobileSearch ? {
+            id: listId,
+            role: 'listbox' as const,
+            'aria-label': props['aria-label'] ?? placeholder ?? t('search'),
+        } : { className: 'contents' };
         const [internalValue, setInternalValue] = React.useState(String(defaultValue ?? ''));
         const [open, setOpen] = React.useState(false);
         const [query, setQuery] = React.useState<string | null>(null);
@@ -74,6 +84,7 @@ const Select = React.forwardRef<HTMLInputElement | HTMLButtonElement, SelectProp
         const filteredOptions = options.filter((option) => option.label.toLocaleLowerCase().includes((query ?? '').trim().toLocaleLowerCase()));
         const enabledOptions = filteredOptions.filter((option) => !option.disabled);
         const active = enabledOptions.find((option) => option.value === activeValue) ?? enabledOptions[0];
+        const activeOptionId = open && active ? `${listId}-${options.indexOf(active)}` : undefined;
 
         React.useImperativeHandle(ref, () => triggerRef.current!);
 
@@ -134,15 +145,15 @@ const Select = React.forwardRef<HTMLInputElement | HTMLButtonElement, SelectProp
             id,
             disabled,
             autoFocus,
-            role: 'combobox',
-            'aria-haspopup': 'listbox' as const,
+            role: mobileSearch ? undefined : 'combobox',
+            'aria-haspopup': mobileSearch ? 'dialog' as const : 'listbox' as const,
             'aria-expanded': open,
-            'aria-controls': listId,
+            'aria-controls': popupId,
             'aria-required': required ?? props['aria-required'],
-            'aria-activedescendant': open && active ? `${listId}-${options.indexOf(active)}` : undefined,
+            'aria-activedescendant': mobileSearch ? undefined : activeOptionId,
             className: cn(
                 'min-w-0 flex-1 self-stretch border-0 bg-transparent p-0 text-left text-[inherit] font-[inherit] text-inherit outline-none placeholder:text-muted-foreground',
-                searchable ? 'cursor-text' : 'cursor-pointer',
+                searchable && !mobileSearch ? 'cursor-text' : 'cursor-pointer',
             ),
             onKeyDown: keyDownHandler,
             onBlur: (event: React.FocusEvent<HTMLElement>) => {
@@ -178,7 +189,7 @@ const Select = React.forwardRef<HTMLInputElement | HTMLButtonElement, SelectProp
                     {name !== undefined && <input type="hidden" name={name} value={selectedValue} disabled={disabled} />}
                     {selected?.icon !== undefined && <OptionIcon selected>{selected.icon}</OptionIcon>}
                     <PopoverTrigger asChild>
-                        {searchable ? (
+                        {searchable && !mobileSearch ? (
                             <input
                                 {...controlProps}
                                 type="text"
@@ -217,40 +228,68 @@ const Select = React.forwardRef<HTMLInputElement | HTMLButtonElement, SelectProp
                 </div>
                 <PopoverContent
                     ref={listRef}
-                    id={listId}
-                    role="listbox"
+                    id={popupId}
+                    role={mobileSearch ? 'dialog' : 'listbox'}
                     aria-label={props['aria-label'] ?? selected?.label ?? placeholder}
                     align="start"
                     matchTriggerWidth
-                    maxHeight={288}
-                    focusOnOpen={false}
-                    className="max-h-72 rounded-xl border border-solid border-border p-1.5 shadow-lg [scrollbar-color:var(--primary)_transparent] [scrollbar-width:thin]"
+                    revealFromInput
+                    mobileBottom={mobileSearch}
+                    maxHeight={mobileSearch ? 384 : 288}
+                    focusOnOpen={mobileSearch}
+                    className={cn(
+                        'max-h-72 rounded-xl border border-solid border-border p-1.5 shadow-lg [scrollbar-color:var(--primary)_transparent] [scrollbar-width:thin]',
+                        mobileSearch && 'rounded-2xl pb-[max(0.375rem,env(safe-area-inset-bottom))]',
+                    )}
                     onKeyDown={keyDownHandler}
                 >
-                    {filteredOptions.map((option) => (
-                        <div
-                            key={option.value}
-                            id={`${listId}-${options.indexOf(option)}`}
-                            role="option"
-                            aria-selected={option.value === selectedValue}
-                            aria-disabled={!!option.disabled}
-                            data-active={option.value === active?.value}
-                            className={cn(
-                                'flex min-h-10 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-popover-foreground',
-                                'data-[active=true]:bg-muted hover:bg-muted',
-                                'aria-selected:bg-primary/15 aria-selected:hover:bg-primary/15 aria-selected:data-[active=true]:bg-primary/15',
-                                'aria-disabled:cursor-not-allowed',
-                            )}
-                            onPointerMove={() => { if (!option.disabled) setActiveValue(option.value); }}
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={() => selectHandler(option)}
-                        >
-                            {option.icon !== undefined && <OptionIcon selected={option.value === selectedValue}>{option.icon}</OptionIcon>}
-                            <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                            {option.value === selectedValue && <Check aria-hidden="true" className="size-4 shrink-0 text-primary" />}
+                    {!!mobileSearch && (
+                        <div className="sticky top-0 z-10 bg-popover pb-2">
+                            <Input
+                                type="search"
+                                role="combobox"
+                                aria-label={props['aria-label'] ?? placeholder ?? t('search')}
+                                aria-autocomplete="list"
+                                aria-expanded={open}
+                                aria-controls={listId}
+                                aria-activedescendant={activeOptionId}
+                                autoComplete="off"
+                                placeholder={t('search')}
+                                value={query ?? ''}
+                                className="text-base"
+                                onChange={(event) => {
+                                    setQuery(event.target.value);
+                                    setActiveValue(undefined);
+                                }}
+                            />
                         </div>
-                    ))}
-                    {filteredOptions.length === 0 && <p role="status" className="m-0 px-3 py-3 text-sm text-muted-foreground">{t('noResults')}</p>}
+                    )}
+                    <div {...mobileListProps}>
+                        {filteredOptions.map((option) => (
+                            <div
+                                key={option.value}
+                                id={`${listId}-${options.indexOf(option)}`}
+                                role="option"
+                                aria-selected={option.value === selectedValue}
+                                aria-disabled={!!option.disabled}
+                                data-active={option.value === active?.value}
+                                className={cn(
+                                    'flex min-h-10 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-popover-foreground',
+                                    'data-[active=true]:bg-muted hover:bg-muted',
+                                    'aria-selected:bg-primary/15 aria-selected:hover:bg-primary/15 aria-selected:data-[active=true]:bg-primary/15',
+                                    'aria-disabled:cursor-not-allowed',
+                                )}
+                                onPointerMove={() => { if (!option.disabled) setActiveValue(option.value); }}
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => selectHandler(option)}
+                            >
+                                {option.icon !== undefined && <OptionIcon selected={option.value === selectedValue}>{option.icon}</OptionIcon>}
+                                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                                {option.value === selectedValue && <Check aria-hidden="true" className="size-4 shrink-0 text-primary" />}
+                            </div>
+                        ))}
+                        {filteredOptions.length === 0 && <p role="status" className="m-0 px-3 py-3 text-sm text-muted-foreground">{t('noResults')}</p>}
+                    </div>
                 </PopoverContent>
             </Popover>
         );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useForm, useWatch } from 'react-hook-form';
@@ -70,6 +70,7 @@ export function TransactionEditorDialog({
     const locale = useLocale();
     const isMobile = useIsMobile();
     const id = useId();
+    const [open, setOpen] = useState(true);
     const balanceWallets = wallets.filter((wallet) => wallet.hasOwnBalance !== false);
     const categories = types.filter((type) => type.systemKind === null);
     const transferType = types.find(isTransferType);
@@ -105,6 +106,8 @@ export function TransactionEditorDialog({
     );
     const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const [detailsStep, setDetailsStep] = useState(false);
+    const previousStepRef = useRef(detailsStep);
+    const contentRef = useRef<HTMLDialogElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const fieldsRef = useRef<HTMLFieldSetElement>(null);
     const form = useForm<TransactionFormValues>({ defaultValues: defaults, mode: 'onBlur' });
@@ -150,10 +153,19 @@ export function TransactionEditorDialog({
         destinationwalletid: 'destinationWalletId',
     };
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        const stepChanged = previousStepRef.current !== detailsStep;
+        previousStepRef.current = detailsStep;
         if (isMobile) {
-            titleRef.current?.focus();
+            titleRef.current?.focus({ preventScroll: true });
             fieldsRef.current?.parentElement?.scrollTo({ top: 0 });
+            if (!stepChanged || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const animations = Array.from(contentRef.current?.querySelectorAll<HTMLElement>('[data-mobile-step-content]') ?? [])
+                .map((element) => element.animate([
+                    { transform: `translateX(${detailsStep ? '-100%' : '100%'})` },
+                    { transform: 'translateX(0)' },
+                ], { duration: 300, easing: 'ease-out' }));
+            return () => animations.forEach((animation) => animation.cancel());
         }
     }, [isMobile, detailsStep]);
 
@@ -193,7 +205,7 @@ export function TransactionEditorDialog({
             }
             onSaved();
             if (isMobile || transaction) {
-                onClose();
+                setOpen(false);
             } else {
                 form.reset({ ...values, amount: '', description: '', notes: '' });
             }
@@ -237,28 +249,26 @@ export function TransactionEditorDialog({
         onCategoryCreated(category);
         setValue('typeId', String(category.id), { shouldDirty: true });
         clearErrors('typeId');
-        setCategoryEditorOpen(false);
         notify.success(tCategory('created'));
     }
 
     return (
         <Dialog
-            open
+            open={open}
             dismissOnOutside={false}
             onOpenChange={(open) => {
-                if (!open && !isSubmitting) onClose();
+                if (!open && !isSubmitting) setOpen(false);
             }}
         >
             <DialogContent
+                ref={contentRef}
+                data-mobile-fullscreen="true"
+                onExitComplete={onClose}
                 closeLabel={tDialog('cancel')}
-                className={cn(
-                    'box-border max-w-[780px] gap-0 border border-solid border-border p-0 shadow-none [&_*]:box-border',
-                    isMobile &&
-                        'left-0 top-0 h-dvh max-h-dvh w-full max-w-none translate-x-0 translate-y-0 rounded-none border-0 [&>button:last-child]:hidden',
-                )}
+                className="box-border max-w-[780px] gap-0 border border-solid border-border p-0 shadow-none max-sm:left-0 max-sm:top-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0 max-sm:[&>button:last-child]:hidden [&_*]:box-border"
             >
                 {isMobile ? (
-                    <DialogHeader className="relative flex-row items-start gap-2 space-y-0 px-3 pb-1 pt-[max(1rem,env(safe-area-inset-top))] text-center">
+                    <DialogHeader data-mobile-step-content className="relative flex-row items-start gap-2 space-y-0 px-3 pb-1 pt-[max(1rem,env(safe-area-inset-top))] text-center">
                         <Button
                             type="button"
                             variant="transparent"
@@ -268,7 +278,7 @@ export function TransactionEditorDialog({
                             aria-label={mobileBackLabel}
                             onClick={() => {
                                 if (detailsStep) setDetailsStep(false);
-                                else onClose();
+                                else setOpen(false);
                             }}
                         >
                             <ChevronLeft aria-hidden="true" className="size-6" />
@@ -296,6 +306,7 @@ export function TransactionEditorDialog({
                     </DialogHeader>
                 )}
                 <form
+                    data-mobile-step-content
                     className="flex min-h-0 flex-1 flex-col overflow-hidden"
                     noValidate
                     onSubmit={(event) => {
@@ -423,7 +434,7 @@ export function TransactionEditorDialog({
                                 variant="transparent"
                                 className="sm:mr-auto"
                                 disabled={isSubmitting}
-                                onClick={onClose}
+                                onClick={() => setOpen(false)}
                             >
                                 {tDialog('cancel')}
                             </Button>
