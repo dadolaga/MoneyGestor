@@ -22,6 +22,10 @@ Docker is optional if you already have MySQL. Otherwise, start only the `mysql` 
 
 ## First-time setup
 
+For an optional local map of the codebase, run `.\graphify.ps1` from the repository root.
+It updates Graphify and generates separate frontend, backend and HTTP views without starting
+the application or a database. See [Graphify tooling](../../tools/graphify/README.md).
+
 ### 1. Create your local configuration
 
 Create a private settings file from the committed template, only if you do not already have one:

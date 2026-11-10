@@ -3,3 +3,8 @@ settings.json
 .env
 .env.*
 !.env.example
+
+# Local Graphify tools, Python environment, caches and generated graphs.
+/.graphify/
+/graphify-out/
+**/__pycache__/

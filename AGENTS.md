@@ -8,6 +8,7 @@ Read it before editing files and also apply the AGENTS.md in the relevant direct
 - [Backend](backend/AGENTS.md): C#, ASP.NET Core, EF Core, APIs and databases.
 - [Frontend](frontend/AGENTS.md): Next.js, React, UI, translations and build-only verification.
 - [AI workflow and Codex usage](docs/AI_WORKFLOW.md): instruction loading, example requests and handoff.
+- [Graphify tooling](tools/graphify/README.md): local code graphs, HTTP bridges and regeneration.
 - [Application documentation](backend/docs/README.md): current architecture, configuration and contracts.
 
 Codex uses AGENTS.md files along the path from the project root to the working directory; local
@@ -90,6 +91,17 @@ explicitly requests it; the presence of scripts or tests does not require runnin
 Fix errors introduced by the change and rebuild only when necessary. If compilation is blocked by
 a pre-existing or environmental problem, report it without claiming success or replacing the check
 with an application launch. Do not automatically expand the task to resolve that problem.
+
+## Code navigation with Graphify
+
+When `.graphify/output/graph.json` exists, use `./graphify.ps1 Query "symbol"` or
+`./graphify.ps1 Explain "symbol"` to orient cross-file work, then inspect the actual sources
+with `rg` and file reads. Use `./graphify.ps1 Status` to check freshness. Graph data is a navigation
+aid, not an authority for contracts, ownership, financial rules or verification requirements.
+If it is absent, stale or does not cover a construct, continue with source inspection.
+Rebuild only when requested or needed for the graph task, not as an extra application check.
+`./graphify.ps1` updates Graphify and rebuilds; `-Offline` rebuilds using the installed version.
+Keep `.graphify/` generated artifacts out of Git and preserve the exclusions in `.graphifyignore`.
 
 ## Handoff
 

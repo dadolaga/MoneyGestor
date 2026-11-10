@@ -29,6 +29,12 @@ request from the owner.
 
 ## AI workflow
 
+For cross-file navigation, the optional [Graphify workflow](../tools/graphify/README.md)
+provides a shared frontend/backend code graph and source-derived HTTP links. Generate it
+with `./graphify.ps1`, inspect freshness with `./graphify.ps1 Status`, and query with
+`./graphify.ps1 Query "symbol"`. Generated tools and graphs live in Git-ignored `.graphify/`.
+Verify findings against source files; Graphify does not replace the instructions or build checks.
+
 1. Read the applicable instructions and inspect Git status without changing it.
 2. Identify the actual files, routes and dependencies involved; look for reusable implementations.
 3. Implement the requested behavior in the correct layer, preserving unrelated work.

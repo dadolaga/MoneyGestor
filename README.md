@@ -37,6 +37,10 @@ MoneyGestor helps you record income and expenses, move money between wallets and
 
 ## Get started
 
+**Explore the code:** [Graphify setup and commands](tools/graphify/README.md) build a local,
+searchable map of frontend, backend and HTTP connections with one command: `.\graphify.ps1`.
+Generated tools and graphs stay in Git-ignored `.graphify/`.
+
 Choose the setup that fits your goal:
 
 | | Development | Production |

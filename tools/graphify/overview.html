@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoneyGestor · Mappa del codice</title>
+<style>
+:root{color-scheme:light dark;--bg:#10151e;--panel:#1a2230;--text:#edf2fa;--muted:#b0bdd0;--line:#344156}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,sans-serif}
+main{max-width:1250px;margin:auto;padding:48px 24px}h1{font-size:clamp(30px,5vw,48px);line-height:1.15;margin:8px 0 20px}
+h2{font-size:24px;margin-top:42px}p{color:var(--muted);max-width:850px}.eyebrow{color:#a7baff;font-weight:700;letter-spacing:.12em;font-size:12px}
+a{color:#c1d1ff;text-underline-offset:4px}a:focus-visible,input:focus-visible{outline:3px solid #a7baff;outline-offset:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin:28px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:12px;padding:22px}
+.card h2{margin:0;font-size:21px}.card p{font-size:14px}.count{font-size:34px;font-weight:750;color:var(--accent)}
+.links{display:flex;gap:24px;flex-wrap:wrap;padding:18px 0}.meta{font-size:13px;color:var(--muted)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--panel)}
+small{display:block;color:var(--muted);font-size:11px;overflow-wrap:anywhere}code{font-size:13px}.verb{color:#f6d27c;font-weight:750}
+input{width:100%;max-width:540px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:13px 16px;font:inherit;margin:8px 0 18px}
+.note{border-left:3px solid #95a7ff;padding:12px 20px;background:var(--panel);border-radius:0 8px 8px 0}
+footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+@media(prefers-color-scheme:light){:root{--bg:#f5f7fb;--panel:#fff;--text:#172235;--muted:#526078;--line:#d6dfec}a{color:#294ca2}.eyebrow{color:#4056a7}.verb{color:#795500}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">MONEYGESTOR / GRAPHIFY</div>
+<h1>La mappa del progetto,<br>dal frontend al database.</h1>
+<p>Esplora componenti, API e logica finanziaria. Parti da una vista mirata oppure apri il grafo completo con ricerca, filtri e collegamenti tra simboli.</p>
+<div class="meta">Graphify {{VERSION}} · Generato {{TIME}} (UTC) · {{NODES}} nodi · {{EDGES}} collegamenti</div>
+<section class="cards" aria-label="Aree del progetto">
+<article class="card" style="--accent:#a79aff"><h2>Frontend</h2><div class="count">{{FRONTEND}}</div><p>Route Next.js, componenti React, hook, modelli e client HTTP.</p><a href="frontend/graph.html">Esplora il frontend →</a></article>
+<article class="card" style="--accent:#52baa9"><h2>Backend</h2><div class="count">{{BACKEND}}</div><p>Controller, query, comandi, policy, entità EF e strumenti .NET.</p><a href="backend/graph.html">Esplora il backend →</a></article>
+<article class="card" style="--accent:#d5a641"><h2>Collegamenti API</h2><div class="count">{{API}}</div><p>Endpoint HTTP abbinati ai metodi del client e ai loro consumatori.</p><a href="api/graph.html">Segui i collegamenti →</a></article>
+<article class="card" style="--accent:#8fa6c5"><h2>Progetto completo</h2><div class="count">{{NODES}}</div><p>Tutte le aree insieme, inclusi {{TOOLING}} nodi di strumenti e configurazione.</p><a href="graph.html">Apri il grafo completo →</a></article>
+</section>
+<nav class="links" aria-label="Risultati della generazione"><a href="GRAPH_REPORT.md">Report Graphify</a><a href="API_MAP.md">Mappa HTTP</a><a href="api-contracts.json">Contratti JSON</a><a href="graph.json">Grafo JSON</a><a href="build-info.json">Versione e generazione</a></nav>
+<p class="note">Analisi locale del codice e collegamenti HTTP estratti dai sorgenti. Nessun modello AI, server o database coinvolto. I collegamenti del grafo aiutano a orientarsi: non provano il comportamento a runtime. Nei grafi, EXTRACTED indica una relazione esplicita; INFERRED una relazione risolta dallo strumento.</p>
+<h2>Dal client all’endpoint</h2>
+<label for="search">Cerca per rotta, metodo, client o controller</label><br>
+<input id="search" type="search" placeholder="Es. createTransaction, wallets, POST…" autocomplete="off">
+<p id="matches" class="meta" aria-live="polite">{{API}} endpoint</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Metodo</th><th scope="col">Endpoint</th><th scope="col">Frontend</th><th scope="col">Backend e sorgente</th></tr></thead><tbody>{{ROWS}}</tbody></table></div>
+<h2>Rigenera con un comando</h2>
+<p><code>.\graphify.ps1</code> aggiorna Graphify all’ultima versione stabile disponibile e ricostruisce tutte le viste. <code>.\graphify.ps1 -Offline</code> usa la versione già installata. <code>.\graphify.ps1 Status</code> rileva modifiche ai sorgenti rispetto a questa generazione.</p>
+<footer>Gestione versionata: <code>tools/graphify/</code> · Ambiente e risultati locali: <code>.graphify/</code> (esclusi da Git).<br>Le librerie del visualizzatore sono incorporate dopo la verifica di integrità: tutte le viste funzionano anche offline.</footer>
+</main>
+<script>
+const rows = Array.from(document.querySelectorAll('tbody tr'));
+document.getElementById('search').addEventListener('input', event => {
+  const query = event.target.value.toLocaleLowerCase('it');
+  let count = 0;
+  rows.forEach(row => { row.hidden = !row.textContent.toLocaleLowerCase('it').includes(query); if (!row.hidden) count++; });
+  document.getElementById('matches').textContent = `${count} endpoint`;
+});
+</script>
+</body></html>
