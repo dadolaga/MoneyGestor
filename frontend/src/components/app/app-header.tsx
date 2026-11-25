@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
 import { AppHeaderAccount } from '@/components/app/app-header-account';
+import { ComingSoonDialog } from '@/components/shared/coming-soon-dialog';
 import { FormLanguageSwitch } from '@/components/shared/form-language-switch';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Bell, Menu, Moon, Search, Sun, UserPlus, X } from '@/components/ui/icons';
@@ -31,7 +32,7 @@ interface AppHeaderProps {
 
 export function AppHeader({
     navigation = [], navigationExtra, mobileNavigationExtra, accountMode = 'session', actions,
-    showGlobalSearch = false, showNotifications = true, onOpenNavigation,
+    showGlobalSearch = true, showNotifications = true, onOpenNavigation,
     homeHref = '/', loginHref = '/login', registerHref = '/register', isDirty = false, themeControl,
 }: AppHeaderProps) {
     const t = useTranslations('Home.navigation');
@@ -39,6 +40,7 @@ export function AppHeader({
     const { resolvedTheme, setTheme } = useTheme();
     const mobileNavigationId = useId();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
     const isLightTheme = themeControl?.isLightTheme ?? (resolvedTheme === 'light');
     const hasNavigation = navigation.length > 0 || navigationExtra !== undefined;
 
@@ -49,10 +51,13 @@ export function AppHeader({
     };
 
     return (
-        <header className="app-header marketing-header">
+        <header className="app-header marketing-header" data-theme={isLightTheme ? 'light' : 'dark'}>
+            <svg className="app-header-wave" viewBox="0 0 1672 66" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M900 67 C1025 67 1048 16 1120 -6 L1672 -6 L1672 67 Z" />
+            </svg>
             <div className="app-header-inner">
                 <Link className="app-header-brand" href={homeHref} aria-label={t('home')}>
-                    <Image src="/new_logo_dark.png" alt="Flowiy" width={162} height={51} priority />
+                    <Image src={isLightTheme ? '/new_logo.png' : '/new_logo_dark.png'} alt="Flowiy" width={162} height={51} priority />
                 </Link>
                 {!!hasNavigation && (
                     <nav className="app-header-desktop-nav" aria-label={t('main')}>
@@ -60,12 +65,11 @@ export function AppHeader({
                         {navigationExtra}
                     </nav>
                 )}
-                {!!showGlobalSearch && (
-                    <div aria-hidden="true" className="mx-6 hidden h-10 max-w-xl flex-1 items-center rounded-lg border border-white/25 bg-black/10 px-4 text-sm lg:flex">
-                        <Search className="mr-3 size-4 shrink-0" />
-                        <span className="truncate">{app('searchPlaceholder')}</span>
-                        <span className="ml-auto rounded border border-white/20 bg-black/10 px-1.5 py-0.5 text-xs font-semibold">⌘ K</span>
-                    </div>
+                {!!showGlobalSearch && !hasNavigation && (
+                    <button type="button" className="app-header-search" onClick={() => setIsComingSoonOpen(true)}>
+                        <Search aria-hidden="true" className="size-5" />
+                        <span>{app('searchPlaceholder')}</span>
+                    </button>
                 )}
                 <div className="app-header-actions">
                     <div className="app-header-controls">
@@ -84,11 +88,14 @@ export function AppHeader({
                         </>
                     )}
                     {actions}
-                    {!!showNotifications && <span aria-hidden="true" className="relative hidden size-10 items-center justify-center lg:flex">
-                        <Bell className="size-5" />
-                        <span className="absolute right-0 top-0 flex size-4 items-center justify-center rounded-full bg-card text-[10px] font-bold text-primary">3</span>
-                    </span>}
-                    {accountMode === 'session' && <AppHeaderAccount loginHref={loginHref} registerHref={registerHref} />}
+                    {!!showNotifications && (
+                        <Button type="button" variant="ghost" size="icon" className="app-header-icon-button app-header-notifications"
+                            aria-label={app('notifications')} onClick={() => setIsComingSoonOpen(true)}>
+                            <Bell aria-hidden="true" />
+                        </Button>
+                    )}
+                    {accountMode === 'session' && <AppHeaderAccount loginHref={loginHref} registerHref={registerHref}
+                        isDirty={isDirty} isLightTheme={isLightTheme} onToggleTheme={toggleThemeHandler} />}
                     {!!onOpenNavigation && (
                         <Button className="app-header-icon-button lg:hidden" size="icon" variant="ghost"
                             type="button" aria-label={app('openNavigation')} onClick={onOpenNavigation}>
@@ -112,6 +119,7 @@ export function AppHeader({
                     {mobileNavigationExtra}
                 </nav>
             )}
+            <ComingSoonDialog open={isComingSoonOpen} onOpenChange={setIsComingSoonOpen} />
         </header>
     );
 }
