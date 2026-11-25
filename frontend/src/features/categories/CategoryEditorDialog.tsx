@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { InputField, SwitchField } from '@/components/shared/form-controls';
@@ -32,17 +32,32 @@ interface CategoryFormValues {
     useInReports: boolean;
 }
 
-interface CategoryEditorDialogProps {
+export type CategoryEditorValues = Pick<ApiTransactionType,
+    'name' | 'parentId' | 'icon' | 'color' | 'description' | 'keywords' | 'useInReports'>;
+
+type CategoryEditorDialogProps = {
     types: ApiTransactionType[];
+    onClose: () => void;
+} & ({
+    mode?: 'api';
     loading: boolean;
     error: string;
     onRetry: () => void;
-    onClose: () => void;
     onCreated: (category: ApiTransactionType) => void;
-}
+} | {
+    mode: 'local';
+    category?: ApiTransactionType;
+    onSave: (values: CategoryEditorValues) => void;
+});
 
-export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, onCreated }: CategoryEditorDialogProps) {
+export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
+    const { types, onClose } = props;
     const t = useTranslations('Movements.categoryEditor');
+    const locale = useLocale();
+    const editingCategory = props.mode === 'local' ? props.category : undefined;
+    const loading = props.mode === 'local' ? false : props.loading;
+    const error = props.mode === 'local' ? '' : props.error;
+    const retryHandler = props.mode === 'local' ? undefined : props.onRetry;
     const id = useId();
     const [open, setOpen] = useState(true);
     const [createdId, setCreatedId] = useState<number>();
@@ -56,29 +71,57 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
     } = useForm<CategoryFormValues>({
         mode: 'onBlur',
         defaultValues: {
-            name: '',
-            parentId: '',
-            icon: 'shopping',
-            color: 'red',
-            description: '',
-            keywords: '',
-            useInReports: true,
+            name: editingCategory?.name ?? '',
+            parentId: editingCategory?.parentId == null ? '' : String(editingCategory.parentId),
+            icon: editingCategory?.icon ?? 'shopping',
+            color: editingCategory?.color ?? 'red',
+            description: editingCategory?.description ?? '',
+            keywords: editingCategory?.keywords ?? '',
+            useInReports: editingCategory?.useInReports ?? true,
         },
     });
-    const categories = types.filter((type) => type.systemKind === null);
+    const excludedIds = new Set<number>();
+    if (editingCategory !== undefined) {
+        excludedIds.add(editingCategory.id);
+        for (const parentId of excludedIds) {
+            for (const type of types) {
+                if (type.parentId === parentId) excludedIds.add(type.id);
+            }
+        }
+    }
+    const categories = types.filter((type) => type.systemKind === null && !excludedIds.has(type.id));
 
     async function submitHandler(values: CategoryFormValues) {
         clearErrors('root');
         const name = values.name.trim();
+        const description = values.description.trim();
+        const keywords = values.keywords.trim();
+        const payload: CategoryEditorValues = {
+            name, parentId: values.parentId === '' ? null : Number(values.parentId),
+            icon: values.icon, color: values.color,
+            description: description.length > 0 ? description : null,
+            keywords: keywords.length > 0 ? keywords : null,
+            useInReports: values.useInReports,
+        };
+        if (props.mode === 'local') {
+            if (types.some((type) => type.id !== editingCategory?.id
+                && type.name.toLocaleLowerCase(locale) === name.toLocaleLowerCase(locale))) {
+                setError('name', { message: t('duplicateName') }, { shouldFocus: true });
+                return;
+            }
+            if (payload.parentId !== null && !categories.some((type) => type.id === payload.parentId)) {
+                setError('parentId', { message: t('invalidParent') }, { shouldFocus: true });
+                return;
+            }
+            props.onSave(payload);
+            setOpen(false);
+            return;
+        }
         let category: ApiTransactionType;
         try {
             let id = createdId;
             if (id === undefined) {
-                const result = await apiClient.createTransactionType({
-                    name, parentId: values.parentId ? Number(values.parentId) : null,
-                    icon: values.icon, color: values.color, description: values.description.trim() || null,
-                    keywords: values.keywords.trim() || null, useInReports: values.useInReports,
-                });
+                const result = await apiClient.createTransactionType(payload);
                 id = result.id;
                 setCreatedId(id);
             }
@@ -103,7 +146,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
             });
             return;
         }
-        onCreated(category);
+        props.onCreated(category);
         setOpen(false);
     }
 
@@ -125,8 +168,8 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                         <Tag aria-hidden="true" className="size-7" />
                     </span>
                     <div>
-                        <DialogTitle className="m-0 text-2xl font-semibold">{t('title')}</DialogTitle>
-                        <DialogDescription className="mt-1 text-sm">{t('subtitle')}</DialogDescription>
+                        <DialogTitle className="m-0 text-2xl font-semibold">{t(editingCategory === undefined ? 'title' : 'editTitle')}</DialogTitle>
+                        <DialogDescription className="mt-1 text-sm">{t(editingCategory === undefined ? 'subtitle' : 'editSubtitle')}</DialogDescription>
                     </div>
                 </DialogHeader>
                 <form
@@ -244,7 +287,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                                     variant="outline"
                                     size="sm"
                                     disabled={isSubmitting || loading}
-                                    onClick={onRetry}
+                                    onClick={retryHandler}
                                 >
                                     {t('retry')}
                                 </Button>
@@ -262,7 +305,7 @@ export function CategoryEditorDialog({ types, loading, error, onRetry, onClose, 
                             {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={isSubmitting || loading || !!error}>
-                            {t(isSubmitting ? 'saving' : createdId !== undefined ? 'retry' : 'create')}
+                            {t(isSubmitting ? 'saving' : createdId !== undefined ? 'retry' : editingCategory === undefined ? 'create' : 'save')}
                         </Button>
                     </DialogFooter>
                 </form>

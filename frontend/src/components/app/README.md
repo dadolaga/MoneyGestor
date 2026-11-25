@@ -13,6 +13,11 @@ Theme and language reuses the existing theme control and locale switch, preservi
 unsaved-form language confirmation. Log out uses the existing antiforgery-protected client
 and preserves pending/error notifications.
 
-Settings, Preferences, global search and notifications open the shared Coming soon dialog.
+Preferences opens `/dashboard/preferences`, which redirects to its transaction-type subpage.
+The preferences area keeps the dashboard navigation and adds a second sidebar immediately to
+its right, before the page content. On mobile, the shared navigation sheet includes both groups.
+Its transaction-type table and editor currently use demonstration data and
+page-local state. See the [preferences guide](../../features/preferences/README.md).
+Settings, global search and notifications open the shared Coming soon dialog.
 No new settings endpoints, search service, notification feed, fabricated notification count
 or account-editing functionality are introduced by this header change.

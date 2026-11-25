@@ -122,7 +122,7 @@ export function AppHeaderAccount({ loginHref, registerHref, isDirty, isLightThem
                             <DropdownMenuItem className="app-header-account-item" onSelect={() => setIsComingSoonOpen(true)}>
                                 <Settings aria-hidden="true" />{t('settings')}
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="app-header-account-item" onSelect={() => setIsComingSoonOpen(true)}>
+                            <DropdownMenuItem className="app-header-account-item" onSelect={() => router.push('/dashboard/preferences')}>
                                 <SlidersHorizontal aria-hidden="true" />{t('preferences')}
                             </DropdownMenuItem>
                             <DropdownMenuItem className="app-header-account-item" onSelect={() => setPanel('appearance')}>

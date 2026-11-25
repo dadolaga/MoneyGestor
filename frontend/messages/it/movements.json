@@ -3,6 +3,10 @@
         "title": "Movimenti",
         "categoryEditor": {
             "title": "Nuova categoria",
+            "editTitle": "Modifica categoria",
+            "editSubtitle": "Aggiorna i dettagli della categoria dei tuoi movimenti.",
+            "save": "Salva modifiche",
+            "invalidParent": "Scegli una categoria padre valida. Non puoi scegliere questa categoria o una delle sue sottocategorie.",
             "subtitle": "Crea una categoria personalizzata per organizzare meglio i tuoi movimenti.",
             "name": "Nome categoria",
             "namePlaceholder": "Es. Spesa alimentare",

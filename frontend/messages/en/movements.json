@@ -3,6 +3,10 @@
         "title": "Transactions",
         "categoryEditor": {
             "title": "New category",
+            "editTitle": "Edit category",
+            "editSubtitle": "Update the details of your transaction category.",
+            "save": "Save changes",
+            "invalidParent": "Choose a valid parent category. You cannot choose this category or one of its subcategories.",
             "subtitle": "Create a custom category to better organize your transactions.",
             "name": "Category name",
             "namePlaceholder": "E.g. Grocery shopping",

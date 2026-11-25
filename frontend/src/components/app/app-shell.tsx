@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/icons';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { PreferencesNavigation } from '@/features/preferences/PreferencesNavigation';
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,7 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
     const t = useTranslations('Navigation');
     const pathname = usePathname();
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+    const isPreferences = pathname === '/dashboard/preferences' || pathname.startsWith('/dashboard/preferences/');
 
     const navigation: NavigationItem[] = [
         { href: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -37,6 +39,12 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
         { href: '/dashboard/transaction', icon: ArrowLeftRight, label: t('transactions') },
         { href: '/dashboard/not_implemented', icon: BarChart3, label: t('reports') },
     ];
+    const mobileNavigation: NavigationItem[] = navigation
+        .filter(({ href }) => href === '/dashboard' || href === '/dashboard/transaction').map((item) => ({
+            ...item,
+            icon: item.href === '/dashboard' ? House : FileText,
+            label: item.href === '/dashboard' ? t('home') : item.label,
+        }));
 
     const navigationLinks = (onNavigate?: () => void) => (
         <nav aria-label={t('primaryNavigation')} className="grid gap-1">
@@ -72,21 +80,24 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
                 <aside className="hidden w-[var(--navigation-width)] shrink-0 border-r border-border bg-card p-3 lg:block">
                     {navigationLinks()}
                 </aside>
+                {!!isPreferences && (
+                    <aside className="hidden w-[var(--navigation-width)] shrink-0 overflow-y-auto border-0 border-r border-solid border-border bg-card p-3 lg:block">
+                        <PreferencesNavigation />
+                    </aside>
+                )}
                 <main className="min-w-0 flex-1 overflow-auto p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-6">{children}</main>
             </div>
             <nav aria-label={t('primaryNavigation')}
                 className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-0 border-t border-solid border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden">
-                {navigation.filter(({ href }) => href === '/dashboard' || href === '/dashboard/transaction').map(({ href, label }) => {
+                {mobileNavigation.map(({ href, icon: Icon, label }) => {
                     const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`));
                     const currentPage = active ? 'page' : undefined;
-                    const Icon = href === '/dashboard' ? House : FileText;
-                    const mobileLabel = href === '/dashboard' ? t('home') : label;
                     return (
                         <Link key={href} href={href} aria-current={currentPage}
                             className={cn('flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 px-2 text-xs font-medium no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                                 active ? 'bg-primary/5 text-primary' : 'text-muted-foreground hover:bg-muted')}>
                             <Icon aria-hidden="true" className="size-6" />
-                            {mobileLabel}
+                            {label}
                         </Link>
                     );
                 })}
@@ -105,6 +116,12 @@ export function AppShell({ showGlobalSearch, children }: { showGlobalSearch?: bo
                     </SheetHeader>
                     <Separator />
                     {navigationLinks(() => setMobileNavigationOpen(false))}
+                    {!!isPreferences && (
+                        <>
+                            <Separator />
+                            <PreferencesNavigation onNavigate={() => setMobileNavigationOpen(false)} />
+                        </>
+                    )}
                 </SheetContent>
             </Sheet>
         </div>
