@@ -102,7 +102,7 @@ public sealed record UpdateWalletRequest(
     public WalletDetailsDto? Details { get; init; }
 }
 
-public sealed record CreateTransactionTypeRequest([Required, StringLength(100, MinimumLength = 1)] String Name) {
+public sealed record TransactionTypeWriteRequest([Required, StringLength(100, MinimumLength = 1)] String Name) {
     [Range(1, UInt64.MaxValue)] public UInt64? ParentId { get; init; }
     [Required, RegularExpression("^(shopping|home|transport|food|utilities|work|entertainment|health|tag)$")] public String Icon { get; init; } = "tag";
     [Required, RegularExpression("^(red|orange|yellow|green|cyan|blue|purple|grey)$")] public String Color { get; init; } = "grey";

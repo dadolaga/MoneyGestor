@@ -6,9 +6,7 @@
         "actions": "Azioni",
         "account": "Profilo",
         "types": "Tipi di movimento",
-        "typesDescription": "Organizza i tipi e i sottotipi, scegli un colore e rendili riconoscibili con un'icona.",
-        "preview": "Anteprima",
-        "previewDescription": "Questi sono dati dimostrativi. Le modifiche restano solo in questa pagina e si perdono quando la lasci o la ricarichi. I tuoi movimenti reali non vengono modificati.",
+        "typesDescription": "Organizza le categorie e le sottocategorie dei tuoi movimenti, con colori e icone personalizzati.",
         "total": "{count, plural, one {# tipo} other {# tipi}}",
         "results": "{count, plural, one {# tipo visibile} other {# tipi visibili}}",
         "search": "Cerca un tipo di movimento",
@@ -17,7 +15,7 @@
         "name": "Nome",
         "root": "Tipo principale",
         "children": "{count, plural, one {# sottotipo} other {# sottotipi}}",
-        "created": "Tipo aggiunto solo a questa anteprima.",
+        "created": "Categoria creata.",
         "editType": "Modifica {name}",
         "expandCategory": "Mostra le sottocategorie di {name}",
         "collapseCategory": "Nascondi le sottocategorie di {name}",
@@ -27,20 +25,13 @@
         "parent": "Tipo superiore",
         "icon": "Icona",
         "color": "Colore",
-        "saved": "Modifiche applicate solo a questa anteprima.",
-        "demoNames": {
-            "home": "Casa",
-            "utilities": "Utenze",
-            "shopping": "Acquisti",
-            "groceries": "Spesa alimentare",
-            "food": "Cibo e ristoranti",
-            "restaurants": "Ristoranti",
-            "transport": "Trasporti",
-            "fuel": "Carburante",
-            "work": "Lavoro",
-            "salary": "Stipendio",
-            "entertainment": "Tempo libero",
-            "health": "Salute"
-        }
+        "saved": "Categoria aggiornata.",
+        "noCategories": "Non hai ancora categorie",
+        "noCategoriesDescription": "Crea la prima categoria per organizzare i tuoi movimenti.",
+        "loading": "Caricamento categorie...",
+        "loadFailed": "Impossibile caricare le categorie. Riprova.",
+        "signInAgain": "La sessione è scaduta. Accedi di nuovo.",
+        "retry": "Riprova",
+        "readOnlyCategory": "Categoria condivisa: non modificabile."
     }
 }

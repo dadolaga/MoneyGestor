@@ -279,6 +279,7 @@ export const apiClient = {
     transactionTypes: (signal?: AbortSignal) => send<ApiTransactionType[]>({ method: 'GET', url: '/api/v1/transaction-types', signal }),
     transactionType: (id: number, signal?: AbortSignal) => send<ApiTransactionType>({ method: 'GET', url: `/api/v1/transaction-types/${id}`, signal }),
     createTransactionType: (body: TransactionTypeCreate, signal?: AbortSignal) => send<{ id: number }>({ method: 'POST', url: '/api/v1/transaction-types', data: body, signal }, true),
+    updateTransactionType: (id: number, body: Required<TransactionTypeCreate>, signal?: AbortSignal) => send<void>({ method: 'PUT', url: `/api/v1/transaction-types/${id}`, data: body, signal }, true),
     transaction: (id: number, signal?: AbortSignal) => send<ApiTransaction>({ method: 'GET', url: `/api/v1/transactions/${id}`, signal }),
     transactionOverview: (params: TransactionQuery, signal?: AbortSignal) => send<TransactionOverview>({ method: 'GET', url: '/api/v1/transactions/overview', params, signal }),
     exportTransactions,

@@ -75,8 +75,8 @@ and [API contracts](../../../../backend/docs/07-api-reference.md).
 Category creation persists name, parent, icon, color, description, keywords and report preference,
 then reads the canonical DTO. Reserved types are identified by systemKind, never by their name.
 `CategoryEditorDialog` is also reused for creation and editing in profile preferences.
-That page explicitly selects local mode with demonstration data; the movement form retains
-its existing API creation and canonical reload. Both entry points render the same fields and layout.
+Preferences loads real categories and uses the same API creation/canonical reload, with
+`PUT /api/v1/transaction-types/{id}` for updates. Both entry points render the same fields and layout.
 The report preference does not remove movements from this dashboard. Transfer responses carry the
 negative source value; the editor displays its magnitude and submits a positive transfer amount.
 

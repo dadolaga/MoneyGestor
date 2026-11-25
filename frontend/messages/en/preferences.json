@@ -6,9 +6,7 @@
         "actions": "Actions",
         "account": "Profile",
         "types": "Movement types",
-        "typesDescription": "Organize types and subtypes, choose a color and make them recognizable with an icon.",
-        "preview": "Preview",
-        "previewDescription": "These are demonstration types. Changes stay on this page and are lost when you leave or reload it. Your real movements are unaffected.",
+        "typesDescription": "Organize your transaction categories and subcategories with custom colors and icons.",
         "total": "{count, plural, one {# type} other {# types}}",
         "results": "{count, plural, one {# visible type} other {# visible types}}",
         "search": "Search movement types",
@@ -17,7 +15,7 @@
         "name": "Name",
         "root": "Main type",
         "children": "{count, plural, one {# subtype} other {# subtypes}}",
-        "created": "Type added only to this preview.",
+        "created": "Category created.",
         "editType": "Edit {name}",
         "expandCategory": "Show subcategories of {name}",
         "collapseCategory": "Hide subcategories of {name}",
@@ -27,20 +25,13 @@
         "parent": "Parent type",
         "icon": "Icon",
         "color": "Color",
-        "saved": "Changes applied only to this preview.",
-        "demoNames": {
-            "home": "Home",
-            "utilities": "Utilities",
-            "shopping": "Shopping",
-            "groceries": "Groceries",
-            "food": "Food and dining",
-            "restaurants": "Restaurants",
-            "transport": "Transport",
-            "fuel": "Fuel",
-            "work": "Work",
-            "salary": "Salary",
-            "entertainment": "Leisure",
-            "health": "Health"
-        }
+        "saved": "Category updated.",
+        "noCategories": "You have no categories yet",
+        "noCategoriesDescription": "Create your first category to organize your transactions.",
+        "loading": "Loading categories...",
+        "loadFailed": "Categories could not be loaded. Try again.",
+        "signInAgain": "Your session has expired. Sign in again.",
+        "retry": "Try again",
+        "readOnlyCategory": "Shared category: cannot be edited."
     }
 }

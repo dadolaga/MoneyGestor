@@ -31,6 +31,9 @@
             "duplicateName": "Esiste già una categoria con questo nome.",
             "signInAgain": "La sessione è scaduta. Accedi di nuovo.",
             "saveFailed": "Impossibile salvare la categoria. I dati inseriti sono stati mantenuti.",
+            "reloadFailed": "La categoria è stata salvata, ma non è stato possibile ricaricarla. Riprova per recuperarla senza salvare di nuovo.",
+            "securityFailed": "Verifica di sicurezza non riuscita. Ricarica la pagina e riprova.",
+            "notFound": "La categoria o la categoria padre non è più disponibile o non è modificabile. Aggiorna l'elenco e riprova.",
             "icons": {
                 "shopping": "Carrello della spesa",
                 "home": "Casa",

@@ -452,7 +452,7 @@ export function TransactionEditorDialog({
                     error={metadataError}
                     onRetry={onRetry}
                     onClose={() => setCategoryEditorOpen(false)}
-                    onCreated={categoryCreatedHandler}
+                    onSaved={categoryCreatedHandler}
                 />
             )}
         </Dialog>

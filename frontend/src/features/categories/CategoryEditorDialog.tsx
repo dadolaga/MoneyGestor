@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { InputField, SwitchField } from '@/components/shared/form-controls';
@@ -32,35 +32,24 @@ interface CategoryFormValues {
     useInReports: boolean;
 }
 
-export type CategoryEditorValues = Pick<ApiTransactionType,
+type CategoryEditorValues = Pick<ApiTransactionType,
     'name' | 'parentId' | 'icon' | 'color' | 'description' | 'keywords' | 'useInReports'>;
 
-type CategoryEditorDialogProps = {
+interface CategoryEditorDialogProps {
     types: ApiTransactionType[];
+    category?: ApiTransactionType;
     onClose: () => void;
-} & ({
-    mode?: 'api';
     loading: boolean;
     error: string;
     onRetry: () => void;
-    onCreated: (category: ApiTransactionType) => void;
-} | {
-    mode: 'local';
-    category?: ApiTransactionType;
-    onSave: (values: CategoryEditorValues) => void;
-});
+    onSaved: (category: ApiTransactionType) => void;
+}
 
-export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
-    const { types, onClose } = props;
+export function CategoryEditorDialog({ types, category: editingCategory, loading, error, onRetry, onClose, onSaved }: CategoryEditorDialogProps) {
     const t = useTranslations('Movements.categoryEditor');
-    const locale = useLocale();
-    const editingCategory = props.mode === 'local' ? props.category : undefined;
-    const loading = props.mode === 'local' ? false : props.loading;
-    const error = props.mode === 'local' ? '' : props.error;
-    const retryHandler = props.mode === 'local' ? undefined : props.onRetry;
     const id = useId();
     const [open, setOpen] = useState(true);
-    const [createdId, setCreatedId] = useState<number>();
+    const [savedId, setSavedId] = useState<number>();
     const {
         control,
         register,
@@ -103,30 +92,26 @@ export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
             keywords: keywords.length > 0 ? keywords : null,
             useInReports: values.useInReports,
         };
-        if (props.mode === 'local') {
-            if (types.some((type) => type.id !== editingCategory?.id
-                && type.name.toLocaleLowerCase(locale) === name.toLocaleLowerCase(locale))) {
-                setError('name', { message: t('duplicateName') }, { shouldFocus: true });
-                return;
-            }
-            if (payload.parentId !== null && !categories.some((type) => type.id === payload.parentId)) {
-                setError('parentId', { message: t('invalidParent') }, { shouldFocus: true });
-                return;
-            }
-            props.onSave(payload);
-            setOpen(false);
+        if (savedId === undefined && payload.parentId !== null && !categories.some((type) => type.id === payload.parentId)) {
+            setError('parentId', { message: t('invalidParent') }, { shouldFocus: true });
             return;
         }
         let category: ApiTransactionType;
+        let id = savedId;
         try {
-            let id = createdId;
             if (id === undefined) {
-                const result = await apiClient.createTransactionType(payload);
-                id = result.id;
-                setCreatedId(id);
+                if (editingCategory === undefined) {
+                    const result = await apiClient.createTransactionType(payload);
+                    id = result.id;
+                } else {
+                    await apiClient.updateTransactionType(editingCategory.id, payload);
+                    id = editingCategory.id;
+                }
+                setSavedId(id);
             }
             category = await apiClient.transactionType(id);
         } catch (cause: unknown) {
+            let message = t(id !== undefined ? 'reloadFailed' : 'saveFailed');
             if (cause instanceof ApiProblemError) {
                 if (cause.status === 409) {
                     setError('name', { message: t('duplicateName') }, { shouldFocus: true });
@@ -138,15 +123,16 @@ export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
                 };
                 for (const field of Object.keys(cause.fieldErrors)) {
                     const name = fields[field.split('.').at(-1)?.toLowerCase() ?? ''];
-                    if (name) setError(name, { message: t('invalidField') });
+                    if (name) setError(name, { message: t(name === 'parentId' ? 'invalidParent' : 'invalidField') });
                 }
+                if (cause.status === 401) message = t('signInAgain');
+                else if (cause.status === 403) message = t('securityFailed');
+                else if (cause.status === 404) message = t('notFound');
             }
-            setError('root.server', {
-                message: t(cause instanceof ApiProblemError && cause.status === 401 ? 'signInAgain' : 'saveFailed'),
-            });
+            setError('root.server', { message });
             return;
         }
-        props.onCreated(category);
+        onSaved(category);
         setOpen(false);
     }
 
@@ -178,7 +164,7 @@ export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
                     onSubmit={handleSubmit(submitHandler)}
                 >
                     <DialogBody className="px-5 py-5 sm:px-7">
-                        <fieldset disabled={isSubmitting || loading || createdId !== undefined} className="m-0 grid min-w-0 gap-4 border-0 p-0">
+                        <fieldset disabled={isSubmitting || loading || savedId !== undefined} className="m-0 grid min-w-0 gap-4 border-0 p-0">
                             <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2">
                                 <InputField
                                     control={control}
@@ -287,7 +273,7 @@ export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
                                     variant="outline"
                                     size="sm"
                                     disabled={isSubmitting || loading}
-                                    onClick={retryHandler}
+                                    onClick={onRetry}
                                 >
                                     {t('retry')}
                                 </Button>
@@ -305,7 +291,7 @@ export function CategoryEditorDialog(props: CategoryEditorDialogProps) {
                             {t('cancel')}
                         </Button>
                         <Button type="submit" disabled={isSubmitting || loading || !!error}>
-                            {t(isSubmitting ? 'saving' : createdId !== undefined ? 'retry' : editingCategory === undefined ? 'create' : 'save')}
+                            {t(isSubmitting ? 'saving' : savedId !== undefined ? 'retry' : editingCategory === undefined ? 'create' : 'save')}
                         </Button>
                     </DialogFooter>
                 </form>

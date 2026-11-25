@@ -30,18 +30,23 @@ preferences editor has been removed. All seven fields are shared: name, parent,
 icon, color, description, keywords and use in reports. Preferences use the canonical
 `ApiTransactionType` shape rather than a separate category model.
 
-The dialog's explicit local mode sends normalized values to the preferences page
-without API calls; its default mode preserves existing API creation, canonical DTO
-reload, error handling and retry behavior in movements. Local mode also supports
-editing, validates duplicate names and excludes the edited category's subtree from
-parent options. Creation assigns a unique page-local ID and clears search so the
-new row is visible. Cancel and dismissal leave the table unchanged.
+The page loads real categories from `GET /api/v1/transaction-types` using the shared
+cookie-based client, with cancellation, loading, empty and retryable error states.
+Reserved `systemKind` types are excluded; other global categories are visible as
+read-only and remain available as parents. No demonstration data or local save mode remains.
 
-This is a frontend-only prototype with explicitly labelled demonstration types.
-New categories and all their editable details update React state for the current page;
-reloading or leaving the page resets them. No browser storage or transaction-type
-API reads/writes are used, and real movements are unaffected. Backend integration
-and persistence remain future work.
+The shared dialog creates through `POST /api/v1/transaction-types` and updates through
+`PUT /api/v1/transaction-types/{id}`. Both use antiforgery, normalize form values and
+reload the canonical DTO after saving. Failed DTO reloads retry the read without
+repeating the successful write. Field errors and failed submissions retain entered
+values. Successful writes refresh the page's full category list; creation clears
+search and new/moved children open their destination branch. Cancel does not write.
+
+The backend owns authorization, name uniqueness, supported icons/colors and hierarchy
+validation, including concurrent cycle prevention. Only owned non-system categories
+can be updated. Editing metadata retains category IDs and transaction references;
+no balance or movement values are changed. See the
+[category API contract](../../../../backend/webserver/Api/V1/transaction-types.md).
 
 The hierarchy is sorted within each branch. Search keeps matching rows and their
 ancestors visible. Moving a type moves its whole subtree; the parent picker and

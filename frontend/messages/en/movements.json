@@ -31,6 +31,9 @@
             "duplicateName": "A category with this name already exists.",
             "signInAgain": "Your session has expired. Sign in again.",
             "saveFailed": "The category could not be saved. Your entries have been kept.",
+            "reloadFailed": "The category was saved but could not be reloaded. Try again to retrieve it without saving again.",
+            "securityFailed": "The security check failed. Reload the page and try again.",
+            "notFound": "The category or parent category is no longer available or cannot be edited. Refresh the list and try again.",
             "icons": {
                 "shopping": "Shopping cart",
                 "home": "Home",

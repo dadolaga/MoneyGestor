@@ -67,9 +67,16 @@ public sealed class TransactionTypesController(IApiCurrentUser currentUser, IRes
             ? Ok(type) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateTransactionTypeRequest request, CancellationToken cancellationToken) {
+    public async Task<IActionResult> Create(TransactionTypeWriteRequest request, CancellationToken cancellationToken) {
         var id = await executor.ExecuteAsync(currentUser.RequireId(User), new AddTransactionTypeCommand(request.Name, request.ToModel()), cancellationToken);
         return Created($"/api/v1/transaction-types/{id}", new { id });
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(UInt64 id, TransactionTypeWriteRequest request, CancellationToken cancellationToken) {
+        await executor.ExecuteAsync(currentUser.RequireId(User),
+            new EditTransactionTypeCommand(id, request.Name, request.ToModel()), cancellationToken);
+        return NoContent();
     }
 }
 

@@ -1,35 +1,53 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ChevronDown, ChevronRight, Info, Pencil, Plus, Search, Tag, X } from '@/components/ui/icons';
+import { ChevronDown, ChevronRight, LoaderCircle, LockKeyhole, Pencil, Plus, Search, Tag, X } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CategoryIcon } from '@/features/categories/category-display';
 import { CategoryEditorDialog } from '@/features/categories/CategoryEditorDialog';
-import type { CategoryEditorValues } from '@/features/categories/CategoryEditorDialog';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
 import type { ApiTransactionType } from '@/lib/api/client';
 import { notify } from '@/lib/notifications';
 
-import { demoTransactionTypes, transactionTypeRows } from './transaction-types-model';
+import { transactionTypeRows } from './transaction-types-model';
 
 export function TransactionTypesPreferences() {
     const t = useTranslations('Preferences');
     const category = useTranslations('Movements.categoryEditor');
     const locale = useLocale();
     const id = useId();
-    const [types, setTypes] = useState<ApiTransactionType[]>(() => demoTransactionTypes.map((type) => ({
-        ...type, name: t(`demoNames.${type.name}`), systemKind: null, isGlobal: false,
-        description: null, keywords: null, useInReports: true,
-    })));
+    const [types, setTypes] = useState<ApiTransactionType[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [revision, setRevision] = useState(0);
     const [search, setSearch] = useState('');
     const [editor, setEditor] = useState<{ type?: ApiTransactionType }>();
     const [expandedIds, setExpandedIds] = useState<Set<number>>(() => new Set());
+
+    useEffect(() => {
+        const controller = new AbortController();
+        void (async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const result = await apiClient.transactionTypes(controller.signal);
+                if (!controller.signal.aborted) setTypes(result.filter((type) => type.systemKind === null));
+            } catch (cause) {
+                if (!controller.signal.aborted) setError(t(cause instanceof ApiProblemError && cause.status === 401 ? 'signInAgain' : 'loadFailed'));
+            } finally {
+                if (!controller.signal.aborted) setLoading(false);
+            }
+        })();
+        return () => controller.abort();
+    }, [revision, t]);
+
     const query = search.trim().toLocaleLowerCase(locale);
     const byId = new Map(types.map((type) => [type.id, type]));
     const visibleIds = new Set<number>();
@@ -50,6 +68,15 @@ export function TransactionTypesPreferences() {
         shownIds.add(type.id);
         return true;
     });
+    const showRows = !loading && error.length === 0;
+    const countLabel = loading ? t('loading') : error.length > 0 ? '—' : t('total', { count: types.length });
+    const resultsLabel = loading ? t('loading') : error.length > 0 ? t('loadFailed') : t('results', { count: rows.length });
+    const emptyTitle = types.length === 0 ? t('noCategories') : t('emptyTitle');
+    const emptyDescription = types.length === 0 ? t('noCategoriesDescription') : t('emptyDescription');
+
+    function retryHandler() {
+        setRevision((revision) => revision + 1);
+    }
 
     function expandAncestors(parentIds: number[]) {
         setExpandedIds((expanded) => {
@@ -90,30 +117,19 @@ export function TransactionTypesPreferences() {
         });
     }
 
-    function applyHandler(values: CategoryEditorValues) {
+    function savedHandler(saved: ApiTransactionType) {
         const editingId = editor?.type?.id;
-        setTypes((types) => {
-            if (editingId !== undefined) {
-                return types.map((type) => type.id === editingId ? { ...type, ...values } : type);
-            }
-            const id = Math.max(0, ...types.map((type) => type.id)) + 1;
-            return [...types, { ...values, id, isGlobal: false, systemKind: null }];
-        });
+        setTypes((types) => types.some((type) => type.id === saved.id)
+            ? types.map((type) => type.id === saved.id ? saved : type)
+            : [...types, saved]);
         if (editingId === undefined) setSearch('');
-        if (values.parentId !== null) expandAncestors([values.parentId]);
+        if (saved.parentId !== null) expandAncestors([saved.parentId]);
         notify.success(t(editingId === undefined ? 'created' : 'saved'));
+        retryHandler();
     }
 
     return (
         <div className="flex min-w-0 flex-col gap-5">
-            <aside aria-labelledby={`${id}-preview`} className="flex items-start gap-3 rounded-xl border border-solid border-border bg-muted/40 p-4">
-                <Info aria-hidden="true" className="mt-0.5 size-5 text-muted-foreground" />
-                <div>
-                    <p id={`${id}-preview`} className="m-0 text-sm font-semibold">{t('preview')}</p>
-                    <p className="m-0 mt-1 text-sm leading-relaxed text-muted-foreground">{t('previewDescription')}</p>
-                </div>
-            </aside>
-
             <section aria-labelledby={`${id}-types`}>
                 <Card className="overflow-hidden border border-solid border-border shadow-none">
                     <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
@@ -127,8 +143,8 @@ export function TransactionTypesPreferences() {
                             </div>
                         </div>
                         <div className="flex shrink-0 flex-wrap items-center gap-3">
-                            <Badge variant="secondary">{t('total', { count: types.length })}</Badge>
-                            <Button type="button" onClick={() => setEditor({})}>
+                            <Badge variant="secondary">{countLabel}</Badge>
+                            <Button type="button" disabled={loading || !!error} onClick={() => setEditor({})}>
                                 <Plus aria-hidden="true" className="size-4" />{category('title')}
                             </Button>
                         </div>
@@ -138,7 +154,7 @@ export function TransactionTypesPreferences() {
                         <div className="relative w-full sm:max-w-sm">
                             <label className="sr-only" htmlFor={`${id}-search`}>{t('search')}</label>
                             <Search aria-hidden="true" className="pointer-events-none absolute top-3 left-3 size-4 text-muted-foreground" />
-                            <Input id={`${id}-search`} value={search} onChange={(event) => searchHandler(event.target.value)}
+                            <Input id={`${id}-search`} value={search} disabled={loading || !!error} onChange={(event) => searchHandler(event.target.value)}
                                 placeholder={t('searchPlaceholder')} className="rounded-xl border-solid pr-11 pl-10" />
                             {!!search && (
                                 <Button type="button" variant="transparent" size="icon" className="absolute top-0 right-0"
@@ -147,7 +163,7 @@ export function TransactionTypesPreferences() {
                                 </Button>
                             )}
                         </div>
-                        <p role="status" className="m-0 text-xs text-muted-foreground">{t('results', { count: rows.length })}</p>
+                        <p role="status" className="m-0 text-xs text-muted-foreground">{resultsLabel}</p>
                     </div>
 
                     <Table aria-labelledby={`${id}-types`} className="table-fixed border-collapse"
@@ -162,10 +178,12 @@ export function TransactionTypesPreferences() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rows.map(({ type, depth }) => {
+                            {!!showRows && rows.map(({ type, depth }) => {
                                 const hasChildren = types.some((child) => child.parentId === type.id);
                                 const isExpanded = expandedIds.has(type.id);
                                 const DisclosureIcon = isExpanded ? ChevronDown : ChevronRight;
+                                const EditIcon = type.isGlobal ? LockKeyhole : Pencil;
+                                const editLabel = type.isGlobal ? t('readOnlyCategory') : t('editType', { name: type.name });
                                 const label = (
                                     <>
                                         {hasChildren ? <DisclosureIcon aria-hidden="true" className="size-4 text-muted-foreground" /> : <span aria-hidden="true" className="size-4 shrink-0" />}
@@ -192,22 +210,41 @@ export function TransactionTypesPreferences() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-2 pr-3 pl-1 text-right sm:pr-5">
-                                            <Button type="button" variant="outline" size="icon" aria-label={t('editType', { name: type.name })}
-                                                className="border border-solid border-input" onClick={() => setEditor({ type })}>
-                                                <Pencil aria-hidden="true" className="size-4" />
+                                            <Button type="button" variant="outline" size="icon" aria-label={editLabel} title={editLabel}
+                                                disabled={type.isGlobal} className="border border-solid border-input" onClick={() => setEditor({ type })}>
+                                                <EditIcon aria-hidden="true" className="size-4" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>
                                 );
                             })}
-                            {rows.length === 0 && (
+                            {!!loading && (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={2}>
+                                        <div role="status" className="flex items-center justify-center gap-3 py-10 text-muted-foreground">
+                                            <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />{t('loading')}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {!!error && (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={2}>
+                                        <div role="alert" className="flex flex-col items-center gap-3 py-8 text-center text-destructive">
+                                            <p className="m-0">{error}</p>
+                                            <Button type="button" variant="outline" onClick={retryHandler}>{t('retry')}</Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {!!showRows && rows.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell colSpan={2}>
                                         <div className="flex flex-col items-center gap-2 px-5 py-8 text-center">
                                             <Search aria-hidden="true" className="mb-1 size-8 text-muted-foreground" />
-                                            <p className="m-0 font-semibold">{t('emptyTitle')}</p>
-                                            <p className="m-0 text-muted-foreground">{t('emptyDescription')}</p>
-                                            <Button type="button" variant="transparent" className="mt-2" onClick={() => setSearch('')}>{t('clearSearch')}</Button>
+                                            <p className="m-0 font-semibold">{emptyTitle}</p>
+                                            <p className="m-0 text-muted-foreground">{emptyDescription}</p>
+                                            {!!query && <Button type="button" variant="transparent" className="mt-2" onClick={() => setSearch('')}>{t('clearSearch')}</Button>}
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -218,9 +255,9 @@ export function TransactionTypesPreferences() {
                 </Card>
             </section>
             {editor !== undefined && (
-                <CategoryEditorDialog mode="local" category={editor.type}
+                <CategoryEditorDialog category={editor.type} loading={loading} error={error} onRetry={retryHandler}
                     types={transactionTypeRows(types, locale).map(({ type }) => type)}
-                    onSave={applyHandler} onClose={() => setEditor(undefined)} />
+                    onSaved={savedHandler} onClose={() => setEditor(undefined)} />
             )}
         </div>
     );

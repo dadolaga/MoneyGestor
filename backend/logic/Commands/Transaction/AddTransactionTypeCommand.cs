@@ -16,47 +16,18 @@ namespace logic.Commands.Transaction {
         internal override async Task<UInt64> ExecuteAsync(ExecutorManager executorManager, CancellationToken cancellationToken) {
             var database = executorManager.DbContext;
 
-            if (String.IsNullOrWhiteSpace(name) || name.Length > 100) {
-                throw new ResourceValidationException("name", "invalid_name");
-            }
-
-            if (!new[] { "shopping", "home", "transport", "food", "utilities", "work", "entertainment", "health", "tag" }.Contains(details.Icon)) {
-                throw new ResourceValidationException("icon", "invalid_icon");
-            }
-
-            if (!new[] { "red", "orange", "yellow", "green", "cyan", "blue", "purple", "grey" }.Contains(details.Color)) {
-                throw new ResourceValidationException("color", "invalid_color");
-            }
-
-            if (details.Description?.Length > 500 || details.Keywords?.Length > 1000) {
-                throw new ResourceValidationException(details.Description?.Length > 500 ? "description" : "keywords", "too_long");
-            }
-
-            var ancestors = new HashSet<UInt64>();
-            var parentId = details.ParentId;
-            while (parentId.HasValue) {
-                if (!ancestors.Add(parentId.Value) || parentId == DatabaseInitializer.TRANSFER.Id || parentId == DatabaseInitializer.ADJUSTMENT.Id) {
-                    throw new ResourceValidationException("parentId", "invalid_parent");
-                }
-
-                var parent = await OwnershipPolicy.RequireAvailableTransactionTypeAsync(database, parentId.Value, executorManager.UserId, cancellationToken);
-                parentId = parent.ParentId;
-            }
+            TransactionTypeConfigurationPolicy.Validate(name, details);
+            await TransactionTypeConfigurationPolicy.LockOwnerAsync(database, executorManager.UserId, cancellationToken);
+            await TransactionTypeConfigurationPolicy.ValidateParentAsync(database, executorManager.UserId, details.ParentId, null, cancellationToken);
 
             if (await database.TransactionTypes.AnyAsync(tt => tt.UserId == executorManager.UserId && tt.Name == name, cancellationToken)) {
                 throw new DuplicateObjectException("This transaction type already exist");
             }
 
             var transactionType = new TransactionTypeDb {
-                Name = name,
                 UserId = executorManager.UserId,
-                ParentId = details.ParentId,
-                Icon = details.Icon,
-                Color = details.Color,
-                Description = String.IsNullOrWhiteSpace(details.Description) ? null : details.Description.Trim(),
-                Keywords = String.IsNullOrWhiteSpace(details.Keywords) ? null : details.Keywords.Trim(),
-                UseInReports = details.UseInReports,
             };
+            TransactionTypeConfigurationPolicy.Apply(transactionType, name, details);
 
             await database.TransactionTypes.AddAsync(transactionType, cancellationToken);
 
