@@ -1,1 +1,0 @@
-per prima cosa i useEffect, poi le funzioni che caricano i dati dalle api (load[...]), poi quelle a caso, in ultimo la gestione degli handler ([...]Handler)

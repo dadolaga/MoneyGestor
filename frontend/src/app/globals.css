@@ -1,0 +1,305 @@
+/* Preflight is deliberately omitted while MUI legacy routes coexist. */
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities);
+@import 'tw-animate-css';
+@import '../styles/marketing.css';
+@import '../styles/marketing-auth.css';
+@import '../styles/app-header.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Native modal dialogs require notifications in the browser top layer, beyond CSS z-index. */
+.notification-layer {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+    color: inherit;
+    pointer-events: none;
+}
+
+.notification-layer [data-sonner-toaster] {
+    pointer-events: auto;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-income: var(--income);
+    --color-expense: var(--expense);
+    --color-transfer: var(--transfer);
+    --color-warning: var(--warning);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+    --background: oklch(0.975 0.008 250);
+    --foreground: oklch(0.23 0.035 255);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.23 0.035 255);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.23 0.035 255);
+    --primary: oklch(0.57 0.22 22);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.94 0.018 250);
+    --secondary-foreground: oklch(0.3 0.04 255);
+    --muted: oklch(0.95 0.012 250);
+    --muted-foreground: oklch(0.48 0.03 255);
+    --accent: oklch(0.92 0.025 20);
+    --accent-foreground: oklch(0.31 0.06 20);
+    --destructive: oklch(0.58 0.23 28);
+    --destructive-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.015 250);
+    --input: oklch(0.88 0.015 250);
+    --disabled-background: color-mix(in oklch, var(--border) 50%, var(--popover));
+    --ring: oklch(0.57 0.22 22);
+    --income: oklch(0.6 0.17 145);
+    --expense: oklch(0.58 0.23 28);
+    --transfer: oklch(0.56 0.16 245);
+    --warning: oklch(0.76 0.16 78);
+    --chart-1: oklch(0.57 0.22 22);
+    --chart-2: oklch(0.6 0.17 145);
+    --chart-3: oklch(0.56 0.16 245);
+    --chart-4: oklch(0.76 0.16 78);
+    --chart-5: oklch(0.66 0.16 320);
+    --chart-6: oklch(0.67 0.13 190);
+    --radius: 0.75rem;
+    --text-color: #f0efeb;
+    --header-height: 65px;
+    --app-header-brand: oklch(0.63 0.25 17);
+    --navigation-width: 14rem;
+    color-scheme: light;
+}
+
+.dark {
+    --background: oklch(0.16 0.025 255);
+    --foreground: oklch(0.97 0.008 250);
+    --card: oklch(0.21 0.025 255);
+    --card-foreground: oklch(0.97 0.008 250);
+    --popover: oklch(0.21 0.025 255);
+    --popover-foreground: oklch(0.97 0.008 250);
+    --primary: oklch(0.64 0.23 22);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.28 0.028 255);
+    --secondary-foreground: oklch(0.94 0.012 250);
+    --muted: oklch(0.27 0.022 255);
+    --muted-foreground: oklch(0.72 0.025 250);
+    --accent: oklch(0.31 0.05 20);
+    --accent-foreground: oklch(0.97 0.01 20);
+    --destructive: oklch(0.66 0.23 28);
+    --destructive-foreground: oklch(0.99 0 0);
+    --border: oklch(0.34 0.025 255);
+    --input: oklch(0.34 0.025 255);
+    --disabled-background: var(--background);
+    --ring: oklch(0.69 0.2 22);
+    --income: oklch(0.68 0.17 145);
+    --expense: oklch(0.66 0.23 28);
+    --transfer: oklch(0.67 0.15 245);
+    --warning: oklch(0.81 0.15 78);
+    color-scheme: dark;
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Keep locked controls consistent, including fieldsets, composite fields and legacy MUI inputs. */
+:root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
+:root :is(input, textarea)[readonly],
+:root .MuiInputBase-root:is(.Mui-disabled, .Mui-readOnly),
+:root [data-slot='select']:has(:disabled),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:is(button, input, select, textarea):disabled), :has([readonly])),
+:root label:has(> input.sr-only:disabled) > span {
+    background: var(--disabled-background);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+    opacity: 1;
+    pointer-events: none;
+}
+
+:root :is(button, input, select, textarea, option, optgroup, a, [role]):is(:disabled, [aria-disabled='true'], [data-disabled]:not([data-disabled='false'])),
+:root [data-slot='select']:has(:disabled),
+:root [data-slot='field-control']:is([data-disabled='true'], :has(:is(button, input, select, textarea):disabled)),
+:root label:has(> input:disabled) {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* The wrapper owns the surface; its input stays transparent and readable. */
+:root [data-slot='field-control'] :is(input, button, select, textarea):is(:disabled, [readonly], [aria-disabled='true']) {
+    background: transparent;
+    color: inherit;
+}
+
+:root :is(input, textarea):is(:disabled, [readonly]) {
+    -webkit-text-fill-color: var(--muted-foreground);
+}
+/* Native dialogs stay hidden even when their layout uses flex or grid utilities. */
+dialog[data-slot='modal']:not([open]) { display: none; }
+html:has(dialog[data-slot='modal'][open]) { overflow: hidden; }
+
+@keyframes mobile-dialog-enter {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+@keyframes mobile-dialog-exit {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+
+@keyframes mobile-field-sheet-enter {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes mobile-field-sheet-exit {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+@media (max-width: 639px) {
+    dialog:is([data-mobile-fullscreen='true'], [data-mobile-field-sheet='true'])[data-state='closed'] {
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+    [data-mobile-bottom='true'] {
+        opacity: 0;
+        transform: translateY(100%);
+        transition:
+            opacity 300ms ease,
+            transform 300ms ease,
+            display 300ms allow-discrete,
+            overlay 300ms allow-discrete;
+    }
+
+    [data-mobile-bottom='true']:popover-open {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    [data-mobile-bottom='true'][data-state='closed'] {
+        pointer-events: none;
+    }
+
+    @starting-style {
+        [data-mobile-bottom='true']:popover-open {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+    }
+
+    dialog[data-mobile-fullscreen='true'][data-state='open'] {
+        animation: mobile-dialog-enter 300ms ease-out both;
+    }
+
+    dialog[data-mobile-fullscreen='true'][data-state='closed'] {
+        animation: mobile-dialog-exit 300ms ease-in both;
+    }
+
+    dialog[data-mobile-field-sheet='true'] {
+        transition: translate 200ms ease-out;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-dragging='true'] {
+        transition: none;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-state='open'] {
+        animation: mobile-field-sheet-enter 300ms ease-out both;
+    }
+
+    dialog[data-mobile-field-sheet='true'][data-state='closed'] {
+        animation: mobile-field-sheet-exit 300ms ease-in both;
+    }
+}
+
+dialog[data-slot='modal']::backdrop {
+    background-color: rgb(255 255 255 / 20%);
+    opacity: 0;
+    backdrop-filter: blur(0);
+}
+
+dialog[data-slot='modal'][data-state='open']::backdrop {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    dialog[data-slot='modal']::backdrop {
+        transition: opacity 300ms ease, backdrop-filter 300ms ease;
+    }
+
+    @starting-style {
+        dialog[data-slot='modal'][data-state='open']::backdrop {
+            opacity: 0;
+            backdrop-filter: blur(0);
+        }
+    }
+}
+
+@media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    [data-input-reveal='true'] {
+        opacity: 0;
+        clip-path: inset(0 0 100% 0);
+        transform: translateY(calc(-1 * var(--popover-side-offset, 4px)));
+        transform-origin: top;
+        transition:
+            opacity 300ms ease,
+            clip-path 300ms ease,
+            transform 300ms ease,
+            display 300ms allow-discrete,
+            overlay 300ms allow-discrete;
+    }
+
+    [data-input-reveal='true']:popover-open {
+        opacity: 1;
+        clip-path: inset(0);
+        transform: translateY(0);
+    }
+
+    [data-input-reveal='true'][data-state='closed'] {
+        pointer-events: none;
+    }
+
+    @starting-style {
+        [data-input-reveal='true']:popover-open {
+            opacity: 0;
+            clip-path: inset(0 0 100% 0);
+            transform: translateY(calc(-1 * var(--popover-side-offset, 4px)));
+        }
+    }
+}

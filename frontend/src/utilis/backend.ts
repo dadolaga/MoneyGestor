@@ -1,0 +1,45 @@
+import type { SortType } from '@/context/SortTableContext';
+
+interface FilterData {
+    name?: string;
+    walletId?: number;
+    typeId?: number;
+}
+
+export function convertSortToApi(sort: SortType) {
+    let text = '';
+
+    const sortSize: number = Object.keys(sort).length;
+
+    Object.keys(sort).forEach((key, index) => {
+        if (sort[key] !== undefined) {
+            text += `${sort[key] === 'desc' ? '!' : ''}${key}${index === sortSize - 1 ? '' : '+'}`;
+        }
+    });
+
+    return text.length > 0 ? text : undefined;
+}
+
+export function convertFilterToApi(filter?: FilterData) {
+    console.log('Transaction filter input:', filter);
+
+    if (filter === undefined) return undefined;
+
+    let text = '';
+
+    if (filter.name !== undefined && filter.name.trim().length > 0) {
+        text += `description~${filter.name}`;
+    }
+
+    if (filter.walletId !== undefined) {
+        text += `${text.length > 0 ? '&' : ''}walletId=${filter.walletId}`;
+    }
+
+    if (filter.typeId !== undefined) {
+        text += `${text.length > 0 ? '&' : ''}transactionTypeId=${filter.typeId}`;
+    }
+
+    console.log('Generated transaction filter:', text);
+
+    return text.length > 0 ? text : undefined;
+}

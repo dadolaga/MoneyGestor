@@ -1,0 +1,48 @@
+{
+  "log": {
+    "level": "Information",
+    "output": {
+      "console": true,
+      "file": {
+        "path": "./log/backend/",
+        "fileName": "backend",
+        "rollingInterval": "Day",
+        "retainedFileCountLimit": 14,
+        "fileSizeLimitBytes": 104857600,
+        "rollOnFileSizeLimit": true
+      }
+    },
+    "override": {
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    },
+    "diagnosticEfLogging": false
+  },
+  "database": {
+    "host": "mysql",
+    "port": 3306,
+    "name": "moneygestor_db",
+    "user": "moneygestor_user",
+    "password": "CHANGE_ME_IN_PRODUCTION"
+  },
+  "security": {
+    "requireConfirmedEmail": true,
+    "allowedOrigins": [
+      "http://localhost:3000"
+    ]
+  },
+  "email": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "username": "CHANGE_ME",
+    "password": "CHANGE_ME",
+    "from": "noreply@example.com",
+    "useSsl": true,
+    "frontendBaseUrl": "http://localhost:3000"
+  },
+  "observability": {
+    "databaseReadinessTimeoutSeconds": 2,
+    "metricsEnabled": true,
+    "metricsPath": "/metrics"
+  }
+}

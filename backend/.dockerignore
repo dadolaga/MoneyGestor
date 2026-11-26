@@ -1,0 +1,63 @@
+# Docker build context exclusions
+
+# Source control
+.git
+.gitignore
+.gitattributes
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node/Frontend
+node_modules
+npm-debug.log
+.next
+out
+.env.local
+.env.*.local
+
+# .NET
+bin
+obj
+**/bin
+**/obj
+packages
+.vs
+.vscode
+*.user
+*.suo
+
+# Logs
+logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Local configuration and transfer archives must never enter a build context.
+**/settings.json
+**/.env
+**/.env.*
+**/*.zip
+**/log
+**/logs
+artifacts
+
+# Documentation
+docs
+*.md
+LICENSE
+
+# Tests
+coverage
+.nyc_output

@@ -1,0 +1,18 @@
+{
+  "log": {
+    "level": "DEBUG",
+    "output": {
+      "console": true,
+      "file": {
+        "path": "../log/backend/",
+        "fileName": "backend"
+      }
+    }
+  },
+  "database": {
+    "name": "money_gestor",
+    "user": "USER",
+    "password": "PASSWORD",
+    "forceUpdate": false
+  }
+}

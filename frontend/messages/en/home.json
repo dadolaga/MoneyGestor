@@ -1,0 +1,160 @@
+{
+    "Home": {
+        "metadata": {
+            "title": "Flowiy | Simple, shared finances",
+            "description": "Money management, simple and shared. Discover Flowiy and organise income, expenses and wallets in one place."
+        },
+        "navigation": {
+            "home": "Flowiy homepage",
+            "main": "Main navigation",
+            "footer": "Footer navigation",
+            "features": "Features",
+            "howItWorks": "How it works",
+            "forWhom": "Who it’s for",
+            "pricing": "Pricing",
+            "faq": "FAQ",
+            "login": "Log in",
+            "start": "Start for free",
+            "openMenu": "Open menu",
+            "closeMenu": "Close menu",
+            "lightTheme": "Switch to light theme",
+            "darkTheme": "Switch to dark theme",
+            "language": "Language",
+            "switchLanguage": "Visualizza in italiano"
+        },
+        "hero": {
+            "label": "More control, more freedom",
+            "title": "Money management,",
+            "highlight": "simple and shared.",
+            "description": "Keep track of income, expenses, budgets and wallets in one place. Perfect for you, your family or your team.",
+            "tryFree": "Try for free",
+            "demo": "Watch demo",
+            "free": "Free forever",
+            "noCard": "No card required",
+            "quickSetup": "Set up in minutes",
+            "monthlyBudget": "Monthly budget",
+            "familyWallet": "Family wallet"
+        },
+        "images": { "dashboard": "Dashboard preview", "sharing": "Shared wallet preview" },
+        "benefits": {
+            "label": "Why Flowiy",
+            "wallets": {
+                "title": "Multiple wallets",
+                "description": "Manage accounts, cards and wallets in one place."
+            },
+            "budgets": { "title": "Smart budgets", "description": "Set spending limits and reach your goals." },
+            "reports": { "title": "Clear reports", "description": "See statistics and trends with intuitive charts." },
+            "sharing": {
+                "title": "Better together",
+                "description": "Share money management with family, friends or colleagues."
+            }
+        },
+        "features": {
+            "label": "Features",
+            "title": "Everything under control",
+            "description": "All the tools you need to manage your money, simply and flexibly.",
+            "discover": "Explore all features",
+            "movements": {
+                "title": "Transactions and categories",
+                "description": "Record, import and organise income, expenses and transfers with custom categories."
+            },
+            "budgets": {
+                "title": "Budgets and goals",
+                "description": "Set monthly budgets and create savings goals for what really matters."
+            },
+            "reports": {
+                "title": "Intuitive reports",
+                "description": "Understand your finances with clear, detailed charts to make better decisions."
+            },
+            "wallets": {
+                "title": "Shared wallets",
+                "description": "Manage multiple wallets and share them with anyone while staying in control."
+            }
+        },
+        "examples": {
+            "cardTopUp": "Card top-up",
+            "groceries": "Groceries",
+            "salary": "Salary",
+            "mainAccount": "Main account",
+            "sharedHome": "Shared home",
+            "travel": "Travel",
+            "groupExpenses": "Group expenses",
+            "homeBudget": "Home budget",
+            "holidayGoal": "Holiday goal",
+            "budgetAmount": "{current} of {total}",
+            "incomeAndExpenses": "Income and expenses",
+            "income": "Income",
+            "expenses": "Expenses",
+            "chartDescription": "Illustrative income and expenses for the first six months of the year."
+        },
+        "together": {
+            "label": "Together is easier",
+            "title": "Manage money together,",
+            "highlight": "without the confusion.",
+            "description": "Create shared accounts, invite one or more people and manage income, expenses and budgets together. Assign roles and permissions, view activity history and keep everything transparent.",
+            "discover": "Learn more",
+            "permissions": "Customisable roles and permissions",
+            "activity": "Activity history always available",
+            "visibility": "Individual visibility for each user"
+        },
+        "how": {
+            "label": "How it works",
+            "title": "Get started in 3 simple steps",
+            "description": "From sign-up to your first insights in just a few minutes.",
+            "wallets": {
+                "title": "Create your wallets",
+                "description": "Add your accounts, cards or wallets and customise them your way."
+            },
+            "movements": {
+                "title": "Record or import transactions",
+                "description": "Enter transactions manually or import them from your statements."
+            },
+            "insights": {
+                "title": "Understand and improve your finances",
+                "description": "Explore reports, set budgets and work towards your goals."
+            }
+        },
+        "security": {
+            "label": "Security",
+            "title": "Protected data, complete control",
+            "description": "Your privacy is a priority. One place to organise your finances and keep track of your data.",
+            "account": {
+                "title": "Personal access",
+                "description": "Log in with your account and manage your wallets."
+            },
+            "permissions": {
+                "title": "Custom permissions",
+                "description": "Sharing starts with clear roles and access."
+            },
+            "control": {
+                "title": "Your data, your control",
+                "description": "A clear view of the information you manage."
+            }
+        },
+        "cta": {
+            "label": "Start today",
+            "title": "Give your money a direction.",
+            "description": "A simpler, clearer and shared way to manage your finances.",
+            "button": "Create your account",
+            "note": "Free forever. No card required."
+        },
+        "footer": { "tagline": "Money management, simple and shared." },
+        "faq": {
+            "title": "Frequently asked questions",
+            "description": "A few helpful things to know before getting started with Flowiy.",
+            "close": "Close frequently asked questions",
+            "start": {
+                "question": "How do I get started?",
+                "answer": "Select “Create your account” to sign up. If you already have an account, use “Log in” to open your personal dashboard."
+            },
+            "languages": {
+                "question": "Can I use Flowiy in English or Italian?",
+                "answer": "Yes. Use EN or IT at the bottom of the page to choose your language. Login, sign-up and the dashboard follow your selected language too."
+            },
+            "preview": {
+                "question": "Do the previews show real data?",
+                "answer": "No. The homepage cards are illustrative examples. Budgets, goals, reports and advanced sharing options show the product direction and are not all available in the dashboard yet."
+            }
+        }
+    }
+}

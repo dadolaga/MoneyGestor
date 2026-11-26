@@ -1,0 +1,146 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import { useTranslations } from 'next-intl';
+import { useForm } from 'react-hook-form';
+
+import { CheckboxField, InputField } from '@/components/shared/form-controls';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { UserRound } from '@/components/ui/icons';
+import { AccountRecoveryDialog, type RecoveryAction } from '@/features/auth/account-recovery-dialog';
+import { AuthPasswordField } from '@/features/auth/auth-password-field';
+import { useAccountConfiguration } from '@/hooks/useAccountConfiguration';
+import { Link, useRouter } from '@/i18n/navigation';
+import { ApiProblemError, apiClient } from '@/lib/api/client';
+
+interface LoginFormValues {
+    username: string;
+    password: string;
+    remember: boolean;
+}
+
+interface PanelProps {
+    initialRecovery?: RecoveryAction;
+    onDirtyChange?: (isDirty: boolean) => void;
+}
+
+export function LoginPanel({ initialRecovery, onDirtyChange }: PanelProps) {
+    const t = useTranslations('Auth.login');
+    const configurationText = useTranslations('Auth.configuration');
+    const router = useRouter();
+    const { configuration, reloadConfiguration } = useAccountConfiguration();
+    const [submitError, setSubmitError] = useState<string>();
+    const [isPending, setIsPending] = useState(false);
+    const form = useForm<LoginFormValues>({ defaultValues: { username: '', password: '', remember: false } });
+
+    useEffect(() => {
+        onDirtyChange?.(form.formState.isDirty);
+    }, [form.formState.isDirty, onDirtyChange]);
+
+    const submitHandler = async (values: LoginFormValues) => {
+        if (isPending) return;
+        setSubmitError(undefined);
+        setIsPending(true);
+        try {
+            await apiClient.login({ user: values.username, password: values.password, remember: values.remember });
+            router.replace('/dashboard');
+        } catch (error) {
+            const status = error instanceof ApiProblemError ? error.status : undefined;
+            const message = status === 401 ? t('errors.invalidCredentials')
+                : status === 423 ? t('errors.locked')
+                : status === 429 ? t('errors.tooManyRequests')
+                : status === 0 ? t('errors.network')
+                : t('errors.generic');
+            setSubmitError(message);
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    const onInvalid = () => setSubmitError(t('errors.summary'));
+    return (
+        <div className="w-full h-full flex items-center justify-center">
+            <Card className="flowiy-auth-form-card">
+                <CardHeader className="items-center text-center">
+                    <CardTitle>{t('title')}</CardTitle>
+                    <p className="m-0 text-sm text-muted-foreground">{t('description')}</p>
+                </CardHeader>
+                <CardContent>
+                    <form aria-busy={isPending} className="grid gap-5" noValidate onSubmit={form.handleSubmit(submitHandler, onInvalid)}>
+                        {/* submitError and isPending are controlled values; each branch renders a safe React node. */}
+                        {/* eslint-disable-next-line react/jsx-no-leaked-render */}
+                        {submitError ? (
+                            <div
+                                aria-live="assertive"
+                                className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+                                role="alert"
+                            >
+                                {submitError}
+                            </div>
+                        ) : null}
+                        <InputField
+                            autoComplete="username"
+                            control={form.control}
+                            disabled={isPending}
+                            label={t('fields.username')}
+                            name="username"
+                            maxLength={256}
+                            placeholder={t('placeholders.username')}
+                            startAdornment={<UserRound aria-hidden="true" className="size-5" />}
+                            rules={{ required: t('validation.required') }}
+                        />
+                        <AuthPasswordField
+                            autoComplete="current-password"
+                            control={form.control}
+                            disabled={isPending}
+                            label={t('fields.password')}
+                            name="password"
+                            maxLength={128}
+                            placeholder={t('placeholders.password')}
+                            rules={{ required: t('validation.required') }}
+                        />
+                        <CheckboxField
+                            control={form.control}
+                            disabled={isPending}
+                            label={t('fields.remember')}
+                            name="remember"
+                        />
+                        <Button disabled={isPending} type="submit">
+                            {/* eslint-disable-next-line react/jsx-no-leaked-render */}
+                            {isPending ? t('pending') : t('submit')}
+                        </Button>
+                    </form>
+                    <div className="mb-0 mt-6 text-center text-sm text-muted-foreground">
+                        <AccountRecoveryDialog action="forgot" defaultOpen={initialRecovery === 'forgot'}>
+                            {t('forgotPassword')}
+                        </AccountRecoveryDialog>
+                        {configuration.status === 'ready' && configuration.data.requireConfirmedEmail === true && (
+                            <>
+                                {' · '}
+                                <AccountRecoveryDialog action="resend" defaultOpen={initialRecovery === 'resend'}>
+                                    {t('resendConfirmation')}
+                                </AccountRecoveryDialog>
+                            </>
+                        )}
+                    </div>
+                    {configuration.status === 'error' && (
+                        <p className="mb-0 mt-3 text-center text-sm text-muted-foreground" role="status">
+                            {configurationText('error')}{' '}
+                            <button className="flowiy-auth-recovery-link" onClick={reloadConfiguration} type="button">
+                                {configurationText('retry')}
+                            </button>
+                        </p>
+                    )}
+                    <p className="mb-0 mt-3 text-center text-sm text-muted-foreground">
+                        {t('registerPrompt')}{' '}
+                        <Link className="font-medium text-primary hover:underline" href="/register">
+                            {t('registerLink')}
+                        </Link>
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}

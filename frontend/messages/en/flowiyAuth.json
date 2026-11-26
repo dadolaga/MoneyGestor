@@ -1,0 +1,20 @@
+{
+    "FlowiyAuth": {
+        "backHome": "Back to home",
+        "security": "Secure account access",
+        "switchLabel": "Account access",
+        "loginTab": "Log in",
+        "registerTab": "Sign up",
+        "dashboardPreview": "Illustrative Flowiy dashboard with income, expenses, balance and spending charts",
+        "benefits": {
+            "security": { "title": "Secure by design", "description": "Your data is protected and always private." },
+            "spending": { "title": "Track your spending", "description": "Get clear insights and reach your goals." },
+            "sharing": { "title": "Share and collaborate", "description": "Manage finances with family, friends or colleagues." }
+        },
+        "intro": {
+            "headline": "Your finances,",
+            "highlight": "made simple.",
+            "description": "A simple space to organise your money and keep a clear overview of your finances."
+        }
+    }
+}

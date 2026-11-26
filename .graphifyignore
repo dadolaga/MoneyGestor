@@ -1,0 +1,29 @@
+# Secrets and local operational data: never index these, including nested copies.
+**/settings.json
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/*.pfx
+**/*.p12
+**/*.sql
+**/*.zip
+**/*.log
+
+# Dependencies, generated output and local editor state.
+.graphify/
+graphify-out/
+artifacts/
+**/node_modules/
+**/.next/
+**/bin/
+**/obj/
+**/coverage/
+**/__pycache__/
+.vs/
+.vscode/
+.git/
+
+# Preview fixtures and lockfiles obscure the application relationships.
+**/package-lock.json
+**/packages.lock.json

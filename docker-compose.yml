@@ -1,0 +1,180 @@
+name: ${COMPOSE_PROJECT_NAME:-moneygestor}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-application-settings: &application-settings
+  type: bind
+  source: ${APP_SETTINGS_FILE:-./settings.json}
+  target: /app/settings.json
+  read_only: true
+  bind:
+    create_host_path: false
+
+x-transfer: &transfer
+  image: ${TRANSFER_IMAGE:-moneygestor/transfer:local}
+  build:
+    context: ./backend
+    dockerfile: ExportImportApplication/Dockerfile
+  profiles: [tools]
+  init: true
+  restart: "no"
+  read_only: true
+  environment:
+    BACKEND_APP_SETTINGS: /app/settings.json
+  volumes:
+    - *application-settings
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=16m
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  pids_limit: 128
+  logging: *logging
+  networks: [database]
+  depends_on:
+    mysql:
+      condition: service_healthy
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_BIND_ADDRESS:-127.0.0.1}:${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-moneygestor_db}
+      MYSQL_USER: ${MYSQL_USER:-moneygestor_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database="$${MYSQL_DATABASE}" --execute="SELECT 1" >/dev/null']
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+    stop_grace_period: 60s
+    logging: *logging
+    networks: [database]
+
+  backend:
+    image: ${BACKEND_IMAGE:-moneygestor/backend:local}
+    build:
+      context: ./backend
+      dockerfile: webserver/Dockerfile
+    init: true
+    restart: unless-stopped
+    read_only: true
+    ports:
+      - "${BACKEND_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-5000}:8080"
+    volumes:
+      - *application-settings
+      - backend-logs:/app/log
+      - backend-data-protection:/app/data-protection-keys
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      BACKEND_APP_SETTINGS: /app/settings.json
+      DATA_PROTECTION_KEYS_PATH: /app/data-protection-keys
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    pids_limit: 128
+    stop_grace_period: 30s
+    logging: *logging
+    networks: [application, database]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-moneygestor/frontend:local}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ""
+        API_PROXY_TARGET: "http://backend:8080"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    ports:
+      - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-3000}:3000"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+      - /app/.next/cache:rw,noexec,nosuid,uid=1000,gid=1000,size=64m
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    pids_limit: 128
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    logging: *logging
+    networks: [application]
+
+  initialize:
+    <<: *transfer
+    command: [initialize, --configured-database, --no-color]
+
+  export:
+    <<: *transfer
+    command: [export, --configured-database, --maintenance, --no-color]
+    working_dir: /archives
+    user: "${TRANSFER_UID:-0}:${TRANSFER_GID:-0}"
+    environment:
+      BACKEND_APP_SETTINGS: /app/settings.json
+      MONEYGESTOR_MAINTENANCE_CONFIRMED: ${MONEYGESTOR_MAINTENANCE_CONFIRMED:-false}
+    volumes:
+      - *application-settings
+      - type: bind
+        source: ${ARCHIVE_DIRECTORY:-./artifacts/archives}
+        target: /archives
+        bind:
+          create_host_path: true
+
+  import:
+    <<: *transfer
+    command: [import, --configured-database, --file, /archives/import.zip, --no-color]
+    user: "${TRANSFER_UID:-0}:${TRANSFER_GID:-0}"
+    environment:
+      BACKEND_APP_SETTINGS: /app/settings.json
+      MONEYGESTOR_MAINTENANCE_CONFIRMED: ${MONEYGESTOR_MAINTENANCE_CONFIRMED:-false}
+    volumes:
+      - *application-settings
+      - type: bind
+        source: ${IMPORT_ARCHIVE_PATH:-./artifacts/archives/import.zip}
+        target: /archives/import.zip
+        read_only: true
+        bind:
+          create_host_path: false
+
+volumes:
+  mysql-data:
+  backend-logs:
+  backend-data-protection:
+
+networks:
+  application:
+  database:

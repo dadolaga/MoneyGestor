@@ -1,0 +1,25 @@
+using logic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TestProject.Base {
+    internal abstract class ExecutorBase : DatabaseBase {
+        protected ExecutorManager ExecutorManager { get; private set; }
+        private database.MoneyGestorContext database = null!;
+
+        [SetUp]
+        public void ExecutorSetup() {
+            database = Infrastructure.TestDatabaseRuntime.CreateContext();
+            ExecutorManager = new ExecutorManager(
+                database,
+                Clock,
+                TestDatabaseRuntime.CreateContext);
+        }
+
+        [TearDown]
+        public void ExecutorTearDown() => database.Dispose();
+    }
+}

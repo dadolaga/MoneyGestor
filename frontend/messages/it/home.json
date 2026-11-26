@@ -1,0 +1,166 @@
+{
+    "Home": {
+        "metadata": {
+            "title": "Flowiy | Finanze semplici e condivise",
+            "description": "La gestione del denaro, semplice e condivisa. Scopri Flowiy e organizza entrate, uscite e portafogli in un unico spazio."
+        },
+        "navigation": {
+            "home": "Homepage Flowiy",
+            "main": "Navigazione principale",
+            "footer": "Navigazione nel footer",
+            "features": "Funzionalità",
+            "howItWorks": "Come funziona",
+            "forWhom": "Per chi è",
+            "pricing": "Prezzi",
+            "faq": "FAQ",
+            "login": "Accedi",
+            "start": "Inizia gratis",
+            "openMenu": "Apri menu",
+            "closeMenu": "Chiudi menu",
+            "lightTheme": "Passa al tema chiaro",
+            "darkTheme": "Passa al tema scuro",
+            "language": "Lingua",
+            "switchLanguage": "View in English"
+        },
+        "hero": {
+            "label": "Più controllo, più libertà",
+            "title": "La gestione del denaro,",
+            "highlight": "semplice e condivisa.",
+            "description": "Controlla entrate, uscite, budget e portafogli in un unico spazio. Perfetto per te, la tua famiglia o il tuo team.",
+            "tryFree": "Prova gratis",
+            "demo": "Guarda demo",
+            "free": "Gratis per sempre",
+            "noCard": "Nessuna carta richiesta",
+            "quickSetup": "Setup in pochi minuti",
+            "monthlyBudget": "Budget mensile",
+            "familyWallet": "Portafoglio famiglia"
+        },
+        "images": { "dashboard": "Anteprima dashboard", "sharing": "Anteprima portafoglio condiviso" },
+        "benefits": {
+            "label": "I vantaggi di Flowiy",
+            "wallets": {
+                "title": "Portafogli multipli",
+                "description": "Gestisci conti, carte e portafogli tutti in un unico posto."
+            },
+            "budgets": {
+                "title": "Budget intelligenti",
+                "description": "Imposta limiti di spesa e raggiungi i tuoi obiettivi."
+            },
+            "reports": {
+                "title": "Report chiari",
+                "description": "Visualizza statistiche e trend con grafici intuitivi."
+            },
+            "sharing": {
+                "title": "Collaborazione multiutente",
+                "description": "Condividi la gestione del denaro con famiglia, amici o colleghi."
+            }
+        },
+        "features": {
+            "label": "Funzionalità",
+            "title": "Tutto sotto controllo",
+            "description": "Tutti gli strumenti che ti servono per gestire il tuo denaro, in modo semplice e flessibile.",
+            "discover": "Scopri tutte le funzionalità",
+            "movements": {
+                "title": "Movimenti e categorie",
+                "description": "Registra, importa e organizza entrate, uscite e trasferimenti con categorie personalizzate."
+            },
+            "budgets": {
+                "title": "Budget e obiettivi",
+                "description": "Imposta budget mensili e crea obiettivi di risparmio per ciò che conta davvero."
+            },
+            "reports": {
+                "title": "Report intuitivi",
+                "description": "Analizza le tue finanze con grafici chiari e dettagliati per prendere decisioni migliori."
+            },
+            "wallets": {
+                "title": "Portafogli condivisi",
+                "description": "Gestisci più portafogli e condividili con chi vuoi, mantenendo sempre tutto sotto controllo."
+            }
+        },
+        "examples": {
+            "cardTopUp": "Ricarica carta",
+            "groceries": "Supermercato",
+            "salary": "Stipendio",
+            "mainAccount": "Conto principale",
+            "sharedHome": "Casa condivisa",
+            "travel": "Viaggi",
+            "groupExpenses": "Spese di gruppo",
+            "homeBudget": "Budget Casa",
+            "holidayGoal": "Obiettivo vacanze",
+            "budgetAmount": "{current} di {total}",
+            "incomeAndExpenses": "Entrate e uscite",
+            "income": "Entrate",
+            "expenses": "Uscite",
+            "chartDescription": "Esempio illustrativo di entrate e uscite nei primi sei mesi dell’anno."
+        },
+        "together": {
+            "label": "Insieme è più semplice",
+            "title": "Gestisci il denaro insieme,",
+            "highlight": "senza confusione.",
+            "description": "Crea account condivisi, invita uno o più utenti e gestisci insieme le entrate, le uscite e i budget. Assegna ruoli e permessi, visualizza la cronologia attività e mantieni tutto trasparente.",
+            "discover": "Scopri di più",
+            "permissions": "Ruoli e permessi personalizzabili",
+            "activity": "Cronologia attività sempre disponibile",
+            "visibility": "Visibilità dedicata per ogni utente"
+        },
+        "how": {
+            "label": "Come funziona",
+            "title": "Inizia in 3 semplici passi",
+            "description": "Dalla registrazione ai tuoi primi insight, in pochi minuti.",
+            "wallets": {
+                "title": "Crea i tuoi portafogli",
+                "description": "Aggiungi i tuoi conti, carte o portafogli e personalizzali come preferisci."
+            },
+            "movements": {
+                "title": "Registra o importa i movimenti",
+                "description": "Inserisci manualmente i movimenti o importa quelli dai tuoi estratti conto."
+            },
+            "insights": {
+                "title": "Analizza e migliora le tue finanze",
+                "description": "Visualizza report, imposta budget e raggiungi i tuoi obiettivi."
+            }
+        },
+        "security": {
+            "label": "Sicurezza",
+            "title": "Dati protetti, controllo completo",
+            "description": "La tua privacy è una priorità. Un unico spazio per organizzare le tue finanze e tenere sotto controllo i tuoi dati.",
+            "account": {
+                "title": "Accesso personale",
+                "description": "Accedi con il tuo account e gestisci i tuoi portafogli."
+            },
+            "permissions": {
+                "title": "Permessi personalizzati",
+                "description": "La condivisione parte da ruoli e accessi chiari."
+            },
+            "control": {
+                "title": "I tuoi dati, il tuo controllo",
+                "description": "Una visione chiara delle informazioni che gestisci."
+            }
+        },
+        "cta": {
+            "label": "Inizia oggi",
+            "title": "Inizia a dare una direzione al tuo denaro.",
+            "description": "Un modo più semplice, chiaro e condiviso per gestire le tue finanze.",
+            "button": "Crea il tuo account",
+            "note": "Gratis per sempre. Nessuna carta richiesta."
+        },
+        "footer": { "tagline": "La gestione del denaro, semplice e condivisa." },
+        "faq": {
+            "title": "Domande frequenti",
+            "description": "Qualche informazione utile per iniziare con Flowiy.",
+            "close": "Chiudi domande frequenti",
+            "start": {
+                "question": "Come posso iniziare?",
+                "answer": "Seleziona “Crea il tuo account” per registrarti. Se hai già un account, usa “Accedi” per aprire la tua area personale."
+            },
+            "languages": {
+                "question": "Posso usare Flowiy in italiano o inglese?",
+                "answer": "Sì. Usa EN o IT in fondo alla pagina per scegliere la lingua. Anche login, registrazione e dashboard seguono la lingua selezionata."
+            },
+            "preview": {
+                "question": "Le anteprime mostrano dati reali?",
+                "answer": "No. Le card della homepage sono esempi illustrativi. Budget, obiettivi, report e opzioni avanzate di condivisione rappresentano la direzione del prodotto e non sono tutti già disponibili nella dashboard."
+            }
+        }
+    }
+}
